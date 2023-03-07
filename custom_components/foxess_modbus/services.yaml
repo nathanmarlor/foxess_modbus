@@ -1,0 +1,9 @@
+# Describes the format for available services for the FoxESS Modbus integration
+
+foxess_modbus_write
+  description: >
+    Writes a modbus register
+
+foxess_modbus_read:
+  description: >
+    Reads a modbus register

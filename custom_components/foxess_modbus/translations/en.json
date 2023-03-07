@@ -1,0 +1,38 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "FoxESS - Modbus",
+        "description": "Please enter your Modbus TCP IP and Port",
+        "data": {
+          "modbus_host": "Modbus Host",
+          "modbus_port": "Modbus Port"
+        }
+      }
+    },
+    "error": {
+      "modbus_error": "Error - please check connection details"
+    },
+    "abort": {
+      "single_instance_allowed": "Only a single instance is allowed."
+    }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "title": "FoxESS - Modbus",
+        "description": "Please enter your Modbus TCP IP and Port",
+        "data": {
+          "modbus_host": "Modbus Host",
+          "modbus_port": "Modbus Port"
+        }
+      }
+    },
+    "error": {
+      "modbus_error": "Error - please check connection details"
+    },
+    "abort": {
+      "single_instance_allowed": "Only a single instance is allowed."
+    }
+  }
+}
