@@ -4,10 +4,8 @@ import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from .sensors import inverter_sensors
-
-
 from .const import DOMAIN
+from .sensors import inverter_sensors
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
