@@ -7,10 +7,10 @@ from homeassistant.const import ATTR_IDENTIFIERS
 from homeassistant.const import ATTR_NAME
 from homeassistant.helpers.device_registry import DeviceEntryType
 
-from .callback_controller import CallbackController
+from ..common.callback_controller import CallbackController
 
-from .const import ATTR_ENTRY_TYPE
-from .const import DOMAIN
+from ..const import ATTR_ENTRY_TYPE
+from ..const import DOMAIN
 from .sensor_desc import SensorDescription
 
 _LOGGER = logging.getLogger(__name__)
