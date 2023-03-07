@@ -1,11 +1,12 @@
 """Inverter sensor"""
 import logging
-
 from datetime import time
+
+from homeassistant.components.sensor import SensorDeviceClass
+from homeassistant.components.sensor import SensorStateClass
+
 from .modbus_sensor import ModbusSensor
 from .sensor_desc import SensorDescription
-from homeassistant.components.sensor import SensorStateClass
-from homeassistant.components.sensor import SensorDeviceClass
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 

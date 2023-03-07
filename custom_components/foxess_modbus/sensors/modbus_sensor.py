@@ -1,5 +1,6 @@
 """Sensor"""
 import logging
+
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -8,7 +9,6 @@ from homeassistant.const import ATTR_NAME
 from homeassistant.helpers.device_registry import DeviceEntryType
 
 from ..common.callback_controller import CallbackController
-
 from ..const import ATTR_ENTRY_TYPE
 from ..const import DOMAIN
 from .sensor_desc import SensorDescription

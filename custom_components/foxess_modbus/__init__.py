@@ -11,13 +11,13 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
 
-from .modbus_client import ModbusClient
-from .modbus_controller import ModbusController
 from .const import DOMAIN
 from .const import MODBUS_HOST
 from .const import MODBUS_PORT
 from .const import PLATFORMS
 from .const import STARTUP_MESSAGE
+from .modbus_client import ModbusClient
+from .modbus_controller import ModbusController
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 

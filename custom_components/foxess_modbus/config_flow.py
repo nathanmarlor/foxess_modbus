@@ -7,12 +7,11 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import callback
 
-from .modbus_client import ModbusClient
-from .modbus_controller import ModbusController
-
 from .const import DOMAIN
 from .const import MODBUS_HOST
 from .const import MODBUS_PORT
+from .modbus_client import ModbusClient
+from .modbus_controller import ModbusController
 
 _TITLE = "FoxESS - Modbus"
 
