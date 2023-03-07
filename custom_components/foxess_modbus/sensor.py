@@ -4,7 +4,8 @@ import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from . import inverter_sensors
+from custom_components.foxess_modbus import inverter_sensors
+
 
 from .const import DOMAIN
 

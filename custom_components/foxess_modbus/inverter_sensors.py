@@ -1,4 +1,4 @@
-"""Solcast sensor"""
+"""Inverter sensor"""
 import logging
 
 from datetime import time
