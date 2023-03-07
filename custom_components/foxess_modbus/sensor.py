@@ -7,7 +7,7 @@ from homeassistant.core import HomeAssistant
 from .const import DOMAIN
 from .sensors import inverter_sensors
 
-_LOGGER: logging.Logger = logging.getLogger(__package__)
+_LOGGER = logging.getLogger(__package__)
 
 
 async def async_setup_entry(
@@ -17,8 +17,4 @@ async def async_setup_entry(
 
     controllers = hass.data[DOMAIN][entry.entry_id]["controllers"]
 
-    inverter = inverter_sensors.sensors(controllers, entry)
-
-    entities = inverter
-
-    async_add_devices(entities)
+    async_add_devices(inverter_sensors.sensors(controllers, entry))
