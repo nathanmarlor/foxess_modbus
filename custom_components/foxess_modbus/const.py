@@ -3,7 +3,7 @@
 NAME = "foxess_modbus"
 DOMAIN = "foxess_modbus"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "1.0.0b1"
+VERSION = "1.0.0b2"
 
 ISSUE_URL = "https://github.com/nathanmarlor/foxess_modbus/issues"
 
