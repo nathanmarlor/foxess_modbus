@@ -15,10 +15,9 @@ from .modbus_client import ModbusClient
 
 _LOGGER = logging.getLogger(__name__)
 
-_LAN_SN = 30000
-_AUX_SN = 10000
+_SERIALS = {AUX: 10000, LAN: 30000}
 # LAN uses holding registers / AUX uses input registers
-_SERIALS = {AUX: (_AUX_SN, False), LAN: (_LAN_SN, True)}
+_HOLDING = {AUX: False, LAN: True}
 
 # 5 seconds refresh with max read of 50
 _LAN_POLL = (5, 50)
@@ -77,7 +76,7 @@ class ModbusController(CallbackController, UnloadController):
     def refresh(self, *args) -> None:
         """Refresh modbus data"""
         _, max_read = _POLL_RATES[self._connection_type]
-        _, holding = _SERIALS[self._connection_type]
+        holding = _HOLDING[self._connection_type]
         try:
             for start, end in _ADDRESSES[self._connection_type]:
                 _LOGGER.debug(f"Reading addresses for ({start}:{end-start})")
@@ -95,7 +94,8 @@ class ModbusController(CallbackController, UnloadController):
 
     async def autodetect(self) -> bool:
         """Modbus status"""
-        for conn_type, (serial_addr, holding) in _SERIALS.items():
+        for conn_type, serial_addr in _SERIALS.items():
+            holding = _HOLDING[conn_type]
             try:
                 result = self._modbus.read_registers(serial_addr, 2, holding)
                 inverter_type = "".join([chr(i) for i in result])
