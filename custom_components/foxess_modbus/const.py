@@ -3,7 +3,7 @@
 NAME = "foxess_modbus"
 DOMAIN = "foxess_modbus"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "1.0.0b1"
+VERSION = "1.0.0b2"
 
 ISSUE_URL = "https://github.com/nathanmarlor/foxess_modbus/issues"
 
@@ -18,6 +18,21 @@ ATTR_ENTRY_TYPE = "entry_type"
 # Fox Options
 MODBUS_HOST = "modbus_host"
 MODBUS_PORT = "modbus_port"
+
+INVERTER_TYPE = "modbus_type"
+INVERTER_CONN = "modbus_conn"
+
+# Inverter Types
+H1 = "H1"
+H3 = "H3"
+LAN = "LAN"
+AUX = "AUX"
+
+CONTROLLER = "controllers"
+CONFIG = "config"
+INVERTER = "inverter"
+CONNECTION = "connection"
+MODBUS = "modbus"
 
 # Defaults
 DEFAULT_NAME = DOMAIN

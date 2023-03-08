@@ -1,5 +1,6 @@
 """Sensor"""
 import logging
+
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -7,10 +8,9 @@ from homeassistant.const import ATTR_IDENTIFIERS
 from homeassistant.const import ATTR_NAME
 from homeassistant.helpers.device_registry import DeviceEntryType
 
-from .callback_controller import CallbackController
-
-from .const import ATTR_ENTRY_TYPE
-from .const import DOMAIN
+from ..common.callback_controller import CallbackController
+from ..const import ATTR_ENTRY_TYPE
+from ..const import DOMAIN
 from .sensor_desc import SensorDescription
 
 _LOGGER = logging.getLogger(__name__)
@@ -50,8 +50,11 @@ class ModbusSensor(SensorEntity):
     def native_value(self):
         """Return the value reported by the sensor."""
         value = self._controller.get_raw_value(self._entity_description.address)
-        if value is not None and self._entity_description.post_process is not None:
-            return self._entity_description.post_process(value)
+        if value is not None:
+            if self._entity_description.scale is not None:
+                value = value * self._entity_description.scale
+            if self._entity_description.post_process is not None:
+                return self._entity_description.post_process(value)
 
         return value
 

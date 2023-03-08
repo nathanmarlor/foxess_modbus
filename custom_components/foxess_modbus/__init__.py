@@ -11,13 +11,20 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
 
-from .modbus_client import ModbusClient
-from .modbus_controller import ModbusController
+from .const import CONFIG
+from .const import CONNECTION
+from .const import CONTROLLER
 from .const import DOMAIN
+from .const import INVERTER
+from .const import INVERTER_CONN
+from .const import INVERTER_TYPE
+from .const import MODBUS
 from .const import MODBUS_HOST
 from .const import MODBUS_PORT
 from .const import PLATFORMS
 from .const import STARTUP_MESSAGE
+from .modbus_client import ModbusClient
+from .modbus_controller import ModbusController
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
@@ -46,18 +53,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     modbus_host = entry.data.get(MODBUS_HOST, "")
     modbus_port = entry.data.get(MODBUS_PORT, 502)
 
+    inverter_type = entry.data.get(INVERTER_TYPE)
+    connection_type = entry.data.get(INVERTER_CONN)
+
     modbus_client = ModbusClient(modbus_host, modbus_port)
-    modbus_controller = ModbusController(hass, modbus_client)
+    modbus_controller = ModbusController(hass, modbus_client, connection_type)
 
-    hass.data[DOMAIN][entry.entry_id] = {"controllers": {"modbus": modbus_controller}}
+    hass.data[DOMAIN][entry.entry_id] = {
+        CONTROLLER: {MODBUS: modbus_controller},
+        CONFIG: {INVERTER: inverter_type, CONNECTION: connection_type},
+    }
 
-    # hass.services.async_register(
-    #    DOMAIN, "read_register", modbus_controller.read_register
-    # )
-    # hass.services.async_register(
-    #    DOMAIN, "write_register", modbus_controller.write_register
-    # )
-    #
     hass.data[DOMAIN][entry.entry_id]["unload"] = entry.add_update_listener(
         async_reload_entry
     )
@@ -77,7 +83,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     if unloaded:
-        controllers = hass.data[DOMAIN][entry.entry_id]["controllers"]
+        controllers = hass.data[DOMAIN][entry.entry_id][CONTROLLER]
         for controller in controllers.values():
             controller.unload()
 

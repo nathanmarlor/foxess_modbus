@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "FoxESS - Modbus",
-        "description": "Please enter your Modbus TCP IP and Port",
+        "description": "Please enter your Modbus IP and Port",
         "data": {
           "modbus_host": "Modbus Host",
           "modbus_port": "Modbus Port"
@@ -21,7 +21,7 @@
     "step": {
       "user": {
         "title": "FoxESS - Modbus",
-        "description": "Please enter your Modbus TCP IP and Port",
+        "description": "Please enter your Modbus IP and Port",
         "data": {
           "modbus_host": "Modbus Host",
           "modbus_port": "Modbus Port"

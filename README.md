@@ -1,4 +1,4 @@
-# FoxESS - Energy Management
+# FoxESS - Modbus
 
 [![GitHub Release][releases-shield]][releases]
 [![GitHub Activity][commits-shield]][commits]
@@ -18,7 +18,46 @@
 
 ## Introduction
 
-A Home Assistant custom component designed to ease integrating modbus data.
+A Home Assistant custom component designed to ease integrating modbus data from Fox H1 inverters.
+
+Features include:
+
+- Autodetect inverter connection type (i.e. W610 / Direct LAN)
+- Read registers in bulk to improve Home Assistant performance
+- Direct decoding of values (i.e. force charge periods)
+
+## Installation
+
+Recommend installation through [HACS][hacs]
+
+1. Navigate to HACS integrations
+2. Hit the menu button (top right) and select 'Custom repositories'
+3. Paste this GitHub [link][foxess_em] and select 'Integration'
+4. Install as usual through HACS
+   - 'Explore & Download Repositories'
+   - Search for 'FoxESS - Modbus'
+   - Download
+
+## Configuration and Options
+
+<b>Inverter Setup</b></p>
+
+- **Modbus Host**: IP Adddress of your Modbus (i.e. W610/LAN) host
+- **Modbus Port**: Port number (default 502)
+
+![Setup](images/setup.png)
+
+## Usage
+
+<b>Modbus Service</b></p>
+
+1. Navigate to Settings -> Devices & Services to find...
+
+![Usage](images/usage.png)
+
+2. Select '1 service' to find all Modbus readings...
+
+![Example](images/example.png)
 
 ---
 

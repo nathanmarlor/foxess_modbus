@@ -11,4 +11,5 @@ class SensorDescription(SensorEntityDescription):
 
     address: int | None = 0
     should_poll: bool | None = False
+    scale: float | None = None
     post_process: Callable[[int], int] | None = None

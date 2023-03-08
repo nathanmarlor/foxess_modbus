@@ -1,11 +1,13 @@
-"""Solcast sensor"""
+"""Inverter sensor"""
 import logging
-
 from datetime import time
+
+from homeassistant.components.sensor import SensorDeviceClass
+from homeassistant.components.sensor import SensorStateClass
+
+from ..const import MODBUS
 from .modbus_sensor import ModbusSensor
 from .sensor_desc import SensorDescription
-from homeassistant.components.sensor import SensorStateClass
-from homeassistant.components.sensor import SensorDeviceClass
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
@@ -16,9 +18,8 @@ SENSORS: dict[str, SensorDescription] = {
         name="PV1 Voltage",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="V",
-        post_process=lambda v: v / 10,
+        scale=0.1,
     ),
     "pv1-current": SensorDescription(
         key="pv1-current",
@@ -26,9 +27,8 @@ SENSORS: dict[str, SensorDescription] = {
         name="PV1 Current",
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="A",
-        post_process=lambda v: v / 10,
+        scale=0.1,
     ),
     "pv1-power": SensorDescription(
         key="pv1-power",
@@ -36,9 +36,8 @@ SENSORS: dict[str, SensorDescription] = {
         name="PV1 Power",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="kW",
-        post_process=lambda v: v / 1000,
+        scale=0.001,
     ),
     "pv2-voltage": SensorDescription(
         key="pv2-voltage",
@@ -46,9 +45,8 @@ SENSORS: dict[str, SensorDescription] = {
         name="PV2 Voltage",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="V",
-        post_process=lambda v: v / 10,
+        scale=0.1,
     ),
     "pv2-current": SensorDescription(
         key="pv2-current",
@@ -56,9 +54,8 @@ SENSORS: dict[str, SensorDescription] = {
         name="PV2 Current",
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="A",
-        post_process=lambda v: v / 10,
+        scale=0.1,
     ),
     "pv2-power": SensorDescription(
         key="pv2-power",
@@ -66,9 +63,8 @@ SENSORS: dict[str, SensorDescription] = {
         name="PV2 Power",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="kW",
-        post_process=lambda v: v / 1000,
+        scale=0.001,
     ),
     "battery-soc": SensorDescription(
         key="battery-soc",
@@ -76,7 +72,6 @@ SENSORS: dict[str, SensorDescription] = {
         name="Battery SoC",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="%",
     ),
     "battery-discharge": SensorDescription(
@@ -85,9 +80,9 @@ SENSORS: dict[str, SensorDescription] = {
         name="Battery Discharge",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="kW",
-        post_process=lambda v: v / 1000 if v > 0 else 0,
+        scale=0.001,
+        post_process=lambda v: v if v > 0 else 0,
     ),
     "battery-charge": SensorDescription(
         key="battery-charge",
@@ -95,9 +90,9 @@ SENSORS: dict[str, SensorDescription] = {
         name="Battery Charge",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="kW",
-        post_process=lambda v: abs(v) / 1000 if v < 0 else 0,
+        scale=0.001,
+        post_process=lambda v: abs(v) if v < 0 else 0,
     ),
     "feed-in": SensorDescription(
         key="feed-in",
@@ -105,9 +100,9 @@ SENSORS: dict[str, SensorDescription] = {
         name="Feed In",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="kW",
-        post_process=lambda v: v / 1000 if v > 0 else 0,
+        scale=0.001,
+        post_process=lambda v: v if v > 0 else 0,
     ),
     "grid-consumption": SensorDescription(
         key="grid-consumption",
@@ -115,9 +110,9 @@ SENSORS: dict[str, SensorDescription] = {
         name="Grid Consumption",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="kW",
-        post_process=lambda v: abs(v) / 1000 if v < 0 else 0,
+        scale=0.001,
+        post_process=lambda v: abs(v) if v < 0 else 0,
     ),
     "battery-temp": SensorDescription(
         key="battery-temp",
@@ -125,29 +120,26 @@ SENSORS: dict[str, SensorDescription] = {
         name="Battery Temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="°C",
-        post_process=lambda v: v / 10,
+        scale=0.1,
     ),
     "inv-temp": SensorDescription(
         key="inv-temp",
-        address=11024,
+        address=11025,
         name="Inverter Temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="°C",
-        post_process=lambda v: v / 10,
+        scale=0.1,
     ),
     "amb-temp": SensorDescription(
         key="amb-temp",
-        address=11025,
+        address=11024,
         name="Ambient Temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="°C",
-        post_process=lambda v: v / 10,
+        scale=0.1,
     ),
     "load-power": SensorDescription(
         key="load-power",
@@ -155,29 +147,26 @@ SENSORS: dict[str, SensorDescription] = {
         name="Load Power",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="kW",
-        post_process=lambda v: v / 1000,
+        scale=0.001,
     ),
     "inv-bat-volt": SensorDescription(
         key="inv-bat-volt",
         address=11006,
-        name="Load Power",
+        name="Inverter Battery Voltage",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="V",
-        post_process=lambda v: v / 10,
+        scale=0.1,
     ),
     "inv-bat-power": SensorDescription(
         key="inv-bat-power",
         address=11007,
-        name="Load Power",
+        name="Inverter Battery Power",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="kW",
-        post_process=lambda v: v / 100,
+        scale=0.01,
     ),
     "grid-ct": SensorDescription(
         key="grid-ct",
@@ -185,9 +174,8 @@ SENSORS: dict[str, SensorDescription] = {
         name="Grid CT",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="kW",
-        post_process=lambda v: v / 1000,
+        scale=0.001,
     ),
     "bat-voltage": SensorDescription(
         key="bat-voltage",
@@ -195,9 +183,44 @@ SENSORS: dict[str, SensorDescription] = {
         name="Battery Voltage",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="V",
-        post_process=lambda v: v / 10,
+        scale=0.1,
+    ),
+    "bat-current": SensorDescription(
+        key="bat-current",
+        address=11035,
+        name="Battery Current",
+        device_class=SensorDeviceClass.CURRENT,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="A",
+        scale=0.1,
+    ),
+    "grid-voltage": SensorDescription(
+        key="grid-voltage",
+        address=11009,
+        name="Grid Voltage",
+        device_class=SensorDeviceClass.VOLTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="V",
+        scale=0.1,
+    ),
+    "grid-current": SensorDescription(
+        key="grid-current",
+        address=11010,
+        name="Grid Current",
+        device_class=SensorDeviceClass.CURRENT,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="A",
+        scale=0.1,
+    ),
+    "grid-frequency": SensorDescription(
+        key="grid-frequency",
+        address=11014,
+        name="Grid Frequency",
+        device_class=SensorDeviceClass.FREQUENCY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="Hz",
+        scale=0.01,
     ),
     "min-soc": SensorDescription(
         key="min-soc",
@@ -205,7 +228,6 @@ SENSORS: dict[str, SensorDescription] = {
         name="Min SoC",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="%",
     ),
     "min-soc-grid": SensorDescription(
@@ -214,7 +236,6 @@ SENSORS: dict[str, SensorDescription] = {
         name="Min SoC (On Grid)",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="%",
     ),
     "period1-enabled": SensorDescription(
@@ -259,7 +280,6 @@ SENSORS: dict[str, SensorDescription] = {
         name="BMS Cell mV High",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="mV",
     ),
     "bms-cell-voltage-low": SensorDescription(
@@ -268,28 +288,25 @@ SENSORS: dict[str, SensorDescription] = {
         name="BMS Cell mV Low",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="mV",
     ),
     "bms-charge-rate": SensorDescription(
         key="bms-charge-rate",
         address=11041,
         name="BMS Charge Rate",
-        device_class=SensorDeviceClass.BATTERY,
+        device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="A",
-        post_process=lambda v: v / 10,
+        scale=0.1,
     ),
     "bms-discharge-rate": SensorDescription(
         key="bms-discharge-rate",
         address=11042,
         name="BMS Discharge Rate",
-        device_class=SensorDeviceClass.BATTERY,
+        device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="A",
-        post_process=lambda v: v / 10,
+        scale=0.1,
     ),
     "bms-cell-temp-high": SensorDescription(
         key="bms-cell-temp-high",
@@ -297,9 +314,8 @@ SENSORS: dict[str, SensorDescription] = {
         name="BMS Cell Temp High",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="°C",
-        post_process=lambda v: v / 10,
+        scale=0.1,
     ),
     "bms-cell-temp-low": SensorDescription(
         key="bms-cell-temp-low",
@@ -307,19 +323,23 @@ SENSORS: dict[str, SensorDescription] = {
         name="BMS Cell Temp Low",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="°C",
-        post_process=lambda v: v / 10,
+        scale=0.1,
     ),
     "bms-kw-remaining": SensorDescription(
         key="bms-kw-remaining",
         address=11037,
         name="BMS kW Remaining",
-        device_class=SensorDeviceClass.POWER,
+        device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=1,
         native_unit_of_measurement="kWh",
-        post_process=lambda v: v / 100,
+        scale=0.01,
+    ),
+    "bms-cycle-count": SensorDescription(
+        key="bms-cycle-count",
+        address=11048,
+        name="BMS Cycle Count",
+        state_class=SensorStateClass.MEASUREMENT,
     ),
 }
 
@@ -329,7 +349,7 @@ def sensors(controllers, entry) -> list:
     entities = []
 
     for sensor in SENSORS:
-        sen = ModbusSensor(controllers["modbus"], SENSORS[sensor], entry)
+        sen = ModbusSensor(controllers[MODBUS], SENSORS[sensor], entry)
         entities.append(sen)
 
     return entities

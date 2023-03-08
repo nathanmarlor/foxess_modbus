@@ -7,12 +7,13 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import callback
 
-from .modbus_client import ModbusClient
-from .modbus_controller import ModbusController
-
 from .const import DOMAIN
+from .const import INVERTER_CONN
+from .const import INVERTER_TYPE
 from .const import MODBUS_HOST
 from .const import MODBUS_PORT
+from .modbus_client import ModbusClient
+from .modbus_controller import ModbusController
 
 _TITLE = "FoxESS - Modbus"
 
@@ -68,10 +69,12 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_modbus(self, user_input: dict[str, Any] = None):
         """Handle a flow initialized by the user."""
         if user_input is not None:
-            modbus_valid = await self._test_modbus(
+            result, inv_type, conn_type = await self._autodetect_modbus(
                 user_input[MODBUS_HOST], user_input[MODBUS_PORT]
             )
-            if modbus_valid:
+            if result:
+                user_input[INVERTER_TYPE] = inv_type
+                user_input[INVERTER_CONN] = conn_type
                 self._errors["base"] = None
                 self._user_input.update(user_input)
                 return self.async_create_entry(title=_TITLE, data=self._user_input)
@@ -82,12 +85,12 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user", data_schema=self._modbus_schema, errors=self._errors
         )
 
-    async def _test_modbus(self, host: str, port: str):
+    async def _autodetect_modbus(self, host: str, port: str):
         """Return true if modbus connection can be established"""
         try:
             modbus = ModbusClient(host, port)
-            controller = ModbusController(None, modbus)
-            return await controller.ready()
+            controller = ModbusController(None, modbus, None)
+            return await controller.autodetect()
         except Exception as ex:  # pylint: disable=broad-except
             _LOGGER.warn(ex)
             pass
