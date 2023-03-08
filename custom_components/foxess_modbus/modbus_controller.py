@@ -7,6 +7,7 @@ from custom_components.foxess_modbus.const import H1
 from custom_components.foxess_modbus.const import LAN
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.event import async_track_time_interval
+from pymodbus.exceptions import ModbusException
 
 from .common.callback_controller import CallbackController
 from .common.unload_controller import UnloadController
@@ -66,6 +67,13 @@ class ModbusController(CallbackController, UnloadController):
 
             self._unload_listeners.append(refresh)
 
+    def get_raw_value(self, address) -> bool:
+        """Modbus status"""
+        if address in self._data:
+            return self._data[address]
+        else:
+            return None
+
     def refresh(self, *args) -> None:
         """Refresh modbus data"""
         _, max_read = _POLL_RATES[self._connection_type]
@@ -82,7 +90,7 @@ class ModbusController(CallbackController, UnloadController):
 
             _LOGGER.debug("Refresh complete - notifying sensors")
             self._notify_listeners()
-        except ConnectionError as ex:
+        except ModbusException as ex:
             _LOGGER.debug(f"Exception when polling modbus - {ex}")
 
     async def autodetect(self) -> bool:
@@ -96,13 +104,6 @@ class ModbusController(CallbackController, UnloadController):
                         f"Autodetected inverter as {inverter_type} using {conn_type} connection"
                     )
                     return True, inverter_type, conn_type
-            except ConnectionError:
+            except ModbusException:
                 continue
         return False, None, None
-
-    def get_raw_value(self, address) -> bool:
-        """Modbus status"""
-        if address in self._data:
-            return self._data[address]
-        else:
-            return None

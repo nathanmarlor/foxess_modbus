@@ -1,6 +1,8 @@
 import logging
 
 from pymodbus.client import ModbusTcpClient
+from pymodbus.exceptions import ConnectionException
+from pymodbus.exceptions import ModbusIOException
 
 _LOGGER = logging.getLogger(__name__)
 _SLAVE = 247
@@ -18,7 +20,7 @@ class ModbusClient:
     def _connect(self):
         """Connect to device"""
         if not self._client.connect():
-            raise ConnectionError(
+            raise ConnectionException(
                 f"Error connecting to device: ({self._host}:{self._port})"
             )
 
@@ -38,7 +40,7 @@ class ModbusClient:
                 start_address, num_registers, _SLAVE
             )
         if response.isError():
-            raise ConnectionError(f"Error reading registers: {response}")
+            raise ModbusIOException(f"Error reading registers: {response}")
 
         # convert to signed integers
         regs = [
@@ -64,5 +66,5 @@ class ModbusClient:
                 register_address, int(register_values[0]), _SLAVE
             )
         if response.isError():
-            raise ConnectionError(f"Error writing holding register: {response}")
+            raise ModbusIOException(f"Error writing holding register: {response}")
         return True
