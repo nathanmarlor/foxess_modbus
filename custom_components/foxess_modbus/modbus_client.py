@@ -22,18 +22,23 @@ class ModbusClient:
                 f"Error connecting to device: ({self._host}:{self._port})"
             )
 
-    def read_input_registers(self, start_address, num_registers):
+    def read_registers(self, start_address, num_registers, holding):
         """Read registers"""
         if not self._client.is_socket_open():
             _LOGGER.info(f"Connecting to modbus: ({self._host}:{self._port})")
             self._connect()
 
-        _LOGGER.debug(f"Reading input register: ({start_address}, {num_registers})")
-        response = self._client.read_input_registers(
-            start_address, num_registers, _SLAVE
-        )
+        _LOGGER.debug(f"Reading register: ({start_address}, {num_registers})")
+        if holding:
+            response = self._client.read_holding_registers(
+                start_address, num_registers, _SLAVE
+            )
+        else:
+            response = self._client.read_input_registers(
+                start_address, num_registers, _SLAVE
+            )
         if response.isError():
-            raise ConnectionError(f"Error reading input registers: {response}")
+            raise ConnectionError(f"Error reading registers: {response}")
 
         # convert to signed integers
         regs = [

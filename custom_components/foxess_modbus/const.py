@@ -19,6 +19,21 @@ ATTR_ENTRY_TYPE = "entry_type"
 MODBUS_HOST = "modbus_host"
 MODBUS_PORT = "modbus_port"
 
+INVERTER_TYPE = "modbus_type"
+INVERTER_CONN = "modbus_conn"
+
+# Inverter Types
+H1 = "H1"
+H3 = "H3"
+LAN = "LAN"
+AUX = "AUX"
+
+CONTROLLER = "controllers"
+CONFIG = "config"
+INVERTER = "inverter"
+CONNECTION = "connection"
+MODBUS = "modbus"
+
 # Defaults
 DEFAULT_NAME = DOMAIN
 
