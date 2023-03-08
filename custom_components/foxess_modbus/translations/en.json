@@ -2,7 +2,6 @@
   "config": {
     "step": {
       "user": {
-        "title": "FoxESS - Modbus",
         "description": "Please enter your Modbus IP and Port",
         "data": {
           "modbus_host": "Modbus Host",
@@ -20,7 +19,6 @@
   "options": {
     "step": {
       "user": {
-        "title": "FoxESS - Modbus",
         "description": "Please enter your Modbus IP and Port",
         "data": {
           "modbus_host": "Modbus Host",
