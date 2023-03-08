@@ -32,7 +32,7 @@ Recommend installation through [HACS][hacs]
 
 1. Navigate to HACS integrations
 2. Hit the menu button (top right) and select 'Custom repositories'
-3. Paste this GitHub [link][foxess_em] and select 'Integration'
+3. Paste this GitHub [link][foxess_modbus] and select 'Integration'
 4. Install as usual through HACS
    - 'Explore & Download Repositories'
    - Search for 'FoxESS - Modbus'
