@@ -73,8 +73,8 @@ SENSORS: dict[str, SensorDescription] = {
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
     ),
-    "battery_discharge": SensorDescription(
-        key="battery_discharge",
+    "battery_discharge_power": SensorDescription(
+        key="battery_discharge_power",
         address=31022,
         name="Battery Discharge",
         device_class=SensorDeviceClass.POWER,
@@ -83,8 +83,8 @@ SENSORS: dict[str, SensorDescription] = {
         scale=0.001,
         post_process=lambda v: v if v > 0 else 0,
     ),
-    "battery_charge": SensorDescription(
-        key="battery_charge",
+    "battery_charge_power": SensorDescription(
+        key="battery_charge_power",
         address=31022,
         name="Battery Charge",
         device_class=SensorDeviceClass.POWER,
@@ -113,8 +113,8 @@ SENSORS: dict[str, SensorDescription] = {
         scale=0.001,
         post_process=lambda v: abs(v) if v < 0 else 0,
     ),
-    "grid_voltage": SensorDescription(
-        key="grid_voltage",
+    "rvolt": SensorDescription(
+        key="rvolt",
         address=31006,
         name="Grid Voltage",
         device_class=SensorDeviceClass.VOLTAGE,
@@ -122,8 +122,8 @@ SENSORS: dict[str, SensorDescription] = {
         native_unit_of_measurement="V",
         scale=0.1,
     ),
-    "grid_current": SensorDescription(
-        key="grid_current",
+    "rcurrent": SensorDescription(
+        key="rcurrent",
         address=31007,
         name="Grid Current",
         device_class=SensorDeviceClass.CURRENT,
@@ -131,8 +131,8 @@ SENSORS: dict[str, SensorDescription] = {
         native_unit_of_measurement="A",
         scale=0.1,
     ),
-    "grid_frequency": SensorDescription(
-        key="grid_frequency",
+    "rfreq": SensorDescription(
+        key="rfreq",
         address=31009,
         name="Grid Frequency",
         device_class=SensorDeviceClass.FREQUENCY,
@@ -149,8 +149,8 @@ SENSORS: dict[str, SensorDescription] = {
         native_unit_of_measurement="°C",
         scale=0.1,
     ),
-    "inv_temp": SensorDescription(
-        key="inv_temp",
+    "invtemp": SensorDescription(
+        key="invtemp",
         address=31019,
         name="Inverter Temp",
         device_class=SensorDeviceClass.TEMPERATURE,
@@ -158,8 +158,8 @@ SENSORS: dict[str, SensorDescription] = {
         native_unit_of_measurement="°C",
         scale=0.1,
     ),
-    "amb_temp": SensorDescription(
-        key="amb_temp",
+    "ambtemp": SensorDescription(
+        key="ambtemp",
         address=31018,
         name="Ambient Temp",
         device_class=SensorDeviceClass.TEMPERATURE,
@@ -185,8 +185,8 @@ SENSORS: dict[str, SensorDescription] = {
         native_unit_of_measurement="kW",
         scale=0.001,
     ),
-    "bat_voltage": SensorDescription(
-        key="bat_voltage",
+    "batvolt": SensorDescription(
+        key="batvolt",
         address=31020,
         name="Battery Voltage",
         device_class=SensorDeviceClass.VOLTAGE,
