@@ -86,7 +86,9 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 user_input[INVERTER_CONN] = conn_type
                 self._errors["base"] = None
                 self._user_input.update(user_input)
-                title = self._get_friendly_name(user_input)
+                title = self._get_friendly_name(
+                    user_input[FRIENDLY_NAME], inv_type, conn_type
+                )
                 return self.async_create_entry(title=title, data=self._user_input)
             else:
                 self._errors["base"] = "modbus_error"
@@ -95,13 +97,12 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user", data_schema=self._modbus_schema, errors=self._errors
         )
 
-    def _get_friendly_name(self, user_input):
+    def _get_friendly_name(self, friendly_name, inv_type, conn_type):
         """Friendly name"""
-        friendly_name = user_input[FRIENDLY_NAME]
-        if friendly_name == "":
-            return _TITLE
-        else:
-            return _TITLE + f" ({friendly_name})"
+        name = f"{inv_type} - {conn_type}"
+        if friendly_name != "":
+            name = name + f" ({friendly_name})"
+        return name
 
     async def _autodetect_modbus(self, host: str, port: int, slave: int):
         """Return true if modbus connection can be established"""
@@ -112,7 +113,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         except Exception as ex:  # pylint: disable=broad-except
             _LOGGER.warn(ex)
             pass
-        return False
+        return False, None, None
 
     @staticmethod
     @callback
