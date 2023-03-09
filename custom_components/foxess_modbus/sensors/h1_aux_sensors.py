@@ -238,6 +238,14 @@ SENSORS: dict[str, SensorDescription] = {
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
     ),
+    "max-soc": SensorDescription(
+        key="max-soc",
+        address=41010,
+        name="Max SoC",
+        device_class=SensorDeviceClass.BATTERY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="%",
+    ),
     "period1-enabled": SensorDescription(
         key="period1-enabled",
         address=41001,
