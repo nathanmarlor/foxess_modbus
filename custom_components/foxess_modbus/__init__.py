@@ -21,6 +21,7 @@ from .const import INVERTER_TYPE
 from .const import MODBUS
 from .const import MODBUS_HOST
 from .const import MODBUS_PORT
+from .const import MODBUS_SLAVE
 from .const import PLATFORMS
 from .const import STARTUP_MESSAGE
 from .modbus_client import ModbusClient
@@ -52,11 +53,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     modbus_host = entry.data.get(MODBUS_HOST, "")
     modbus_port = entry.data.get(MODBUS_PORT, 502)
+    modbus_slave = entry.data.get(MODBUS_SLAVE, 247)
 
     inverter_type = entry.data.get(INVERTER_TYPE)
     connection_type = entry.data.get(INVERTER_CONN)
 
-    modbus_client = ModbusClient(modbus_host, modbus_port)
+    modbus_client = ModbusClient(modbus_host, modbus_port, modbus_slave)
     modbus_controller = ModbusController(hass, modbus_client, connection_type)
 
     hass.data[DOMAIN][entry.entry_id] = {

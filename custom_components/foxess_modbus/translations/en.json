@@ -5,7 +5,8 @@
         "description": "Please enter your Modbus IP and Port",
         "data": {
           "modbus_host": "Modbus Host",
-          "modbus_port": "Modbus Port"
+          "modbus_port": "Modbus Port",
+          "modbus_slave": "Modbus Slave"
         }
       }
     },
@@ -22,7 +23,8 @@
         "description": "Please enter your Modbus IP and Port",
         "data": {
           "modbus_host": "Modbus Host",
-          "modbus_port": "Modbus Port"
+          "modbus_port": "Modbus Port",
+          "modbus_slave": "Modbus Slave"
         }
       }
     },
