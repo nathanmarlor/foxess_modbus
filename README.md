@@ -44,6 +44,7 @@ Recommend installation through [HACS][hacs]
 
 - **Modbus Host**: IP Adddress of your Modbus (i.e. W610/LAN) host
 - **Modbus Port**: Port number (default 502)
+- **Modbus Slave**: Slave ID (default 247)
 
 ![Setup](images/setup.png)
 

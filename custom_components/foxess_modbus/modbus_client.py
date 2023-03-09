@@ -5,16 +5,16 @@ from pymodbus.exceptions import ConnectionException
 from pymodbus.exceptions import ModbusIOException
 
 _LOGGER = logging.getLogger(__name__)
-_SLAVE = 247
 
 
 class ModbusClient:
     """Modbus"""
 
-    def __init__(self, host, port=502):
+    def __init__(self, host, port, slave):
         """Init"""
         self._host = host
         self._port = port
+        self._slave = slave
         self._client = ModbusTcpClient(self._host, self._port)
 
     def _connect(self):
@@ -33,11 +33,11 @@ class ModbusClient:
         _LOGGER.debug(f"Reading register: ({start_address}, {num_registers})")
         if holding:
             response = self._client.read_holding_registers(
-                start_address, num_registers, _SLAVE
+                start_address, num_registers, self._slave
             )
         else:
             response = self._client.read_input_registers(
-                start_address, num_registers, _SLAVE
+                start_address, num_registers, self._slave
             )
         if response.isError():
             raise ModbusIOException(f"Error reading registers: {response}")
@@ -59,11 +59,11 @@ class ModbusClient:
 
         if len(register_values) > 1:
             response = self._client.write_registers(
-                register_address, register_values, _SLAVE
+                register_address, register_values, self._slave
             )
         else:
             response = self._client.write_register(
-                register_address, int(register_values[0]), _SLAVE
+                register_address, int(register_values[0]), self._slave
             )
         if response.isError():
             raise ModbusIOException(f"Error writing holding register: {response}")

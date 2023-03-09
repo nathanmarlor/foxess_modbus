@@ -12,6 +12,7 @@ from .const import INVERTER_CONN
 from .const import INVERTER_TYPE
 from .const import MODBUS_HOST
 from .const import MODBUS_PORT
+from .const import MODBUS_SLAVE
 from .modbus_client import ModbusClient
 from .modbus_controller import ModbusController
 
@@ -48,6 +49,10 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     MODBUS_PORT,
                     default=self._data.get(MODBUS_PORT, 502),
                 ): int,
+                vol.Required(
+                    MODBUS_SLAVE,
+                    default=self._data.get(MODBUS_SLAVE, 247),
+                ): int,
             }
         )
 
@@ -70,7 +75,9 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle a flow initialized by the user."""
         if user_input is not None:
             result, inv_type, conn_type = await self._autodetect_modbus(
-                user_input[MODBUS_HOST], user_input[MODBUS_PORT]
+                user_input[MODBUS_HOST],
+                user_input[MODBUS_PORT],
+                user_input[MODBUS_SLAVE],
             )
             if result:
                 user_input[INVERTER_TYPE] = inv_type
@@ -85,10 +92,10 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user", data_schema=self._modbus_schema, errors=self._errors
         )
 
-    async def _autodetect_modbus(self, host: str, port: str):
+    async def _autodetect_modbus(self, host: str, port: int, slave: int):
         """Return true if modbus connection can be established"""
         try:
-            modbus = ModbusClient(host, port)
+            modbus = ModbusClient(host, port, slave)
             controller = ModbusController(None, modbus, None)
             return await controller.autodetect()
         except Exception as ex:  # pylint: disable=broad-except

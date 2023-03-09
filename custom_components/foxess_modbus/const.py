@@ -15,9 +15,10 @@ SENSOR = "sensor"
 PLATFORMS = [SENSOR]
 ATTR_ENTRY_TYPE = "entry_type"
 
-# Fox Options
+# Modbus Options
 MODBUS_HOST = "modbus_host"
 MODBUS_PORT = "modbus_port"
+MODBUS_SLAVE = "modbus_slave"
 
 INVERTER_TYPE = "modbus_type"
 INVERTER_CONN = "modbus_conn"
