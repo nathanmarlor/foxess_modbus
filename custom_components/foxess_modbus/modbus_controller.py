@@ -21,8 +21,8 @@ _HOLDING = {AUX: False, LAN: True}
 
 # 5 seconds refresh with max read of 50
 _LAN_POLL = (5, 50)
-# 10 seconds refresh with max read of 10
-_AUX_POLL = (10, 10)
+# 10 seconds refresh with max read of 8
+_AUX_POLL = (10, 8)
 _POLL_RATES = {LAN: _LAN_POLL, AUX: _AUX_POLL}
 
 _ADDRESSES = {
