@@ -73,8 +73,8 @@ SENSORS: dict[str, SensorDescription] = {
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
     ),
-    "battery_discharge_power": SensorDescription(
-        key="battery_discharge_power",
+    "battery_discharge": SensorDescription(
+        key="battery_discharge",
         address=31022,
         name="Battery Discharge",
         device_class=SensorDeviceClass.POWER,
@@ -83,8 +83,8 @@ SENSORS: dict[str, SensorDescription] = {
         scale=0.001,
         post_process=lambda v: v if v > 0 else 0,
     ),
-    "battery_charge_power": SensorDescription(
-        key="battery_charge_power",
+    "battery_charge": SensorDescription(
+        key="battery_charge",
         address=31022,
         name="Battery Charge",
         device_class=SensorDeviceClass.POWER,
