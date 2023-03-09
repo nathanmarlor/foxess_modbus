@@ -16,6 +16,7 @@ PLATFORMS = [SENSOR]
 ATTR_ENTRY_TYPE = "entry_type"
 
 # Modbus Options
+FRIENDLY_NAME = "friendly_name"
 MODBUS_HOST = "modbus_host"
 MODBUS_PORT = "modbus_port"
 MODBUS_SLAVE = "modbus_slave"

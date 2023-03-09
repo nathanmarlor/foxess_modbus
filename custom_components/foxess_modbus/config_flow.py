@@ -8,6 +8,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import callback
 
 from .const import DOMAIN
+from .const import FRIENDLY_NAME
 from .const import INVERTER_CONN
 from .const import INVERTER_TYPE
 from .const import MODBUS_HOST
@@ -41,6 +42,10 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         self._modbus_schema = vol.Schema(
             {
+                vol.Optional(
+                    FRIENDLY_NAME,
+                    default=self._data.get(FRIENDLY_NAME, ""),
+                ): str,
                 vol.Required(
                     MODBUS_HOST,
                     default=self._data.get(MODBUS_HOST, ""),
@@ -66,9 +71,6 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle a flow initialized by the user."""
         self._errors = {}
 
-        if self._async_current_entries():
-            return self.async_abort(reason="single_instance_allowed")
-
         return await self.async_step_modbus(user_input)
 
     async def async_step_modbus(self, user_input: dict[str, Any] = None):
@@ -84,13 +86,22 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 user_input[INVERTER_CONN] = conn_type
                 self._errors["base"] = None
                 self._user_input.update(user_input)
-                return self.async_create_entry(title=_TITLE, data=self._user_input)
+                title = self._get_friendly_name(user_input)
+                return self.async_create_entry(title=title, data=self._user_input)
             else:
                 self._errors["base"] = "modbus_error"
 
         return self.async_show_form(
             step_id="user", data_schema=self._modbus_schema, errors=self._errors
         )
+
+    def _get_friendly_name(self, user_input):
+        """Friendly name"""
+        friendly_name = user_input[FRIENDLY_NAME]
+        if friendly_name == "":
+            return _TITLE
+        else:
+            return _TITLE + f" ({friendly_name})"
 
     async def _autodetect_modbus(self, host: str, port: int, slave: int):
         """Return true if modbus connection can be established"""
