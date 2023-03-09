@@ -15,6 +15,7 @@ from .const import CONFIG
 from .const import CONNECTION
 from .const import CONTROLLER
 from .const import DOMAIN
+from .const import FRIENDLY_NAME
 from .const import INVERTER
 from .const import INVERTER_CONN
 from .const import INVERTER_TYPE
@@ -51,6 +52,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         # overwrite data with options
         entry.data = entry.options
 
+    friendly_name = entry.data.get(FRIENDLY_NAME, "")
     modbus_host = entry.data.get(MODBUS_HOST, "")
     modbus_port = entry.data.get(MODBUS_PORT, 502)
     modbus_slave = entry.data.get(MODBUS_SLAVE, 247)
@@ -63,7 +65,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     hass.data[DOMAIN][entry.entry_id] = {
         CONTROLLER: {MODBUS: modbus_controller},
-        CONFIG: {INVERTER: inverter_type, CONNECTION: connection_type},
+        CONFIG: {
+            INVERTER: inverter_type,
+            CONNECTION: connection_type,
+            FRIENDLY_NAME: friendly_name,
+        },
     }
 
     hass.data[DOMAIN][entry.entry_id]["unload"] = entry.add_update_listener(

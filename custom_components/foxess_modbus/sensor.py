@@ -8,6 +8,7 @@ from .const import CONFIG
 from .const import CONNECTION
 from .const import CONTROLLER
 from .const import DOMAIN
+from .const import FRIENDLY_NAME
 from .const import H1
 from .const import INVERTER
 from .const import LAN
@@ -25,13 +26,15 @@ async def async_setup_entry(
     controllers = hass.data[DOMAIN][entry.entry_id][CONTROLLER]
     config = hass.data[DOMAIN][entry.entry_id][CONFIG]
 
+    friendly_name = config[FRIENDLY_NAME]
     inverter_type = config[INVERTER]
     connection_type = config[CONNECTION]
+    inv_details = (friendly_name, inverter_type, connection_type)
 
     if inverter_type == H1:
         if connection_type == LAN:
-            sensors = h1_lan_sensors.sensors(controllers, entry)
+            sensors = h1_lan_sensors.sensors(controllers, entry, inv_details)
         else:
-            sensors = h1_aux_sensors.sensors(controllers, entry)
+            sensors = h1_aux_sensors.sensors(controllers, entry, inv_details)
 
     async_add_devices(sensors)

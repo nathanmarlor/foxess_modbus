@@ -5,11 +5,11 @@ from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_IDENTIFIERS
+from homeassistant.const import ATTR_MANUFACTURER
+from homeassistant.const import ATTR_MODEL
 from homeassistant.const import ATTR_NAME
-from homeassistant.helpers.device_registry import DeviceEntryType
 
 from ..common.callback_controller import CallbackController
-from ..const import ATTR_ENTRY_TYPE
 from ..const import DOMAIN
 from .sensor_desc import SensorDescription
 
@@ -24,22 +24,34 @@ class ModbusSensor(SensorEntity):
         controller: CallbackController,
         entity_description: SensorDescription,
         entry: ConfigEntry,
+        inv_details,
     ) -> None:
         """Initialize the sensor."""
 
         self._controller = controller
         self._entity_description = entity_description
+        self._entry = entry
+        self._inv_details = inv_details
+        self.entity_id = "sensor." + self._get_unique_id()
 
-        self._attributes = {}
-        self._attr_extra_state_attributes = {}
+    @property
+    def unique_id(self) -> str:
+        return "foxess_modbus_" + self._get_unique_id()
 
-        self._attr_device_info = {
-            ATTR_IDENTIFIERS: {(DOMAIN, entry.entry_id)},
-            ATTR_NAME: "FoxESS - Modbus",
-            ATTR_ENTRY_TYPE: DeviceEntryType.SERVICE,
+    @property
+    def device_info(self):
+        friendly_name, inv_type, conn_type = self._inv_details
+        if friendly_name != "":
+            attr_name = f"FoxESS - Modbus ({friendly_name})"
+        else:
+            attr_name = "FoxESS - Modbus"
+
+        return {
+            ATTR_IDENTIFIERS: {(DOMAIN, self._entry.entry_id)},
+            ATTR_NAME: attr_name,
+            ATTR_MODEL: f"{inv_type} - {conn_type}",
+            ATTR_MANUFACTURER: "FoxESS",
         }
-
-        self._unique_id = f"foxess_modbus_{entity_description.name}"
 
     @property
     def name(self) -> str:
@@ -74,11 +86,6 @@ class ModbusSensor(SensorEntity):
         return self._entity_description.device_class
 
     @property
-    def unique_id(self) -> str:
-        """Return the unique ID of the binary sensor."""
-        return self._unique_id
-
-    @property
     def should_poll(self) -> bool:
         """Return True if entity has to be polled for state.
         False if entity pushes its state to HA.
@@ -93,3 +100,11 @@ class ModbusSensor(SensorEntity):
     def update_callback(self) -> None:
         """Schedule a state update."""
         self.schedule_update_ha_state(True)
+
+    def _get_unique_id(self):
+        """Get unique ID"""
+        friendly_name, _, _ = self._inv_details
+        if friendly_name != "":
+            return f"{friendly_name}_{self._entity_description.key}"
+        else:
+            return f"{self._entity_description.key}"
