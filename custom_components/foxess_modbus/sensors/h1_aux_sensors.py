@@ -273,12 +273,6 @@ SENSORS: dict[str, SensorDescription] = {
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
     ),
-    "time_period_1_enabled": SensorDescription(
-        key="time_period_1_enabled",
-        address=41001,
-        name="Period 1 - Enabled",
-        post_process=lambda v: bool(v),
-    ),
     "time_period_1_start": SensorDescription(
         key="time_period_1_start",
         address=41002,
@@ -290,12 +284,6 @@ SENSORS: dict[str, SensorDescription] = {
         address=41003,
         name="Period 1 - End",
         post_process=lambda v: time(hour=(v // 256), minute=v - ((v // 256) * 256)),
-    ),
-    "time_period_2_enabled": SensorDescription(
-        key="time_period_2_enabled",
-        address=41004,
-        name="Period 2 - Enabled",
-        post_process=lambda v: bool(v),
     ),
     "time_period_2_start": SensorDescription(
         key="time_period_2_start",

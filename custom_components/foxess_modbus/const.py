@@ -12,7 +12,8 @@ ICON = "mdi:format-quote-close"
 
 # Platforms
 SENSOR = "sensor"
-PLATFORMS = [SENSOR]
+BINARY_SENSOR = "binary_sensor"
+PLATFORMS = [SENSOR, BINARY_SENSOR]
 ATTR_ENTRY_TYPE = "entry_type"
 
 # Modbus Options
