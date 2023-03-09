@@ -73,7 +73,7 @@ class ModbusController(CallbackController, UnloadController):
         else:
             return None
 
-    def refresh(self, *args) -> None:
+    async def refresh(self, *args) -> None:
         """Refresh modbus data"""
         _, max_read = _POLL_RATES[self._connection_type]
         holding = _HOLDING[self._connection_type]
@@ -82,7 +82,7 @@ class ModbusController(CallbackController, UnloadController):
                 _LOGGER.debug(f"Reading addresses for ({start}:{end-start})")
                 for i in range(start, end, max_read):
                     data_per_read = min(max_read, end - i)
-                    data = self._modbus.read_registers(i, data_per_read, holding)
+                    data = await self._modbus.read_registers(i, data_per_read, holding)
                     for j, d in enumerate(data):
                         index = i + j
                         self._data[index] = d
@@ -97,7 +97,7 @@ class ModbusController(CallbackController, UnloadController):
         for conn_type, serial_addr in _SERIALS.items():
             holding = _HOLDING[conn_type]
             try:
-                result = self._modbus.read_registers(serial_addr, 2, holding)
+                result = await self._modbus.read_registers(serial_addr, 2, holding)
                 inverter_type = "".join([chr(i) for i in result])
                 if inverter_type == H1:
                     _LOGGER.info(
