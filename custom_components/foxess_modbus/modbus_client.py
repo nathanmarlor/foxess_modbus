@@ -1,6 +1,6 @@
 import logging
 
-from pymodbus.client import ModbusTcpClient
+from pymodbus.client import AsyncModbusTcpClient
 from pymodbus.exceptions import ConnectionException
 from pymodbus.exceptions import ModbusIOException
 
@@ -15,28 +15,28 @@ class ModbusClient:
         self._host = host
         self._port = port
         self._slave = slave
-        self._client = ModbusTcpClient(self._host, self._port)
+        self._client = AsyncModbusTcpClient(self._host, self._port)
 
-    def _connect(self):
+    async def _connect(self):
         """Connect to device"""
-        if not self._client.connect():
+        if not await self._client.connect():
             raise ConnectionException(
                 f"Error connecting to device: ({self._host}:{self._port})"
             )
 
-    def read_registers(self, start_address, num_registers, holding):
+    async def read_registers(self, start_address, num_registers, holding):
         """Read registers"""
-        if not self._client.is_socket_open():
+        if not self._client.connected:
             _LOGGER.info(f"Connecting to modbus: ({self._host}:{self._port})")
-            self._connect()
+            await self._connect()
 
         _LOGGER.debug(f"Reading register: ({start_address}, {num_registers})")
         if holding:
-            response = self._client.read_holding_registers(
+            response = await self._client.read_holding_registers(
                 start_address, num_registers, self._slave
             )
         else:
-            response = self._client.read_input_registers(
+            response = await self._client.read_input_registers(
                 start_address, num_registers, self._slave
             )
         if response.isError():
@@ -49,20 +49,20 @@ class ModbusClient:
         ]
         return regs
 
-    def write_registers(self, register_address, register_values):
+    async def write_registers(self, register_address, register_values):
         """Write registers"""
-        if not self._client.is_socket_open():
+        if not self._client.connected:
             _LOGGER.info(f"Connecting to modbus: ({self._host}:{self._port})")
-            self._connect()
+            await self._connect()
 
         _LOGGER.debug(f"Writing register: ({register_address}, {register_values})")
 
         if len(register_values) > 1:
-            response = self._client.write_registers(
+            response = await self._client.write_registers(
                 register_address, register_values, self._slave
             )
         else:
-            response = self._client.write_register(
+            response = await self._client.write_register(
                 register_address, int(register_values[0]), self._slave
             )
         if response.isError():
