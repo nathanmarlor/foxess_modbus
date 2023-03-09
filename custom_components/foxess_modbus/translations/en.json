@@ -23,6 +23,7 @@
       "user": {
         "description": "Please enter your Modbus IP and Port.\nSet friendly name if you have more than one inverter, otherwise leave blank.",
         "data": {
+          "friendly_name": "Friendly Name",
           "modbus_host": "Modbus Host",
           "modbus_port": "Modbus Port",
           "modbus_slave": "Modbus Slave"
