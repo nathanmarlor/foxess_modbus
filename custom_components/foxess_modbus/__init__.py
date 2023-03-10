@@ -7,6 +7,7 @@ https://github.com/nathanmarlor/foxess_modbus
 import asyncio
 import logging
 
+import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
@@ -29,6 +30,13 @@ from .modbus_client import ModbusClient
 from .modbus_controller import ModbusController
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
+
+_WRITE_SCHEMA = vol.Schema(
+    {
+        vol.Required("start_address", description="Start Address"): int,
+        vol.Required("values", description="Values"): str,
+    }
+)
 
 
 async def async_setup(hass: HomeAssistant, config: Config):
@@ -71,6 +79,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             FRIENDLY_NAME: friendly_name,
         },
     }
+
+    hass.services.async_register(
+        DOMAIN, "write_registers", modbus_controller.write, _WRITE_SCHEMA
+    )
 
     hass.data[DOMAIN][entry.entry_id]["unload"] = entry.add_update_listener(
         async_reload_entry

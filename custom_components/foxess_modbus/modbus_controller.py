@@ -66,12 +66,21 @@ class ModbusController(CallbackController, UnloadController):
 
             self._unload_listeners.append(refresh)
 
-    def get_raw_value(self, address) -> bool:
+    def read(self, address) -> bool:
         """Modbus status"""
         if address in self._data:
             return self._data[address]
         else:
             return None
+
+    async def write(self, service) -> bool:
+        """Modbus status"""
+        if {"start_address", "values"} <= set(service.data):
+            start_address = service.data["start_address"]
+            values = service.data["values"].split(",")
+            await self._modbus.write_registers(start_address, values)
+        else:
+            _LOGGER.warning("Modbus write service called with incorrect data format")
 
     async def refresh(self, *args) -> None:
         """Refresh modbus data"""
