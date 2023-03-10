@@ -1,5 +1,6 @@
 """Adds config flow for foxess_modbus."""
 import logging
+import uuid
 from typing import Any
 
 import voluptuous as vol
@@ -79,9 +80,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 inverter[INVERTER_MODEL] = inv_model
                 inverter[INVERTER_CONN] = inv_conn
                 self._errors["base"] = None
-                self._data[
-                    f"{inverter[MODBUS_HOST]}-{inverter[MODBUS_PORT]}-{inverter[MODBUS_SLAVE]}-{inverter[FRIENDLY_NAME]}-"
-                ] = inverter
+                self._data[uuid.uuid4()] = inverter
                 return self.async_create_entry(title=_TITLE, data=self._data)
             else:
                 self._errors["base"] = "modbus_error"
@@ -89,10 +88,6 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user", data_schema=self._modbus_schema, errors=self._errors
         )
-
-    def _get_unique_id(self, inverter):
-        """Get unique ID"""
-        return f"{inverter[INVERTER_TYPE]}-{inverter[INVERTER_MODEL]}-{inverter[MODBUS_HOST]}-{inverter[MODBUS_PORT]}-{inverter[MODBUS_SLAVE]}-{inverter[FRIENDLY_NAME]}-"
 
     def _parse_inverter(self, user_input):
         """Parser inverter details"""
