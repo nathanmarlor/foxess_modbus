@@ -61,7 +61,7 @@ class ModbusSensor(SensorEntity):
     @property
     def native_value(self):
         """Return the value reported by the sensor."""
-        value = self._controller.get_raw_value(self._entity_description.address)
+        value = self._controller.read(self._entity_description.address)
         if value is not None:
             if self._entity_description.scale is not None:
                 value = value * self._entity_description.scale

@@ -58,6 +58,7 @@ class ModbusClient:
         _LOGGER.debug(f"Writing register: ({register_address}, {register_values})")
 
         if len(register_values) > 1:
+            register_values = [int(i) for i in register_values]
             response = await self._client.write_registers(
                 register_address, register_values, self._slave
             )

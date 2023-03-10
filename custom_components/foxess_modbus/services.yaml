@@ -1,9 +1,25 @@
-# Describes the format for available services for the FoxESS Modbus integration
-
-foxess_modbus_write:
+---
+write_registers:
+  name: Write Registers
   description: >
-    Writes a modbus register
-
-foxess_modbus_read:
-  description: >
-    Reads a modbus register
+    Writes one or more registers
+  fields:
+    start_address:
+      name: Start Address
+      description: Start address to write to
+      required: true
+      advanced: false
+      example: 41001
+      default: 1
+      selector:
+        number:
+          mode: box
+    values:
+      name: Values
+      description: Comma seperated list of values to write
+      required: true
+      advanced: false
+      example: "1, 2, 3"
+      default: "1, 2, 3"
+      selector:
+        text:
