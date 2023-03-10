@@ -10,9 +10,8 @@ _LOGGER = logging.getLogger(__name__)
 class ModbusClient:
     """Modbus"""
 
-    def __init__(self, client: ModbusBaseClient, slave: int):
+    def __init__(self, client: ModbusBaseClient):
         """Init"""
-        self._slave = slave
         self._client = client
 
     async def _connect(self):
@@ -25,7 +24,7 @@ class ModbusClient:
         """Close connection"""
         await self._client.close()
 
-    async def read_registers(self, start_address, num_registers, holding):
+    async def read_registers(self, start_address, num_registers, holding, slave):
         """Read registers"""
         if not self._client.connected:
             _LOGGER.info("Connecting to modbus")
@@ -34,11 +33,11 @@ class ModbusClient:
         _LOGGER.debug(f"Reading register: ({start_address}, {num_registers})")
         if holding:
             response = await self._client.read_holding_registers(
-                start_address, num_registers, self._slave
+                start_address, num_registers, slave
             )
         else:
             response = await self._client.read_input_registers(
-                start_address, num_registers, self._slave
+                start_address, num_registers, slave
             )
         if response.isError():
             raise ModbusIOException(f"Error reading registers: {response}")
@@ -50,7 +49,7 @@ class ModbusClient:
         ]
         return regs
 
-    async def write_registers(self, register_address, register_values):
+    async def write_registers(self, register_address, register_values, slave):
         """Write registers"""
         if not self._client.connected:
             _LOGGER.info("Connecting to modbus")
@@ -61,11 +60,11 @@ class ModbusClient:
         if len(register_values) > 1:
             register_values = [int(i) for i in register_values]
             response = await self._client.write_registers(
-                register_address, register_values, self._slave
+                register_address, register_values, slave
             )
         else:
             response = await self._client.write_register(
-                register_address, int(register_values[0]), self._slave
+                register_address, int(register_values[0]), slave
             )
         if response.isError():
             raise ModbusIOException(f"Error writing holding register: {response}")

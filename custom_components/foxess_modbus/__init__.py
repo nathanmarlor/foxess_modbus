@@ -65,12 +65,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         slave, name, inv_type = _parse_base_inverter(inverter)
         if inv_type == TCP:
             conn_type, host, port = _parse_tcp_inverter(inverter)
-            client = ModbusTCPClient(host, port, slave)
+            client = ModbusTCPClient(host, port)
         else:
             device = _parse_usb_inverter(inverter)
-            client = ModbusSerialClient(device, slave)
+            client = ModbusSerialClient(device)
 
-        controller = ModbusController(hass, client, conn_type)
+        controller = ModbusController(hass, client, conn_type, slave)
         inverter_controller.append((inverter, controller))
 
         service_name = "write_registers" if name == "" else f"_{name}"

@@ -37,12 +37,13 @@ _ADDRESSES = {
 class ModbusController(CallbackController, UnloadController):
     """Class to manage forecast retrieval"""
 
-    def __init__(self, hass, client, connection_type) -> None:
+    def __init__(self, hass, client, connection_type, slave) -> None:
         """Init"""
         self._hass = hass
         self._data = dict()
         self._client = client
         self._connection_type = connection_type
+        self._slave = slave
 
         # Setup mixins
         CallbackController.__init__(self)
@@ -70,7 +71,7 @@ class ModbusController(CallbackController, UnloadController):
         if {"start_address", "values"} <= set(service.data):
             start_address = service.data["start_address"]
             values = service.data["values"].split(",")
-            await self._client.write_registers(start_address, values)
+            await self._client.write_registers(start_address, values, self._slave)
         else:
             _LOGGER.warning("Modbus write service called with incorrect data format")
 
@@ -83,7 +84,9 @@ class ModbusController(CallbackController, UnloadController):
                 _LOGGER.debug(f"Reading addresses for ({start}:{end-start})")
                 for i in range(start, end, max_read):
                     data_per_read = min(max_read, end - i)
-                    data = await self._client.read_registers(i, data_per_read, holding)
+                    data = await self._client.read_registers(
+                        i, data_per_read, holding, self._slave
+                    )
                     for j, d in enumerate(data):
                         index = i + j
                         self._data[index] = d
@@ -98,7 +101,9 @@ class ModbusController(CallbackController, UnloadController):
         for conn_type, serial_addr in _SERIALS.items():
             holding = _HOLDING[conn_type]
             try:
-                result = await self._client.read_registers(serial_addr, 2, holding)
+                result = await self._client.read_registers(
+                    serial_addr, 2, holding, self._slave
+                )
                 inverter_type = "".join([chr(i) for i in result])
                 if inverter_type == H1:
                     _LOGGER.info(

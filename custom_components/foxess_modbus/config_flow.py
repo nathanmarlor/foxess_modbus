@@ -101,14 +101,8 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def _autodetect_modbus(self, inverter):
         """Return true if modbus connection can be established"""
         try:
-            client = ModbusTCPClient(
-                inverter[MODBUS_HOST], inverter[MODBUS_PORT], inverter[MODBUS_SLAVE]
-            )
-            controller = ModbusController(
-                None,
-                client,
-                None,
-            )
+            client = ModbusTCPClient(inverter[MODBUS_HOST], inverter[MODBUS_PORT])
+            controller = ModbusController(None, client, None, inverter[MODBUS_SLAVE])
             return await controller.autodetect()
         except Exception as ex:  # pylint: disable=broad-except
             _LOGGER.warn(ex)

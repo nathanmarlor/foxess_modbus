@@ -9,7 +9,7 @@ _LOGGER = logging.getLogger(__name__)
 class ModbusTCPClient(ModbusClient):
     """Modbus"""
 
-    def __init__(self, host, port, slave):
+    def __init__(self, host, port):
         """Init"""
         client = AsyncModbusTcpClient(host, port)
-        ModbusClient.__init__(self, client, slave)
+        ModbusClient.__init__(self, client)
