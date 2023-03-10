@@ -108,4 +108,6 @@ class ModbusController(CallbackController, UnloadController):
             except ModbusException as ex:
                 _LOGGER.debug(f"Failed to detect {conn_type} - {ex}")
                 continue
+            finally:
+                await self._client.close()
         return False, None, None

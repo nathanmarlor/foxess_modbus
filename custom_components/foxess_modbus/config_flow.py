@@ -109,9 +109,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 client,
                 None,
             )
-            result = await controller.autodetect()
-            await client.close()
-            return result
+            return await controller.autodetect()
         except Exception as ex:  # pylint: disable=broad-except
             _LOGGER.warn(ex)
             pass
