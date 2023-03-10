@@ -10,10 +10,12 @@ from homeassistant.core import callback
 from .const import DOMAIN
 from .const import FRIENDLY_NAME
 from .const import INVERTER_CONN
+from .const import INVERTER_MODEL
 from .const import INVERTER_TYPE
 from .const import MODBUS_HOST
 from .const import MODBUS_PORT
 from .const import MODBUS_SLAVE
+from .const import TCP
 from .modbus_client import ModbusClient
 from .modbus_controller import ModbusController
 
@@ -32,31 +34,22 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Initialize."""
         self._errors = {}
         self._config = config
-        self._user_input = {}
         if config is None:
             self._data = dict()
-            self._options = dict()
         else:
             self._data = dict(self._config.data)
-            self._options = dict(self._config.options)
 
         self._modbus_schema = vol.Schema(
             {
-                vol.Optional(
-                    FRIENDLY_NAME,
-                    default=self._data.get(FRIENDLY_NAME, ""),
-                ): str,
-                vol.Required(
-                    MODBUS_HOST,
-                    default=self._data.get(MODBUS_HOST, ""),
-                ): str,
+                vol.Optional(FRIENDLY_NAME, default=""): str,
+                vol.Required(MODBUS_HOST): str,
                 vol.Required(
                     MODBUS_PORT,
-                    default=self._data.get(MODBUS_PORT, 502),
+                    default=502,
                 ): int,
                 vol.Required(
                     MODBUS_SLAVE,
-                    default=self._data.get(MODBUS_SLAVE, 247),
+                    default=247,
                 ): int,
             }
         )
@@ -71,25 +64,25 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle a flow initialized by the user."""
         self._errors = {}
 
+        if self._async_current_entries():
+            return self.async_abort(reason="single_instance_allowed")
+
         return await self.async_step_modbus(user_input)
 
     async def async_step_modbus(self, user_input: dict[str, Any] = None):
         """Handle a flow initialized by the user."""
         if user_input is not None:
-            result, inv_type, conn_type = await self._autodetect_modbus(
-                user_input[MODBUS_HOST],
-                user_input[MODBUS_PORT],
-                user_input[MODBUS_SLAVE],
-            )
+            inverter = self._parse_inverter(user_input)
+            result, inv_model, inv_conn = await self._autodetect_modbus(inverter)
             if result:
-                user_input[INVERTER_TYPE] = inv_type
-                user_input[INVERTER_CONN] = conn_type
+                inverter[INVERTER_TYPE] = TCP
+                inverter[INVERTER_MODEL] = inv_model
+                inverter[INVERTER_CONN] = inv_conn
                 self._errors["base"] = None
-                self._user_input.update(user_input)
-                title = self._get_friendly_name(
-                    user_input[FRIENDLY_NAME], inv_type, conn_type
-                )
-                return self.async_create_entry(title=title, data=self._user_input)
+                self._data[
+                    f"{inverter[MODBUS_HOST]}-{inverter[MODBUS_PORT]}-{inverter[MODBUS_SLAVE]}-{inverter[FRIENDLY_NAME]}-"
+                ] = inverter
+                return self.async_create_entry(title=_TITLE, data=self._data)
             else:
                 self._errors["base"] = "modbus_error"
 
@@ -97,17 +90,25 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user", data_schema=self._modbus_schema, errors=self._errors
         )
 
-    def _get_friendly_name(self, friendly_name, inv_type, conn_type):
-        """Friendly name"""
-        name = f"{inv_type} - {conn_type}"
-        if friendly_name != "":
-            name = name + f" ({friendly_name})"
-        return name
+    def _get_unique_id(self, inverter):
+        """Get unique ID"""
+        return f"{inverter[INVERTER_TYPE]}-{inverter[INVERTER_MODEL]}-{inverter[MODBUS_HOST]}-{inverter[MODBUS_PORT]}-{inverter[MODBUS_SLAVE]}-{inverter[FRIENDLY_NAME]}-"
 
-    async def _autodetect_modbus(self, host: str, port: int, slave: int):
+    def _parse_inverter(self, user_input):
+        """Parser inverter details"""
+        return {
+            MODBUS_HOST: user_input[MODBUS_HOST],
+            MODBUS_PORT: user_input[MODBUS_PORT],
+            MODBUS_SLAVE: user_input[MODBUS_SLAVE],
+            FRIENDLY_NAME: user_input[FRIENDLY_NAME],
+        }
+
+    async def _autodetect_modbus(self, inverter):
         """Return true if modbus connection can be established"""
         try:
-            modbus = ModbusClient(host, port, slave)
+            modbus = ModbusClient(
+                inverter[MODBUS_HOST], inverter[MODBUS_PORT], inverter[MODBUS_SLAVE]
+            )
             controller = ModbusController(None, modbus, None)
             return await controller.autodetect()
         except Exception as ex:  # pylint: disable=broad-except

@@ -1,6 +1,9 @@
 """Sensor"""
 import logging
 
+from custom_components.foxess_modbus.const import FRIENDLY_NAME
+from custom_components.foxess_modbus.const import INVERTER_CONN
+from custom_components.foxess_modbus.const import INVERTER_MODEL
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -40,16 +43,18 @@ class ModbusSensor(SensorEntity):
 
     @property
     def device_info(self):
-        friendly_name, inv_type, conn_type = self._inv_details
+        friendly_name = self._inv_details[FRIENDLY_NAME]
+        inv_model = self._inv_details[INVERTER_MODEL]
+        conn_type = self._inv_details[INVERTER_CONN]
         if friendly_name != "":
             attr_name = f"FoxESS - Modbus ({friendly_name})"
         else:
             attr_name = "FoxESS - Modbus"
 
         return {
-            ATTR_IDENTIFIERS: {(DOMAIN, self._entry.entry_id)},
+            ATTR_IDENTIFIERS: {(DOMAIN, inv_model, conn_type, friendly_name)},
             ATTR_NAME: attr_name,
-            ATTR_MODEL: f"{inv_type} - {conn_type}",
+            ATTR_MODEL: f"{inv_model} - {conn_type}",
             ATTR_MANUFACTURER: "FoxESS",
         }
 
@@ -103,7 +108,7 @@ class ModbusSensor(SensorEntity):
 
     def _get_unique_id(self):
         """Get unique ID"""
-        friendly_name, _, _ = self._inv_details
+        friendly_name = self._inv_details[FRIENDLY_NAME]
         if friendly_name != "":
             return f"{friendly_name}_{self._entity_description.key}"
         else:

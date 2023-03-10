@@ -4,13 +4,11 @@ import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from .const import CONFIG
-from .const import CONNECTION
-from .const import CONTROLLER
 from .const import DOMAIN
-from .const import FRIENDLY_NAME
 from .const import H1
-from .const import INVERTER
+from .const import INVERTER_CONN
+from .const import INVERTER_MODEL
+from .const import INVERTERS
 from .const import LAN
 from .sensors import h1_aux_binary_sensors
 
@@ -22,20 +20,15 @@ async def async_setup_entry(
 ) -> None:
     """Setup sensor platform."""
 
-    controllers = hass.data[DOMAIN][entry.entry_id][CONTROLLER]
-    config = hass.data[DOMAIN][entry.entry_id][CONFIG]
+    inverters = hass.data[DOMAIN][entry.entry_id][INVERTERS]
 
-    friendly_name = config[FRIENDLY_NAME]
-    inverter_type = config[INVERTER]
-    connection_type = config[CONNECTION]
-    inv_details = (friendly_name, inverter_type, connection_type)
+    for inverter, controller in inverters:
+        if inverter[INVERTER_MODEL] == H1:
+            if inverter[INVERTER_CONN] == LAN:
+                sensors = []
+            else:
+                sensors = h1_aux_binary_sensors.binary_sensors(
+                    controller, entry, inverter
+                )
 
-    if inverter_type == H1:
-        if connection_type == LAN:
-            sensors = []
-        else:
-            sensors = h1_aux_binary_sensors.binary_sensors(
-                controllers, entry, inv_details
-            )
-
-    async_add_devices(sensors)
+        async_add_devices(sensors)

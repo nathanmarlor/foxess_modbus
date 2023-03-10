@@ -12,15 +12,10 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
 
-from .const import CONFIG
-from .const import CONNECTION
-from .const import CONTROLLER
 from .const import DOMAIN
 from .const import FRIENDLY_NAME
-from .const import INVERTER
 from .const import INVERTER_CONN
-from .const import INVERTER_TYPE
-from .const import MODBUS
+from .const import INVERTERS
 from .const import MODBUS_HOST
 from .const import MODBUS_PORT
 from .const import MODBUS_SLAVE
@@ -60,24 +55,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         # overwrite data with options
         entry.data = entry.options
 
-    friendly_name = entry.data.get(FRIENDLY_NAME, "")
-    modbus_host = entry.data.get(MODBUS_HOST, "")
-    modbus_port = entry.data.get(MODBUS_PORT, 502)
-    modbus_slave = entry.data.get(MODBUS_SLAVE, 247)
+    inverter_controller = []
+    for inverter in entry.data.values():
+        _LOGGER.debug(
+            f"Setting up inverter - ({inverter[MODBUS_HOST]}, {inverter[MODBUS_PORT]}, {inverter[MODBUS_SLAVE]}, {inverter[FRIENDLY_NAME]})"
+        )
+        modbus_client = ModbusClient(
+            inverter[MODBUS_HOST], inverter[MODBUS_PORT], inverter[MODBUS_SLAVE]
+        )
+        modbus_controller = ModbusController(
+            hass, modbus_client, inverter[INVERTER_CONN]
+        )
 
-    inverter_type = entry.data.get(INVERTER_TYPE)
-    connection_type = entry.data.get(INVERTER_CONN)
-
-    modbus_client = ModbusClient(modbus_host, modbus_port, modbus_slave)
-    modbus_controller = ModbusController(hass, modbus_client, connection_type)
+        inverter_controller.append((inverter, modbus_controller))
 
     hass.data[DOMAIN][entry.entry_id] = {
-        CONTROLLER: {MODBUS: modbus_controller},
-        CONFIG: {
-            INVERTER: inverter_type,
-            CONNECTION: connection_type,
-            FRIENDLY_NAME: friendly_name,
-        },
+        INVERTERS: inverter_controller,
     }
 
     hass.services.async_register(
@@ -103,8 +96,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     if unloaded:
-        controllers = hass.data[DOMAIN][entry.entry_id][CONTROLLER]
-        for controller in controllers.values():
+        controllers = hass.data[DOMAIN][entry.entry_id][INVERTERS]
+        for _, controller in controllers:
             controller.unload()
 
         hass.data[DOMAIN][entry.entry_id]["unload"]()

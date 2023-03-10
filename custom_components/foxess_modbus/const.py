@@ -22,14 +22,18 @@ MODBUS_HOST = "modbus_host"
 MODBUS_PORT = "modbus_port"
 MODBUS_SLAVE = "modbus_slave"
 
-INVERTER_TYPE = "modbus_type"
-INVERTER_CONN = "modbus_conn"
+INVERTER_TYPE = "inverter_type"
+INVERTER_MODEL = "inverter_model"
+INVERTER_CONN = "inverter_conn"
+INVERTERS = "inverters"
 
 # Inverter Types
 H1 = "H1"
 H3 = "H3"
 LAN = "LAN"
 AUX = "AUX"
+TCP = "TCP"
+USB = "USB"
 
 CONTROLLER = "controllers"
 CONFIG = "config"

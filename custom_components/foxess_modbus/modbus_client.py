@@ -19,10 +19,11 @@ class ModbusClient:
 
     async def _connect(self):
         """Connect to device"""
-        if not await self._client.connect():
-            raise ConnectionException(
-                f"Error connecting to device: ({self._host}:{self._port})"
-            )
+        if not self._client.connected:
+            if not await self._client.connect():
+                raise ConnectionException(
+                    f"Error connecting to device: ({self._host}:{self._port})"
+                )
 
     async def read_registers(self, start_address, num_registers, holding):
         """Read registers"""

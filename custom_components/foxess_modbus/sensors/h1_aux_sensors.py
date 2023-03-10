@@ -5,7 +5,6 @@ from datetime import time
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorStateClass
 
-from ..const import MODBUS
 from .modbus_sensor import ModbusSensor
 from .sensor_desc import SensorDescription
 
@@ -367,12 +366,12 @@ SENSORS: dict[str, SensorDescription] = {
 }
 
 
-def sensors(controllers, entry, friendly_name) -> list:
+def sensors(controller, entry, inverter) -> list:
     """Setup sensor platform."""
     entities = []
 
     for sensor in SENSORS:
-        sen = ModbusSensor(controllers[MODBUS], SENSORS[sensor], entry, friendly_name)
+        sen = ModbusSensor(controller, SENSORS[sensor], entry, inverter)
         entities.append(sen)
 
     return entities

@@ -1,7 +1,6 @@
 """Inverter sensor"""
 import logging
 
-from ..const import MODBUS
 from .modbus_sensor import ModbusSensor
 from .sensor_desc import SensorDescription
 
@@ -23,12 +22,12 @@ SENSORS: dict[str, SensorDescription] = {
 }
 
 
-def binary_sensors(controllers, entry, friendly_name) -> list:
+def binary_sensors(controller, entry, inverter) -> list:
     """Setup sensor platform."""
     entities = []
 
     for sensor in SENSORS:
-        sen = ModbusSensor(controllers[MODBUS], SENSORS[sensor], entry, friendly_name)
+        sen = ModbusSensor(controller, SENSORS[sensor], entry, inverter)
         entities.append(sen)
 
     return entities
