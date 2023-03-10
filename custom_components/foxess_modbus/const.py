@@ -21,6 +21,7 @@ FRIENDLY_NAME = "friendly_name"
 MODBUS_HOST = "modbus_host"
 MODBUS_PORT = "modbus_port"
 MODBUS_SLAVE = "modbus_slave"
+MODBUS_DEVICE = "modbus_device"
 
 INVERTER_TYPE = "inverter_type"
 INVERTER_MODEL = "inverter_model"

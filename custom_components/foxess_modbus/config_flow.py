@@ -4,6 +4,7 @@ import uuid
 from typing import Any
 
 import voluptuous as vol
+from custom_components.foxess_modbus.modbus_tcp_client import ModbusTCPClient
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import callback
@@ -17,7 +18,6 @@ from .const import MODBUS_HOST
 from .const import MODBUS_PORT
 from .const import MODBUS_SLAVE
 from .const import TCP
-from .modbus_client import ModbusClient
 from .modbus_controller import ModbusController
 
 _TITLE = "FoxESS - Modbus"
@@ -101,11 +101,17 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def _autodetect_modbus(self, inverter):
         """Return true if modbus connection can be established"""
         try:
-            modbus = ModbusClient(
+            client = ModbusTCPClient(
                 inverter[MODBUS_HOST], inverter[MODBUS_PORT], inverter[MODBUS_SLAVE]
             )
-            controller = ModbusController(None, modbus, None)
-            return await controller.autodetect()
+            controller = ModbusController(
+                None,
+                client,
+                None,
+            )
+            result = await controller.autodetect()
+            await client.close()
+            return result
         except Exception as ex:  # pylint: disable=broad-except
             _LOGGER.warn(ex)
             pass
