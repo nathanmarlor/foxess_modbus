@@ -61,7 +61,11 @@ class ModbusSensor(SensorEntity):
     @property
     def name(self) -> str:
         """Return the name of the sensor."""
-        return self._entity_description.name
+        friendly_name = self._inv_details[FRIENDLY_NAME]
+        if friendly_name != "":
+            return f"{self._entity_description.name} ({friendly_name})"
+        else:
+            return self._entity_description.name
 
     @property
     def native_value(self):
