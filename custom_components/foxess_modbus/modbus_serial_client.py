@@ -11,5 +11,5 @@ class ModbusSerialClient(ModbusClient):
 
     def __init__(self, device):
         """Init"""
-        client = AsyncModbusSerialClient(device)
+        client = AsyncModbusSerialClient(device, baudrate=9600)
         ModbusClient.__init__(self, client)

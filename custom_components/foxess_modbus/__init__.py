@@ -15,15 +15,11 @@ from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
-from .const import FRIENDLY_NAME
 from .const import INVERTER_CONN
-from .const import INVERTER_TYPE
 from .const import INVERTERS
-from .const import MODBUS_DEVICE
-from .const import MODBUS_HOST
-from .const import MODBUS_PORT
 from .const import MODBUS_SLAVE
 from .const import PLATFORMS
+from .const import SERIAL
 from .const import STARTUP_MESSAGE
 from .const import TCP
 from .modbus_controller import ModbusController
@@ -60,23 +56,40 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         entry.data = entry.options
 
     inverter_controller = []
-    for inverter in entry.data.values():
-        # TODO: group together all matching connections (TYPE/CONN/IP/PORT) to use the same client
-        slave, name, inv_type = _parse_base_inverter(inverter)
-        if inv_type == TCP:
-            conn_type, host, port = _parse_tcp_inverter(inverter)
-            client = ModbusTCPClient(host, port)
-        else:
-            device = _parse_usb_inverter(inverter)
+    # create controllers for TCP inverters
+    if TCP in entry.data:
+        for host, port_dict in entry.data[TCP].items():
+            for port, name_dict in port_dict.items():
+                client = ModbusTCPClient(host, port)
+                for name, inverter in name_dict.items():
+                    conn_type, slave = inverter[INVERTER_CONN], inverter[MODBUS_SLAVE]
+                    controller = ModbusController(hass, client, conn_type, slave)
+                    inverter_controller.append((inverter, controller))
+                    service_name = (
+                        "write_registers"
+                        if name == ""
+                        else f"write_registers__{host}_{port}_{slave}_{name}"
+                    )
+                    hass.services.async_register(
+                        DOMAIN, service_name, controller.write, _WRITE_SCHEMA
+                    )
+
+    # create controllers for USB inverters
+    if SERIAL in entry.data:
+        for device, name_dict in entry.data[SERIAL].items():
             client = ModbusSerialClient(device)
-
-        controller = ModbusController(hass, client, conn_type, slave)
-        inverter_controller.append((inverter, controller))
-
-        service_name = "write_registers" if name == "" else f"_{name}"
-        hass.services.async_register(
-            DOMAIN, service_name, controller.write, _WRITE_SCHEMA
-        )
+            for name, inverter in name_dict.items():
+                conn_type, slave = inverter[INVERTER_CONN], inverter[MODBUS_SLAVE]
+                controller = ModbusController(hass, client, conn_type, slave)
+                inverter_controller.append((inverter, controller))
+                service_name = (
+                    "write_registers"
+                    if name == ""
+                    else f"write_registers_{device}_{slave}_{name}"
+                )
+                hass.services.async_register(
+                    DOMAIN, service_name, controller.write, _WRITE_SCHEMA
+                )
 
     hass.data[DOMAIN][entry.entry_id] = {
         INVERTERS: inverter_controller,
@@ -87,28 +100,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     )
 
     return True
-
-
-def _parse_base_inverter(inverter):
-    """Parse inverter details"""
-    return (inverter[MODBUS_SLAVE], inverter[FRIENDLY_NAME], inverter[INVERTER_TYPE])
-
-
-def _parse_tcp_inverter(inverter):
-    """Parse inverter details"""
-    return (
-        inverter[INVERTER_CONN],
-        inverter[MODBUS_HOST],
-        inverter[MODBUS_PORT],
-    )
-
-
-def _parse_usb_inverter(inverter):
-    """Parse inverter details"""
-    return (
-        inverter[INVERTER_CONN],
-        inverter[MODBUS_DEVICE],
-    )
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
