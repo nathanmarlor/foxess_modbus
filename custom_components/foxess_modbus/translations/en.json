@@ -2,11 +2,25 @@
   "config": {
     "step": {
       "user": {
+        "description": "Please choose how your modbus adapter is connected",
+        "data": {
+          "modbus_type": "Modbus Type"
+        }
+      },
+      "tcp": {
         "description": "Please enter your Modbus IP and Port.\nSet friendly name if you have more than one inverter, otherwise leave blank.",
         "data": {
           "friendly_name": "Friendly Name",
           "modbus_host": "Modbus Host",
           "modbus_port": "Modbus Port",
+          "modbus_slave": "Modbus Slave"
+        }
+      },
+      "serial": {
+        "description": "Please enter your serial or usb device id. \nSet friendly name if you have more than one inverter, otherwise leave blank.",
+        "data": {
+          "friendly_name": "Friendly Name",
+          "modbus_serial_host": "Modbus Serial Host",
           "modbus_slave": "Modbus Slave"
         }
       }
@@ -21,11 +35,26 @@
   "options": {
     "step": {
       "user": {
+        "title": "Add a new inverter to monitor",
+        "description": "Please choose how your modbus adapter is connected",
+        "data": {
+          "modbus_type": "Modbus Type"
+        }
+      },
+      "tcp": {
         "description": "Please enter your Modbus IP and Port.\nSet friendly name if you have more than one inverter, otherwise leave blank.",
         "data": {
           "friendly_name": "Friendly Name",
           "modbus_host": "Modbus Host",
           "modbus_port": "Modbus Port",
+          "modbus_slave": "Modbus Slave"
+        }
+      },
+      "serial": {
+        "description": "Please enter your serial or usb device id.\nSet friendly name if you have more than one inverter, otherwise leave blank.",
+        "data": {
+          "friendly_name": "Friendly Name",
+          "modbus_serial_host": "Modbus Serial Host",
           "modbus_slave": "Modbus Slave"
         }
       }

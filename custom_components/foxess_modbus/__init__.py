@@ -8,25 +8,20 @@ import asyncio
 import logging
 
 import voluptuous as vol
+from custom_components.foxess_modbus.modbus_serial_client import ModbusSerialClient
+from custom_components.foxess_modbus.modbus_tcp_client import ModbusTCPClient
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
 
-from .const import CONFIG
-from .const import CONNECTION
-from .const import CONTROLLER
 from .const import DOMAIN
-from .const import FRIENDLY_NAME
-from .const import INVERTER
 from .const import INVERTER_CONN
-from .const import INVERTER_TYPE
-from .const import MODBUS
-from .const import MODBUS_HOST
-from .const import MODBUS_PORT
+from .const import INVERTERS
 from .const import MODBUS_SLAVE
 from .const import PLATFORMS
+from .const import SERIAL
 from .const import STARTUP_MESSAGE
-from .modbus_client import ModbusClient
+from .const import TCP
 from .modbus_controller import ModbusController
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -60,29 +55,45 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         # overwrite data with options
         entry.data = entry.options
 
-    friendly_name = entry.data.get(FRIENDLY_NAME, "")
-    modbus_host = entry.data.get(MODBUS_HOST, "")
-    modbus_port = entry.data.get(MODBUS_PORT, 502)
-    modbus_slave = entry.data.get(MODBUS_SLAVE, 247)
+    inverter_controller = []
+    # create controllers for TCP inverters
+    if TCP in entry.data:
+        for host, port_dict in entry.data[TCP].items():
+            for port, name_dict in port_dict.items():
+                client = ModbusTCPClient(host, port)
+                for name, inverter in name_dict.items():
+                    conn_type, slave = inverter[INVERTER_CONN], inverter[MODBUS_SLAVE]
+                    controller = ModbusController(hass, client, conn_type, slave)
+                    inverter_controller.append((inverter, controller))
+                    service_name = (
+                        "write_registers"
+                        if name == ""
+                        else f"write_registers__{host}_{port}_{slave}_{name}"
+                    )
+                    hass.services.async_register(
+                        DOMAIN, service_name, controller.write, _WRITE_SCHEMA
+                    )
 
-    inverter_type = entry.data.get(INVERTER_TYPE)
-    connection_type = entry.data.get(INVERTER_CONN)
-
-    modbus_client = ModbusClient(modbus_host, modbus_port, modbus_slave)
-    modbus_controller = ModbusController(hass, modbus_client, connection_type)
+    # create controllers for USB inverters
+    if SERIAL in entry.data:
+        for device, name_dict in entry.data[SERIAL].items():
+            client = ModbusSerialClient(device)
+            for name, inverter in name_dict.items():
+                conn_type, slave = inverter[INVERTER_CONN], inverter[MODBUS_SLAVE]
+                controller = ModbusController(hass, client, conn_type, slave)
+                inverter_controller.append((inverter, controller))
+                service_name = (
+                    "write_registers"
+                    if name == ""
+                    else f"write_registers_{device}_{slave}_{name}"
+                )
+                hass.services.async_register(
+                    DOMAIN, service_name, controller.write, _WRITE_SCHEMA
+                )
 
     hass.data[DOMAIN][entry.entry_id] = {
-        CONTROLLER: {MODBUS: modbus_controller},
-        CONFIG: {
-            INVERTER: inverter_type,
-            CONNECTION: connection_type,
-            FRIENDLY_NAME: friendly_name,
-        },
+        INVERTERS: inverter_controller,
     }
-
-    hass.services.async_register(
-        DOMAIN, "write_registers", modbus_controller.write, _WRITE_SCHEMA
-    )
 
     hass.data[DOMAIN][entry.entry_id]["unload"] = entry.add_update_listener(
         async_reload_entry
@@ -103,8 +114,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     if unloaded:
-        controllers = hass.data[DOMAIN][entry.entry_id][CONTROLLER]
-        for controller in controllers.values():
+        controllers = hass.data[DOMAIN][entry.entry_id][INVERTERS]
+        for _, controller in controllers:
             controller.unload()
 
         hass.data[DOMAIN][entry.entry_id]["unload"]()
