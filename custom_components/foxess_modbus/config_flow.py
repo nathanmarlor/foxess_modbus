@@ -8,8 +8,7 @@ import voluptuous as vol
 from custom_components.foxess_modbus.modbus_serial_client import ModbusSerialClient
 from custom_components.foxess_modbus.modbus_tcp_client import ModbusTCPClient
 from homeassistant import config_entries
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import callback
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.selector import selector
 
 from .const import ADD_ANOTHER
@@ -58,8 +57,8 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         self._modbus_tcp_schema = vol.Schema(
             {
-                vol.Optional(FRIENDLY_NAME, default=""): str,
-                vol.Required(MODBUS_HOST): str,
+                vol.Optional(FRIENDLY_NAME, default=""): cv.string,
+                vol.Required(MODBUS_HOST): cv.string,
                 vol.Required(
                     MODBUS_PORT,
                     default=502,
@@ -74,16 +73,16 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         self._modbus_serial_schema = vol.Schema(
             {
-                vol.Optional(FRIENDLY_NAME, default=""): str,
+                vol.Optional(FRIENDLY_NAME, default=""): cv.string,
                 vol.Required(
                     MODBUS_SERIAL_HOST,
                     default=self._data.get(MODBUS_SERIAL_HOST, "/dev/ttyUSB0"),
-                ): str,
+                ): cv.string,
                 vol.Required(
                     MODBUS_SLAVE,
                     default=self._data.get(MODBUS_SLAVE, 247),
                 ): int,
-                vol.Required(ADD_ANOTHER): bool,
+                vol.Required(ADD_ANOTHER): cv.boolean,
             }
         )
 
@@ -193,8 +192,53 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             pass
         return False, None, None
 
-    @staticmethod
-    @callback
-    def async_get_options_flow(config_entry: ConfigEntry):
-        """Get the options flow for this handler."""
-        return ModbusFlowHandler(config=config_entry)
+    # @staticmethod
+    # @callback
+    # def async_get_options_flow(config_entry: ConfigEntry):
+    #    """Get the options flow for this handler."""
+    #    return OptionsFlowHandler(config_entry)
+
+
+class OptionsFlowHandler(config_entries.OptionsFlow):
+    """Handles options flow for the component."""
+
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+        self.config_entry = config_entry
+        self._errors = {}
+
+    async def async_step_init(self, user_input):
+        """Manage the options for the custom component."""
+        if user_input is not None:
+            inv_type, host, name = user_input["select"].split("-")
+
+        inverters = self.dict_to_string(self.config_entry.data)
+        options_schema = vol.Schema(
+            {
+                vol.Required("select"): selector(
+                    {
+                        "select": {
+                            "options": inverters,
+                            "mode": "dropdown",
+                        }
+                    }
+                )
+            }
+        )
+        return self.async_show_form(
+            step_id="init", data_schema=options_schema, errors=self._errors
+        )
+
+    def dict_to_string(self, dct):
+        """Convert to flattened strings"""
+        values = []
+        if TCP in dct:
+            for host, name_dict in dct[TCP].items():
+                for name, _ in name_dict.items():
+                    values.append(f"TCP-{host}-{name}")
+
+        if SERIAL in dct:
+            for host, name_dict in dct[SERIAL].items():
+                for name, _ in name_dict.items():
+                    values.append(f"SERIAL-{host}-{name}")
+
+        return values
