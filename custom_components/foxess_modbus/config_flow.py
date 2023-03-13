@@ -114,9 +114,10 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 self._errors["base"] = None
                 # create dictionary entry
                 tcp_data = self._data.setdefault(TCP, {})
-                host_data = tcp_data.setdefault(inverter[MODBUS_HOST], {})
-                port_data = host_data.setdefault(inverter[MODBUS_PORT], {})
-                port_data[inverter[FRIENDLY_NAME]] = inverter
+                host_data = tcp_data.setdefault(
+                    f"{inverter[MODBUS_HOST]}:{inverter[MODBUS_PORT]}", {}
+                )
+                host_data[inverter[FRIENDLY_NAME]] = inverter
                 self._data[_SAVE_TIME] = datetime.now()
 
                 return self.async_create_entry(title=_TITLE, data=self._data)
