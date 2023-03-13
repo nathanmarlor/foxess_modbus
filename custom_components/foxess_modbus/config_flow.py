@@ -127,7 +127,9 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 )
 
         return self.async_show_form(
-            step_id="serial", data_schema=self._modbus_tcp_schema, errors=self._errors
+            step_id="serial",
+            data_schema=self._modbus_serial_schema,
+            errors=self._errors,
         )
 
     def detect_duplicate(self, inv_type, host, friendly_name):
