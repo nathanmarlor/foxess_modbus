@@ -55,41 +55,33 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         # overwrite data with options
         entry.data = entry.options
 
+    def create_controller(hass, client, inverter, service_name):
+        conn_type, slave = inverter[INVERTER_CONN], inverter[MODBUS_SLAVE]
+        controller = ModbusController(hass, client, conn_type, slave)
+        inverter_controller.append((inverter, controller))
+        hass.services.async_register(
+            DOMAIN, service_name, controller.write, _WRITE_SCHEMA
+        )
+
     inverter_controller = []
     # create controllers for TCP inverters
     if TCP in entry.data:
-        for host, port_dict in entry.data[TCP].items():
-            for port, name_dict in port_dict.items():
-                client = ModbusTCPClient(host, port)
-                for name, inverter in name_dict.items():
-                    conn_type, slave = inverter[INVERTER_CONN], inverter[MODBUS_SLAVE]
-                    controller = ModbusController(hass, client, conn_type, slave)
-                    inverter_controller.append((inverter, controller))
-                    service_name = (
-                        "write_registers"
-                        if name == ""
-                        else f"write_registers__{host}_{port}_{slave}_{name}"
-                    )
-                    hass.services.async_register(
-                        DOMAIN, service_name, controller.write, _WRITE_SCHEMA
-                    )
+        for host, name_dict in entry.data[TCP].items():
+            host, port = host.split(":")
+            client = ModbusTCPClient(host, port)
+            for name, inverter in name_dict.items():
+                service_name = f"write_registers{'__' + '_'.join(filter(bool, [host, port, name]))}"
+                create_controller(hass, client, inverter, service_name)
 
     # create controllers for USB inverters
     if SERIAL in entry.data:
         for device, name_dict in entry.data[SERIAL].items():
             client = ModbusSerialClient(device)
             for name, inverter in name_dict.items():
-                conn_type, slave = inverter[INVERTER_CONN], inverter[MODBUS_SLAVE]
-                controller = ModbusController(hass, client, conn_type, slave)
-                inverter_controller.append((inverter, controller))
                 service_name = (
-                    "write_registers"
-                    if name == ""
-                    else f"write_registers_{device}_{slave}_{name}"
+                    f"write_registers{'_' + '_'.join(filter(bool, [device, name]))}"
                 )
-                hass.services.async_register(
-                    DOMAIN, service_name, controller.write, _WRITE_SCHEMA
-                )
+                create_controller(hass, client, inverter, service_name)
 
     hass.data[DOMAIN][entry.entry_id] = {
         INVERTERS: inverter_controller,
