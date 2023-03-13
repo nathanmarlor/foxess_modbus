@@ -26,6 +26,10 @@ Features include:
 - Read registers in bulk to improve Home Assistant performance
 - Direct decoding of values (i.e. force charge periods)
 
+Supported models:
+
+- H1 TCP / USB
+
 ## Installation
 
 Recommend installation through [HACS][hacs]
