@@ -106,23 +106,10 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_tcp(self, user_input: dict[str, Any] = None):
         """Handle a flow initialized by the user."""
         if MODBUS_HOST in user_input:
-            inverter = self._parse_tcp_inverter(user_input)
-            result, inv_model, inv_conn = await self._autodetect_tcp_modbus(inverter)
-            if result:
-                inverter[INVERTER_MODEL] = inv_model
-                inverter[INVERTER_CONN] = inv_conn
-                self._errors["base"] = None
-                # create dictionary entry
-                tcp_data = self._data.setdefault(TCP, {})
-                host_data = tcp_data.setdefault(
-                    f"{inverter[MODBUS_HOST]}:{inverter[MODBUS_PORT]}", {}
-                )
-                host_data[inverter[FRIENDLY_NAME]] = inverter
-                self._data[_SAVE_TIME] = datetime.now()
-
-                return self.async_create_entry(title=_TITLE, data=self._data)
-            else:
-                self._errors["base"] = "modbus_error"
+            inverter = self._parse_inverter(user_input)
+            host = f"{user_input[MODBUS_HOST]}:{user_input[MODBUS_PORT]}"
+            if not self.detect_duplicate(TCP, host, user_input[FRIENDLY_NAME]):
+                return await self.async_add_inverter(TCP, host, inverter)
 
         return self.async_show_form(
             step_id="tcp", data_schema=self._modbus_tcp_schema, errors=self._errors
@@ -131,61 +118,61 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_serial(self, user_input: dict[str, Any] = None):
         """Handle a flow initialized by the user."""
         if MODBUS_SERIAL_HOST in user_input:
-            inverter = self._parse_serial_inverter(user_input)
-            result, inv_model, inv_conn = await self._autodetect_serial_modbus(inverter)
-            if result:
-                inverter[INVERTER_MODEL] = inv_model
-                inverter[INVERTER_CONN] = inv_conn
-                self._errors["base"] = None
-                # create dictionary entry
-                serial_data = self._data.setdefault(SERIAL, {})
-                device_data = serial_data.setdefault(inverter[MODBUS_SERIAL_HOST], {})
-                device_data[inverter[FRIENDLY_NAME]] = inverter
-                self._data[_SAVE_TIME] = datetime.now()
-
-                return self.async_create_entry(title=_TITLE, data=self._data)
-            else:
-                self._errors["base"] = "modbus_error"
+            inverter = self._parse_inverter(user_input)
+            if not self.detect_duplicate(
+                SERIAL, user_input[MODBUS_SERIAL_HOST], user_input[FRIENDLY_NAME]
+            ):
+                return await self.async_add_inverter(
+                    SERIAL, user_input[MODBUS_HOST], inverter
+                )
 
         return self.async_show_form(
-            step_id="serial",
-            data_schema=self._modbus_serial_schema,
-            errors=self._errors,
+            step_id="serial", data_schema=self._modbus_tcp_schema, errors=self._errors
         )
 
-    def _parse_tcp_inverter(self, user_input):
+    def detect_duplicate(self, inv_type, host, friendly_name):
+        """Detect duplicates"""
+        if host in self._data[inv_type]:
+            if friendly_name in self._data[inv_type][host]:
+                self._errors["base"] = "modbus_duplicate"
+                return True
+            else:
+                return False
+
+    async def async_add_inverter(self, inv_type, host, inverter):
+        """Handle a flow initialized by the user."""
+        result, inv_model, inv_conn = await self._autodetect_modbus(
+            inv_type, host, inverter[MODBUS_SLAVE]
+        )
+        if result:
+            inverter[INVERTER_MODEL] = inv_model
+            inverter[INVERTER_CONN] = inv_conn
+            self._errors["base"] = None
+            # create dictionary entry
+            base_data = self._data.setdefault(inv_type, {})
+            host_data = base_data.setdefault(host, {})
+            host_data[inverter[FRIENDLY_NAME]] = inverter
+            self._data[_SAVE_TIME] = datetime.now()
+            return self.async_create_entry(title=_TITLE, data=self._data)
+        else:
+            self._errors["base"] = "modbus_error"
+
+    def _parse_inverter(self, user_input):
         """Parser inverter details"""
         return {
-            MODBUS_HOST: user_input[MODBUS_HOST],
-            MODBUS_PORT: user_input[MODBUS_PORT],
             MODBUS_SLAVE: user_input[MODBUS_SLAVE],
             FRIENDLY_NAME: user_input[FRIENDLY_NAME],
         }
 
-    def _parse_serial_inverter(self, user_input):
-        """Parser inverter details"""
-        return {
-            MODBUS_SERIAL_HOST: user_input[MODBUS_SERIAL_HOST],
-            MODBUS_SLAVE: user_input[MODBUS_SLAVE],
-            FRIENDLY_NAME: user_input[FRIENDLY_NAME],
-        }
-
-    async def _autodetect_tcp_modbus(self, inverter):
+    async def _autodetect_modbus(self, inv_type, host, slave):
         """Return true if modbus connection can be established"""
         try:
-            client = ModbusTCPClient(inverter[MODBUS_HOST], inverter[MODBUS_PORT])
-            controller = ModbusController(None, client, None, inverter[MODBUS_SLAVE])
-            return await controller.autodetect()
-        except Exception as ex:  # pylint: disable=broad-except
-            _LOGGER.warn(ex)
-            pass
-        return False, None, None
-
-    async def _autodetect_serial_modbus(self, inverter):
-        """Return true if modbus connection can be established"""
-        try:
-            client = ModbusSerialClient(inverter[MODBUS_SERIAL_HOST])
-            controller = ModbusController(None, client, None, inverter[MODBUS_SLAVE])
+            if inv_type == TCP:
+                host_ip, port = host.split(":")
+                client = ModbusTCPClient(host_ip, port)
+            else:
+                client = ModbusSerialClient(host)
+            controller = ModbusController(None, client, None, slave)
             return await controller.autodetect()
         except Exception as ex:  # pylint: disable=broad-except
             _LOGGER.warn(ex)

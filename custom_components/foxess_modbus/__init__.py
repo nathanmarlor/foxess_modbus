@@ -55,13 +55,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         # overwrite data with options
         entry.data = entry.options
 
-    def create_controller(hass, client, inverter, service_name):
+    def create_controller(hass, client, inverter):
         conn_type, slave = inverter[INVERTER_CONN], inverter[MODBUS_SLAVE]
         controller = ModbusController(hass, client, conn_type, slave)
         inverter_controller.append((inverter, controller))
-        hass.services.async_register(
-            DOMAIN, service_name, controller.write, _WRITE_SCHEMA
-        )
 
     inverter_controller = []
     # create controllers for TCP inverters
@@ -69,19 +66,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         for host, name_dict in entry.data[TCP].items():
             host, port = host.split(":")
             client = ModbusTCPClient(host, port)
-            for name, inverter in name_dict.items():
-                service_name = f"write_registers{'__' + '_'.join(filter(bool, [host, port, name]))}"
-                create_controller(hass, client, inverter, service_name)
+            for _, inverter in name_dict.items():
+                create_controller(hass, client, inverter)
 
     # create controllers for USB inverters
     if SERIAL in entry.data:
         for device, name_dict in entry.data[SERIAL].items():
             client = ModbusSerialClient(device)
-            for name, inverter in name_dict.items():
-                service_name = (
-                    f"write_registers{'_' + '_'.join(filter(bool, [device, name]))}"
-                )
-                create_controller(hass, client, inverter, service_name)
+            for _, inverter in name_dict.items():
+                create_controller(hass, client, inverter)
+
+    # TODO: include hub name in service call
+    hass.services.async_register(
+        DOMAIN, "write_registers", inverter_controller[0][1].write, _WRITE_SCHEMA
+    )
 
     hass.data[DOMAIN][entry.entry_id] = {
         INVERTERS: inverter_controller,

@@ -26,6 +26,7 @@
       }
     },
     "error": {
+      "modbus_duplicate": "Please enter a unique host/friendly name",
       "modbus_error": "Error - please check connection details"
     },
     "abort": {
@@ -60,6 +61,7 @@
       }
     },
     "error": {
+      "modbus_duplicate": "Please enter a unique host/friendly name",
       "modbus_error": "Error - please check connection details"
     },
     "abort": {
