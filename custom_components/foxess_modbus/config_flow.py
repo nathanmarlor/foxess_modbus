@@ -169,6 +169,9 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_create_entry(title=_TITLE, data=self._data)
         else:
             self._errors["base"] = "modbus_error"
+            return self.async_show_form(
+                step_id="tcp", data_schema=self._modbus_tcp_schema, errors=self._errors
+            )
 
     def _parse_inverter(self, user_input):
         """Parser inverter details"""
@@ -191,54 +194,3 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.warn(ex)
             pass
         return False, None, None
-
-    # @staticmethod
-    # @callback
-    # def async_get_options_flow(config_entry: ConfigEntry):
-    #    """Get the options flow for this handler."""
-    #    return OptionsFlowHandler(config_entry)
-
-
-class OptionsFlowHandler(config_entries.OptionsFlow):
-    """Handles options flow for the component."""
-
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        self.config_entry = config_entry
-        self._errors = {}
-
-    async def async_step_init(self, user_input):
-        """Manage the options for the custom component."""
-        if user_input is not None:
-            inv_type, host, name = user_input["select"].split("-")
-
-        inverters = self.dict_to_string(self.config_entry.data)
-        options_schema = vol.Schema(
-            {
-                vol.Required("select"): selector(
-                    {
-                        "select": {
-                            "options": inverters,
-                            "mode": "dropdown",
-                        }
-                    }
-                )
-            }
-        )
-        return self.async_show_form(
-            step_id="init", data_schema=options_schema, errors=self._errors
-        )
-
-    def dict_to_string(self, dct):
-        """Convert to flattened strings"""
-        values = []
-        if TCP in dct:
-            for host, name_dict in dct[TCP].items():
-                for name, _ in name_dict.items():
-                    values.append(f"TCP-{host}-{name}")
-
-        if SERIAL in dct:
-            for host, name_dict in dct[SERIAL].items():
-                for name, _ in name_dict.items():
-                    values.append(f"SERIAL-{host}-{name}")
-
-        return values

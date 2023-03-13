@@ -31,7 +31,6 @@ INVERTER_CONN = "inverter_conn"
 INVERTERS = "inverters"
 
 ADD_ANOTHER = "add_another"
-OPTIONS_SELECTOR = "options_selector"
 
 # Inverter Types
 H1 = "H1"
