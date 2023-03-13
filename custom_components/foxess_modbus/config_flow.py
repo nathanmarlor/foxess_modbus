@@ -12,6 +12,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import callback
 from homeassistant.helpers.selector import selector
 
+from .const import ADD_ANOTHER
 from .const import DOMAIN
 from .const import FRIENDLY_NAME
 from .const import INVERTER_CONN
@@ -67,6 +68,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     MODBUS_SLAVE,
                     default=247,
                 ): int,
+                vol.Required(ADD_ANOTHER): bool,
             }
         )
 
@@ -81,6 +83,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     MODBUS_SLAVE,
                     default=self._data.get(MODBUS_SLAVE, 247),
                 ): int,
+                vol.Required(ADD_ANOTHER): bool,
             }
         )
 
@@ -108,8 +111,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         if MODBUS_HOST in user_input:
             inverter = self._parse_inverter(user_input)
             host = f"{user_input[MODBUS_HOST]}:{user_input[MODBUS_PORT]}"
-            if not self.detect_duplicate(TCP, host, user_input[FRIENDLY_NAME]):
-                return await self.async_add_inverter(TCP, host, inverter)
+            return await self.add_or_rerun(TCP, host, inverter, user_input)
 
         return self.async_show_form(
             step_id="tcp", data_schema=self._modbus_tcp_schema, errors=self._errors
@@ -119,18 +121,28 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle a flow initialized by the user."""
         if MODBUS_SERIAL_HOST in user_input:
             inverter = self._parse_inverter(user_input)
-            if not self.detect_duplicate(
-                SERIAL, user_input[MODBUS_SERIAL_HOST], user_input[FRIENDLY_NAME]
-            ):
-                return await self.async_add_inverter(
-                    SERIAL, user_input[MODBUS_HOST], inverter
-                )
+            return await self.add_or_rerun(
+                SERIAL, user_input[MODBUS_SERIAL_HOST], inverter, user_input
+            )
 
         return self.async_show_form(
             step_id="serial",
             data_schema=self._modbus_serial_schema,
             errors=self._errors,
         )
+
+    async def add_or_rerun(self, inv_type, host, inverter, user_input):
+        """Add or rerun the config flow"""
+        if not self.detect_duplicate(TCP, host, user_input[FRIENDLY_NAME]):
+            result = await self.async_add_inverter(inv_type, host, inverter)
+            if user_input[ADD_ANOTHER]:
+                return self.async_show_form(
+                    step_id="user",
+                    data_schema=self._modbus_type_schema,
+                    errors=self._errors,
+                )
+            else:
+                return result
 
     def detect_duplicate(self, inv_type, host, friendly_name):
         """Detect duplicates"""

@@ -13,7 +13,8 @@
           "friendly_name": "Friendly Name",
           "modbus_host": "Modbus Host",
           "modbus_port": "Modbus Port",
-          "modbus_slave": "Modbus Slave"
+          "modbus_slave": "Modbus Slave",
+          "add_another": "Add another TCP device"
         }
       },
       "serial": {
@@ -21,7 +22,8 @@
         "data": {
           "friendly_name": "Friendly Name",
           "modbus_serial_host": "Modbus Serial Host",
-          "modbus_slave": "Modbus Slave"
+          "modbus_slave": "Modbus Slave",
+          "add_another": "Add another Serial device"
         }
       }
     },
@@ -48,7 +50,8 @@
           "friendly_name": "Friendly Name",
           "modbus_host": "Modbus Host",
           "modbus_port": "Modbus Port",
-          "modbus_slave": "Modbus Slave"
+          "modbus_slave": "Modbus Slave",
+          "add_another": "Add another TCP device"
         }
       },
       "serial": {
@@ -56,7 +59,8 @@
         "data": {
           "friendly_name": "Friendly Name",
           "modbus_serial_host": "Modbus Serial Host",
-          "modbus_slave": "Modbus Slave"
+          "modbus_slave": "Modbus Slave",
+          "add_another": "Add another Serial device"
         }
       }
     },

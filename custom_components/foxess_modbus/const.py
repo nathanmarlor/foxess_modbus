@@ -30,6 +30,8 @@ INVERTER_MODEL = "inverter_model"
 INVERTER_CONN = "inverter_conn"
 INVERTERS = "inverters"
 
+ADD_ANOTHER = "add_another"
+
 # Inverter Types
 H1 = "H1"
 H3 = "H3"
