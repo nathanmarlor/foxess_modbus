@@ -1,5 +1,6 @@
 """Modbus controller"""
 import logging
+from asyncio.exceptions import TimeoutError
 from datetime import timedelta
 
 from custom_components.foxess_modbus.const import AUX
@@ -93,8 +94,15 @@ class ModbusController(CallbackController, UnloadController):
 
             _LOGGER.debug("Refresh complete - notifying sensors")
             self._notify_listeners()
+        except TimeoutError:
+            _LOGGER.debug("Timed out when contacting device, cancelling poll loop")
+            await self._client.close()
         except ModbusException as ex:
-            _LOGGER.debug(f"Exception when polling modbus - {ex}")
+            _LOGGER.debug(f"Modbus exception when polling - {ex}")
+            await self._client.close()
+        except Exception as ex:
+            _LOGGER.debug(f"General exception when polling - {ex!r}")
+            await self._client.close()
 
     async def autodetect(self) -> bool:
         """Modbus status"""
