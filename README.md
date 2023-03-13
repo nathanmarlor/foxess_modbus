@@ -40,13 +40,29 @@ Recommend installation through [HACS][hacs]
 
 ## Configuration and Options
 
-<b>Inverter Setup</b></p>
+<b>Select connection type</b></p>
+
+- **TCP**: TCP connection (i.e. W610/LAN)
+- **Serial**: USB connection
+
+![TCP](images/select.png)
+
+<b>Serial Inverter Setup</b></p>
+
+- **Modbus Host**: Path to your USB host (default /dev/ttyUSB0)
+- **Modbus Slave**: Slave ID (default 247)
+- **Add another device**: Add more than one inverter
+
+![TCP](images/serial.png)
+
+<b>TCP Inverter Setup</b></p>
 
 - **Modbus Host**: IP Adddress of your Modbus (i.e. W610/LAN) host
 - **Modbus Port**: Port number (default 502)
 - **Modbus Slave**: Slave ID (default 247)
+- **Add another device**: Add more than one inverter
 
-![Setup](images/setup.png)
+![TCP](images/tcp.png)
 
 ## Usage
 
