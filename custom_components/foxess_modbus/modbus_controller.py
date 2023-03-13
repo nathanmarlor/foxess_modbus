@@ -1,5 +1,6 @@
 """Modbus controller"""
 import logging
+import queue
 from asyncio.exceptions import TimeoutError
 from datetime import timedelta
 
@@ -45,6 +46,7 @@ class ModbusController(CallbackController, UnloadController):
         self._client = client
         self._connection_type = connection_type
         self._slave = slave
+        self._write_queue = queue.Queue()
 
         # Setup mixins
         CallbackController.__init__(self)
@@ -68,7 +70,7 @@ class ModbusController(CallbackController, UnloadController):
             return None
 
     async def write(self, service) -> bool:
-        """Modbus status"""
+        """Modbus write"""
         if {"start_address", "values"} <= set(service.data):
             start_address = service.data["start_address"]
             values = service.data["values"].split(",")

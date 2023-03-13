@@ -8,11 +8,13 @@ import asyncio
 import logging
 
 import voluptuous as vol
+from custom_components.foxess_modbus.const import FRIENDLY_NAME
 from custom_components.foxess_modbus.modbus_serial_client import ModbusSerialClient
 from custom_components.foxess_modbus.modbus_tcp_client import ModbusTCPClient
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
+from pymodbus.exceptions import ModbusIOException
 
 from .const import DOMAIN
 from .const import INVERTER_CONN
@@ -28,6 +30,7 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 _WRITE_SCHEMA = vol.Schema(
     {
+        vol.Required("friendly_name", description="Friendly Name"): str,
         vol.Required("start_address", description="Start Address"): int,
         vol.Required("values", description="Values"): str,
     }
@@ -78,7 +81,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     # TODO: include hub name in service call
     hass.services.async_register(
-        DOMAIN, "write_registers", inverter_controller[0][1].write, _WRITE_SCHEMA
+        DOMAIN,
+        "write_registers",
+        lambda data: asyncio.run_coroutine_threadsafe(
+            write_service(inverter_controller, data), hass.loop
+        ),
+        _WRITE_SCHEMA,
     )
 
     hass.data[DOMAIN][entry.entry_id] = {
@@ -90,6 +98,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     )
 
     return True
+
+
+async def write_service(*args):
+    """Write service"""
+    try:
+        mapping, service_data = args[0], args[1]
+        for inverter, controller in mapping:
+            if inverter[FRIENDLY_NAME] == service_data.data[FRIENDLY_NAME]:
+                await controller.write(service_data)
+    except ModbusIOException as ex:
+        _LOGGER.warning(ex, exc_info=1)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

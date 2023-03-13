@@ -4,6 +4,15 @@ write_registers:
   description: >
     Writes one or more registers
   fields:
+    friendly_name:
+      name: Friendly Name
+      description: Unique friendly name
+      required: true
+      advanced: false
+      example: "inverter_2"
+      default: ""
+      selector:
+        text:
     start_address:
       name: Start Address
       description: Start address to write to
