@@ -14,7 +14,7 @@
           "modbus_host": "Modbus Host",
           "modbus_port": "Modbus Port",
           "modbus_slave": "Modbus Slave",
-          "add_another": "Add another TCP device"
+          "add_another": "Add another device"
         }
       },
       "serial": {
@@ -23,50 +23,14 @@
           "friendly_name": "Friendly Name",
           "modbus_serial_host": "Modbus Serial Host",
           "modbus_slave": "Modbus Slave",
-          "add_another": "Add another Serial device"
+          "add_another": "Add another device"
         }
       }
     },
     "error": {
       "modbus_duplicate": "Please enter a unique host/friendly name",
-      "modbus_error": "Error - please check connection details"
-    },
-    "abort": {
-      "single_instance_allowed": "Only a single instance is allowed."
-    }
-  },
-  "options": {
-    "step": {
-      "user": {
-        "title": "Add a new inverter to monitor",
-        "description": "Please choose how your modbus adapter is connected",
-        "data": {
-          "modbus_type": "Modbus Type"
-        }
-      },
-      "tcp": {
-        "description": "Please enter your Modbus IP and Port.\nSet friendly name if you have more than one inverter, otherwise leave blank.",
-        "data": {
-          "friendly_name": "Friendly Name",
-          "modbus_host": "Modbus Host",
-          "modbus_port": "Modbus Port",
-          "modbus_slave": "Modbus Slave",
-          "add_another": "Add another TCP device"
-        }
-      },
-      "serial": {
-        "description": "Please enter your serial or usb device id.\nSet friendly name if you have more than one inverter, otherwise leave blank.",
-        "data": {
-          "friendly_name": "Friendly Name",
-          "modbus_serial_host": "Modbus Serial Host",
-          "modbus_slave": "Modbus Slave",
-          "add_another": "Add another Serial device"
-        }
-      }
-    },
-    "error": {
-      "modbus_duplicate": "Please enter a unique host/friendly name",
-      "modbus_error": "Error - please check connection details"
+      "modbus_error": "Error - please check connection details",
+      "modbus_model_not_supported": "Error - model is not supported"
     },
     "abort": {
       "single_instance_allowed": "Only a single instance is allowed."

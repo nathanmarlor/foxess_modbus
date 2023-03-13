@@ -10,6 +10,7 @@ from custom_components.foxess_modbus.modbus_tcp_client import ModbusTCPClient
 from homeassistant import config_entries
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.selector import selector
+from pymodbus.exceptions import ModbusException
 
 from .const import ADD_ANOTHER
 from .const import DOMAIN
@@ -108,6 +109,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_tcp(self, user_input: dict[str, Any] = None):
         """Handle a flow initialized by the user."""
         if MODBUS_HOST in user_input:
+            self._errors["base"] = None
             inverter = self._parse_inverter(user_input)
             host = f"{user_input[MODBUS_HOST]}:{user_input[MODBUS_PORT]}"
             return await self.add_or_rerun(TCP, host, inverter, user_input)
@@ -119,6 +121,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_serial(self, user_input: dict[str, Any] = None):
         """Handle a flow initialized by the user."""
         if MODBUS_SERIAL_HOST in user_input:
+            self._errors["base"] = None
             inverter = self._parse_inverter(user_input)
             return await self.add_or_rerun(
                 SERIAL, user_input[MODBUS_SERIAL_HOST], inverter, user_input
@@ -135,6 +138,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         if not self.detect_duplicate(TCP, host, user_input[FRIENDLY_NAME]):
             result = await self.async_add_inverter(inv_type, host, inverter)
             if user_input[ADD_ANOTHER]:
+                self._errors["base"] = None
                 return self.async_show_form(
                     step_id="user",
                     data_schema=self._modbus_type_schema,
@@ -154,10 +158,11 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_add_inverter(self, inv_type, host, inverter):
         """Handle a flow initialized by the user."""
-        result, inv_model, inv_conn = await self._autodetect_modbus(
+        result, details = await self._autodetect_modbus(
             inv_type, host, inverter[MODBUS_SLAVE]
         )
         if result:
+            inv_model, inv_conn = details
             inverter[INVERTER_MODEL] = inv_model
             inverter[INVERTER_CONN] = inv_conn
             self._errors["base"] = None
@@ -168,7 +173,6 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             self._data[_SAVE_TIME] = datetime.now()
             return self.async_create_entry(title=_TITLE, data=self._data)
         else:
-            self._errors["base"] = "modbus_error"
             return self.async_show_form(
                 step_id="tcp", data_schema=self._modbus_tcp_schema, errors=self._errors
             )
@@ -189,8 +193,11 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             else:
                 client = ModbusSerialClient(host)
             controller = ModbusController(None, client, None, slave)
-            return await controller.autodetect()
-        except Exception as ex:  # pylint: disable=broad-except
-            _LOGGER.warn(ex)
-            pass
-        return False, None, None
+            return (True, await controller.autodetect())
+        except ModbusException as ex:
+            _LOGGER.warning(f"{ex!r}")
+            self._errors["base"] = "modbus_error"
+        except ConnectionRefusedError as ex:
+            _LOGGER.warning(f"{ex!r}")
+            self._errors["base"] = "modbus_model_not_supported"
+        return False, None

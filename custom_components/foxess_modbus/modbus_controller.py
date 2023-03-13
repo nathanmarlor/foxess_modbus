@@ -119,10 +119,8 @@ class ModbusController(CallbackController, UnloadController):
                     _LOGGER.info(
                         f"Autodetected inverter as {inverter_type} using {conn_type} connection"
                     )
-                    return True, inverter_type, conn_type
-            except ModbusException as ex:
-                _LOGGER.debug(f"Failed to detect {conn_type} - {ex}")
-                continue
+                    return inverter_type, conn_type
+                else:
+                    raise ConnectionRefusedError(f"{inverter_type} not supported")
             finally:
                 await self._client.close()
-        return False, None, None
