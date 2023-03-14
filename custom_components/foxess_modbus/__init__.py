@@ -14,6 +14,7 @@ from custom_components.foxess_modbus.modbus_tcp_client import ModbusTCPClient
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import config_validation as cv
 from pymodbus.exceptions import ModbusIOException
 
 from .const import DOMAIN
@@ -30,9 +31,9 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 _WRITE_SCHEMA = vol.Schema(
     {
-        vol.Required("friendly_name", description="Friendly Name"): str,
+        vol.Required("friendly_name", description="Friendly Name"): cv.string,
         vol.Required("start_address", description="Start Address"): int,
-        vol.Required("values", description="Values"): str,
+        vol.Required("values", description="Values"): cv.string,
     }
 )
 
@@ -79,7 +80,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             for _, inverter in name_dict.items():
                 create_controller(hass, client, inverter)
 
-    # TODO: include hub name in service call
     hass.services.async_register(
         DOMAIN,
         "write_registers",
