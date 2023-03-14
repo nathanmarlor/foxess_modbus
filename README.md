@@ -80,6 +80,16 @@ Recommend installation through [HACS][hacs]
 
 ![Example](images/example.png)
 
+<b>Write Service</b></p>
+
+A service to write any modbus address is available, similar to the native Home Assistant service.
+
+- **Friendly Name**: Friendly name of inverter, or blank if not set.
+- **Start Address**: Start address to write to
+- **Values**: One or more values to write
+
+![Service](images/service.png)
+
 ---
 
 [black]: https://github.com/psf/black
