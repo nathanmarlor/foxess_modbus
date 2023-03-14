@@ -6,6 +6,7 @@ from custom_components.foxess_modbus.const import INVERTER_CONN
 from custom_components.foxess_modbus.const import INVERTER_MODEL
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_IDENTIFIERS
 from homeassistant.const import ATTR_MANUFACTURER
@@ -93,6 +94,11 @@ class ModbusSensor(SensorEntity):
     def device_class(self) -> SensorDeviceClass:
         """Return the device class of the sensor."""
         return self._entity_description.device_class
+
+    @property
+    def state_class(self) -> SensorStateClass:
+        """Return the device class of the sensor."""
+        return self._entity_description.state_class
 
     @property
     def should_poll(self) -> bool:
