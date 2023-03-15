@@ -5,14 +5,14 @@ from datetime import datetime
 from typing import Any
 
 import voluptuous as vol
-from custom_components.foxess_modbus.modbus_serial_client import ModbusSerialClient
-from custom_components.foxess_modbus.modbus_tcp_client import ModbusTCPClient
+from custom_components.foxess_modbus import ModbusClient
 from homeassistant import config_entries
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.selector import selector
 from pymodbus.exceptions import ModbusException
 
 from .const import ADD_ANOTHER
+from .const import CONFIG_SAVE_TIME
 from .const import DOMAIN
 from .const import FRIENDLY_NAME
 from .const import INVERTER_CONN
@@ -22,12 +22,12 @@ from .const import MODBUS_HOST
 from .const import MODBUS_PORT
 from .const import MODBUS_SERIAL_HOST
 from .const import MODBUS_SLAVE
+from .const import MODBUS_TYPE
 from .const import SERIAL
 from .const import TCP
 from .modbus_controller import ModbusController
 
 _TITLE = "FoxESS - Modbus"
-_SAVE_TIME = "save_time"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -170,7 +170,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             base_data = self._data.setdefault(inv_type, {})
             host_data = base_data.setdefault(host, {})
             host_data[inverter[FRIENDLY_NAME]] = inverter
-            self._data[_SAVE_TIME] = datetime.now()
+            self._data[CONFIG_SAVE_TIME] = datetime.now()
             return self.async_create_entry(title=_TITLE, data=self._data)
         else:
             return self.async_show_form(
@@ -187,11 +187,12 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def _autodetect_modbus(self, inv_type, host, slave):
         """Return true if modbus connection can be established"""
         try:
+            params = {MODBUS_TYPE: inv_type}
             if inv_type == TCP:
-                host_ip, port = host.split(":")
-                client = ModbusTCPClient(host_ip, port)
+                params.update({"host": host.split(":")[0], "port": host.split(":")[1]})
             else:
-                client = ModbusSerialClient(host)
+                params.update({"port": host, "baudrate": 9600})
+            client = ModbusClient(self.hass, params)
             controller = ModbusController(None, client, None, slave)
             return (True, await controller.autodetect())
         except ModbusException as ex:
