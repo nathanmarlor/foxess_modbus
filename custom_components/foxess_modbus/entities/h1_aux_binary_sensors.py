@@ -2,7 +2,7 @@
 import logging
 
 from .modbus_sensor import ModbusSensor
-from .sensor_desc import SensorDescription
+from .modbus_sensor import SensorDescription
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 

@@ -6,7 +6,7 @@ from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorStateClass
 
 from .modbus_sensor import ModbusSensor
-from .sensor_desc import SensorDescription
+from .modbus_sensor import SensorDescription
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 

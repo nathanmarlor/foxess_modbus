@@ -1,15 +1,28 @@
 """Sensor"""
 import logging
 
+from dataclasses import dataclass
+from typing import Callable
+
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorStateClass
+from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
 
 from .modbus_entity_mixin import ModbusEntityMixin
 from ..common.callback_controller import CallbackController
-from .sensor_desc import SensorDescription
 
 _LOGGER = logging.getLogger(__name__)
+
+
+@dataclass
+class SensorDescription(SensorEntityDescription):
+    """Custom sensor description"""
+
+    address: int | None = 0
+    should_poll: bool | None = False
+    scale: float | None = None
+    post_process: Callable[[int], int] | None = None
 
 
 class ModbusSensor(ModbusEntityMixin, SensorEntity):
