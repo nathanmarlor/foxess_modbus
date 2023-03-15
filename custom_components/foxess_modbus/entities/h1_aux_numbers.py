@@ -20,6 +20,7 @@ NUMBERS: dict[str, ModbusNumberDescription] = {
         native_step=1,
         native_unit_of_measurement="%",
         device_class=NumberDeviceClass.BATTERY,
+        icon="mdi:battery-arrow-down",
     ),
     "min_soc_on_grid": ModbusNumberDescription(
         key="min_soc_on_grid",
@@ -31,6 +32,7 @@ NUMBERS: dict[str, ModbusNumberDescription] = {
         native_step=1,
         native_unit_of_measurement="%",
         device_class=NumberDeviceClass.BATTERY,
+        icon="mdi:battery-arrow-down",
     ),
     "max_soc": ModbusNumberDescription(
         key="max_soc",
@@ -42,6 +44,7 @@ NUMBERS: dict[str, ModbusNumberDescription] = {
         native_step=1,
         native_unit_of_measurement="%",
         device_class=NumberDeviceClass.BATTERY,
+        icon="mdi:battery-arrow-up",
     ),
 }
 
