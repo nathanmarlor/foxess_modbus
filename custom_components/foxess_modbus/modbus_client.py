@@ -27,7 +27,7 @@ class ModbusClient:
         }
 
         self._client = self._class[self._config_type](**config)
-        self._hass.async_create_background_task(self.connect(), "modbus-connect")
+        self._hass.async_create_task(self.connect())
 
     async def connect(self):
         """Connect to device"""
