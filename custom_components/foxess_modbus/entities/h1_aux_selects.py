@@ -1,8 +1,8 @@
 """Inverter Select entities"""
 import logging
 
-from .modbus_select import ModbusSelectDescription
 from .modbus_select import ModbusSelect
+from .modbus_select import ModbusSelectDescription
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
