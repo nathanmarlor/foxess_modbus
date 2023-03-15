@@ -8,9 +8,9 @@ import asyncio
 import logging
 
 import voluptuous as vol
+from custom_components.foxess_modbus.const import CONFIG_SAVE_TIME
 from custom_components.foxess_modbus.const import FRIENDLY_NAME
-from custom_components.foxess_modbus.modbus_serial_client import ModbusSerialClient
-from custom_components.foxess_modbus.modbus_tcp_client import ModbusTCPClient
+from custom_components.foxess_modbus.modbus_client import ModbusClient
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
@@ -21,8 +21,8 @@ from .const import DOMAIN
 from .const import INVERTER_CONN
 from .const import INVERTERS
 from .const import MODBUS_SLAVE
+from .const import MODBUS_TYPE
 from .const import PLATFORMS
-from .const import SERIAL
 from .const import STARTUP_MESSAGE
 from .const import TCP
 from .modbus_controller import ModbusController
@@ -65,18 +65,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         inverter_controller.append((inverter, controller))
 
     inverter_controller = []
-    # create controllers for TCP inverters
-    if TCP in entry.data:
-        for host, name_dict in entry.data[TCP].items():
-            host, port = host.split(":")
-            client = ModbusTCPClient(host, port)
-            for _, inverter in name_dict.items():
-                create_controller(hass, client, inverter)
-
-    # create controllers for USB inverters
-    if SERIAL in entry.data:
-        for device, name_dict in entry.data[SERIAL].items():
-            client = ModbusSerialClient(device)
+    data = dict(entry.data)
+    del data[CONFIG_SAVE_TIME]
+    # create controllers for inverters
+    for modbus_type, host_dict in data.items():
+        for host, name_dict in host_dict.items():
+            params = {MODBUS_TYPE: modbus_type}
+            if modbus_type == TCP:
+                params.update({"host": host.split(":")[0], "port": host.split(":")[1]})
+            else:
+                params.update({"port": host, "baudrate": 9600})
+            client = ModbusClient(hass, params)
             for _, inverter in name_dict.items():
                 create_controller(hass, client, inverter)
 
