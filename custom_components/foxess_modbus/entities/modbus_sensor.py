@@ -1,26 +1,18 @@
 """Sensor"""
 import logging
 
-from custom_components.foxess_modbus.const import FRIENDLY_NAME
-from custom_components.foxess_modbus.const import INVERTER_CONN
-from custom_components.foxess_modbus.const import INVERTER_MODEL
-from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorStateClass
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_IDENTIFIERS
-from homeassistant.const import ATTR_MANUFACTURER
-from homeassistant.const import ATTR_MODEL
-from homeassistant.const import ATTR_NAME
 
+from .modbus_entity_mixin import ModbusEntityMixin
 from ..common.callback_controller import CallbackController
-from ..const import DOMAIN
 from .sensor_desc import SensorDescription
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class ModbusSensor(SensorEntity):
+class ModbusSensor(ModbusEntityMixin, SensorEntity):
     """Sensor class."""
 
     def __init__(
@@ -33,93 +25,36 @@ class ModbusSensor(SensorEntity):
         """Initialize the sensor."""
 
         self._controller = controller
-        self._entity_description = entity_description
+        self.entity_description = entity_description
         self._entry = entry
         self._inv_details = inv_details
         self.entity_id = "sensor." + self._get_unique_id()
 
     @property
-    def unique_id(self) -> str:
-        return "foxess_modbus_" + self._get_unique_id()
-
-    @property
-    def device_info(self):
-        friendly_name = self._inv_details[FRIENDLY_NAME]
-        inv_model = self._inv_details[INVERTER_MODEL]
-        conn_type = self._inv_details[INVERTER_CONN]
-        if friendly_name != "":
-            attr_name = f"FoxESS - Modbus ({friendly_name})"
-        else:
-            attr_name = "FoxESS - Modbus"
-
-        return {
-            ATTR_IDENTIFIERS: {(DOMAIN, inv_model, conn_type, friendly_name)},
-            ATTR_NAME: attr_name,
-            ATTR_MODEL: f"{inv_model} - {conn_type}",
-            ATTR_MANUFACTURER: "FoxESS",
-        }
-
-    @property
-    def name(self) -> str:
-        """Return the name of the sensor."""
-        friendly_name = self._inv_details[FRIENDLY_NAME]
-        if friendly_name != "":
-            return f"{self._entity_description.name} ({friendly_name})"
-        else:
-            return self._entity_description.name
-
-    @property
     def native_value(self):
         """Return the value reported by the sensor."""
-        value = self._controller.read(self._entity_description.address)
+        value = self._controller.read(self.entity_description.address)
         if value is not None:
-            if self._entity_description.scale is not None:
-                value = value * self._entity_description.scale
-            if self._entity_description.post_process is not None:
-                return self._entity_description.post_process(value)
+            if self.entity_description.scale is not None:
+                value = value * self.entity_description.scale
+            if self.entity_description.post_process is not None:
+                return self.entity_description.post_process(value)
 
         return value
 
     @property
     def native_unit_of_measurement(self) -> str:
         """Return native unit of measurement"""
-        return self._entity_description.native_unit_of_measurement
-
-    @property
-    def icon(self) -> str:
-        """Return the icon of the sensor."""
-        return self._entity_description.icon
-
-    @property
-    def device_class(self) -> SensorDeviceClass:
-        """Return the device class of the sensor."""
-        return self._entity_description.device_class
+        return self.entity_description.native_unit_of_measurement
 
     @property
     def state_class(self) -> SensorStateClass:
         """Return the device class of the sensor."""
-        return self._entity_description.state_class
+        return self.entity_description.state_class
 
     @property
     def should_poll(self) -> bool:
         """Return True if entity has to be polled for state.
         False if entity pushes its state to HA.
         """
-        return self._entity_description.should_poll
-
-    async def async_added_to_hass(self) -> None:
-        """Add update callback after being added to hass."""
-        await super().async_added_to_hass()
-        self._controller.add_update_listener(self)
-
-    def update_callback(self) -> None:
-        """Schedule a state update."""
-        self.schedule_update_ha_state(True)
-
-    def _get_unique_id(self):
-        """Get unique ID"""
-        friendly_name = self._inv_details[FRIENDLY_NAME]
-        if friendly_name != "":
-            return f"{friendly_name}_{self._entity_description.key}"
-        else:
-            return f"{self._entity_description.key}"
+        return self.entity_description.should_poll
