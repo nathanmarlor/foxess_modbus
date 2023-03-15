@@ -79,13 +79,17 @@ class ModbusController(CallbackController, UnloadController):
             _LOGGER.warning("Modbus write service called with incorrect data format")
 
     async def write_register(self, address, value) -> None:
+        """Write single registr"""
         await self._write_registers(address, [value])
 
     async def _write_registers(self, start_address, values) -> None:
+        """Write multiple registrs"""
         await self._client.write_registers(start_address, values, self._slave)
         for i, value in enumerate(values):
             if start_address + i in self._data:
                 self._data[start_address + i] = value
+
+        self._notify_listeners()
 
     async def refresh(self, *args) -> None:
         """Refresh modbus data"""
