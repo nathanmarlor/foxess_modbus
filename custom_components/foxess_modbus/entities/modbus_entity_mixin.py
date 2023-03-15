@@ -3,7 +3,6 @@ import logging
 from custom_components.foxess_modbus.const import FRIENDLY_NAME
 from custom_components.foxess_modbus.const import INVERTER_CONN
 from custom_components.foxess_modbus.const import INVERTER_MODEL
-from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.const import ATTR_IDENTIFIERS
 from homeassistant.const import ATTR_MANUFACTURER
 from homeassistant.const import ATTR_MODEL

@@ -1,16 +1,15 @@
 """Sensor"""
 import logging
-
 from dataclasses import dataclass
 from typing import Callable
 
 from homeassistant.components.sensor import SensorEntity
-from homeassistant.components.sensor import SensorStateClass
 from homeassistant.components.sensor import SensorEntityDescription
+from homeassistant.components.sensor import SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 
-from .modbus_entity_mixin import ModbusEntityMixin
 from ..common.callback_controller import CallbackController
+from .modbus_entity_mixin import ModbusEntityMixin
 
 _LOGGER = logging.getLogger(__name__)
 

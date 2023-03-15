@@ -1,13 +1,13 @@
 """Select"""
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.select import SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
 
-from .modbus_entity_mixin import ModbusEntityMixin
 from ..modbus_controller import ModbusController
+from .modbus_entity_mixin import ModbusEntityMixin
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
