@@ -10,8 +10,8 @@ from .const import INVERTER_CONN
 from .const import INVERTER_MODEL
 from .const import INVERTERS
 from .const import LAN
-from .sensors import h1_aux_sensors
-from .sensors import h1_lan_sensors
+from .entities import h1_aux_sensors
+from .entities import h1_lan_sensors
 
 _LOGGER = logging.getLogger(__package__)
 
