@@ -31,7 +31,7 @@ _ADDRESSES = {
     ],
     AUX: [
         (11000, 11050),
-        (41001, 41012),
+        (41000, 41012),
     ],
 }
 
@@ -74,9 +74,18 @@ class ModbusController(CallbackController, UnloadController):
         if {"start_address", "values"} <= set(service.data):
             start_address = service.data["start_address"]
             values = service.data["values"].split(",")
-            await self._client.write_registers(start_address, values, self._slave)
+            await self._write_registers(start_address, values)
         else:
             _LOGGER.warning("Modbus write service called with incorrect data format")
+
+    async def write_register(self, address, value) -> None:
+        await self._write_registers(address, [value])
+
+    async def _write_registers(self, start_address, values) -> None:
+        await self._client.write_registers(start_address, values, self._slave)
+        for i, value in enumerate(values):
+            if start_address + i in self._data:
+                self._data[start_address + i] = value
 
     async def refresh(self, *args) -> None:
         """Refresh modbus data"""
