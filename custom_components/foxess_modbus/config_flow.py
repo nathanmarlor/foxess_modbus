@@ -15,6 +15,7 @@ from .const import ADD_ANOTHER
 from .const import CONFIG_SAVE_TIME
 from .const import DOMAIN
 from .const import FRIENDLY_NAME
+from .const import INVERTER_BASE
 from .const import INVERTER_CONN
 from .const import INVERTER_MODEL
 from .const import INVERTER_TYPE
@@ -162,8 +163,9 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             inv_type, host, inverter[MODBUS_SLAVE]
         )
         if result:
-            inv_model, inv_conn = details
-            inverter[INVERTER_MODEL] = inv_model
+            base_model, full_model, inv_conn = details
+            inverter[INVERTER_BASE] = base_model
+            inverter[INVERTER_MODEL] = full_model
             inverter[INVERTER_CONN] = inv_conn
             self._errors["base"] = None
             # create dictionary entry

@@ -1,6 +1,9 @@
 """Inverter Select entities"""
 import logging
 
+from custom_components.foxess_modbus.const import AC1
+from custom_components.foxess_modbus.const import H1
+
 from .modbus_select import ModbusSelect
 from .modbus_select import ModbusSelectDescription
 
@@ -16,8 +19,13 @@ SELECTS: list[ModbusSelectDescription] = [
     ),
 ]
 
+COMPAT: dict[str, list] = {H1: SELECTS, AC1: SELECTS}
 
-def selects(controller, entry, inverter) -> list:
+
+def selects(base_model, controller, entry, inverter) -> list:
     """Setup select platform."""
 
-    return list(ModbusSelect(controller, select, entry, inverter) for select in SELECTS)
+    return list(
+        ModbusSelect(controller, select, entry, inverter)
+        for select in COMPAT[base_model]
+    )

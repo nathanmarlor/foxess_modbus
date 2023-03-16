@@ -1,6 +1,9 @@
 """Inverter sensor"""
 import logging
 
+from custom_components.foxess_modbus.const import AC1
+from custom_components.foxess_modbus.const import H1
+
 from .modbus_sensor import ModbusSensor
 from .modbus_sensor import SensorDescription
 
@@ -22,12 +25,13 @@ SENSORS: list[SensorDescription] = [
 ]
 
 
-def binary_sensors(controller, entry, inverter) -> list:
-    """Setup sensor platform."""
-    entities = []
+COMPAT: dict[str, list] = {H1: SENSORS, AC1: SENSORS}
 
-    for sensor in SENSORS:
-        sen = ModbusSensor(controller, sensor, entry, inverter)
-        entities.append(sen)
 
-    return entities
+def binary_sensors(base_model, controller, entry, inverter) -> list:
+    """Setup binary sensor platform."""
+
+    return list(
+        ModbusSensor(controller, number, entry, inverter)
+        for number in COMPAT[base_model]
+    )

@@ -123,14 +123,17 @@ class ModbusController(CallbackController, UnloadController):
                 result = await self._client.read_registers(
                     serial_addr, 10, holding, self._slave
                 )
+                result = [65, 67, 49, 45, 53, 46, 48, 45]
                 for model in _AUTODETECT:
-                    inverter_type = "".join([chr(i) for i in result])
-                    if inverter_type[: len(model)] == model:
+                    inverter_str = "".join([chr(i) for i in result])
+                    base_model = inverter_str[: len(model)]
+                    if base_model == model:
+                        full_model = inverter_str[: len(model) + 4]
                         _LOGGER.info(
-                            f"Autodetected inverter as {inverter_type} using {conn_type} connection"
+                            f"Autodetected inverter as {full_model} using {conn_type} connection"
                         )
-                        return inverter_type[: len(model) + 4], conn_type
-                else:
-                    raise ConnectionRefusedError(f"{inverter_type} not supported")
+                        return base_model, full_model, conn_type
+
+                raise ConnectionRefusedError(f"{inverter_str} not supported")
             finally:
                 await self._client.close()

@@ -30,6 +30,7 @@ MODBUS_SERIAL_BAUD = "modbus_serial_baud"
 
 INVERTER_TYPE = "inverter_type"
 INVERTER_MODEL = "inverter_model"
+INVERTER_BASE = "inverter_base"
 INVERTER_CONN = "inverter_conn"
 INVERTERS = "inverters"
 

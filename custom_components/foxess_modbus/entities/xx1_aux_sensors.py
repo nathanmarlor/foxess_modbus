@@ -373,8 +373,9 @@ H1_AC1_SENSORS: list[SensorDescription] = [
 COMPAT: dict[str, list] = {H1: H1_SENSORS + H1_AC1_SENSORS, AC1: H1_AC1_SENSORS}
 
 
-def sensors(model, controller, entry, inverter) -> list:
+def sensors(base_model, controller, entry, inverter) -> list:
     """Return compatible sensors"""
     return list(
-        ModbusSensor(controller, sensor, entry, inverter) for sensor in COMPAT[model]
+        ModbusSensor(controller, sensor, entry, inverter)
+        for sensor in COMPAT[base_model]
     )
