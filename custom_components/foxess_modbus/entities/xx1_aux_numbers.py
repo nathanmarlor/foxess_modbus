@@ -1,6 +1,9 @@
 """Inverter sensor"""
 import logging
 
+from custom_components.foxess_modbus.const import AC1
+from custom_components.foxess_modbus.const import AIOH1
+from custom_components.foxess_modbus.const import H1
 from homeassistant.components.number import NumberDeviceClass
 from homeassistant.components.number import NumberMode
 
@@ -9,8 +12,8 @@ from .modbus_number import ModbusNumberDescription
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
-NUMBERS: dict[str, ModbusNumberDescription] = {
-    "min_soc": ModbusNumberDescription(
+NUMBERS: list[ModbusNumberDescription] = [
+    ModbusNumberDescription(
         key="min_soc",
         address=41009,
         name="Min SoC",
@@ -22,7 +25,7 @@ NUMBERS: dict[str, ModbusNumberDescription] = {
         device_class=NumberDeviceClass.BATTERY,
         icon="mdi:battery-arrow-down",
     ),
-    "min_soc_on_grid": ModbusNumberDescription(
+    ModbusNumberDescription(
         key="min_soc_on_grid",
         address=41011,
         name="Min SoC (On Grid)",
@@ -34,7 +37,7 @@ NUMBERS: dict[str, ModbusNumberDescription] = {
         device_class=NumberDeviceClass.BATTERY,
         icon="mdi:battery-arrow-down",
     ),
-    "max_soc": ModbusNumberDescription(
+    ModbusNumberDescription(
         key="max_soc",
         address=41010,
         name="Max SoC",
@@ -46,12 +49,15 @@ NUMBERS: dict[str, ModbusNumberDescription] = {
         device_class=NumberDeviceClass.BATTERY,
         icon="mdi:battery-arrow-up",
     ),
-}
+]
+
+COMPAT: dict[str, list] = {H1: NUMBERS, AIOH1: NUMBERS, AC1: NUMBERS}
 
 
-def numbers(controller, entry, inverter) -> list:
+def numbers(base_model, controller, entry, inverter) -> list:
     """Setup number platform."""
 
     return list(
-        ModbusNumber(controller, number, entry, inverter) for number in NUMBERS.values()
+        ModbusNumber(controller, number, entry, inverter)
+        for number in COMPAT[base_model]
     )

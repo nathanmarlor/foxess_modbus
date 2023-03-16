@@ -30,6 +30,7 @@ MODBUS_SERIAL_BAUD = "modbus_serial_baud"
 
 INVERTER_TYPE = "inverter_type"
 INVERTER_MODEL = "inverter_model"
+INVERTER_BASE = "inverter_base"
 INVERTER_CONN = "inverter_conn"
 INVERTERS = "inverters"
 
@@ -38,7 +39,8 @@ CONFIG_SAVE_TIME = "save_time"
 
 # Inverter Types
 H1 = "H1"
-H3 = "H3"
+AC1 = "AC1"
+AIOH1 = "AIO-H1"
 LAN = "LAN"
 AUX = "AUX"
 TCP = "TCP"

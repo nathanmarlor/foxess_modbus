@@ -4,6 +4,8 @@ import queue
 from asyncio.exceptions import TimeoutError
 from datetime import timedelta
 
+from custom_components.foxess_modbus.const import AC1
+from custom_components.foxess_modbus.const import AIOH1
 from custom_components.foxess_modbus.const import AUX
 from custom_components.foxess_modbus.const import H1
 from custom_components.foxess_modbus.const import LAN
@@ -18,6 +20,8 @@ _LOGGER = logging.getLogger(__name__)
 _SERIALS = {AUX: 10000, LAN: 30000}
 # LAN uses holding registers / AUX uses input registers
 _HOLDING = {AUX: False, LAN: True}
+
+_AUTODETECT = [H1, AC1, AIOH1]
 
 # 5 seconds refresh with max read of 50
 _LAN_POLL = (5, 50)
@@ -118,15 +122,18 @@ class ModbusController(CallbackController, UnloadController):
             holding = _HOLDING[conn_type]
             try:
                 result = await self._client.read_registers(
-                    serial_addr, 2, holding, self._slave
+                    serial_addr, 10, holding, self._slave
                 )
-                inverter_type = "".join([chr(i) for i in result])
-                if inverter_type == H1:
-                    _LOGGER.info(
-                        f"Autodetected inverter as {inverter_type} using {conn_type} connection"
-                    )
-                    return inverter_type, conn_type
-                else:
-                    raise ConnectionRefusedError(f"{inverter_type} not supported")
+                for model in _AUTODETECT:
+                    inverter_str = "".join([chr(i) for i in result])
+                    base_model = inverter_str[: len(model)]
+                    if base_model == model:
+                        full_model = inverter_str[: len(model) + 4]
+                        _LOGGER.info(
+                            f"Autodetected inverter as {full_model} using {conn_type} connection"
+                        )
+                        return base_model, full_model, conn_type
+
+                raise ConnectionRefusedError(f"{inverter_str} not supported")
             finally:
                 await self._client.close()
