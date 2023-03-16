@@ -5,13 +5,12 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
-from .const import H1
 from .const import INVERTER_CONN
 from .const import INVERTER_MODEL
 from .const import INVERTERS
 from .const import LAN
-from .entities import h1_aux_sensors
-from .entities import h1_lan_sensors
+from .entities import xx1_aux_sensors
+from .entities import xx1_lan_sensors
 
 _LOGGER = logging.getLogger(__package__)
 
@@ -24,10 +23,13 @@ async def async_setup_entry(
     inverters = hass.data[DOMAIN][entry.entry_id][INVERTERS]
 
     for inverter, controller in inverters:
-        if inverter[INVERTER_MODEL] == H1:
-            if inverter[INVERTER_CONN] == LAN:
-                sensors = h1_lan_sensors.sensors(controller, entry, inverter)
-            else:
-                sensors = h1_aux_sensors.sensors(controller, entry, inverter)
+        if inverter[INVERTER_CONN] == LAN:
+            sensors = xx1_lan_sensors.sensors(
+                inverter[INVERTER_MODEL], controller, entry, inverter
+            )
+        else:
+            sensors = xx1_aux_sensors.sensors(
+                inverter[INVERTER_MODEL], controller, entry, inverter
+            )
 
         async_add_devices(sensors)

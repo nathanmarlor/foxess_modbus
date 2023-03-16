@@ -38,6 +38,7 @@ CONFIG_SAVE_TIME = "save_time"
 
 # Inverter Types
 H1 = "H1"
+AC1 = "AC1"
 H3 = "H3"
 LAN = "LAN"
 AUX = "AUX"

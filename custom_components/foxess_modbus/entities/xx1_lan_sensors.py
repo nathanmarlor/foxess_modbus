@@ -1,6 +1,8 @@
 """Inverter sensor"""
 import logging
 
+from custom_components.foxess_modbus.const import AC1
+from custom_components.foxess_modbus.const import H1
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorStateClass
 
@@ -9,7 +11,7 @@ from .modbus_sensor import SensorDescription
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
-SENSORS: dict[str, SensorDescription] = {
+H1_SENSORS: dict[str, SensorDescription] = {
     "pv1_voltage": SensorDescription(
         key="pv1_voltage",
         address=31000,
@@ -64,6 +66,9 @@ SENSORS: dict[str, SensorDescription] = {
         native_unit_of_measurement="kW",
         scale=0.001,
     ),
+}
+
+H1_AC1_SENSORS: dict[str, SensorDescription] = {
     "battery_soc": SensorDescription(
         key="battery_soc",
         address=31024,
@@ -204,13 +209,12 @@ SENSORS: dict[str, SensorDescription] = {
     ),
 }
 
+COMPAT: dict[str, dict] = {H1: H1_SENSORS + H1_AC1_SENSORS, AC1: H1_AC1_SENSORS}
 
-def sensors(controller, entry, inverter) -> list:
-    """Setup sensor platform."""
-    entities = []
 
-    for sensor in SENSORS:
-        sen = ModbusSensor(controller, SENSORS[sensor], entry, inverter)
-        entities.append(sen)
-
-    return entities
+def sensors(model, controller, entry, inverter) -> list:
+    """Return compatible sensors"""
+    return list(
+        ModbusSensor(controller, COMPAT[model][sensor], entry, inverter)
+        for sensor in COMPAT[model].values()
+    )

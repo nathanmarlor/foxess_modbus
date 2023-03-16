@@ -10,7 +10,7 @@ from .const import INVERTER_CONN
 from .const import INVERTER_MODEL
 from .const import INVERTERS
 from .const import LAN
-from .entities import h1_aux_binary_sensors
+from .entities import xx1_aux_binary_sensors
 
 _LOGGER = logging.getLogger(__package__)
 
@@ -27,7 +27,7 @@ async def async_setup_entry(
             if inverter[INVERTER_CONN] == LAN:
                 sensors = []
             else:
-                sensors = h1_aux_binary_sensors.binary_sensors(
+                sensors = xx1_aux_binary_sensors.binary_sensors(
                     controller, entry, inverter
                 )
 

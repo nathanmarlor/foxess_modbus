@@ -10,7 +10,7 @@ from .const import INVERTER_CONN
 from .const import INVERTER_MODEL
 from .const import INVERTERS
 from .const import LAN
-from .entities import h1_aux_numbers
+from .entities import xx1_aux_numbers
 
 _LOGGER = logging.getLogger(__package__)
 
@@ -27,6 +27,6 @@ async def async_setup_entry(
             if inverter[INVERTER_CONN] == LAN:
                 numbers = []
             else:
-                numbers = h1_aux_numbers.numbers(controller, entry, inverter)
+                numbers = xx1_aux_numbers.numbers(controller, entry, inverter)
 
         async_add_devices(numbers)
