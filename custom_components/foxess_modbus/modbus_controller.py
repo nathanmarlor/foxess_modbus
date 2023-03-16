@@ -4,10 +4,8 @@ import queue
 from asyncio.exceptions import TimeoutError
 from datetime import timedelta
 
-from custom_components.foxess_modbus.const import AC1
-from custom_components.foxess_modbus.const import AIOH1
+from custom_components.foxess_modbus.const import AUTODETECT
 from custom_components.foxess_modbus.const import AUX
-from custom_components.foxess_modbus.const import H1
 from custom_components.foxess_modbus.const import LAN
 from homeassistant.helpers.event import async_track_time_interval
 from pymodbus.exceptions import ModbusException
@@ -20,14 +18,6 @@ _LOGGER = logging.getLogger(__name__)
 _SERIALS = {AUX: 10000, LAN: 30000}
 # LAN uses holding registers / AUX uses input registers
 _HOLDING = {AUX: False, LAN: True}
-
-_AUTODETECT = [H1, AC1, AIOH1]
-
-# 5 seconds refresh with max read of 50
-_LAN_POLL = (5, 50)
-# 10 seconds refresh with max read of 8
-_AUX_POLL = (10, 8)
-_POLL_RATES = {LAN: _LAN_POLL, AUX: _AUX_POLL}
 
 _ADDRESSES = {
     LAN: [
@@ -43,13 +33,17 @@ _ADDRESSES = {
 class ModbusController(CallbackController, UnloadController):
     """Class to manage forecast retrieval"""
 
-    def __init__(self, hass, client, connection_type, slave) -> None:
+    def __init__(
+        self, hass, client, connection_type, slave, poll_rate, max_read
+    ) -> None:
         """Init"""
         self._hass = hass
         self._data = dict()
         self._client = client
         self._connection_type = connection_type
         self._slave = slave
+        self._poll_rate = poll_rate
+        self._max_read = max_read
         self._write_queue = queue.Queue()
 
         # Setup mixins
@@ -57,11 +51,10 @@ class ModbusController(CallbackController, UnloadController):
         UnloadController.__init__(self)
 
         if self._hass is not None:
-            poll_rate, _ = _POLL_RATES[connection_type]
             refresh = async_track_time_interval(
                 self._hass,
                 self.refresh,
-                timedelta(seconds=poll_rate),
+                timedelta(seconds=self._poll_rate),
             )
 
             self._unload_listeners.append(refresh)
@@ -93,13 +86,12 @@ class ModbusController(CallbackController, UnloadController):
 
     async def refresh(self, *args) -> None:
         """Refresh modbus data"""
-        _, max_read = _POLL_RATES[self._connection_type]
         holding = _HOLDING[self._connection_type]
         try:
             for start, end in _ADDRESSES[self._connection_type]:
                 _LOGGER.debug(f"Reading addresses for ({start}:{end-start})")
-                for i in range(start, end, max_read):
-                    data_per_read = min(max_read, end - i)
+                for i in range(start, end, self._max_read):
+                    data_per_read = min(self._max_read, end - i)
                     data = await self._client.read_registers(
                         i, data_per_read, holding, self._slave
                     )
@@ -124,7 +116,7 @@ class ModbusController(CallbackController, UnloadController):
                 result = await self._client.read_registers(
                     serial_addr, 10, holding, self._slave
                 )
-                for model in _AUTODETECT:
+                for model in AUTODETECT:
                     inverter_str = "".join([chr(i) for i in result])
                     base_model = inverter_str[: len(model)]
                     if base_model == model:

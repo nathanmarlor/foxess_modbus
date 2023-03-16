@@ -27,6 +27,8 @@ MODBUS_DEVICE = "modbus_device"
 MODBUS_TYPE = "modbus_type"
 MODBUS_SERIAL_HOST = "modbus_serial_host"
 MODBUS_SERIAL_BAUD = "modbus_serial_baud"
+POLL_RATE = "poll_rate"
+MAX_READ = "max_read"
 
 INVERTER_TYPE = "inverter_type"
 INVERTER_MODEL = "inverter_model"
@@ -42,6 +44,8 @@ H1 = "H1"
 AC1 = "AC1"
 AIOH1 = "AIO-H1"
 LAN = "LAN"
+AUTODETECT = [H1, AC1, AIOH1]
+
 AUX = "AUX"
 TCP = "TCP"
 SERIAL = "SERIAL"
