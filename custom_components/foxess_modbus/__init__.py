@@ -8,7 +8,6 @@ import asyncio
 import logging
 
 import voluptuous as vol
-from custom_components.foxess_modbus.const import CONFIG_SAVE_TIME
 from custom_components.foxess_modbus.const import FRIENDLY_NAME
 from custom_components.foxess_modbus.modbus_client import ModbusClient
 from homeassistant.config_entries import ConfigEntry
@@ -20,9 +19,12 @@ from pymodbus.exceptions import ModbusIOException
 from .const import DOMAIN
 from .const import INVERTER_CONN
 from .const import INVERTERS
+from .const import MAX_READ
 from .const import MODBUS_SLAVE
 from .const import MODBUS_TYPE
 from .const import PLATFORMS
+from .const import POLL_RATE
+from .const import SERIAL
 from .const import STARTUP_MESSAGE
 from .const import TCP
 from .modbus_controller import ModbusController
@@ -59,16 +61,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         # overwrite data with options
         entry.data = entry.options
 
+    poll_rate = entry.data.get(POLL_RATE, 10)
+    max_read = entry.data.get(MAX_READ, 8)
+
     def create_controller(hass, client, inverter):
         conn_type, slave = inverter[INVERTER_CONN], inverter[MODBUS_SLAVE]
-        controller = ModbusController(hass, client, conn_type, slave)
+        controller = ModbusController(
+            hass, client, conn_type, slave, poll_rate, max_read
+        )
         inverter_controller.append((inverter, controller))
 
     inverter_controller = []
-    data = dict(entry.data)
-    del data[CONFIG_SAVE_TIME]
+    inverters = {k: v for k, v in entry.data.items() if k in (TCP, SERIAL)}
     # create controllers for inverters
-    for modbus_type, host_dict in data.items():
+    for modbus_type, host_dict in inverters.items():
         for host, name_dict in host_dict.items():
             params = {MODBUS_TYPE: modbus_type}
             if modbus_type == TCP:

@@ -7,6 +7,7 @@ from typing import Any
 import voluptuous as vol
 from custom_components.foxess_modbus import ModbusClient
 from homeassistant import config_entries
+from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.selector import selector
 from pymodbus.exceptions import ModbusException
@@ -19,11 +20,13 @@ from .const import INVERTER_BASE
 from .const import INVERTER_CONN
 from .const import INVERTER_MODEL
 from .const import INVERTER_TYPE
+from .const import MAX_READ
 from .const import MODBUS_HOST
 from .const import MODBUS_PORT
 from .const import MODBUS_SERIAL_HOST
 from .const import MODBUS_SLAVE
 from .const import MODBUS_TYPE
+from .const import POLL_RATE
 from .const import SERIAL
 from .const import TCP
 from .modbus_controller import ModbusController
@@ -195,7 +198,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             else:
                 params.update({"port": host, "baudrate": 9600})
             client = ModbusClient(self.hass, params)
-            controller = ModbusController(None, client, None, slave)
+            controller = ModbusController(None, client, None, slave, None, None)
             return (True, await controller.autodetect())
         except ModbusException as ex:
             _LOGGER.warning(f"{ex!r}")
@@ -204,3 +207,36 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.warning(f"{ex!r}")
             self._errors["base"] = "modbus_model_not_supported"
         return False, None
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        """Get the options flow for this handler."""
+        return ModbusOptionsHandler(config_entry)
+
+
+class ModbusOptionsHandler(config_entries.OptionsFlow):
+    """Options flow handler"""
+
+    def __init__(self, config: config_entries.ConfigEntry) -> None:
+        self._config = config
+        self._data = dict(self._config.data)
+        self._errors = {}
+
+    async def async_step_init(self, user_input=None):
+        """Init options"""
+        if user_input is not None:
+            self._data[POLL_RATE] = user_input[POLL_RATE]
+            self._data[MAX_READ] = user_input[MAX_READ]
+            return self.async_create_entry(title=_TITLE, data=self._data)
+
+        options_schema = vol.Schema(
+            {
+                vol.Required(POLL_RATE, default=self._data.get(POLL_RATE, 10)): int,
+                vol.Required(MAX_READ, default=self._data.get(MAX_READ, 8)): int,
+            }
+        )
+
+        return self.async_show_form(
+            step_id="init", data_schema=options_schema, errors=self._errors
+        )

@@ -35,5 +35,16 @@
     "abort": {
       "single_instance_allowed": "Only a single instance is allowed."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "description": "Configure the poll rate and max read values\nRecommended: AUX: 10s / 8 max & LAN: 5s / 50 max",
+        "data": {
+          "poll_rate": "Poll rate",
+          "max_read": "Max read"
+        }
+      }
+    }
   }
 }
