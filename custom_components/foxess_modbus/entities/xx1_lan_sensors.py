@@ -2,6 +2,7 @@
 import logging
 
 from custom_components.foxess_modbus.const import AC1
+from custom_components.foxess_modbus.const import AIOH1
 from custom_components.foxess_modbus.const import H1
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorStateClass
@@ -209,7 +210,11 @@ H1_AC1_SENSORS: list[SensorDescription] = [
     ),
 ]
 
-COMPAT: dict[str, list] = {H1: H1_SENSORS + H1_AC1_SENSORS, AC1: H1_AC1_SENSORS}
+COMPAT: dict[str, list] = {
+    H1: H1_SENSORS + H1_AC1_SENSORS,
+    AIOH1: H1_SENSORS + H1_AC1_SENSORS,
+    AC1: H1_AC1_SENSORS,
+}
 
 
 def sensors(base_model, controller, entry, inverter) -> list:

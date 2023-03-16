@@ -6,6 +6,7 @@ from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorStateClass
 
 from ..const import AC1
+from ..const import AIOH1
 from ..const import H1
 from .modbus_sensor import ModbusSensor
 from .modbus_sensor import SensorDescription
@@ -370,7 +371,11 @@ H1_AC1_SENSORS: list[SensorDescription] = [
     ),
 ]
 
-COMPAT: dict[str, list] = {H1: H1_SENSORS + H1_AC1_SENSORS, AC1: H1_AC1_SENSORS}
+COMPAT: dict[str, list] = {
+    H1: H1_SENSORS + H1_AC1_SENSORS,
+    AIOH1: H1_SENSORS + H1_AC1_SENSORS,
+    AC1: H1_AC1_SENSORS,
+}
 
 
 def sensors(base_model, controller, entry, inverter) -> list:

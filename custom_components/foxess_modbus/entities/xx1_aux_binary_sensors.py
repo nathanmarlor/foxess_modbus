@@ -2,6 +2,7 @@
 import logging
 
 from custom_components.foxess_modbus.const import AC1
+from custom_components.foxess_modbus.const import AIOH1
 from custom_components.foxess_modbus.const import H1
 
 from .modbus_sensor import ModbusSensor
@@ -25,7 +26,7 @@ SENSORS: list[SensorDescription] = [
 ]
 
 
-COMPAT: dict[str, list] = {H1: SENSORS, AC1: SENSORS}
+COMPAT: dict[str, list] = {H1: SENSORS, AIOH1: SENSORS, AC1: SENSORS}
 
 
 def binary_sensors(base_model, controller, entry, inverter) -> list:

@@ -2,6 +2,7 @@
 import logging
 
 from custom_components.foxess_modbus.const import AC1
+from custom_components.foxess_modbus.const import AIOH1
 from custom_components.foxess_modbus.const import H1
 from homeassistant.components.number import NumberDeviceClass
 from homeassistant.components.number import NumberMode
@@ -50,7 +51,7 @@ NUMBERS: list[ModbusNumberDescription] = [
     ),
 ]
 
-COMPAT: dict[str, list] = {H1: NUMBERS, AC1: NUMBERS}
+COMPAT: dict[str, list] = {H1: NUMBERS, AIOH1: NUMBERS, AC1: NUMBERS}
 
 
 def numbers(base_model, controller, entry, inverter) -> list:

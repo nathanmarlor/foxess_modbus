@@ -2,6 +2,7 @@
 import logging
 
 from custom_components.foxess_modbus.const import AC1
+from custom_components.foxess_modbus.const import AIOH1
 from custom_components.foxess_modbus.const import H1
 
 from .modbus_select import ModbusSelect
@@ -19,7 +20,7 @@ SELECTS: list[ModbusSelectDescription] = [
     ),
 ]
 
-COMPAT: dict[str, list] = {H1: SELECTS, AC1: SELECTS}
+COMPAT: dict[str, list] = {H1: SELECTS, AIOH1: SELECTS, AC1: SELECTS}
 
 
 def selects(base_model, controller, entry, inverter) -> list:

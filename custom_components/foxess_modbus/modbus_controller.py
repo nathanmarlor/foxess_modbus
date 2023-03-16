@@ -5,6 +5,7 @@ from asyncio.exceptions import TimeoutError
 from datetime import timedelta
 
 from custom_components.foxess_modbus.const import AC1
+from custom_components.foxess_modbus.const import AIOH1
 from custom_components.foxess_modbus.const import AUX
 from custom_components.foxess_modbus.const import H1
 from custom_components.foxess_modbus.const import LAN
@@ -20,7 +21,7 @@ _SERIALS = {AUX: 10000, LAN: 30000}
 # LAN uses holding registers / AUX uses input registers
 _HOLDING = {AUX: False, LAN: True}
 
-_AUTODETECT = [H1, AC1]
+_AUTODETECT = [H1, AC1, AIOH1]
 
 # 5 seconds refresh with max read of 50
 _LAN_POLL = (5, 50)
@@ -123,7 +124,6 @@ class ModbusController(CallbackController, UnloadController):
                 result = await self._client.read_registers(
                     serial_addr, 10, holding, self._slave
                 )
-                result = [65, 67, 49, 45, 53, 46, 48, 45]
                 for model in _AUTODETECT:
                     inverter_str = "".join([chr(i) for i in result])
                     base_model = inverter_str[: len(model)]
