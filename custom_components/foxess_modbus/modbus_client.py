@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import socket
 from typing import Any
 
 from custom_components.foxess_modbus.const import MODBUS_TYPE
@@ -31,8 +32,18 @@ class ModbusClient:
 
     async def connect(self):
         """Connect to device"""
+
+        def connect_impl():
+            self._client.connect()
+            # pymodbus doesn't disable Nagle's algorithm. This slows down reads quite substantially as the
+            # TCP stack waits to see if we're going to send anything else. Disable it ourselves.
+            if isinstance(self._client, ModbusTcpClient):
+                self._client.socket.setsockopt(
+                    socket.IPPROTO_TCP, socket.TCP_NODELAY, True
+                )
+
         _LOGGER.debug(f"Connecting to modbus - ({self._config})")
-        if not await self._async_pymodbus_call(self._client.connect):
+        if not await self._async_pymodbus_call(connect_impl):
             _LOGGER.debug("Connect failed, pymodbus will retry")
 
     async def close(self):
