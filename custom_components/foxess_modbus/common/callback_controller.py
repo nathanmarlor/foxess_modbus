@@ -14,7 +14,7 @@ class CallbackController:
         """Add a listener for update notifications."""
         self._update_listeners.append(listener)
 
-    def _notify_listeners(self) -> None:
+    def _notify_listeners(self, changed_addresses: set[int]) -> None:
         """Notify listeners"""
         for listener in self._update_listeners:
-            listener.update_callback()
+            listener.update_callback(changed_addresses)

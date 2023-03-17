@@ -60,7 +60,6 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
             return
 
         await self._controller.write_register(self.entity_description.address, value)
-        self.update_callback()
 
     @property
     def should_poll(self) -> bool:

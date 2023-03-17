@@ -70,6 +70,7 @@ class ModbusEntityMixin:
         await super().async_added_to_hass()
         self._controller.add_update_listener(self)
 
-    def update_callback(self) -> None:
+    def update_callback(self, changed_addresses: set[int]) -> None:
         """Schedule a state update."""
-        self.schedule_update_ha_state(True)
+        if self.entity_description.address in changed_addresses:
+            self.schedule_update_ha_state(True)
