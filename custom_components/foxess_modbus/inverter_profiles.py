@@ -35,7 +35,6 @@ class InverterModelConnectionTypeProfile:
         binary_sensors: list[SensorDescription],
         numbers: list[ModbusNumberDescription],
         selects: list[ModbusSelectDescription],
-        address_ranges: list[tuple[int, int]],
     ) -> None:
         self.connection_type = connection_type
         self.sensors = sensors
@@ -43,7 +42,9 @@ class InverterModelConnectionTypeProfile:
         self.numbers = numbers
         self.selects = selects
 
-        self._address_ranges = address_ranges
+        self.all_addresses = sorted(
+            set(x.address for x in sensors + binary_sensors + numbers + selects)
+        )
 
     def create_read_ranges(self, max_read: int) -> Iterable[tuple[int, int]]:
         """
@@ -53,12 +54,37 @@ class InverterModelConnectionTypeProfile:
         :returns: Sequence of tuples of (start_address, num_registers_to_read)
         """
 
-        # TODO: I want to make this a lot smarter. We know the addresses of all sensors, so we can use this to
-        # generate an optimal sequence of reads
-        for start, end in self._address_ranges:
-            for i in range(start, end, max_read):
-                data_per_read = min(max_read, end - i)
-                yield (i, data_per_read)
+        # The idea here is that read operations are expensive (there seems to be a large round-trip time at least
+        # with the W610), but reading additional unneeded registers is relatively cheap (probably < 1ms).
+
+        # To give some intuition, here are some examples of the groupings we want to achieve, assuming max_read = 5
+        # 1,2 / 4,5 -> 1,2,3,4,5 (i.e. to read the registers 1, 2, 4 and 5, we'll do a single read spanning 1-5)
+        # 1,2 / 5,6,7,8 -> 1,2 / 5,6,7,8
+        # 1,2 / 5,6,7,8,9 -> 1,2 / 5,6,7,8,9
+        # 1,2 / 5,6,7,8,9,10 -> 1,2,3,4,5 / 6,7,8,9,10
+        # 1,2,3 / 5,6,7 / 9,10 -> 1,2,3,4,5 / 6,7,8,9,10
+
+        # The problem as a whole looks like it's NP-hard (although I can't find a name for it).
+        # We're therefore going to use a fairly simple algorithm which just makes each read as large as it can be.
+
+        start_address: int | None = None
+        read_size = 0
+        for address in self.all_addresses:
+            if start_address is None:
+                start_address, read_size = address, 1
+            elif address <= start_address + max_read - 1:
+                read_size = address - start_address + 1
+            else:
+                # There's a previous read, and we can't extend it to cover this address
+                yield (start_address, read_size)
+                start_address, read_size = address, 1
+
+            if read_size == max_read:
+                yield (start_address, read_size)
+                start_address, read_size = None, 0
+
+        if start_address is not None:
+            yield (start_address, read_size)
 
     def create_sensors(
         self,
@@ -131,10 +157,6 @@ INVERTER_PROFILES = {
                     binary_sensors=xx1_aux_binary_sensors.SENSORS,
                     numbers=xx1_aux_numbers.NUMBERS,
                     selects=xx1_aux_selects.SELECTS,
-                    address_ranges=[
-                        (11000, 11050),
-                        (41000, 41012),
-                    ],
                 ),
                 InverterModelConnectionTypeProfile(
                     connection_type=CONNECTION_TYPES["LAN"],
@@ -142,7 +164,6 @@ INVERTER_PROFILES = {
                     binary_sensors=[],
                     numbers=[],
                     selects=[],
-                    address_ranges=[(31000, 31025)],
                 ),
             ],
         ),
@@ -155,10 +176,6 @@ INVERTER_PROFILES = {
                     binary_sensors=xx1_aux_binary_sensors.SENSORS,
                     numbers=xx1_aux_numbers.NUMBERS,
                     selects=xx1_aux_selects.SELECTS,
-                    address_ranges=[
-                        (11000, 11050),
-                        (41000, 41012),
-                    ],
                 ),
                 InverterModelConnectionTypeProfile(
                     connection_type=CONNECTION_TYPES["LAN"],
@@ -166,7 +183,6 @@ INVERTER_PROFILES = {
                     binary_sensors=[],
                     numbers=[],
                     selects=[],
-                    address_ranges=[(31000, 31025)],
                 ),
             ],
         ),
@@ -179,10 +195,6 @@ INVERTER_PROFILES = {
                     binary_sensors=xx1_aux_binary_sensors.SENSORS,
                     numbers=xx1_aux_numbers.NUMBERS,
                     selects=xx1_aux_selects.SELECTS,
-                    address_ranges=[
-                        (11000, 11050),
-                        (41000, 41012),
-                    ],
                 ),
                 InverterModelConnectionTypeProfile(
                     connection_type=CONNECTION_TYPES["LAN"],
@@ -190,7 +202,6 @@ INVERTER_PROFILES = {
                     binary_sensors=[],
                     numbers=[],
                     selects=[],
-                    address_ranges=[(31000, 31025)],
                 ),
             ],
         ),
