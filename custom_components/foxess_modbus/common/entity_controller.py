@@ -1,10 +1,12 @@
 """Callback controller"""
 import logging
+from abc import ABC
+from abc import abstractmethod
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CallbackController:
+class EntityController(ABC):
     """Callback controller base"""
 
     def __init__(self) -> None:
@@ -18,3 +20,7 @@ class CallbackController:
         """Notify listeners"""
         for listener in self._update_listeners:
             listener.update_callback(changed_addresses)
+
+    @abstractmethod
+    async def write_register(self, address, value) -> None:
+        """Write a single value to a register"""

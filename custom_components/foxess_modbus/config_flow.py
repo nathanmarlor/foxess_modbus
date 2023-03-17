@@ -198,8 +198,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             else:
                 params.update({"port": host, "baudrate": 9600})
             client = ModbusClient(self.hass, params)
-            controller = ModbusController(None, client, None, slave, None, None)
-            return (True, await controller.autodetect())
+            return (True, await ModbusController.autodetect(client, slave))
         except ModbusException as ex:
             _LOGGER.warning(f"{ex!r}")
             self._errors["base"] = "modbus_error"

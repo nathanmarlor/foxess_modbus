@@ -8,7 +8,7 @@ from homeassistant.components.number import NumberEntityDescription
 from homeassistant.components.number import NumberMode
 from homeassistant.config_entries import ConfigEntry
 
-from ..modbus_controller import ModbusController
+from ..common.entity_controller import EntityController
 from .modbus_entity_mixin import ModbusEntityMixin
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -29,7 +29,7 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
 
     def __init__(
         self,
-        controller: ModbusController,
+        controller: EntityController,
         entity_description: ModbusNumberDescription,
         entry: ConfigEntry,
         inv_details,

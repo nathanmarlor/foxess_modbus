@@ -1,13 +1,9 @@
 """Inverter sensor"""
 import logging
 
-from custom_components.foxess_modbus.const import AC1
-from custom_components.foxess_modbus.const import AIOH1
-from custom_components.foxess_modbus.const import H1
 from homeassistant.components.number import NumberDeviceClass
 from homeassistant.components.number import NumberMode
 
-from .modbus_number import ModbusNumber
 from .modbus_number import ModbusNumberDescription
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -50,14 +46,3 @@ NUMBERS: list[ModbusNumberDescription] = [
         icon="mdi:battery-arrow-up",
     ),
 ]
-
-COMPAT: dict[str, list] = {H1: NUMBERS, AIOH1: NUMBERS, AC1: NUMBERS}
-
-
-def numbers(base_model, controller, entry, inverter) -> list:
-    """Setup number platform."""
-
-    return list(
-        ModbusNumber(controller, number, entry, inverter)
-        for number in COMPAT[base_model]
-    )

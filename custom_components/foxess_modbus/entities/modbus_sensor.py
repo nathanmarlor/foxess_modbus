@@ -8,7 +8,7 @@ from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.components.sensor import SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 
-from ..common.callback_controller import CallbackController
+from ..common.entity_controller import EntityController
 from .modbus_entity_mixin import ModbusEntityMixin
 
 _LOGGER = logging.getLogger(__name__)
@@ -29,7 +29,7 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
 
     def __init__(
         self,
-        controller: CallbackController,
+        controller: EntityController,
         entity_description: SensorDescription,
         entry: ConfigEntry,
         inv_details,

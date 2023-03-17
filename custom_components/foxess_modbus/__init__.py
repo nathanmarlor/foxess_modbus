@@ -8,8 +8,6 @@ import asyncio
 import logging
 
 import voluptuous as vol
-from custom_components.foxess_modbus.const import FRIENDLY_NAME
-from custom_components.foxess_modbus.modbus_client import ModbusClient
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
@@ -17,7 +15,7 @@ from homeassistant.helpers import config_validation as cv
 from pymodbus.exceptions import ModbusIOException
 
 from .const import DOMAIN
-from .const import INVERTER_CONN
+from .const import FRIENDLY_NAME
 from .const import INVERTERS
 from .const import MAX_READ
 from .const import MODBUS_SLAVE
@@ -27,6 +25,8 @@ from .const import POLL_RATE
 from .const import SERIAL
 from .const import STARTUP_MESSAGE
 from .const import TCP
+from .inverter_profiles import inverter_connection_type_profile_from_config
+from .modbus_client import ModbusClient
 from .modbus_controller import ModbusController
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -65,9 +65,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     max_read = entry.data.get(MAX_READ, 8)
 
     def create_controller(hass, client, inverter):
-        conn_type, slave = inverter[INVERTER_CONN], inverter[MODBUS_SLAVE]
         controller = ModbusController(
-            hass, client, conn_type, slave, poll_rate, max_read
+            hass,
+            client,
+            inverter_connection_type_profile_from_config(inverter),
+            inverter[MODBUS_SLAVE],
+            poll_rate,
+            max_read,
         )
         inverter_controller.append((inverter, controller))
 

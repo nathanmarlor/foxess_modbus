@@ -39,14 +39,6 @@ INVERTERS = "inverters"
 ADD_ANOTHER = "add_another"
 CONFIG_SAVE_TIME = "save_time"
 
-# Inverter Types
-H1 = "H1"
-AC1 = "AC1"
-AIOH1 = "AIO-H1"
-LAN = "LAN"
-AUTODETECT = [H1, AC1, AIOH1]
-
-AUX = "AUX"
 TCP = "TCP"
 SERIAL = "SERIAL"
 
