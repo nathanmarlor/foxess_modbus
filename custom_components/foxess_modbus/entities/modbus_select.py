@@ -6,7 +6,7 @@ from homeassistant.components.select import SelectEntity
 from homeassistant.components.select import SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
 
-from ..modbus_controller import ModbusController
+from ..common.entity_controller import EntityController
 from .modbus_entity_mixin import ModbusEntityMixin
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -25,7 +25,7 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
 
     def __init__(
         self,
-        controller: ModbusController,
+        controller: EntityController,
         entity_description: ModbusSelectDescription,
         entry: ConfigEntry,
         inv_details,

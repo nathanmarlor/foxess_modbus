@@ -1,14 +1,14 @@
 import logging
 
-from custom_components.foxess_modbus.const import FRIENDLY_NAME
-from custom_components.foxess_modbus.const import INVERTER_CONN
-from custom_components.foxess_modbus.const import INVERTER_MODEL
 from homeassistant.const import ATTR_IDENTIFIERS
 from homeassistant.const import ATTR_MANUFACTURER
 from homeassistant.const import ATTR_MODEL
 from homeassistant.const import ATTR_NAME
 
 from ..const import DOMAIN
+from ..const import FRIENDLY_NAME
+from ..const import INVERTER_CONN
+from ..const import INVERTER_MODEL
 
 _LOGGER = logging.getLogger(__name__)
 

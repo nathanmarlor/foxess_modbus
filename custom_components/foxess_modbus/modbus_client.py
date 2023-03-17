@@ -3,12 +3,13 @@ import logging
 import socket
 from typing import Any
 
-from custom_components.foxess_modbus.const import MODBUS_TYPE
-from custom_components.foxess_modbus.const import SERIAL
-from custom_components.foxess_modbus.const import TCP
 from pymodbus.client import ModbusSerialClient
 from pymodbus.client import ModbusTcpClient
 from pymodbus.exceptions import ModbusIOException
+
+from .const import MODBUS_TYPE
+from .const import SERIAL
+from .const import TCP
 
 _LOGGER = logging.getLogger(__name__)
 

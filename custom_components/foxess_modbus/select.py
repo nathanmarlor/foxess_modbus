@@ -5,11 +5,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
-from .const import INVERTER_BASE
-from .const import INVERTER_CONN
 from .const import INVERTERS
-from .const import LAN
-from .entities import xx1_aux_selects
+from .inverter_profiles import inverter_connection_type_profile_from_config
 
 _LOGGER = logging.getLogger(__package__)
 
@@ -22,11 +19,8 @@ async def async_setup_entry(
     inverters = hass.data[DOMAIN][entry.entry_id][INVERTERS]
 
     for inverter, controller in inverters:
-        if inverter[INVERTER_CONN] == LAN:
-            selects = []
-        else:
-            selects = xx1_aux_selects.selects(
-                inverter[INVERTER_BASE], controller, entry, inverter
+        async_add_devices(
+            inverter_connection_type_profile_from_config(inverter).create_selects(
+                controller, entry, inverter
             )
-
-        async_add_devices(selects)
+        )

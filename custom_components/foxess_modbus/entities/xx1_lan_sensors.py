@@ -1,13 +1,9 @@
 """Inverter sensor"""
 import logging
 
-from custom_components.foxess_modbus.const import AC1
-from custom_components.foxess_modbus.const import AIOH1
-from custom_components.foxess_modbus.const import H1
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorStateClass
 
-from .modbus_sensor import ModbusSensor
 from .modbus_sensor import SensorDescription
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -209,17 +205,3 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         scale=0.1,
     ),
 ]
-
-COMPAT: dict[str, list] = {
-    H1: H1_SENSORS + H1_AC1_SENSORS,
-    AIOH1: H1_SENSORS + H1_AC1_SENSORS,
-    AC1: H1_AC1_SENSORS,
-}
-
-
-def sensors(base_model, controller, entry, inverter) -> list:
-    """Return compatible sensors"""
-    return list(
-        ModbusSensor(controller, sensor, entry, inverter)
-        for sensor in COMPAT[base_model]
-    )
