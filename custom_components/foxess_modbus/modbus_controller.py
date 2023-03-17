@@ -80,14 +80,19 @@ class ModbusController(CallbackController, UnloadController):
 
     async def _write_registers(self, start_address, values) -> None:
         await self._client.write_registers(start_address, values, self._slave)
+        changed_addresses = set()
         for i, value in enumerate(values):
-            if start_address + i in self._data:
-                self._data[start_address + i] = value
+            address = start_address + i
+            if self._data.get(address, value) != value:
+                self._data[address] = value
+                changed_addresses.add(address)
+        self._notify_listeners(changed_addresses)
 
     async def refresh(self, *args) -> None:
         """Refresh modbus data"""
         holding = _HOLDING[self._connection_type]
         try:
+            changed_addresses = set()
             for start, end in _ADDRESSES[self._connection_type]:
                 _LOGGER.debug(f"Reading addresses for ({start}:{end-start})")
                 for i in range(start, end, self._max_read):
@@ -96,11 +101,13 @@ class ModbusController(CallbackController, UnloadController):
                         i, data_per_read, holding, self._slave
                     )
                     for j, d in enumerate(data):
-                        index = i + j
-                        self._data[index] = d
+                        address = i + j
+                        if self._data.get(address) != d:
+                            changed_addresses.add(address)
+                            self._data[address] = d
 
-            _LOGGER.debug("Refresh complete - notifying sensors")
-            self._notify_listeners()
+            _LOGGER.debug("Refresh complete - notifying sensors: %s", changed_addresses)
+            self._notify_listeners(changed_addresses)
         except TimeoutError:
             _LOGGER.debug("Timed out when contacting device, cancelling poll loop")
         except ModbusException as ex:
