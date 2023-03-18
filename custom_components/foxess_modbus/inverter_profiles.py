@@ -15,6 +15,8 @@ from .entities import xx1_aux_selects
 from .entities import xx1_aux_sensors
 from .entities import xx1_aux_time_periods
 from .entities import xx1_lan_sensors
+from .entities.modbus_binary_sensor import ModbusBinarySensor
+from .entities.modbus_binary_sensor import ModbusBinarySensorDescription
 from .entities.modbus_number import ModbusNumber
 from .entities.modbus_number import ModbusNumberDescription
 from .entities.modbus_select import ModbusSelect
@@ -37,7 +39,7 @@ class InverterModelConnectionTypeProfile:
         self,
         connection_type: InverterConnectionType,
         sensors: list[SensorDescription],
-        binary_sensors: list[SensorDescription],
+        binary_sensors: list[ModbusBinarySensorDescription],
         numbers: list[ModbusNumberDescription],
         selects: list[ModbusSelectDescription],
         time_periods: list[ModbusTimePeriodConfig],
@@ -132,7 +134,7 @@ class InverterModelConnectionTypeProfile:
         return list(
             itertools.chain(
                 (
-                    ModbusSensor(controller, sensor, entry, inverter_details)
+                    ModbusBinarySensor(controller, sensor, entry, inverter_details)
                     for sensor in self.binary_sensors
                 ),
                 (
