@@ -43,7 +43,6 @@ class ModbusTimePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorEnt
         self._entry = entry
         self._inv_details = inv_details
         self.entity_id = "sensor." + self._get_unique_id()
-        self._attr_device_class = SensorDeviceClass.DURATION
         self._last_non_zero_value: int | None = None
 
     @property
@@ -125,7 +124,8 @@ class ModbusEnableForceChargeSensor(ModbusEntityMixin, BinarySensorEntity):
         if start_time is None or end_time is None:
             return None
 
-        return start_time > 0 and end_time > 0
+        # It's valid to have a window which starts at midnight
+        return start_time > 0 or end_time > 0
 
     @property
     def should_poll(self) -> bool:
