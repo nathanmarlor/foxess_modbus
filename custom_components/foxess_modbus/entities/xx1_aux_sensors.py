@@ -1,6 +1,5 @@
 """Inverter sensor"""
 import logging
-from datetime import time
 
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorStateClass
@@ -273,30 +272,6 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
-    ),
-    SensorDescription(
-        key="time_period_1_start",
-        address=41002,
-        name="Period 1 - Start",
-        post_process=lambda v: time(hour=(v // 256), minute=v - ((v // 256) * 256)),
-    ),
-    SensorDescription(
-        key="time_period_1_end",
-        address=41003,
-        name="Period 1 - End",
-        post_process=lambda v: time(hour=(v // 256), minute=v - ((v // 256) * 256)),
-    ),
-    SensorDescription(
-        key="time_period_2_start",
-        address=41005,
-        name="Period 2 - Start",
-        post_process=lambda v: time(hour=(v // 256), minute=v - ((v // 256) * 256)),
-    ),
-    SensorDescription(
-        key="time_period_2_end",
-        address=41006,
-        name="Period 2 - End",
-        post_process=lambda v: time(hour=(v // 256), minute=v - ((v // 256) * 256)),
     ),
     SensorDescription(
         key="bms_cell_mv_high",
