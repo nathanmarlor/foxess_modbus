@@ -122,9 +122,10 @@ class ModbusEnableForceChargeSensor(ModbusEntityMixin, BinarySensorEntity):
         start_time = self._controller.read(self.entity_description.period_start_address)
         end_time = self._controller.read(self.entity_description.period_end_address)
 
-        return (start_time is not None and start_time > 0) and (
-            end_time is not None and end_time > 0
-        )
+        if start_time is None or end_time is None:
+            return None
+
+        return start_time > 0 and end_time > 0
 
     @property
     def should_poll(self) -> bool:
