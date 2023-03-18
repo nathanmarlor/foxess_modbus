@@ -69,7 +69,7 @@ class ModbusTimePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorEnt
         await super().async_added_to_hass()
         extra_data = await self.async_get_last_extra_data()
         if extra_data:
-            self._last_non_zero_value = extra_data.json_dict["last_non_zero_value"]
+            self._last_non_zero_value = extra_data.json_dict.get("last_non_zero_value")
 
     @property
     def extra_restore_state_data(self) -> ExtraStoredData:
