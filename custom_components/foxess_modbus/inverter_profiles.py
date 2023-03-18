@@ -12,13 +12,16 @@ from .entities import xx1_aux_binary_sensors
 from .entities import xx1_aux_numbers
 from .entities import xx1_aux_selects
 from .entities import xx1_aux_sensors
+from .entities import xx1_aux_time_periods
 from .entities import xx1_lan_sensors
+from .entities.modbus_enable_force_charge_sensor import ModbusEnableForceChargeSensor
 from .entities.modbus_number import ModbusNumber
 from .entities.modbus_number import ModbusNumberDescription
 from .entities.modbus_select import ModbusSelect
 from .entities.modbus_select import ModbusSelectDescription
 from .entities.modbus_sensor import ModbusSensor
 from .entities.modbus_sensor import SensorDescription
+from .entities.modbus_time_period_config import ModbusTimePeriodConfig
 from .inverter_connection_types import CONNECTION_TYPES
 from .inverter_connection_types import InverterConnectionType
 
@@ -35,13 +38,16 @@ class InverterModelConnectionTypeProfile:
         binary_sensors: list[SensorDescription],
         numbers: list[ModbusNumberDescription],
         selects: list[ModbusSelectDescription],
+        time_periods: list[ModbusTimePeriodConfig],
     ) -> None:
         self.connection_type = connection_type
         self.sensors = sensors
         self.binary_sensors = binary_sensors
         self.numbers = numbers
         self.selects = selects
+        self.time_periods = time_periods
 
+        # TODO: Add time period addresses
         self.all_addresses = sorted(
             set(x.address for x in sensors + binary_sensors + numbers + selects)
         )
@@ -108,6 +114,11 @@ class InverterModelConnectionTypeProfile:
         return list(
             ModbusSensor(controller, sensor, entry, inverter_details)
             for sensor in self.binary_sensors
+        ) + list(
+            ModbusEnableForceChargeSensor(
+                controller, time_period.enable_force_charge, entry, inverter_details
+            )
+            for time_period in self.time_periods
         )
 
     def create_numbers(
@@ -157,6 +168,7 @@ INVERTER_PROFILES = {
                     binary_sensors=xx1_aux_binary_sensors.SENSORS,
                     numbers=xx1_aux_numbers.NUMBERS,
                     selects=xx1_aux_selects.SELECTS,
+                    time_periods=xx1_aux_time_periods.H1_PERIODS,
                 ),
                 InverterModelConnectionTypeProfile(
                     connection_type=CONNECTION_TYPES["LAN"],
@@ -164,6 +176,7 @@ INVERTER_PROFILES = {
                     binary_sensors=[],
                     numbers=[],
                     selects=[],
+                    time_periods=[],
                 ),
             ],
         ),
@@ -176,6 +189,7 @@ INVERTER_PROFILES = {
                     binary_sensors=xx1_aux_binary_sensors.SENSORS,
                     numbers=xx1_aux_numbers.NUMBERS,
                     selects=xx1_aux_selects.SELECTS,
+                    time_periods=[],
                 ),
                 InverterModelConnectionTypeProfile(
                     connection_type=CONNECTION_TYPES["LAN"],
@@ -183,6 +197,7 @@ INVERTER_PROFILES = {
                     binary_sensors=[],
                     numbers=[],
                     selects=[],
+                    time_periods=[],
                 ),
             ],
         ),
@@ -195,6 +210,7 @@ INVERTER_PROFILES = {
                     binary_sensors=xx1_aux_binary_sensors.SENSORS,
                     numbers=xx1_aux_numbers.NUMBERS,
                     selects=xx1_aux_selects.SELECTS,
+                    time_periods=xx1_aux_time_periods.H1_PERIODS,
                 ),
                 InverterModelConnectionTypeProfile(
                     connection_type=CONNECTION_TYPES["LAN"],
@@ -202,6 +218,7 @@ INVERTER_PROFILES = {
                     binary_sensors=[],
                     numbers=[],
                     selects=[],
+                    time_periods=[],
                 ),
             ],
         ),
