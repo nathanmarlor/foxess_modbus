@@ -9,7 +9,6 @@ from homeassistant.config_entries import ConfigEntry
 from .common.entity_controller import EntityController
 from .const import INVERTER_BASE
 from .const import INVERTER_CONN
-from .entities import xx1_aux_binary_sensors
 from .entities import xx1_aux_numbers
 from .entities import xx1_aux_selects
 from .entities import xx1_aux_sensors
@@ -146,6 +145,15 @@ class InverterModelConnectionTypeProfile:
                     )
                     for time_period in self.time_periods
                 ),
+                (
+                    ModbusBinarySensor(
+                        controller,
+                        time_period.enable_charge_from_grid,
+                        entry,
+                        inverter_details,
+                    )
+                    for time_period in self.time_periods
+                ),
             )
         )
 
@@ -193,7 +201,7 @@ INVERTER_PROFILES = {
                 InverterModelConnectionTypeProfile(
                     connection_type=CONNECTION_TYPES["AUX"],
                     sensors=xx1_aux_sensors.H1_SENSORS + xx1_aux_sensors.H1_AC1_SENSORS,
-                    binary_sensors=xx1_aux_binary_sensors.SENSORS,
+                    binary_sensors=[],
                     numbers=xx1_aux_numbers.NUMBERS,
                     selects=xx1_aux_selects.SELECTS,
                     time_periods=xx1_aux_time_periods.H1_AC1_PERIODS,
@@ -214,7 +222,7 @@ INVERTER_PROFILES = {
                 InverterModelConnectionTypeProfile(
                     connection_type=CONNECTION_TYPES["AUX"],
                     sensors=xx1_aux_sensors.H1_AC1_SENSORS,
-                    binary_sensors=xx1_aux_binary_sensors.SENSORS,
+                    binary_sensors=[],
                     numbers=xx1_aux_numbers.NUMBERS,
                     selects=xx1_aux_selects.SELECTS,
                     time_periods=xx1_aux_time_periods.H1_AC1_PERIODS,
@@ -235,7 +243,7 @@ INVERTER_PROFILES = {
                 InverterModelConnectionTypeProfile(
                     connection_type=CONNECTION_TYPES["AUX"],
                     sensors=xx1_aux_sensors.H1_SENSORS + xx1_aux_sensors.H1_AC1_SENSORS,
-                    binary_sensors=xx1_aux_binary_sensors.SENSORS,
+                    binary_sensors=[],
                     numbers=xx1_aux_numbers.NUMBERS,
                     selects=xx1_aux_selects.SELECTS,
                     time_periods=xx1_aux_time_periods.H1_AC1_PERIODS,
