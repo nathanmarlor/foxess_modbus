@@ -1,4 +1,4 @@
-"""Inverter sensor"""
+"""Inverter time period configs"""
 import logging
 
 from .modbus_time_period_config import ModbusTimePeriodConfig

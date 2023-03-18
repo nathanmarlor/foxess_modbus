@@ -1,4 +1,4 @@
-"""Holds information on the various sensors required to represent a time period"""
+"""Time period config"""
 import logging
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass

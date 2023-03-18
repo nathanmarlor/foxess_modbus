@@ -1,4 +1,4 @@
-"""Sensor"""
+"""Time period sensors"""
 import logging
 from dataclasses import dataclass
 from datetime import time
