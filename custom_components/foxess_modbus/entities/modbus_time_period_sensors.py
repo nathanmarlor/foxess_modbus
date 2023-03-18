@@ -19,6 +19,16 @@ from .modbus_entity_mixin import ModbusEntityMixin
 _LOGGER = logging.getLogger(__name__)
 
 
+def _is_force_charge_enabled(
+    start_or_end_1: int | None,
+    start_or_end_2: int | None,
+    default_if_none: int | None = None,
+) -> bool | None:
+    if start_or_end_1 is None or start_or_end_2 is None:
+        return default_if_none
+    return start_or_end_1 > 0 or start_or_end_2 > 0
+
+
 @dataclass(kw_only=True)
 class ModbusTimePeriodStartEndSensorDescription(SensorEntityDescription):
     """Entity description for ModbusTimePeriodStartEndSensor"""
@@ -42,21 +52,24 @@ class ModbusTimePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorEnt
         self._entry = entry
         self._inv_details = inv_details
         self.entity_id = "sensor." + self._get_unique_id()
-        self._last_non_zero_value: int | None = None
+        # The last value this sensor had when force-charge was enabled
+        self._last_enabled_value: int | None = None
 
     @property
     def native_value(self):
         """Return the value reported by the sensor."""
         value = self._controller.read(self.entity_description.address)
+
         if value is not None:
+            other_value = self._controller.read(self.entity_description.other_address)
             # If the charge window is disabled (i.e. both start and end are 0),
-            # return the last-stored value rather than midnight
-            if value == 0 and self._last_non_zero_value is not None:
-                other_value = self._controller.read(
-                    self.entity_description.other_address
-                )
-                if other_value == 0:
-                    value = self._last_non_zero_value
+            # return the last-stored value rather than midnight. If other_value is unavailable,
+            # assume the charge window is enabled, so we'll only fall back to _last_enabled_value
+            # if we're certain that force-charging is disabled
+            if self._last_enabled_value is not None and not _is_force_charge_enabled(
+                value, other_value, default_if_none=True
+            ):
+                value = self._last_enabled_value
 
             value = time(hour=(value & 0xFF00) >> 8, minute=value & 0xFF)
 
@@ -67,22 +80,34 @@ class ModbusTimePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorEnt
         await super().async_added_to_hass()
         extra_data = await self.async_get_last_extra_data()
         if extra_data:
-            self._last_non_zero_value = extra_data.json_dict.get("last_non_zero_value")
+            self._last_enabled_value = extra_data.json_dict.get("last_enabled_value")
 
     @property
     def extra_restore_state_data(self) -> ExtraStoredData:
         """Return specific state data to be restored."""
         return RestoredExtraData(
-            json_dict={"last_non_zero_value": self._last_non_zero_value}
+            json_dict={"last_enabled_value": self._last_enabled_value}
         )
 
     def update_callback(self, changed_addresses: set[int]) -> None:
         """Schedule a state update."""
-        if self.entity_description.address in changed_addresses:
+        # If we've got a value of 0, and the other end of the period changes from
+        # 0 to a non-zero value, that means that someone has enabled a force-charge window
+        # with a start time of midnight, so we need to update ourselves.
+        # Therefore, we need to be sensitive to other_address
+        if (self.entity_description.address in changed_addresses) or (
+            self.entity_description.other_address in changed_addresses
+        ):
             value = self._controller.read(self.entity_description.address)
-            if value is not None and value > 0:
-                self._last_non_zero_value = value
+            if value is not None:
+                other_value = self._controller.read(
+                    self.entity_description.other_address
+                )
+                if _is_force_charge_enabled(value, other_value, default_if_none=False):
+                    self._last_enabled_value = value
 
+            # I'm not sure whether there are any cases where our exposed state will changed
+            # if other_address changes, but this won't change often, so be safe.
             self.schedule_update_ha_state(True)
 
     @property
@@ -120,11 +145,7 @@ class ModbusEnableForceChargeSensor(ModbusEntityMixin, BinarySensorEntity):
         start_time = self._controller.read(self.entity_description.period_start_address)
         end_time = self._controller.read(self.entity_description.period_end_address)
 
-        if start_time is None or end_time is None:
-            return None
-
-        # It's valid to have a window which starts at midnight
-        return start_time > 0 or end_time > 0
+        return _is_force_charge_enabled(start_time, end_time, default_if_none=None)
 
     @property
     def should_poll(self) -> bool:
