@@ -37,13 +37,14 @@ class ModbusClient:
         """Connect to device"""
 
         def connect_impl():
-            self._client.connect()
+            result = self._client.connect()
             # pymodbus doesn't disable Nagle's algorithm. This slows down reads quite substantially as the
             # TCP stack waits to see if we're going to send anything else. Disable it ourselves.
             if isinstance(self._client, ModbusTcpClient) and self._client.socket:
                 self._client.socket.setsockopt(
                     socket.IPPROTO_TCP, socket.TCP_NODELAY, True
                 )
+            return result
 
         _LOGGER.debug(f"Connecting to modbus - ({self._config})")
         if not await self._async_pymodbus_call(connect_impl):

@@ -33,7 +33,7 @@ class ModbusController(EntityController, UnloadController):
     ) -> None:
         """Init"""
         self._hass = hass
-        self._data = dict()
+        self._data = {x: None for x in connection_type_profile.all_addresses}
         self._client = client
         self._connection_type_profile = connection_type_profile
         self._slave = slave
@@ -56,10 +56,7 @@ class ModbusController(EntityController, UnloadController):
 
     def read(self, address) -> bool:
         """Modbus status"""
-        if address in self._data:
-            return self._data[address]
-        else:
-            return None
+        return self._data.get(address)
 
     async def write(self, service) -> bool:
         """Modbus write"""
@@ -78,6 +75,7 @@ class ModbusController(EntityController, UnloadController):
         changed_addresses = set()
         for i, value in enumerate(values):
             address = start_address + i
+            # Only store the result of the write if it's a register we care about ourselves
             if self._data.get(address, value) != value:
                 self._data[address] = value
                 changed_addresses.add(address)
@@ -100,7 +98,8 @@ class ModbusController(EntityController, UnloadController):
                 )
                 for i, value in enumerate(reads):
                     address = start_address + i
-                    if self._data.get(address) != value:
+                    # We might be reading a register we don't care about (for efficiency). Discard it if so
+                    if self._data.get(address, value) != value:
                         changed_addresses.add(address)
                         self._data[address] = value
 
