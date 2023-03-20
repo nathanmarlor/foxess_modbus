@@ -17,10 +17,11 @@ _LOGGER = logging.getLogger(__name__)
 class ModbusClient:
     """Modbus"""
 
-    def __init__(self, hass, config: dict[str, Any]):
+    def __init__(self, hass, config: dict[str, Any], auto_connect: bool = True):
         """Init"""
         self._hass = hass
         self._config = config
+        self._auto_connect = auto_connect
         self._lock = asyncio.Lock()
         self._config_type = config[MODBUS_TYPE]
         self._class = {
@@ -29,7 +30,8 @@ class ModbusClient:
         }
 
         self._client = self._class[self._config_type](**config)
-        self._hass.async_create_task(self.connect())
+        if auto_connect:
+            self._hass.async_create_task(self.connect())
 
     async def connect(self):
         """Connect to device"""
@@ -38,7 +40,7 @@ class ModbusClient:
             self._client.connect()
             # pymodbus doesn't disable Nagle's algorithm. This slows down reads quite substantially as the
             # TCP stack waits to see if we're going to send anything else. Disable it ourselves.
-            if isinstance(self._client, ModbusTcpClient):
+            if isinstance(self._client, ModbusTcpClient) and self._client.socket:
                 self._client.socket.setsockopt(
                     socket.IPPROTO_TCP, socket.TCP_NODELAY, True
                 )
