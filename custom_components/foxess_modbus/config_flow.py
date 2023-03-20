@@ -10,8 +10,9 @@ from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.selector import selector
-from pymodbus.exceptions import ModbusException
+from pymodbus.exceptions import ConnectionException
 
+from .common.exceptions import UnsupportedInverterException
 from .const import ADD_ANOTHER
 from .const import CONFIG_SAVE_TIME
 from .const import DOMAIN
@@ -197,14 +198,14 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 params.update({"host": host.split(":")[0], "port": host.split(":")[1]})
             else:
                 params.update({"port": host, "baudrate": 9600})
-            client = ModbusClient(self.hass, params)
+            client = ModbusClient(self.hass, params, False)
             return (True, await ModbusController.autodetect(client, slave))
-        except ModbusException as ex:
-            _LOGGER.warning(f"{ex!r}")
-            self._errors["base"] = "modbus_error"
-        except ConnectionRefusedError as ex:
-            _LOGGER.warning(f"{ex!r}")
+        except UnsupportedInverterException as ex:
+            _LOGGER.warning(f"{ex}")
             self._errors["base"] = "modbus_model_not_supported"
+        except ConnectionException as ex:
+            _LOGGER.warning(f"{ex}")
+            self._errors["base"] = "modbus_error"
         return False, None
 
     @staticmethod

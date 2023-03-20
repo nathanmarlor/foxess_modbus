@@ -5,9 +5,11 @@ from asyncio.exceptions import TimeoutError
 from datetime import timedelta
 
 from homeassistant.helpers.event import async_track_time_interval
+from pymodbus.exceptions import ConnectionException
 from pymodbus.exceptions import ModbusException
 
 from .common.entity_controller import EntityController
+from .common.exceptions import UnsupportedInverterException
 from .common.unload_controller import UnloadController
 from .inverter_profiles import CONNECTION_TYPES
 from .inverter_profiles import INVERTER_PROFILES
@@ -120,15 +122,16 @@ class ModbusController(EntityController, UnloadController):
         """
         for conn_type_name, conn_type in CONNECTION_TYPES.items():
             try:
+                await client.connect()
                 result = await client.read_registers(
                     conn_type.serial_start_address,
                     10,
                     conn_type.read_holding_registers,
                     slave,
                 )
+                inverter_str = "".join([chr(i) for i in result])
                 for model_key, model in INVERTER_PROFILES.items():
                     if conn_type_name in model.connection_types:
-                        inverter_str = "".join([chr(i) for i in result])
                         base_model = inverter_str[: len(model.model)]
                         if base_model == model.model:
                             full_model = inverter_str[: len(model.model) + 4]
@@ -138,7 +141,14 @@ class ModbusController(EntityController, UnloadController):
                                 conn_type_name,
                             )
                             return model_key, full_model, conn_type_name
-
-                raise ConnectionRefusedError(f"{inverter_str} not supported")
+                # here we've read the model type, but been unable to match it against a supported model
+                raise UnsupportedInverterException(
+                    f"Inverter ({inverter_str}) not supported"
+                )
+            except ModbusException:
+                _LOGGER.warning("Failed to autodetect (%s)", conn_type_name)
+                continue
             finally:
                 await client.close()
+
+        raise ConnectionException("Could not connect to Modbus device")
