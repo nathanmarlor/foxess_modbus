@@ -1,4 +1,5 @@
 """Defines the different inverter models and connection types"""
+import itertools
 import logging
 from typing import Any
 from typing import Iterable
@@ -8,11 +9,16 @@ from homeassistant.config_entries import ConfigEntry
 from .common.entity_controller import EntityController
 from .const import INVERTER_BASE
 from .const import INVERTER_CONN
-from .entities import xx1_aux_binary_sensors
+from .entities import xx1_aux_charge_periods
 from .entities import xx1_aux_numbers
 from .entities import xx1_aux_selects
 from .entities import xx1_aux_sensors
 from .entities import xx1_lan_sensors
+from .entities.modbus_binary_sensor import ModbusBinarySensor
+from .entities.modbus_binary_sensor import ModbusBinarySensorDescription
+from .entities.modbus_charge_period_config import ModbusChargePeriodConfig
+from .entities.modbus_charge_period_sensors import ModbusChargePeriodStartEndSensor
+from .entities.modbus_charge_period_sensors import ModbusEnableForceChargeSensor
 from .entities.modbus_number import ModbusNumber
 from .entities.modbus_number import ModbusNumberDescription
 from .entities.modbus_select import ModbusSelect
@@ -32,18 +38,25 @@ class InverterModelConnectionTypeProfile:
         self,
         connection_type: InverterConnectionType,
         sensors: list[SensorDescription],
-        binary_sensors: list[SensorDescription],
+        binary_sensors: list[ModbusBinarySensorDescription],
         numbers: list[ModbusNumberDescription],
         selects: list[ModbusSelectDescription],
+        charge_periods: list[ModbusChargePeriodConfig],
     ) -> None:
         self.connection_type = connection_type
         self.sensors = sensors
         self.binary_sensors = binary_sensors
         self.numbers = numbers
         self.selects = selects
+        self.charge_periods = charge_periods
 
         self.all_addresses = sorted(
-            set(x.address for x in sensors + binary_sensors + numbers + selects)
+            set(
+                itertools.chain(
+                    (x.address for x in sensors + binary_sensors + numbers + selects),
+                    (address for x in charge_periods for address in x.addresses),
+                )
+            )
         )
 
     def create_read_ranges(self, max_read: int) -> Iterable[tuple[int, int]]:
@@ -94,8 +107,24 @@ class InverterModelConnectionTypeProfile:
     ) -> list[ModbusSensor]:
         """Instantiates all sensors for this connection type"""
         return list(
-            ModbusSensor(controller, sensor, entry, inverter_details)
-            for sensor in self.sensors
+            itertools.chain(
+                (
+                    ModbusSensor(controller, sensor, entry, inverter_details)
+                    for sensor in self.sensors
+                ),
+                (
+                    ModbusChargePeriodStartEndSensor(
+                        controller, charge_period.period_start, entry, inverter_details
+                    )
+                    for charge_period in self.charge_periods
+                ),
+                (
+                    ModbusChargePeriodStartEndSensor(
+                        controller, charge_period.period_end, entry, inverter_details
+                    )
+                    for charge_period in self.charge_periods
+                ),
+            )
         )
 
     def create_binary_sensors(
@@ -106,8 +135,30 @@ class InverterModelConnectionTypeProfile:
     ) -> list[ModbusSensor]:
         """Instantiates all binary sensors for this connection type"""
         return list(
-            ModbusSensor(controller, sensor, entry, inverter_details)
-            for sensor in self.binary_sensors
+            itertools.chain(
+                (
+                    ModbusBinarySensor(controller, sensor, entry, inverter_details)
+                    for sensor in self.binary_sensors
+                ),
+                (
+                    ModbusEnableForceChargeSensor(
+                        controller,
+                        charge_period.enable_force_charge,
+                        entry,
+                        inverter_details,
+                    )
+                    for charge_period in self.charge_periods
+                ),
+                (
+                    ModbusBinarySensor(
+                        controller,
+                        charge_period.enable_charge_from_grid,
+                        entry,
+                        inverter_details,
+                    )
+                    for charge_period in self.charge_periods
+                ),
+            )
         )
 
     def create_numbers(
@@ -154,9 +205,10 @@ INVERTER_PROFILES = {
                 InverterModelConnectionTypeProfile(
                     connection_type=CONNECTION_TYPES["AUX"],
                     sensors=xx1_aux_sensors.H1_SENSORS + xx1_aux_sensors.H1_AC1_SENSORS,
-                    binary_sensors=xx1_aux_binary_sensors.SENSORS,
+                    binary_sensors=[],
                     numbers=xx1_aux_numbers.NUMBERS,
                     selects=xx1_aux_selects.SELECTS,
+                    charge_periods=xx1_aux_charge_periods.H1_AC1_PERIODS,
                 ),
                 InverterModelConnectionTypeProfile(
                     connection_type=CONNECTION_TYPES["LAN"],
@@ -164,6 +216,7 @@ INVERTER_PROFILES = {
                     binary_sensors=[],
                     numbers=[],
                     selects=[],
+                    charge_periods=[],
                 ),
             ],
         ),
@@ -173,9 +226,10 @@ INVERTER_PROFILES = {
                 InverterModelConnectionTypeProfile(
                     connection_type=CONNECTION_TYPES["AUX"],
                     sensors=xx1_aux_sensors.H1_AC1_SENSORS,
-                    binary_sensors=xx1_aux_binary_sensors.SENSORS,
+                    binary_sensors=[],
                     numbers=xx1_aux_numbers.NUMBERS,
                     selects=xx1_aux_selects.SELECTS,
+                    charge_periods=xx1_aux_charge_periods.H1_AC1_PERIODS,
                 ),
                 InverterModelConnectionTypeProfile(
                     connection_type=CONNECTION_TYPES["LAN"],
@@ -183,6 +237,7 @@ INVERTER_PROFILES = {
                     binary_sensors=[],
                     numbers=[],
                     selects=[],
+                    charge_periods=[],
                 ),
             ],
         ),
@@ -192,9 +247,10 @@ INVERTER_PROFILES = {
                 InverterModelConnectionTypeProfile(
                     connection_type=CONNECTION_TYPES["AUX"],
                     sensors=xx1_aux_sensors.H1_SENSORS + xx1_aux_sensors.H1_AC1_SENSORS,
-                    binary_sensors=xx1_aux_binary_sensors.SENSORS,
+                    binary_sensors=[],
                     numbers=xx1_aux_numbers.NUMBERS,
                     selects=xx1_aux_selects.SELECTS,
+                    charge_periods=xx1_aux_charge_periods.H1_AC1_PERIODS,
                 ),
                 InverterModelConnectionTypeProfile(
                     connection_type=CONNECTION_TYPES["LAN"],
@@ -202,6 +258,7 @@ INVERTER_PROFILES = {
                     binary_sensors=[],
                     numbers=[],
                     selects=[],
+                    charge_periods=[],
                 ),
             ],
         ),

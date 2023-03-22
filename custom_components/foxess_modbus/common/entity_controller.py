@@ -22,5 +22,9 @@ class EntityController(ABC):
             listener.update_callback(changed_addresses)
 
     @abstractmethod
-    async def write_register(self, address, value) -> None:
+    async def write_register(self, address: int, value: int) -> None:
         """Write a single value to a register"""
+
+    @abstractmethod
+    async def read(self, address: int) -> int | None:
+        """Fetch the last-read value for the given address, or None if none is avaiable"""
