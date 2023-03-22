@@ -30,20 +30,20 @@ def _is_force_charge_enabled(
 
 
 @dataclass(kw_only=True)
-class ModbusTimePeriodStartEndSensorDescription(SensorEntityDescription):
-    """Entity description for ModbusTimePeriodStartEndSensor"""
+class ModbusChargePeriodStartEndSensorDescription(SensorEntityDescription):
+    """Entity description for ModbusChargePeriodStartEndSensor"""
 
     address: int
     other_address: int  # Address of period end if this is the start, and vice versa
 
 
-class ModbusTimePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorEntity):
+class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorEntity):
     """Sensor used for the start/end of a charge time period"""
 
     def __init__(
         self,
         controller: EntityController,
-        entity_description: ModbusTimePeriodStartEndSensorDescription,
+        entity_description: ModbusChargePeriodStartEndSensorDescription,
         entry: ConfigEntry,
         inv_details,
     ) -> None:

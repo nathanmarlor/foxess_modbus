@@ -4,13 +4,13 @@ import logging
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 
 from .modbus_binary_sensor import ModbusBinarySensorDescription
-from .modbus_time_period_sensors import ModbusEnableForceChargeSensorDescription
-from .modbus_time_period_sensors import ModbusTimePeriodStartEndSensorDescription
+from .modbus_charge_period_sensors import ModbusChargePeriodStartEndSensorDescription
+from .modbus_charge_period_sensors import ModbusEnableForceChargeSensorDescription
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class ModbusTimePeriodConfig:
+class ModbusChargePeriodConfig:
     """Holds information on the various sensors required to represent a time period"""
 
     def __init__(
@@ -27,13 +27,13 @@ class ModbusTimePeriodConfig:
         enable_charge_from_grid_name: str,
         enable_charge_from_grid_address: int,
     ) -> None:
-        self.period_start = ModbusTimePeriodStartEndSensorDescription(
+        self.period_start = ModbusChargePeriodStartEndSensorDescription(
             key=period_start_key,
             name=period_start_name,
             address=period_start_address,
             other_address=period_end_address,
         )
-        self.period_end = ModbusTimePeriodStartEndSensorDescription(
+        self.period_end = ModbusChargePeriodStartEndSensorDescription(
             key=period_end_key,
             name=period_end_name,
             address=period_end_address,
