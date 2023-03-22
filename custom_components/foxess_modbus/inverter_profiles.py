@@ -50,9 +50,13 @@ class InverterModelConnectionTypeProfile:
         self.selects = selects
         self.time_periods = time_periods
 
-        # TODO: Add time period addresses
         self.all_addresses = sorted(
-            set(x.address for x in sensors + binary_sensors + numbers + selects)
+            set(
+                itertools.chain(
+                    (x.address for x in sensors + binary_sensors + numbers + selects),
+                    (address for x in time_periods for address in x.addresses),
+                )
+            )
         )
 
     def create_read_ranges(self, max_read: int) -> Iterable[tuple[int, int]]:

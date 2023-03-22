@@ -51,3 +51,9 @@ class ModbusTimePeriodConfig:
             address=enable_charge_from_grid_address,
             device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
         )
+
+        self.addresses = [
+            period_start_address,
+            period_end_address,
+            enable_charge_from_grid_address,
+        ]
