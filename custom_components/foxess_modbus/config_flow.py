@@ -8,6 +8,7 @@ import voluptuous as vol
 from custom_components.foxess_modbus import ModbusClient
 from homeassistant import config_entries
 from homeassistant.core import callback
+from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.selector import selector
 from pymodbus.exceptions import ConnectionException
@@ -142,7 +143,10 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Add or rerun the config flow"""
         if not self.detect_duplicate(TCP, host, user_input[FRIENDLY_NAME]):
             result = await self.async_add_inverter(inv_type, host, inverter)
-            if user_input[ADD_ANOTHER]:
+            if (
+                result["type"] == FlowResultType.CREATE_ENTRY
+                and user_input[ADD_ANOTHER]
+            ):
                 self._errors["base"] = None
                 return self.async_show_form(
                     step_id="user",
