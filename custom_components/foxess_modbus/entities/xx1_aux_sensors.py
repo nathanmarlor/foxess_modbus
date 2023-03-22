@@ -125,7 +125,7 @@ H1_AC1_SENSORS: list[SensorDescription] = [
     ),
     SensorDescription(
         key="invtemp",
-        address=11025,
+        address=11024,
         name="Inverter Temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -134,7 +134,7 @@ H1_AC1_SENSORS: list[SensorDescription] = [
     ),
     SensorDescription(
         key="ambtemp",
-        address=11024,
+        address=11025,
         name="Ambient Temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
