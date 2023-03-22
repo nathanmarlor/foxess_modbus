@@ -14,9 +14,9 @@ H1_AC1_PERIODS = [
         period_end_name="Period 1 - End",
         period_end_address=41003,
         enable_force_charge_key="time_period_1_enable_force_charge",
-        enable_force_charge_name="Period 1 - Enable force charge",
+        enable_force_charge_name="Period 1 - Enable Force Charge",
         enable_charge_from_grid_key="time_period_1_enabled",
-        enable_charge_from_grid_name="Period 1 - Enable charge from grid",
+        enable_charge_from_grid_name="Period 1 - Enable Charge from Grid",
         enable_charge_from_grid_address=41001,
     ),
     ModbusTimePeriodConfig(
@@ -27,9 +27,9 @@ H1_AC1_PERIODS = [
         period_end_name="Period 2 - End",
         period_end_address=41006,
         enable_force_charge_key="time_period_2_enable_force_charge",
-        enable_force_charge_name="Period 2 - Enable force charge",
+        enable_force_charge_name="Period 2 - Enable Force Charge",
         enable_charge_from_grid_key="time_period_2_enabled",
-        enable_charge_from_grid_name="Period 2 - Enable charge from grid",
+        enable_charge_from_grid_name="Period 2 - Enable Charge from Grid",
         enable_charge_from_grid_address=41004,
     ),
 ]
