@@ -328,7 +328,7 @@ H1_AC1_SENSORS: list[SensorDescription] = [
     SensorDescription(
         key="bms_kwh_remaining",
         address=11037,
-        name="BMS kW Remaining",
+        name="BMS kWh Remaining",
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
