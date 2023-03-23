@@ -187,6 +187,15 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         scale=0.001,
     ),
     SensorDescription(
+        key="ct2_meter",
+        address=31015,
+        name="CT2 Meter",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="kW",
+        scale=0.001,
+    ),
+    SensorDescription(
         key="batvolt",
         address=31020,
         name="Battery Voltage",
