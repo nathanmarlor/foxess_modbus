@@ -83,7 +83,7 @@ H1_SENSORS: list[SensorDescription] = [
         scale=0.1,
     ),
     SensorDescription(
-        key="charge_total",
+        key="battery_charge_total",
         address=11073,
         name="Battery Charge Total",
         device_class=SensorDeviceClass.ENERGY,
@@ -92,7 +92,7 @@ H1_SENSORS: list[SensorDescription] = [
         scale=0.1,
     ),
     SensorDescription(
-        key="charge_today",
+        key="battery_charge_today",
         address=11074,
         name="Battery Charge Today",
         device_class=SensorDeviceClass.ENERGY,
@@ -101,7 +101,7 @@ H1_SENSORS: list[SensorDescription] = [
         scale=0.1,
     ),
     SensorDescription(
-        key="discharge_total",
+        key="battery_discharge_total",
         address=11076,
         name="Battery Discharge Total",
         device_class=SensorDeviceClass.ENERGY,
@@ -110,7 +110,7 @@ H1_SENSORS: list[SensorDescription] = [
         scale=0.1,
     ),
     SensorDescription(
-        key="discharge_today",
+        key="battery_discharge_today",
         address=11077,
         name="Battery Discharge Today",
         device_class=SensorDeviceClass.ENERGY,
