@@ -141,7 +141,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def add_or_rerun(self, inv_type, host, inverter, user_input):
         """Add or rerun the config flow"""
-        if not self.detect_duplicate(TCP, host, user_input[FRIENDLY_NAME]):
+        if not self.detect_duplicate(inv_type, host, user_input[FRIENDLY_NAME]):
             result = await self.async_add_inverter(inv_type, host, inverter)
             if (
                 result["type"] == FlowResultType.CREATE_ENTRY
