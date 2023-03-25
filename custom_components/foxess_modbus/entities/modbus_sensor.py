@@ -15,7 +15,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
-class SensorDescription(SensorEntityDescription):
+class ModbusSensorDescription(SensorEntityDescription):
     """Custom sensor description"""
 
     address: int | None = 0
@@ -30,7 +30,7 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
     def __init__(
         self,
         controller: EntityController,
-        entity_description: SensorDescription,
+        entity_description: ModbusSensorDescription,
         entry: ConfigEntry,
         inv_details,
     ) -> None:

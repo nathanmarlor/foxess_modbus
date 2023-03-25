@@ -4,12 +4,12 @@ import logging
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorStateClass
 
-from .modbus_sensor import SensorDescription
+from .modbus_sensor import ModbusSensorDescription
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
-H1_SENSORS: list[SensorDescription] = [
-    SensorDescription(
+H1_SENSORS: list[ModbusSensorDescription] = [
+    ModbusSensorDescription(
         key="pv1_voltage",
         address=31000,
         name="PV1 Voltage",
@@ -18,7 +18,7 @@ H1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="V",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="pv1_current",
         address=31001,
         name="PV1 Current",
@@ -27,7 +27,7 @@ H1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="A",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="pv1_power",
         address=31002,
         name="PV1 Power",
@@ -36,7 +36,7 @@ H1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="kW",
         scale=0.001,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="pv2_voltage",
         address=31003,
         name="PV2 Voltage",
@@ -45,7 +45,7 @@ H1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="V",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="pv2_current",
         address=31004,
         name="PV2 Current",
@@ -54,7 +54,7 @@ H1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="A",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="pv2_power",
         address=31005,
         name="PV2 Power",
@@ -65,8 +65,8 @@ H1_SENSORS: list[SensorDescription] = [
     ),
 ]
 
-H1_AC1_SENSORS: list[SensorDescription] = [
-    SensorDescription(
+H1_AC1_SENSORS: list[ModbusSensorDescription] = [
+    ModbusSensorDescription(
         key="battery_soc",
         address=31024,
         name="Battery SoC",
@@ -74,7 +74,7 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="battery_discharge",
         address=31022,
         name="Battery Discharge",
@@ -84,7 +84,7 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         scale=0.001,
         post_process=lambda v: v if v > 0 else 0,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="battery_charge",
         address=31022,
         name="Battery Charge",
@@ -94,7 +94,7 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         scale=0.001,
         post_process=lambda v: abs(v) if v < 0 else 0,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="feed_in",
         address=31014,
         name="Feed In",
@@ -104,7 +104,7 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         scale=0.001,
         post_process=lambda v: v if v > 0 else 0,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="grid_consumption",
         address=31014,
         name="Grid Consumption",
@@ -114,7 +114,7 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         scale=0.001,
         post_process=lambda v: abs(v) if v < 0 else 0,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="rvolt",
         address=31006,
         name="Grid Voltage",
@@ -123,7 +123,7 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="V",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="rcurrent",
         address=31007,
         name="Grid Current",
@@ -132,7 +132,7 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="A",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="rfreq",
         address=31009,
         name="Grid Frequency",
@@ -141,7 +141,7 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="Hz",
         scale=0.01,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="battery_temp",
         address=31023,
         name="Battery Temp",
@@ -150,7 +150,7 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="°C",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="invtemp",
         address=31019,
         name="Inverter Temp",
@@ -159,7 +159,7 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="°C",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="ambtemp",
         address=31018,
         name="Ambient Temp",
@@ -168,7 +168,7 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="°C",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="load_power",
         address=31016,
         name="Load Power",
@@ -177,7 +177,7 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="kW",
         scale=0.001,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="grid_ct",
         address=31014,
         name="Grid CT",
@@ -186,7 +186,7 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="kW",
         scale=0.001,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="ct2_meter",
         address=31015,
         name="CT2 Meter",
@@ -195,7 +195,7 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="kW",
         scale=0.001,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="batvolt",
         address=31020,
         name="Battery Voltage",
@@ -204,7 +204,7 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="V",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="bat_current",
         address=31021,
         name="Battery Current",

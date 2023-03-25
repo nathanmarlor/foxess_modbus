@@ -24,7 +24,7 @@ from .entities.modbus_number import ModbusNumberDescription
 from .entities.modbus_select import ModbusSelect
 from .entities.modbus_select import ModbusSelectDescription
 from .entities.modbus_sensor import ModbusSensor
-from .entities.modbus_sensor import SensorDescription
+from .entities.modbus_sensor import ModbusSensorDescription
 from .inverter_connection_types import CONNECTION_TYPES
 from .inverter_connection_types import InverterConnectionType
 
@@ -37,7 +37,7 @@ class InverterModelConnectionTypeProfile:
     def __init__(
         self,
         connection_type: InverterConnectionType,
-        sensors: list[SensorDescription],
+        sensors: list[ModbusSensorDescription],
         binary_sensors: list[ModbusBinarySensorDescription],
         numbers: list[ModbusNumberDescription],
         selects: list[ModbusSelectDescription],
