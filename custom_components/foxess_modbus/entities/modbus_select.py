@@ -2,10 +2,10 @@
 import logging
 from dataclasses import dataclass
 
-from homeassistant.helpers.entity import Entity
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.select import SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
 from .entity_factory import EntityFactory

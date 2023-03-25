@@ -12,8 +12,8 @@ from .const import INVERTER_CONN
 from .entities import xx1_aux_charge_periods
 from .entities import xx1_aux_entity_descriptions
 from .entities import xx1_lan_entity_descriptions
-from .entities.modbus_charge_period_config import ModbusChargePeriodConfig
 from .entities.entity_factory import EntityFactory
+from .entities.modbus_charge_period_config import ModbusChargePeriodConfig
 from .entities.modbus_sensor import ModbusSensor
 from .inverter_connection_types import CONNECTION_TYPES
 from .inverter_connection_types import InverterConnectionType

@@ -2,15 +2,15 @@
 import logging
 from dataclasses import dataclass
 
-from homeassistant.helpers.entity import Entity
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.binary_sensor import BinarySensorEntityDescription
 from homeassistant.components.sensor import SensorStateClass
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
-from .modbus_entity_mixin import ModbusEntityMixin
 from .entity_factory import EntityFactory
+from .modbus_entity_mixin import ModbusEntityMixin
 
 
 _LOGGER = logging.getLogger(__name__)
