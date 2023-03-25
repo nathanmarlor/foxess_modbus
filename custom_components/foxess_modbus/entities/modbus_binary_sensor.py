@@ -2,24 +2,22 @@
 import logging
 from dataclasses import dataclass
 
+from homeassistant.helpers.entity import Entity
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.binary_sensor import BinarySensorEntityDescription
 from homeassistant.components.sensor import SensorStateClass
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
-from .modbus_entity_description_base import ModbusEntityDescriptionBase
 from .modbus_entity_mixin import ModbusEntityMixin
+from .entity_factory import EntityFactory
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(kw_only=True)
-class ModbusBinarySensorDescription(
-    BinarySensorEntityDescription, ModbusEntityDescriptionBase
-):
+class ModbusBinarySensorDescription(BinarySensorEntityDescription, EntityFactory):
     """Description for ModbusBinarySensor"""
 
     address: int

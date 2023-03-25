@@ -3,20 +3,20 @@ import logging
 from dataclasses import dataclass
 from datetime import time
 
+from homeassistant.helpers.entity import Entity
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.binary_sensor import BinarySensorEntityDescription
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.restore_state import ExtraStoredData
 from homeassistant.helpers.restore_state import RestoredExtraData
 from homeassistant.helpers.restore_state import RestoreEntity
 
 from ..common.entity_controller import EntityController
-from .modbus_entity_description_base import ModbusEntityDescriptionBase
 from .modbus_entity_mixin import ModbusEntityMixin
+from .entity_factory import EntityFactory
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ def _is_force_charge_enabled(
 
 @dataclass(kw_only=True)
 class ModbusChargePeriodStartEndSensorDescription(
-    SensorEntityDescription, ModbusEntityDescriptionBase
+    SensorEntityDescription, EntityFactory
 ):
     """Entity description for ModbusChargePeriodStartEndSensor"""
 
@@ -134,7 +134,7 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
 
 @dataclass(kw_only=True)
 class ModbusEnableForceChargeSensorDescription(
-    BinarySensorEntityDescription, ModbusEntityDescriptionBase
+    BinarySensorEntityDescription, EntityFactory
 ):
     """Entity description for ModbusEnableForceChargeSensor"""
 

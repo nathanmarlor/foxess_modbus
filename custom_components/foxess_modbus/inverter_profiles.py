@@ -13,7 +13,7 @@ from .entities import xx1_aux_charge_periods
 from .entities import xx1_aux_entity_descriptions
 from .entities import xx1_lan_entity_descriptions
 from .entities.modbus_charge_period_config import ModbusChargePeriodConfig
-from .entities.modbus_entity_description_base import ModbusEntityDescriptionBase
+from .entities.entity_factory import EntityFactory
 from .entities.modbus_sensor import ModbusSensor
 from .inverter_connection_types import CONNECTION_TYPES
 from .inverter_connection_types import InverterConnectionType
@@ -27,7 +27,7 @@ class InverterModelConnectionTypeProfile:
     def __init__(
         self,
         connection_type: InverterConnectionType,
-        entity_descriptions: list[ModbusEntityDescriptionBase],
+        entity_descriptions: list[EntityFactory],
         charge_periods: list[ModbusChargePeriodConfig],
     ) -> None:
         self.connection_type = connection_type

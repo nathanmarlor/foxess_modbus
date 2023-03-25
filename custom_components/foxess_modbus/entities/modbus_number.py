@@ -3,21 +3,21 @@ import logging
 from dataclasses import dataclass
 from typing import Callable
 
+from homeassistant.helpers.entity import Entity
 from homeassistant.components.number import NumberEntity
 from homeassistant.components.number import NumberEntityDescription
 from homeassistant.components.number import NumberMode
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
-from .modbus_entity_description_base import ModbusEntityDescriptionBase
 from .modbus_entity_mixin import ModbusEntityMixin
+from .entity_factory import EntityFactory
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
 @dataclass(kw_only=True)
-class ModbusNumberDescription(NumberEntityDescription, ModbusEntityDescriptionBase):
+class ModbusNumberDescription(NumberEntityDescription, EntityFactory):
     """Custom number entity description"""
 
     address: int | None = 0
