@@ -6,8 +6,10 @@ from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.binary_sensor import BinarySensorEntityDescription
 from homeassistant.components.sensor import SensorStateClass
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
+from .modbus_entity_description_base import ModbusEntityDescriptionBase
 from .modbus_entity_mixin import ModbusEntityMixin
 
 
@@ -15,10 +17,25 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(kw_only=True)
-class ModbusBinarySensorDescription(BinarySensorEntityDescription):
+class ModbusBinarySensorDescription(
+    BinarySensorEntityDescription, ModbusEntityDescriptionBase
+):
     """Description for ModbusBinarySensor"""
 
     address: int
+
+    @property
+    def entity_type(self) -> type[Entity]:
+        return BinarySensorEntity
+
+    @property
+    def addresses(self) -> list[int]:
+        return [self.address]
+
+    def create_entity(
+        self, controller: EntityController, entry: ConfigEntry, inv_details
+    ) -> Entity:
+        return ModbusBinarySensor(controller, self, entry, inv_details)
 
 
 class ModbusBinarySensor(ModbusEntityMixin, BinarySensorEntity):

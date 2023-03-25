@@ -1,14 +1,19 @@
 """Inverter sensor"""
 import logging
 
+from homeassistant.components.number import NumberDeviceClass
+from homeassistant.components.number import NumberMode
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorStateClass
 
+from .modbus_entity_description_base import ModbusEntityDescriptionBase
+from .modbus_number import ModbusNumberDescription
+from .modbus_select import ModbusSelectDescription
 from .modbus_sensor import ModbusSensorDescription
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
-H1_SENSORS: list[ModbusSensorDescription] = [
+H1: list[ModbusEntityDescriptionBase] = [
     ModbusSensorDescription(
         key="pv1_voltage",
         address=11000,
@@ -174,7 +179,7 @@ H1_SENSORS: list[ModbusSensorDescription] = [
     ),
 ]
 
-H1_AC1_SENSORS: list[ModbusSensorDescription] = [
+H1_AC1: list[ModbusSensorDescription] = [
     ModbusSensorDescription(
         key="battery_soc",
         address=11036,
@@ -448,5 +453,47 @@ H1_AC1_SENSORS: list[ModbusSensorDescription] = [
         address=11048,
         name="BMS Cycle Count",
         state_class=SensorStateClass.MEASUREMENT,
+    ),
+    ModbusNumberDescription(
+        key="min_soc",
+        address=41009,
+        name="Min SoC",
+        mode=NumberMode.BOX,
+        native_min_value=10,
+        native_max_value=100,
+        native_step=1,
+        native_unit_of_measurement="%",
+        device_class=NumberDeviceClass.BATTERY,
+        icon="mdi:battery-arrow-down",
+    ),
+    ModbusNumberDescription(
+        key="min_soc_on_grid",
+        address=41011,
+        name="Min SoC (On Grid)",
+        mode=NumberMode.BOX,
+        native_min_value=10,
+        native_max_value=100,
+        native_step=1,
+        native_unit_of_measurement="%",
+        device_class=NumberDeviceClass.BATTERY,
+        icon="mdi:battery-arrow-down",
+    ),
+    ModbusNumberDescription(
+        key="max_soc",
+        address=41010,
+        name="Max SoC",
+        mode=NumberMode.BOX,
+        native_min_value=10,
+        native_max_value=100,
+        native_step=1,
+        native_unit_of_measurement="%",
+        device_class=NumberDeviceClass.BATTERY,
+        icon="mdi:battery-arrow-up",
+    ),
+    ModbusSelectDescription(
+        key="work_mode",
+        address=41000,
+        name="Work Mode",
+        options_map={0: "Self Use", 1: "Feed-in First", 2: "Back-up"},
     ),
 ]

@@ -9,11 +9,13 @@ from homeassistant.components.binary_sensor import BinarySensorEntityDescription
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.restore_state import ExtraStoredData
 from homeassistant.helpers.restore_state import RestoredExtraData
 from homeassistant.helpers.restore_state import RestoreEntity
 
 from ..common.entity_controller import EntityController
+from .modbus_entity_description_base import ModbusEntityDescriptionBase
 from .modbus_entity_mixin import ModbusEntityMixin
 
 _LOGGER = logging.getLogger(__name__)
@@ -30,11 +32,26 @@ def _is_force_charge_enabled(
 
 
 @dataclass(kw_only=True)
-class ModbusChargePeriodStartEndSensorDescription(SensorEntityDescription):
+class ModbusChargePeriodStartEndSensorDescription(
+    SensorEntityDescription, ModbusEntityDescriptionBase
+):
     """Entity description for ModbusChargePeriodStartEndSensor"""
 
     address: int
     other_address: int  # Address of period end if this is the start, and vice versa
+
+    @property
+    def entity_type(self) -> type[Entity]:
+        return SensorEntity
+
+    @property
+    def addresses(self) -> list[int]:
+        return [self.address, self.other_address]
+
+    def create_entity(
+        self, controller: EntityController, entry: ConfigEntry, inv_details
+    ) -> Entity:
+        return ModbusChargePeriodStartEndSensor(controller, self, entry, inv_details)
 
 
 class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorEntity):
@@ -116,11 +133,26 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
 
 
 @dataclass(kw_only=True)
-class ModbusEnableForceChargeSensorDescription(BinarySensorEntityDescription):
+class ModbusEnableForceChargeSensorDescription(
+    BinarySensorEntityDescription, ModbusEntityDescriptionBase
+):
     """Entity description for ModbusEnableForceChargeSensor"""
 
     period_start_address: int
     period_end_address: int
+
+    @property
+    def entity_type(self) -> type[Entity]:
+        return BinarySensorEntity
+
+    @property
+    def addresses(self) -> list[int]:
+        return [self.period_start_address, self.period_end_address]
+
+    def create_entity(
+        self, controller: EntityController, entry: ConfigEntry, inv_details
+    ) -> Entity:
+        return ModbusEnableForceChargeSensor(controller, self, entry, inv_details)
 
 
 class ModbusEnableForceChargeSensor(ModbusEntityMixin, BinarySensorEntity):

@@ -4,11 +4,12 @@ import logging
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorStateClass
 
+from .modbus_entity_description_base import ModbusEntityDescriptionBase
 from .modbus_sensor import ModbusSensorDescription
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
-H1_SENSORS: list[ModbusSensorDescription] = [
+H1: list[ModbusEntityDescriptionBase] = [
     ModbusSensorDescription(
         key="pv1_voltage",
         address=31000,
@@ -65,7 +66,7 @@ H1_SENSORS: list[ModbusSensorDescription] = [
     ),
 ]
 
-H1_AC1_SENSORS: list[ModbusSensorDescription] = [
+H1_AC1: list[ModbusEntityDescriptionBase] = [
     ModbusSensorDescription(
         key="battery_soc",
         address=31024,

@@ -5,19 +5,34 @@ from dataclasses import dataclass
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.select import SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
+from .modbus_entity_description_base import ModbusEntityDescriptionBase
 from .modbus_entity_mixin import ModbusEntityMixin
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
 @dataclass(kw_only=True)
-class ModbusSelectDescription(SelectEntityDescription):
+class ModbusSelectDescription(SelectEntityDescription, ModbusEntityDescriptionBase):
     """Custom select entity description"""
 
-    address: int | None = 0
+    address: int
     options_map: dict[int, str]
+
+    @property
+    def entity_type(self) -> type[Entity]:
+        return SelectEntity
+
+    @property
+    def addresses(self) -> list[int]:
+        return [self.address]
+
+    def create_entity(
+        self, controller: EntityController, entry: ConfigEntry, inv_details
+    ) -> Entity:
+        return ModbusSelect(controller, self, entry, inv_details)
 
 
 class ModbusSelect(ModbusEntityMixin, SelectEntity):

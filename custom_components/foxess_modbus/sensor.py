@@ -1,6 +1,7 @@
 """Sensor platform for foxess_modbus."""
 import logging
 
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
@@ -20,7 +21,7 @@ async def async_setup_entry(
 
     for inverter, controller in inverters:
         async_add_devices(
-            inverter_connection_type_profile_from_config(inverter).create_sensors(
-                controller, entry, inverter
+            inverter_connection_type_profile_from_config(inverter).create_entities(
+                SensorEntity, controller, entry, inverter
             )
         )
