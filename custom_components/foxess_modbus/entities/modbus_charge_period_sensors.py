@@ -19,6 +19,15 @@ from .modbus_entity_mixin import ModbusEntityMixin
 _LOGGER = logging.getLogger(__name__)
 
 
+def _parse_time(value: int) -> tuple[int, int]:
+    return ((value & 0xFF00) >> 8, value & 0xFF)
+
+
+def _is_valid(value: int) -> bool:
+    hours, minutes = _parse_time(value)
+    return 0 <= hours <= 23 and 0 <= minutes <= 59
+
+
 def _is_force_charge_enabled(
     start_or_end_1: int | None,
     start_or_end_2: int | None,
@@ -60,18 +69,32 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
         """Return the value reported by the sensor."""
         value = self._controller.read(self.entity_description.address)
 
+        if value is not None and not _is_valid(value):
+            _LOGGER.warning(
+                "Invalid time read for %s: parsing %s gives %s",
+                self.entity_id,
+                value,
+                _parse_time(value),
+            )
+            value = None
+
         if value is not None:
             other_value = self._controller.read(self.entity_description.other_address)
             # If the charge window is disabled (i.e. both start and end are 0),
             # return the last-stored value rather than midnight. If other_value is unavailable,
             # assume the charge window is enabled, so we'll only fall back to _last_enabled_value
             # if we're certain that force-charging is disabled
-            if self._last_enabled_value is not None and not _is_force_charge_enabled(
-                value, other_value, default_if_none=True
+            if (
+                _is_valid(other_value)
+                and self._last_enabled_value is not None
+                and not _is_force_charge_enabled(
+                    value, other_value, default_if_none=True
+                )
             ):
                 value = self._last_enabled_value
 
-            value = time(hour=(value & 0xFF00) >> 8, minute=value & 0xFF)
+            hours, minutes = _parse_time(value)
+            value = time(hour=hours, minute=minutes)
 
         return value
 
@@ -103,7 +126,13 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
                 other_value = self._controller.read(
                     self.entity_description.other_address
                 )
-                if _is_force_charge_enabled(value, other_value, default_if_none=False):
+                if (
+                    _is_valid(value)
+                    and _is_valid(other_value)
+                    and _is_force_charge_enabled(
+                        value, other_value, default_if_none=False
+                    )
+                ):
                     self._last_enabled_value = value
 
             # I'm not sure whether there are any cases where our exposed state will changed
@@ -144,6 +173,9 @@ class ModbusEnableForceChargeSensor(ModbusEntityMixin, BinarySensorEntity):
     def is_on(self) -> bool | None:
         start_time = self._controller.read(self.entity_description.period_start_address)
         end_time = self._controller.read(self.entity_description.period_end_address)
+
+        if not _is_valid(start_time) or not _is_valid(end_time):
+            return None
 
         return _is_force_charge_enabled(start_time, end_time, default_if_none=None)
 
