@@ -5,7 +5,7 @@ from .modbus_charge_period_config import ModbusChargePeriodConfig
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
-H1_AC1_PERIODS = [
+H1_AC1 = [
     ModbusChargePeriodConfig(
         period_start_key="time_period_1_start",
         period_start_name="Period 1 - Start",

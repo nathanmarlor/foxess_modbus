@@ -1,15 +1,20 @@
 """Inverter sensor"""
 import logging
 
+from homeassistant.components.number import NumberDeviceClass
+from homeassistant.components.number import NumberMode
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorStateClass
 
-from .modbus_sensor import SensorDescription
+from .entity_factory import EntityFactory
+from .modbus_number import ModbusNumberDescription
+from .modbus_select import ModbusSelectDescription
+from .modbus_sensor import ModbusSensorDescription
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
-H1_SENSORS: list[SensorDescription] = [
-    SensorDescription(
+H1: list[EntityFactory] = [
+    ModbusSensorDescription(
         key="pv1_voltage",
         address=11000,
         name="PV1 Voltage",
@@ -18,7 +23,7 @@ H1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="V",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="pv1_current",
         address=11001,
         name="PV1 Current",
@@ -27,7 +32,7 @@ H1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="A",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="pv1_power",
         address=11002,
         name="PV1 Power",
@@ -36,7 +41,7 @@ H1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="kW",
         scale=0.001,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="pv2_voltage",
         address=11003,
         name="PV2 Voltage",
@@ -45,7 +50,7 @@ H1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="V",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="pv2_current",
         address=11004,
         name="PV2 Current",
@@ -54,7 +59,7 @@ H1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="A",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="pv2_power",
         address=11005,
         name="PV2 Power",
@@ -64,7 +69,7 @@ H1_SENSORS: list[SensorDescription] = [
         scale=0.001,
     ),
     # These probably also apply to the AC1, but that's currently untested
-    SensorDescription(
+    ModbusSensorDescription(
         key="solar_sum_total",
         address=11070,
         name="Solar Generation Total",
@@ -73,7 +78,7 @@ H1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="kWh",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="solar_sum_today",
         address=11071,
         name="Solar Generation Today",
@@ -82,7 +87,7 @@ H1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="kWh",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="battery_charge_total",
         address=11073,
         name="Battery Charge Total",
@@ -91,7 +96,7 @@ H1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="kWh",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="battery_charge_today",
         address=11074,
         name="Battery Charge Today",
@@ -100,7 +105,7 @@ H1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="kWh",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="battery_discharge_total",
         address=11076,
         name="Battery Discharge Total",
@@ -109,7 +114,7 @@ H1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="kWh",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="battery_discharge_today",
         address=11077,
         name="Battery Discharge Today",
@@ -118,7 +123,7 @@ H1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="kWh",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="feed_in_sum_total",
         address=11079,
         name="Feed-in Total",
@@ -127,7 +132,7 @@ H1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="kWh",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="feed_in_sum_today",
         address=11080,
         name="Feed-in Today",
@@ -136,7 +141,7 @@ H1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="kWh",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="grid_consumption_sum_total",
         address=11082,
         name="Grid Consumption Total",
@@ -145,7 +150,7 @@ H1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="kWh",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="grid_consumption_sum_today",
         address=11083,
         name="Grid Consumption Today",
@@ -154,7 +159,7 @@ H1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="kWh",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="total_yield_total",
         address=11085,
         name="Yield Total",
@@ -163,7 +168,7 @@ H1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="kWh",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="total_yield_today",
         address=11086,
         name="Yield Today",
@@ -174,16 +179,26 @@ H1_SENSORS: list[SensorDescription] = [
     ),
 ]
 
-H1_AC1_SENSORS: list[SensorDescription] = [
-    SensorDescription(
-        key="battery_soc",
-        address=11036,
-        name="Battery SoC",
-        device_class=SensorDeviceClass.BATTERY,
+H1_AC1: list[EntityFactory] = [
+    ModbusSensorDescription(
+        key="invbatvolt",
+        address=11006,
+        name="Inverter Battery Voltage",
+        device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="%",
+        native_unit_of_measurement="V",
+        scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
+        key="invbatpower",
+        address=11007,
+        name="Inverter Battery Power",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="kW",
+        scale=0.01,
+    ),
+    ModbusSensorDescription(
         key="battery_discharge",
         address=11008,
         name="Battery Discharge",
@@ -193,7 +208,7 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         scale=0.001,
         post_process=lambda v: v if v > 0 else 0,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="battery_charge",
         address=11008,
         name="Battery Charge",
@@ -203,7 +218,52 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         scale=0.001,
         post_process=lambda v: abs(v) if v < 0 else 0,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
+        key="rvolt",
+        address=11009,
+        name="Grid Voltage",
+        device_class=SensorDeviceClass.VOLTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="V",
+        scale=0.1,
+    ),
+    ModbusSensorDescription(
+        key="rcurrent",
+        address=11010,
+        name="Grid Current",
+        device_class=SensorDeviceClass.CURRENT,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="A",
+        scale=0.1,
+    ),
+    ModbusSensorDescription(
+        key="rfreq",
+        address=11014,
+        name="Grid Frequency",
+        device_class=SensorDeviceClass.FREQUENCY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="Hz",
+        scale=0.01,
+    ),
+    ModbusSensorDescription(
+        key="eps_rvolt",
+        address=11015,
+        name="EPS Voltage",
+        device_class=SensorDeviceClass.VOLTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="V",
+        scale=0.1,
+    ),
+    ModbusSensorDescription(
+        key="grid_ct",
+        address=11021,
+        name="Grid CT",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="kW",
+        scale=0.001,
+    ),
+    ModbusSensorDescription(
         key="feed_in",
         address=11021,
         name="Feed In",
@@ -213,7 +273,7 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         scale=0.001,
         post_process=lambda v: v if v > 0 else 0,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="grid_consumption",
         address=11021,
         name="Grid Consumption",
@@ -223,124 +283,7 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         scale=0.001,
         post_process=lambda v: abs(v) if v < 0 else 0,
     ),
-    SensorDescription(
-        key="battery_temp",
-        address=11038,
-        name="Battery Temp",
-        device_class=SensorDeviceClass.TEMPERATURE,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="°C",
-        scale=0.1,
-    ),
-    SensorDescription(
-        key="invtemp",
-        address=11024,
-        name="Inverter Temp",
-        device_class=SensorDeviceClass.TEMPERATURE,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="°C",
-        scale=0.1,
-    ),
-    SensorDescription(
-        key="ambtemp",
-        address=11025,
-        name="Ambient Temp",
-        device_class=SensorDeviceClass.TEMPERATURE,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="°C",
-        scale=0.1,
-    ),
-    SensorDescription(
-        key="load_power",
-        address=11023,
-        name="Load Power",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        scale=0.001,
-    ),
-    SensorDescription(
-        key="invbatvolt",
-        address=11006,
-        name="Inverter Battery Voltage",
-        device_class=SensorDeviceClass.VOLTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="V",
-        scale=0.1,
-    ),
-    SensorDescription(
-        key="invbatpower",
-        address=11007,
-        name="Inverter Battery Power",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        scale=0.01,
-    ),
-    SensorDescription(
-        key="grid_ct",
-        address=11021,
-        name="Grid CT",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        scale=0.001,
-    ),
-    SensorDescription(
-        key="batvolt",
-        address=11034,
-        name="Battery Voltage",
-        device_class=SensorDeviceClass.VOLTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="V",
-        scale=0.1,
-    ),
-    SensorDescription(
-        key="bat_current",
-        address=11035,
-        name="Battery Current",
-        device_class=SensorDeviceClass.CURRENT,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="A",
-        scale=0.1,
-    ),
-    SensorDescription(
-        key="rvolt",
-        address=11009,
-        name="Grid Voltage",
-        device_class=SensorDeviceClass.VOLTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="V",
-        scale=0.1,
-    ),
-    SensorDescription(
-        key="rcurrent",
-        address=11010,
-        name="Grid Current",
-        device_class=SensorDeviceClass.CURRENT,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="A",
-        scale=0.1,
-    ),
-    SensorDescription(
-        key="rfreq",
-        address=11014,
-        name="Grid Frequency",
-        device_class=SensorDeviceClass.FREQUENCY,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="Hz",
-        scale=0.01,
-    ),
-    SensorDescription(
-        key="eps_rvolt",
-        address=11015,
-        name="EPS Voltage",
-        device_class=SensorDeviceClass.VOLTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="V",
-        scale=0.1,
-    ),
-    SensorDescription(
+    ModbusSensorDescription(
         key="ct2_meter",
         address=11022,
         name="CT2 Meter",
@@ -349,92 +292,60 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="kW",
         scale=0.001,
     ),
-    SensorDescription(
-        key="bms_watthours_total",
-        address=11049,
-        name="BMS Watthours Total",
-        device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL,
-        native_unit_of_measurement="kWh",
-        scale=0.1,
-    ),
-    SensorDescription(
-        key="min_soc",
-        address=41009,
-        name="Min SoC",
-        device_class=SensorDeviceClass.BATTERY,
+    ModbusSensorDescription(
+        key="load_power",
+        address=11023,
+        name="Load Power",
+        device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="%",
+        native_unit_of_measurement="kW",
+        scale=0.001,
     ),
-    SensorDescription(
-        key="min_soc_on_grid",
-        address=41011,
-        name="Min SoC (On Grid)",
-        device_class=SensorDeviceClass.BATTERY,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="%",
-    ),
-    SensorDescription(
-        key="max_soc",
-        address=41010,
-        name="Max SoC",
-        device_class=SensorDeviceClass.BATTERY,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="%",
-    ),
-    SensorDescription(
-        key="bms_cell_mv_high",
-        address=11045,
-        name="BMS Cell mV High",
-        device_class=SensorDeviceClass.VOLTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="mV",
-    ),
-    SensorDescription(
-        key="bms_cell_mv_low",
-        address=11046,
-        name="BMS Cell mV Low",
-        device_class=SensorDeviceClass.VOLTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="mV",
-    ),
-    SensorDescription(
-        key="bms_charge_rate",
-        address=11041,
-        name="BMS Charge Rate",
-        device_class=SensorDeviceClass.CURRENT,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="A",
-        scale=0.1,
-    ),
-    SensorDescription(
-        key="bms_discharge_rate",
-        address=11042,
-        name="BMS Discharge Rate",
-        device_class=SensorDeviceClass.CURRENT,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="A",
-        scale=0.1,
-    ),
-    SensorDescription(
-        key="bms_cell_temp_high",
-        address=11043,
-        name="BMS Cell Temp High",
+    ModbusSensorDescription(
+        key="invtemp",
+        address=11024,
+        name="Inverter Temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="°C",
         scale=0.1,
     ),
-    SensorDescription(
-        key="bms_cell_temp_low",
-        address=11044,
-        name="BMS Cell Temp Low",
+    ModbusSensorDescription(
+        key="ambtemp",
+        address=11025,
+        name="Ambient Temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="°C",
         scale=0.1,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
+        key="batvolt",
+        address=11034,
+        name="Battery Voltage",
+        device_class=SensorDeviceClass.VOLTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="V",
+        scale=0.1,
+    ),
+    ModbusSensorDescription(
+        key="bat_current",
+        address=11035,
+        name="Battery Current",
+        device_class=SensorDeviceClass.CURRENT,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="A",
+        scale=0.1,
+    ),
+    ModbusSensorDescription(
+        key="battery_soc",
+        address=11036,
+        name="Battery SoC",
+        device_class=SensorDeviceClass.BATTERY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="%",
+    ),
+    ModbusSensorDescription(
         key="bms_kwh_remaining",
         address=11037,
         name="BMS kWh Remaining",
@@ -443,10 +354,149 @@ H1_AC1_SENSORS: list[SensorDescription] = [
         native_unit_of_measurement="kWh",
         scale=0.01,
     ),
-    SensorDescription(
+    ModbusSensorDescription(
+        key="battery_temp",
+        address=11038,
+        name="Battery Temp",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="°C",
+        scale=0.1,
+    ),
+    ModbusSensorDescription(
+        key="bms_charge_rate",
+        address=11041,
+        name="BMS Charge Rate",
+        device_class=SensorDeviceClass.CURRENT,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="A",
+        scale=0.1,
+    ),
+    ModbusSensorDescription(
+        key="bms_discharge_rate",
+        address=11042,
+        name="BMS Discharge Rate",
+        device_class=SensorDeviceClass.CURRENT,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="A",
+        scale=0.1,
+    ),
+    ModbusSensorDescription(
+        key="bms_cell_temp_high",
+        address=11043,
+        name="BMS Cell Temp High",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="°C",
+        scale=0.1,
+    ),
+    ModbusSensorDescription(
+        key="bms_cell_temp_low",
+        address=11044,
+        name="BMS Cell Temp Low",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="°C",
+        scale=0.1,
+    ),
+    ModbusSensorDescription(
+        key="bms_cell_mv_high",
+        address=11045,
+        name="BMS Cell mV High",
+        device_class=SensorDeviceClass.VOLTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="mV",
+    ),
+    ModbusSensorDescription(
+        key="bms_cell_mv_low",
+        address=11046,
+        name="BMS Cell mV Low",
+        device_class=SensorDeviceClass.VOLTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="mV",
+    ),
+    ModbusSensorDescription(
         key="bms_cycle_count",
         address=11048,
         name="BMS Cycle Count",
         state_class=SensorStateClass.MEASUREMENT,
+    ),
+    ModbusSensorDescription(
+        key="bms_watthours_total",
+        address=11049,
+        name="BMS Watthours Total",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement="kWh",
+        scale=0.1,
+    ),
+    ModbusSelectDescription(
+        key="work_mode",
+        address=41000,
+        name="Work Mode",
+        options_map={0: "Self Use", 1: "Feed-in First", 2: "Back-up"},
+    ),
+    # Sensor kept for back compat
+    ModbusSensorDescription(
+        key="min_soc",
+        address=41009,
+        name="Min SoC",
+        device_class=SensorDeviceClass.BATTERY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="%",
+    ),
+    ModbusNumberDescription(
+        key="min_soc",
+        address=41009,
+        name="Min SoC",
+        mode=NumberMode.BOX,
+        native_min_value=10,
+        native_max_value=100,
+        native_step=1,
+        native_unit_of_measurement="%",
+        device_class=NumberDeviceClass.BATTERY,
+        icon="mdi:battery-arrow-down",
+    ),
+    # Sensor kept for back compat
+    ModbusSensorDescription(
+        key="max_soc",
+        address=41010,
+        name="Max SoC",
+        device_class=SensorDeviceClass.BATTERY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="%",
+    ),
+    ModbusNumberDescription(
+        key="max_soc",
+        address=41010,
+        name="Max SoC",
+        mode=NumberMode.BOX,
+        native_min_value=10,
+        native_max_value=100,
+        native_step=1,
+        native_unit_of_measurement="%",
+        device_class=NumberDeviceClass.BATTERY,
+        icon="mdi:battery-arrow-up",
+    ),
+    # Sensor kept for back compat
+    ModbusSensorDescription(
+        key="min_soc_on_grid",
+        address=41011,
+        name="Min SoC (On Grid)",
+        device_class=SensorDeviceClass.BATTERY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="%",
+    ),
+    ModbusNumberDescription(
+        key="min_soc_on_grid",
+        address=41011,
+        name="Min SoC (On Grid)",
+        mode=NumberMode.BOX,
+        native_min_value=10,
+        native_max_value=100,
+        native_step=1,
+        native_unit_of_measurement="%",
+        device_class=NumberDeviceClass.BATTERY,
+        icon="mdi:battery-arrow-down",
     ),
 ]

@@ -7,21 +7,35 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.components.sensor import SensorStateClass
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
+from .entity_factory import EntityFactory
 from .modbus_entity_mixin import ModbusEntityMixin
 
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass
-class SensorDescription(SensorEntityDescription):
+@dataclass(kw_only=True)
+class ModbusSensorDescription(SensorEntityDescription, EntityFactory):
     """Custom sensor description"""
 
-    address: int | None = 0
-    should_poll: bool | None = False
+    address: int
     scale: float | None = None
     post_process: Callable[[int], int] | None = None
+
+    @property
+    def entity_type(self) -> type[Entity]:
+        return SensorEntity
+
+    @property
+    def addresses(self) -> list[int]:
+        return [self.address]
+
+    def create_entity(
+        self, controller: EntityController, entry: ConfigEntry, inv_details
+    ) -> Entity:
+        return ModbusSensor(controller, self, entry, inv_details)
 
 
 class ModbusSensor(ModbusEntityMixin, SensorEntity):
@@ -30,7 +44,7 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
     def __init__(
         self,
         controller: EntityController,
-        entity_description: SensorDescription,
+        entity_description: ModbusSensorDescription,
         entry: ConfigEntry,
         inv_details,
     ) -> None:
@@ -66,7 +80,4 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
 
     @property
     def should_poll(self) -> bool:
-        """Return True if entity has to be polled for state.
-        False if entity pushes its state to HA.
-        """
-        return self.entity_description.should_poll
+        return False
