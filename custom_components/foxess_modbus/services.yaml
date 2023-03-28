@@ -64,7 +64,7 @@ update_charge_period:
       selector:
         boolean:
     start:
-      name: Start
+      name: Period Start
       description: >
         The start of the charge period. This is only required if 'Enable force charge' is selected.
       required: true
@@ -72,7 +72,7 @@ update_charge_period:
       selector:
         time:
     end:
-      name: End
+      name: Period End
       description: >
         The end of the charge period. This is only required of 'Enable force charge' is selected.
 
