@@ -43,6 +43,7 @@ H1: list[EntityFactory] = [
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
+        scale=0.001,
         validate=[Range(0, 10000)],
     ),
     ModbusSensorDescription(
@@ -195,7 +196,8 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kWh",
         scale=0.1,
-        validate=[Range(0, 100)],
+        # unsure if this actually goes negative
+        validate=[Range(-100, 100)],
     ),
 ]
 

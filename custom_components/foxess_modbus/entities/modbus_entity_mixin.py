@@ -78,7 +78,7 @@ class ModbusEntityMixin:
 
     def _validate(self, rules: list[BaseValidator], processed, original=None) -> bool:
         """Validate against a set of rules"""
-        original = original if not None else processed
+        original = original if original is not None else processed
 
         valid = True
         for rule in rules:
