@@ -65,12 +65,15 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
         if not self._validate(self.entity_description.validate, value):
             return None
 
-        options = self.entity_description.options_map
-        if value not in options:
+        selected = self.entity_description.options_map.get(value)
+        if selected is None:
             _LOGGER.warning(
-                "Value (%s) is not valid. Valid values: (%s)", value, self.options
+                "Select option (%s) for address (%s) is not valid. Valid values: (%s)",
+                value,
+                self.entity_description.address,
+                self.entity_description.options_map,
             )
-        return options.get(value)
+        return selected
 
     async def async_select_option(self, option: str) -> None:
         value = next(
