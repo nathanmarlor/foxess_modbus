@@ -1,5 +1,6 @@
 import logging
 
+from custom_components.foxess_modbus.entities.validation import BaseValidator
 from homeassistant.const import ATTR_IDENTIFIERS
 from homeassistant.const import ATTR_MANUFACTURER
 from homeassistant.const import ATTR_MODEL
@@ -57,14 +58,6 @@ class ModbusEntityMixin:
         else:
             return self.entity_description.name
 
-    def _get_unique_id(self):
-        """Get unique ID"""
-        friendly_name = self._inv_details[FRIENDLY_NAME]
-        if friendly_name != "":
-            return f"{friendly_name}_{self.entity_description.key}"
-        else:
-            return f"{self.entity_description.key}"
-
     async def async_added_to_hass(self) -> None:
         """Add update callback after being added to hass."""
         await super().async_added_to_hass()
@@ -74,3 +67,27 @@ class ModbusEntityMixin:
         """Schedule a state update."""
         if self.entity_description.address in changed_addresses:
             self.schedule_update_ha_state(True)
+
+    def _get_unique_id(self):
+        """Get unique ID"""
+        friendly_name = self._inv_details[FRIENDLY_NAME]
+        if friendly_name != "":
+            return f"{friendly_name}_{self.entity_description.key}"
+        else:
+            return f"{self.entity_description.key}"
+
+    def _validate(self, rules: list[BaseValidator], processed, original) -> bool:
+        """Validate against a set of rules"""
+        valid = True
+        for rule in rules:
+            if not rule.validate(processed):
+                _LOGGER.warning(
+                    "Value (%s: %s) for address (%s) failed validation against rule (%s : %s)",
+                    original,
+                    processed,
+                    self.entity_description.address,
+                    type(rule).__name__,
+                    vars(rule),
+                )
+                valid = False
+        return valid

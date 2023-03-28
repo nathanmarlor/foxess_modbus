@@ -62,20 +62,18 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
     @property
     def native_value(self):
         """Return the value reported by the sensor."""
-        value = self._controller.read(self.entity_description.address)
+        value = original = self._controller.read(self.entity_description.address)
 
-        if value is not None:
-            if self.entity_description.scale is not None:
-                value = value * self.entity_description.scale
-            if self.entity_description.post_process is not None:
-                value = self.entity_description.post_process(value)
+        if value is None:
+            return value
 
-            rules = self.entity_description.validate
-            if not self._validate(rules, value):
-                _LOGGER.warning(
-                    "Value (%s) failed validation against rules (%s)", value, rules
-                )
-                return None
+        if self.entity_description.scale is not None:
+            value = value * self.entity_description.scale
+        if self.entity_description.post_process is not None:
+            value = self.entity_description.post_process(value)
+        rules = self.entity_description.validate
+        if not self._validate(rules, value, original):
+            return None
 
         return value
 
@@ -92,7 +90,3 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
     @property
     def should_poll(self) -> bool:
         return False
-
-    def _validate(self, rules, value) -> bool:
-        """Validate against a set of rules"""
-        return all(rule.validate(value) for rule in rules)

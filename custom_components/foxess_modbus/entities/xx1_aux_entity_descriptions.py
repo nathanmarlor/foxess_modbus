@@ -25,7 +25,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
-        validate=[Range(0, 1000)],
+        validate=[Range(0, 1)],
     ),
     ModbusSensorDescription(
         key="pv1_current",
