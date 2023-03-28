@@ -1,8 +1,10 @@
 """Sensor"""
 import logging
 from dataclasses import dataclass
+from dataclasses import field
 from typing import Callable
 
+from custom_components.foxess_modbus.entities.validation import BaseValidator
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.components.sensor import SensorStateClass
@@ -23,6 +25,7 @@ class ModbusSensorDescription(SensorEntityDescription, EntityFactory):
     address: int
     scale: float | None = None
     post_process: Callable[[int], int] | None = None
+    validate: list[BaseValidator] | None = field(default_factory=list)
 
     @property
     def entity_type(self) -> type[Entity]:
@@ -60,11 +63,19 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
     def native_value(self):
         """Return the value reported by the sensor."""
         value = self._controller.read(self.entity_description.address)
+
         if value is not None:
+            rules = self.entity_description.validate
             if self.entity_description.scale is not None:
                 value = value * self.entity_description.scale
             if self.entity_description.post_process is not None:
-                return self.entity_description.post_process(value)
+                value = self.entity_description.post_process(value)
+
+            if not self._validate(rules, value):
+                _LOGGER.warning(
+                    "Value (%s) failed validation against rules (%s)", value, rules
+                )
+                return None
 
         return value
 
@@ -81,3 +92,7 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
     @property
     def should_poll(self) -> bool:
         return False
+
+    def _validate(self, rules, value) -> bool:
+        """Validate against a set of rules"""
+        return all(rule.validate(value) for rule in rules)

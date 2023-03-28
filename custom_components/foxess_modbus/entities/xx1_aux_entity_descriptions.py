@@ -1,6 +1,9 @@
 """Inverter sensor"""
 import logging
 
+from custom_components.foxess_modbus.entities.validation import Max
+from custom_components.foxess_modbus.entities.validation import Min
+from custom_components.foxess_modbus.entities.validation import Range
 from homeassistant.components.number import NumberDeviceClass
 from homeassistant.components.number import NumberMode
 from homeassistant.components.sensor import SensorDeviceClass
@@ -22,6 +25,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
+        validate=[Range(0, 1000)],
     ),
     ModbusSensorDescription(
         key="pv1_current",
@@ -31,6 +35,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        validate=[Min(0), Max(100)],
     ),
     ModbusSensorDescription(
         key="pv1_power",
