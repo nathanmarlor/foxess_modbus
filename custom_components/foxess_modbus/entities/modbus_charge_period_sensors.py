@@ -1,8 +1,10 @@
 """Time period sensors"""
 import logging
 from dataclasses import dataclass
+from dataclasses import field
 from datetime import time
 
+from custom_components.foxess_modbus.entities.validation import BaseValidator
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.binary_sensor import BinarySensorEntityDescription
@@ -25,11 +27,6 @@ def _parse_time(value: int) -> tuple[int, int]:
     return ((value & 0xFF00) >> 8, value & 0xFF)
 
 
-def _is_valid(value: int) -> bool:
-    hours, minutes = _parse_time(value)
-    return 0 <= hours <= 23 and 0 <= minutes <= 59
-
-
 def _is_force_charge_enabled(
     start_or_end_1: int,
     start_or_end_2: int,
@@ -45,6 +42,7 @@ class ModbusChargePeriodStartEndSensorDescription(
 
     address: int
     other_address: int  # Address of period end if this is the start, and vice versa
+    validate: list[BaseValidator] = field(default_factory=list)
 
     @property
     def entity_type(self) -> type[Entity]:
@@ -83,31 +81,27 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
         """Return the value reported by the sensor."""
         value = self._controller.read(self.entity_description.address)
 
-        if value is not None and not _is_valid(value):
-            _LOGGER.warning(
-                "Invalid time read for %s: parsing %s gives %s",
-                self.entity_id,
-                value,
-                _parse_time(value),
-            )
-            value = None
+        if value is None:
+            return None
 
-        if value is not None:
-            other_value = self._controller.read(self.entity_description.other_address)
-            # If the charge window is disabled (i.e. both start and end are 0),
-            # return the last-stored value rather than midnight. If other_value is unavailable,
-            # assume the charge window is enabled, so we'll only fall back to _last_enabled_value
-            # if we're certain that force-charging is disabled
-            if (
-                self._last_enabled_value is not None
-                and other_value is not None
-                and _is_valid(other_value)
-                and not _is_force_charge_enabled(value, other_value)
-            ):
-                value = self._last_enabled_value
+        rules = self.entity_description.validate
+        if not self._validate(rules, value):
+            return None
 
-            hours, minutes = _parse_time(value)
-            value = time(hour=hours, minute=minutes)
+        other_value = self._controller.read(self.entity_description.other_address)
+        # If the charge window is disabled (i.e. both start and end are 0),
+        # return the last-stored value rather than midnight. If other_value is unavailable,
+        # assume the charge window is enabled, so we'll only fall back to _last_enabled_value
+        # if we're certain that force-charging is disabled
+        if (
+            self._last_enabled_value is not None
+            and other_value is not None
+            and self._validate(rules, other_value)
+            and not _is_force_charge_enabled(value, other_value)
+        ):
+            value = self._last_enabled_value
+        hours, minutes = _parse_time(value)
+        value = time(hour=hours, minute=minutes)
 
         return value
 
@@ -139,10 +133,11 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
                 other_value = self._controller.read(
                     self.entity_description.other_address
                 )
+                rules = self.entity_description.validate
                 if (
-                    _is_valid(value)
+                    self._validate(rules, value)
                     and other_value is not None
-                    and _is_valid(other_value)
+                    and self._validate(rules, other_value)
                     and _is_force_charge_enabled(value, other_value)
                 ):
                     self._last_enabled_value = value
@@ -164,6 +159,7 @@ class ModbusEnableForceChargeSensorDescription(
 
     period_start_address: int
     period_end_address: int
+    validate: list[BaseValidator] = field(default_factory=list)
 
     @property
     def entity_type(self) -> type[Entity]:
@@ -200,12 +196,13 @@ class ModbusEnableForceChargeSensor(ModbusEntityMixin, BinarySensorEntity):
     def is_on(self) -> bool | None:
         start_time = self._controller.read(self.entity_description.period_start_address)
         end_time = self._controller.read(self.entity_description.period_end_address)
+        rules = self.entity_description.validate
 
         if (
             start_time is None
-            or not _is_valid(start_time)
+            or not self._validate(rules, start_time)
             or end_time is None
-            or not _is_valid(end_time)
+            or not self._validate(rules, end_time)
         ):
             return None
 

@@ -1,7 +1,9 @@
 """Binary Sensor"""
 import logging
 from dataclasses import dataclass
+from dataclasses import field
 
+from custom_components.foxess_modbus.entities.validation import BaseValidator
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.binary_sensor import BinarySensorEntityDescription
 from homeassistant.components.sensor import SensorStateClass
@@ -21,6 +23,7 @@ class ModbusBinarySensorDescription(BinarySensorEntityDescription, EntityFactory
     """Description for ModbusBinarySensor"""
 
     address: int
+    validate: list[BaseValidator] = field(default_factory=list)
 
     @property
     def entity_type(self) -> type[Entity]:
@@ -58,6 +61,11 @@ class ModbusBinarySensor(ModbusEntityMixin, BinarySensorEntity):
     def is_on(self) -> bool | None:
         """Return the value reported by the sensor."""
         value = self._controller.read(self.entity_description.address)
+        if value is None:
+            return value
+        rules = self.entity_description.validate
+        if not self._validate(rules, value):
+            return None
         return value
 
     @property

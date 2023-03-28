@@ -1,6 +1,8 @@
 """Inverter sensor"""
 import logging
 
+from custom_components.foxess_modbus.entities.validation import Min
+from custom_components.foxess_modbus.entities.validation import Range
 from homeassistant.components.number import NumberDeviceClass
 from homeassistant.components.number import NumberMode
 from homeassistant.components.sensor import SensorDeviceClass
@@ -22,6 +24,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
+        validate=[Range(0, 1000)],
     ),
     ModbusSensorDescription(
         key="pv1_current",
@@ -31,6 +34,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="pv1_power",
@@ -40,6 +44,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        validate=[Range(0, 10000)],
     ),
     ModbusSensorDescription(
         key="pv2_voltage",
@@ -49,6 +54,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
+        validate=[Range(0, 1000)],
     ),
     ModbusSensorDescription(
         key="pv2_current",
@@ -58,6 +64,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="pv2_power",
@@ -67,6 +74,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        validate=[Range(0, 10000)],
     ),
     # These probably also apply to the AC1, but that's currently untested
     ModbusSensorDescription(
@@ -77,6 +85,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
         scale=0.1,
+        validate=[Min(0)],
     ),
     ModbusSensorDescription(
         key="solar_sum_today",
@@ -86,6 +95,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kWh",
         scale=0.1,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="battery_charge_total",
@@ -95,6 +105,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
         scale=0.1,
+        validate=[Min(0)],
     ),
     ModbusSensorDescription(
         key="battery_charge_today",
@@ -104,6 +115,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kWh",
         scale=0.1,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="battery_discharge_total",
@@ -113,6 +125,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
         scale=0.1,
+        validate=[Min(0)],
     ),
     ModbusSensorDescription(
         key="battery_discharge_today",
@@ -122,6 +135,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kWh",
         scale=0.1,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="feed_in_sum_total",
@@ -131,6 +145,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
         scale=0.1,
+        validate=[Min(0)],
     ),
     ModbusSensorDescription(
         key="feed_in_sum_today",
@@ -140,6 +155,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kWh",
         scale=0.1,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="grid_consumption_sum_total",
@@ -149,6 +165,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
         scale=0.1,
+        validate=[Min(0)],
     ),
     ModbusSensorDescription(
         key="grid_consumption_sum_today",
@@ -158,6 +175,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kWh",
         scale=0.1,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="total_yield_total",
@@ -167,6 +185,8 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
         scale=0.1,
+        # currently overflows
+        # validate=[Min(0)],
     ),
     ModbusSensorDescription(
         key="total_yield_today",
@@ -176,6 +196,8 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kWh",
         scale=0.1,
+        # unsure if this actually goes negative
+        validate=[Range(-100, 100)],
     ),
 ]
 
@@ -188,6 +210,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
+        validate=[Min(0)],
     ),
     ModbusSensorDescription(
         key="invbatpower",
@@ -197,6 +220,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.01,
+        validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
         key="battery_discharge",
@@ -207,6 +231,7 @@ H1_AC1: list[EntityFactory] = [
         native_unit_of_measurement="kW",
         scale=0.001,
         post_process=lambda v: v if v > 0 else 0,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="battery_charge",
@@ -217,6 +242,7 @@ H1_AC1: list[EntityFactory] = [
         native_unit_of_measurement="kW",
         scale=0.001,
         post_process=lambda v: abs(v) if v < 0 else 0,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="rvolt",
@@ -226,6 +252,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
+        validate=[Range(0, 300)],
     ),
     ModbusSensorDescription(
         key="rcurrent",
@@ -235,6 +262,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="rfreq",
@@ -244,6 +272,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="Hz",
         scale=0.01,
+        validate=[Range(0, 60)],
     ),
     ModbusSensorDescription(
         key="eps_rvolt",
@@ -253,6 +282,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
+        validate=[Range(0, 300)],
     ),
     ModbusSensorDescription(
         key="grid_ct",
@@ -262,6 +292,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
         key="feed_in",
@@ -272,6 +303,7 @@ H1_AC1: list[EntityFactory] = [
         native_unit_of_measurement="kW",
         scale=0.001,
         post_process=lambda v: v if v > 0 else 0,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="grid_consumption",
@@ -282,6 +314,7 @@ H1_AC1: list[EntityFactory] = [
         native_unit_of_measurement="kW",
         scale=0.001,
         post_process=lambda v: abs(v) if v < 0 else 0,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="ct2_meter",
@@ -291,6 +324,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
         key="load_power",
@@ -300,6 +334,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
         key="invtemp",
@@ -309,6 +344,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="°C",
         scale=0.1,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="ambtemp",
@@ -318,6 +354,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="°C",
         scale=0.1,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="batvolt",
@@ -327,6 +364,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
+        validate=[Min(0)],
     ),
     ModbusSensorDescription(
         key="bat_current",
@@ -336,6 +374,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
         key="battery_soc",
@@ -344,6 +383,7 @@ H1_AC1: list[EntityFactory] = [
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="bms_kwh_remaining",
@@ -353,6 +393,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
         scale=0.01,
+        validate=[Min(0)],
     ),
     ModbusSensorDescription(
         key="battery_temp",
@@ -362,6 +403,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="°C",
         scale=0.1,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="bms_charge_rate",
@@ -371,6 +413,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="bms_discharge_rate",
@@ -380,6 +423,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="bms_cell_temp_high",
@@ -389,6 +433,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="°C",
         scale=0.1,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="bms_cell_temp_low",
@@ -398,6 +443,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="°C",
         scale=0.1,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="bms_cell_mv_high",
@@ -406,6 +452,7 @@ H1_AC1: list[EntityFactory] = [
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="mV",
+        validate=[Min(0)],
     ),
     ModbusSensorDescription(
         key="bms_cell_mv_low",
@@ -414,12 +461,14 @@ H1_AC1: list[EntityFactory] = [
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="mV",
+        validate=[Min(0)],
     ),
     ModbusSensorDescription(
         key="bms_cycle_count",
         address=11048,
         name="BMS Cycle Count",
         state_class=SensorStateClass.MEASUREMENT,
+        validate=[Min(0)],
     ),
     ModbusSensorDescription(
         key="bms_watthours_total",
@@ -429,6 +478,8 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
         scale=0.1,
+        # currently overflows
+        # validate=[Range(0, 100)]
     ),
     ModbusSelectDescription(
         key="work_mode",
@@ -444,6 +495,7 @@ H1_AC1: list[EntityFactory] = [
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
+        validate=[Range(0, 100)],
     ),
     ModbusNumberDescription(
         key="min_soc",
@@ -456,6 +508,7 @@ H1_AC1: list[EntityFactory] = [
         native_unit_of_measurement="%",
         device_class=NumberDeviceClass.BATTERY,
         icon="mdi:battery-arrow-down",
+        validate=[Range(0, 100)],
     ),
     # Sensor kept for back compat
     ModbusSensorDescription(
@@ -465,6 +518,7 @@ H1_AC1: list[EntityFactory] = [
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
+        validate=[Range(0, 100)],
     ),
     ModbusNumberDescription(
         key="max_soc",
@@ -477,6 +531,7 @@ H1_AC1: list[EntityFactory] = [
         native_unit_of_measurement="%",
         device_class=NumberDeviceClass.BATTERY,
         icon="mdi:battery-arrow-up",
+        validate=[Range(0, 100)],
     ),
     # Sensor kept for back compat
     ModbusSensorDescription(
@@ -486,6 +541,7 @@ H1_AC1: list[EntityFactory] = [
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
+        validate=[Range(0, 100)],
     ),
     ModbusNumberDescription(
         key="min_soc_on_grid",
@@ -498,5 +554,6 @@ H1_AC1: list[EntityFactory] = [
         native_unit_of_measurement="%",
         device_class=NumberDeviceClass.BATTERY,
         icon="mdi:battery-arrow-down",
+        validate=[Range(0, 100)],
     ),
 ]

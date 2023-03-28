@@ -1,8 +1,10 @@
 """Select"""
 import logging
 from dataclasses import dataclass
+from dataclasses import field
 from typing import Callable
 
+from custom_components.foxess_modbus.entities.validation import BaseValidator
 from homeassistant.components.number import NumberEntity
 from homeassistant.components.number import NumberEntityDescription
 from homeassistant.components.number import NumberMode
@@ -24,6 +26,7 @@ class ModbusNumberDescription(NumberEntityDescription, EntityFactory):
     mode: NumberMode = NumberMode.AUTO
     scale: float | None = None
     post_process: Callable[[int], int] | None = None
+    validate: list[BaseValidator] = field(default_factory=list)
 
     @property
     def entity_type(self) -> type[Entity]:
@@ -60,12 +63,15 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
     @property
     def native_value(self):
         """Return the value reported by the sensor."""
-        value = self._controller.read(self.entity_description.address)
-        if value is not None:
-            if self.entity_description.scale is not None:
-                value = value * self.entity_description.scale
-            if self.entity_description.post_process is not None:
-                return self.entity_description.post_process(value)
+        value = original = self._controller.read(self.entity_description.address)
+        if value is None:
+            return None
+        if self.entity_description.scale is not None:
+            value = value * self.entity_description.scale
+        if self.entity_description.post_process is not None:
+            value = self.entity_description.post_process(value)
+        if not self._validate(self.entity_description.validate, value, original):
+            return None
 
         return value
 

@@ -1,7 +1,9 @@
 """Select"""
 import logging
 from dataclasses import dataclass
+from dataclasses import field
 
+from custom_components.foxess_modbus.entities.validation import BaseValidator
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.select import SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
@@ -20,6 +22,7 @@ class ModbusSelectDescription(SelectEntityDescription, EntityFactory):
 
     address: int
     options_map: dict[int, str]
+    validate: list[BaseValidator] = field(default_factory=list)
 
     @property
     def entity_type(self) -> type[Entity]:
@@ -57,7 +60,20 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
     @property
     def current_option(self) -> str | None:
         value = self._controller.read(self.entity_description.address)
-        return self.entity_description.options_map.get(value)
+        if value is None:
+            return None
+        if not self._validate(self.entity_description.validate, value):
+            return None
+
+        selected = self.entity_description.options_map.get(value)
+        if selected is None:
+            _LOGGER.warning(
+                "Select option (%s) for address (%s) is not valid. Valid values: (%s)",
+                value,
+                self.entity_description.address,
+                self.entity_description.options_map,
+            )
+        return selected
 
     async def async_select_option(self, option: str) -> None:
         value = next(
