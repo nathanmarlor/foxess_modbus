@@ -1,6 +1,8 @@
 """Inverter sensor"""
 import logging
 
+from custom_components.foxess_modbus.entities.validation import Min
+from custom_components.foxess_modbus.entities.validation import Range
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorStateClass
 
@@ -18,6 +20,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
+        validate=[Range(0, 1000)],
     ),
     ModbusSensorDescription(
         key="pv1_current",
@@ -27,6 +30,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="pv1_power",
@@ -36,6 +40,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        validate=[Range(0, 10000)],
     ),
     ModbusSensorDescription(
         key="pv2_voltage",
@@ -45,6 +50,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
+        validate=[Range(0, 1000)],
     ),
     ModbusSensorDescription(
         key="pv2_current",
@@ -54,6 +60,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="pv2_power",
@@ -63,6 +70,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        validate=[Range(0, 10000)],
     ),
 ]
 
@@ -75,6 +83,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
+        validate=[Range(0, 300)],
     ),
     ModbusSensorDescription(
         key="rcurrent",
@@ -84,6 +93,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="rfreq",
@@ -93,6 +103,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="Hz",
         scale=0.01,
+        validate=[Range(0, 60)],
     ),
     ModbusSensorDescription(
         key="grid_ct",
@@ -102,6 +113,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
         key="feed_in",
@@ -112,6 +124,7 @@ H1_AC1: list[EntityFactory] = [
         native_unit_of_measurement="kW",
         scale=0.001,
         post_process=lambda v: v if v > 0 else 0,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="grid_consumption",
@@ -122,6 +135,7 @@ H1_AC1: list[EntityFactory] = [
         native_unit_of_measurement="kW",
         scale=0.001,
         post_process=lambda v: abs(v) if v < 0 else 0,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="ct2_meter",
@@ -131,6 +145,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
         key="load_power",
@@ -140,6 +155,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
         key="ambtemp",
@@ -149,6 +165,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="°C",
         scale=0.1,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="invtemp",
@@ -158,6 +175,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="°C",
         scale=0.1,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="batvolt",
@@ -167,6 +185,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
+        validate=[Min(0)],
     ),
     ModbusSensorDescription(
         key="bat_current",
@@ -176,6 +195,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
         key="battery_discharge",
@@ -186,6 +206,7 @@ H1_AC1: list[EntityFactory] = [
         native_unit_of_measurement="kW",
         scale=0.001,
         post_process=lambda v: v if v > 0 else 0,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="battery_charge",
@@ -196,6 +217,7 @@ H1_AC1: list[EntityFactory] = [
         native_unit_of_measurement="kW",
         scale=0.001,
         post_process=lambda v: abs(v) if v < 0 else 0,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="battery_temp",
@@ -205,6 +227,7 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="°C",
         scale=0.1,
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="battery_soc",
@@ -213,5 +236,6 @@ H1_AC1: list[EntityFactory] = [
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
+        validate=[Range(0, 100)],
     ),
 ]
