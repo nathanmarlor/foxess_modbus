@@ -7,6 +7,13 @@ from typing import Any
 import voluptuous as vol
 from custom_components.foxess_modbus import ModbusClient
 from homeassistant import config_entries
+from homeassistant.components.energy import data
+from homeassistant.components.energy.data import BatterySourceType
+from homeassistant.components.energy.data import EnergyPreferencesUpdate
+from homeassistant.components.energy.data import FlowFromGridSourceType
+from homeassistant.components.energy.data import FlowToGridSourceType
+from homeassistant.components.energy.data import GridSourceType
+from homeassistant.components.energy.data import SolarSourceType
 from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.selector import selector
@@ -16,6 +23,7 @@ from .common.exceptions import UnsupportedInverterException
 from .const import ADD_ANOTHER
 from .const import CONFIG_SAVE_TIME
 from .const import DOMAIN
+from .const import ENERGY_DASHBOARD
 from .const import FRIENDLY_NAME
 from .const import INVERTER_BASE
 from .const import INVERTER_CONN
@@ -57,7 +65,8 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             {
                 vol.Required(INVERTER_TYPE, default="TCP"): selector(
                     {"select": {"options": ["TCP", "SERIAL"]}}
-                )
+                ),
+                vol.Required(ENERGY_DASHBOARD, default=True): bool,
             }
         )
 
@@ -102,6 +111,9 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle a flow initialized by the user."""
         self._errors = {}
         if user_input is not None:
+            if user_input[ENERGY_DASHBOARD]:
+                await self._setup_energy_dashboard()
+
             if user_input[INVERTER_TYPE] == TCP:
                 return await self.async_step_tcp(user_input)
             else:
@@ -210,6 +222,35 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.warning(f"{ex}")
             self._errors["base"] = "modbus_error"
         return False, None
+
+    async def _setup_energy_dashboard(self):
+        """Setup Energy Dashboard"""
+        manager = await data.async_get_manager(self.hass)
+        energy_prefs = EnergyPreferencesUpdate(
+            energy_sources=[
+                SolarSourceType(
+                    type="solar", stat_energy_from="sensor.solar_sum_total"
+                ),
+                GridSourceType(
+                    type="grid",
+                    flow_from=[
+                        FlowFromGridSourceType(
+                            stat_energy_from="sensor.grid_consumption_sum_total"
+                        )
+                    ],
+                    flow_to=[
+                        FlowToGridSourceType(stat_energy_to="sensor.feed_in_sum_total")
+                    ],
+                    cost_adjustment_day=0,
+                ),
+                BatterySourceType(
+                    type="battery",
+                    stat_energy_to="sensor.battery_charge_total",
+                    stat_energy_from="sensor.battery_discharge_total",
+                ),
+            ]
+        )
+        await manager.async_update(energy_prefs)
 
     @staticmethod
     @callback

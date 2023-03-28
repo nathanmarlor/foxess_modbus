@@ -48,6 +48,8 @@ INVERTER = "inverter"
 CONNECTION = "connection"
 MODBUS = "modbus"
 
+ENERGY_DASHBOARD = "energy_dashboard"
+
 # Defaults
 DEFAULT_NAME = DOMAIN
 

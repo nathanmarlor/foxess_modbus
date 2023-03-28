@@ -4,7 +4,8 @@
       "user": {
         "description": "Please choose how your modbus adapter is connected",
         "data": {
-          "modbus_type": "Modbus Type"
+          "modbus_type": "Modbus Type",
+          "energy_dashboard": "Automatically configure Energy Dashboard"
         }
       },
       "tcp": {
