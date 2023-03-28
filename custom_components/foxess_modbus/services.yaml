@@ -7,17 +7,14 @@ write_registers:
     friendly_name:
       name: Friendly Name
       description: Unique friendly name
-      required: true
-      advanced: false
-      example: "inverter_2"
-      default: ""
+      example: "inverter_name"
+      default: "inverter_name"
       selector:
         text:
     start_address:
       name: Start Address
       description: Start address to write to
       required: true
-      advanced: false
       example: 41001
       default: 1
       selector:
@@ -27,7 +24,6 @@ write_registers:
       name: Values
       description: Comma seperated list of values to write
       required: true
-      advanced: false
       example: "1, 2, 3"
       default: "1, 2, 3"
       selector:

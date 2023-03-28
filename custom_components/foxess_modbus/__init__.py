@@ -33,7 +33,7 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 _WRITE_SCHEMA = vol.Schema(
     {
-        vol.Required("friendly_name", description="Friendly Name"): cv.string,
+        vol.Optional("friendly_name", description="Friendly Name"): cv.string,
         vol.Required("start_address", description="Start Address"): int,
         vol.Required("values", description="Values"): cv.string,
     }
@@ -113,8 +113,9 @@ async def write_service(*args):
     """Write service"""
     try:
         mapping, service_data = args[0], args[1]
+        friendly_name = service_data.data.get(FRIENDLY_NAME, "")
         for inverter, controller in mapping:
-            if inverter[FRIENDLY_NAME] == service_data.data[FRIENDLY_NAME]:
+            if inverter[FRIENDLY_NAME] == friendly_name:
                 await controller.write(service_data)
     except ModbusIOException as ex:
         _LOGGER.warning(ex, exc_info=1)
