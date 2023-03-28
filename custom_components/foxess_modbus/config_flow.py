@@ -8,7 +8,6 @@ import voluptuous as vol
 from custom_components.foxess_modbus import ModbusClient
 from homeassistant import config_entries
 from homeassistant.core import callback
-from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.selector import selector
 from pymodbus.exceptions import ConnectionException
@@ -118,7 +117,16 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             self._errors["base"] = None
             inverter = self._parse_inverter(user_input)
             host = f"{user_input[MODBUS_HOST]}:{user_input[MODBUS_PORT]}"
-            return await self.add_or_rerun(TCP, host, inverter, user_input)
+            result = await self.async_add_inverter(TCP, host, inverter)
+            if result and user_input[ADD_ANOTHER]:
+                self._errors["base"] = None
+                return self.async_show_form(
+                    step_id="user",
+                    data_schema=self._modbus_type_schema,
+                    errors=self._errors,
+                )
+            elif result:
+                return self.async_create_entry(title=_TITLE, data=self._data)
 
         return self.async_show_form(
             step_id="tcp", data_schema=self._modbus_tcp_schema, errors=self._errors
@@ -129,32 +137,24 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         if MODBUS_SERIAL_HOST in user_input:
             self._errors["base"] = None
             inverter = self._parse_inverter(user_input)
-            return await self.add_or_rerun(
-                SERIAL, user_input[MODBUS_SERIAL_HOST], inverter, user_input
+            result = await self.async_add_inverter(
+                SERIAL, user_input[MODBUS_SERIAL_HOST], inverter
             )
-
-        return self.async_show_form(
-            step_id="serial",
-            data_schema=self._modbus_serial_schema,
-            errors=self._errors,
-        )
-
-    async def add_or_rerun(self, inv_type, host, inverter, user_input):
-        """Add or rerun the config flow"""
-        if not self.detect_duplicate(inv_type, host, user_input[FRIENDLY_NAME]):
-            result = await self.async_add_inverter(inv_type, host, inverter)
-            if (
-                result["type"] == FlowResultType.CREATE_ENTRY
-                and user_input[ADD_ANOTHER]
-            ):
+            if result and user_input[ADD_ANOTHER]:
                 self._errors["base"] = None
                 return self.async_show_form(
                     step_id="user",
                     data_schema=self._modbus_type_schema,
                     errors=self._errors,
                 )
-            else:
-                return result
+            elif result:
+                return self.async_create_entry(title=_TITLE, data=self._data)
+
+        return self.async_show_form(
+            step_id="serial",
+            data_schema=self._modbus_serial_schema,
+            errors=self._errors,
+        )
 
     def detect_duplicate(self, inv_type, host, friendly_name):
         """Detect duplicates"""
@@ -167,25 +167,24 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_add_inverter(self, inv_type, host, inverter):
         """Handle a flow initialized by the user."""
-        result, details = await self._autodetect_modbus(
-            inv_type, host, inverter[MODBUS_SLAVE]
-        )
-        if result:
-            base_model, full_model, inv_conn = details
-            inverter[INVERTER_BASE] = base_model
-            inverter[INVERTER_MODEL] = full_model
-            inverter[INVERTER_CONN] = inv_conn
-            self._errors["base"] = None
-            # create dictionary entry
-            base_data = self._data.setdefault(inv_type, {})
-            host_data = base_data.setdefault(host, {})
-            host_data[inverter[FRIENDLY_NAME]] = inverter
-            self._data[CONFIG_SAVE_TIME] = datetime.now()
-            return self.async_create_entry(title=_TITLE, data=self._data)
-        else:
-            return self.async_show_form(
-                step_id="tcp", data_schema=self._modbus_tcp_schema, errors=self._errors
+        if not self.detect_duplicate(inv_type, host, inverter[FRIENDLY_NAME]):
+            result, details = await self._autodetect_modbus(
+                inv_type, host, inverter[MODBUS_SLAVE]
             )
+            if result:
+                base_model, full_model, inv_conn = details
+                inverter[INVERTER_BASE] = base_model
+                inverter[INVERTER_MODEL] = full_model
+                inverter[INVERTER_CONN] = inv_conn
+                self._errors["base"] = None
+                # create dictionary entry
+                base_data = self._data.setdefault(inv_type, {})
+                host_data = base_data.setdefault(host, {})
+                host_data[inverter[FRIENDLY_NAME]] = inverter
+                self._data[CONFIG_SAVE_TIME] = datetime.now()
+                return True
+            else:
+                return False
 
     def _parse_inverter(self, user_input):
         """Parser inverter details"""
