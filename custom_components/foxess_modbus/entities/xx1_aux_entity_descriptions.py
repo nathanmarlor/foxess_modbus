@@ -486,7 +486,6 @@ H1_AC1: list[EntityFactory] = [
         address=41000,
         name="Work Mode",
         options_map={0: "Self Use", 1: "Feed-in First", 2: "Back-up"},
-        validate=[Range(0, 2)],
     ),
     # Sensor kept for back compat
     ModbusSensorDescription(
