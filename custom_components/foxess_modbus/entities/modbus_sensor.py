@@ -65,12 +65,12 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
         value = self._controller.read(self.entity_description.address)
 
         if value is not None:
-            rules = self.entity_description.validate
             if self.entity_description.scale is not None:
                 value = value * self.entity_description.scale
             if self.entity_description.post_process is not None:
                 value = self.entity_description.post_process(value)
 
+            rules = self.entity_description.validate
             if not self._validate(rules, value):
                 _LOGGER.warning(
                     "Value (%s) failed validation against rules (%s)", value, rules
