@@ -63,16 +63,13 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
     def native_value(self):
         """Return the value reported by the sensor."""
         value = original = self._controller.read(self.entity_description.address)
-
         if value is None:
-            return value
-
+            return None
         if self.entity_description.scale is not None:
             value = value * self.entity_description.scale
         if self.entity_description.post_process is not None:
             value = self.entity_description.post_process(value)
-        rules = self.entity_description.validate
-        if not self._validate(rules, value, original):
+        if not self._validate(self.entity_description.validate, value, original):
             return None
 
         return value

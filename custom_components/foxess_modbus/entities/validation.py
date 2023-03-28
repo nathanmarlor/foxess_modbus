@@ -49,3 +49,12 @@ class Max(BaseValidator):
         """Validate a value against a set of rules"""
 
         return data <= self._max
+
+
+class Time(BaseValidator):
+    """Time validator"""
+
+    def validate(self, data) -> bool:
+        """Validate a value against a set of rules"""
+        hours, minutes = ((data & 0xFF00) >> 8, data & 0xFF)
+        return 0 <= hours <= 23 and 0 <= minutes <= 59

@@ -1,6 +1,7 @@
 """Time period config"""
 import logging
 
+from custom_components.foxess_modbus.entities.validation import Time
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 
 from .modbus_binary_sensor import ModbusBinarySensorDescription
@@ -32,18 +33,21 @@ class ModbusChargePeriodConfig:
             name=period_start_name,
             address=period_start_address,
             other_address=period_end_address,
+            validate=[Time()],
         )
         self.period_end = ModbusChargePeriodStartEndSensorDescription(
             key=period_end_key,
             name=period_end_name,
             address=period_end_address,
             other_address=period_start_address,
+            validate=[Time()],
         )
         self.enable_force_charge = ModbusEnableForceChargeSensorDescription(
             key=enable_force_charge_key,
             name=enable_force_charge_name,
             period_start_address=period_start_address,
             period_end_address=period_end_address,
+            validate=[Time()],
         )
         self.enable_charge_from_grid = ModbusBinarySensorDescription(
             key=enable_charge_from_grid_key,
