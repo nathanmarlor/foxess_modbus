@@ -9,6 +9,7 @@ from pymodbus.exceptions import ModbusIOException
 from homeassistant.helpers import config_validation as cv
 from homeassistant.core import HomeAssistant
 from homeassistant.core import ServiceCall
+from homeassistant.exceptions import HomeAssistantError
 
 from ..const import DOMAIN
 from ..const import FRIENDLY_NAME
@@ -79,17 +80,21 @@ _SCHEMA = vol.Schema(
 def register(
     hass: HomeAssistant, inverter_controllers: list[tuple[Any, ModbusController]]
 ) -> None:
+    async def _callback(service_data: ServiceCall):
+        await hass.loop.create_task(_handler(inverter_controllers, service_data))
+
     hass.services.async_register(
         DOMAIN,
         "update_charge_period",
-        lambda data: asyncio.run_coroutine_threadsafe(
-            _handler(inverter_controllers, data), hass.loop
-        ),
+        _callback,
         _SCHEMA,
     )
 
 
 async def _handler(
-    mapping: list[tuple[Any, ModbusController]], service_data: ServiceCall
+    mapping: list[tuple[Any, ModbusController]],
+    service_data: ServiceCall,
 ) -> None:
-    raise Exception("NOOOOO")
+    await asyncio.sleep(0.1)
+    _LOGGER.warning("OH NOES!!")
+    raise HomeAssistantError("Something something nooo")
