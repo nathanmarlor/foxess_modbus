@@ -31,12 +31,9 @@ def _is_valid(value: int) -> bool:
 
 
 def _is_force_charge_enabled(
-    start_or_end_1: int | None,
-    start_or_end_2: int | None,
-    default_if_none: int | None = None,
-) -> bool | None:
-    if start_or_end_1 is None or start_or_end_2 is None:
-        return default_if_none
+    start_or_end_1: int,
+    start_or_end_2: int,
+) -> bool:
     return start_or_end_1 > 0 or start_or_end_2 > 0
 
 
@@ -102,11 +99,10 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
             # assume the charge window is enabled, so we'll only fall back to _last_enabled_value
             # if we're certain that force-charging is disabled
             if (
-                _is_valid(other_value)
-                and self._last_enabled_value is not None
-                and not _is_force_charge_enabled(
-                    value, other_value, default_if_none=True
-                )
+                self._last_enabled_value is not None
+                and other_value is not None
+                and _is_valid(other_value)
+                and not _is_force_charge_enabled(value, other_value)
             ):
                 value = self._last_enabled_value
 
@@ -145,10 +141,9 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
                 )
                 if (
                     _is_valid(value)
+                    and other_value is not None
                     and _is_valid(other_value)
-                    and _is_force_charge_enabled(
-                        value, other_value, default_if_none=False
-                    )
+                    and _is_force_charge_enabled(value, other_value)
                 ):
                     self._last_enabled_value = value
 
@@ -206,10 +201,15 @@ class ModbusEnableForceChargeSensor(ModbusEntityMixin, BinarySensorEntity):
         start_time = self._controller.read(self.entity_description.period_start_address)
         end_time = self._controller.read(self.entity_description.period_end_address)
 
-        if not _is_valid(start_time) or not _is_valid(end_time):
+        if (
+            start_time is None
+            or not _is_valid(start_time)
+            or end_time is None
+            or not _is_valid(end_time)
+        ):
             return None
 
-        return _is_force_charge_enabled(start_time, end_time, default_if_none=None)
+        return _is_force_charge_enabled(start_time, end_time)
 
     @property
     def should_poll(self) -> bool:
