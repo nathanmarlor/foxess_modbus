@@ -98,6 +98,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         _WRITE_SCHEMA,
     )
 
+    hass.services.async_register(
+        DOMAIN,
+        "update_charge_period",
+        lambda data: None,
+        _WRITE_SCHEMA,
+    )
+
     hass.data[DOMAIN][entry.entry_id] = {
         INVERTERS: inverter_controller,
     }
