@@ -137,7 +137,8 @@ INVERTER_PROFILES = {
             connection_types=[
                 InverterModelConnectionTypeProfile(
                     connection_type=CONNECTION_TYPES["AUX"],
-                    entity_descriptions=xx1_aux_entity_descriptions.H1_AC1,
+                    entity_descriptions=xx1_aux_entity_descriptions.AC1
+                    + xx1_aux_entity_descriptions.H1_AC1,
                     charge_periods=xx1_aux_charge_periods.H1_AC1,
                 ),
                 InverterModelConnectionTypeProfile(
