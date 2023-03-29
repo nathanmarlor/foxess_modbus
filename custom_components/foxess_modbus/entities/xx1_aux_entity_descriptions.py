@@ -365,7 +365,7 @@ H1_AC1: list[EntityFactory] = [
     ModbusSensorDescription(
         key="rfreq",
         address=11014,
-        name="Grid Frequency",
+        name="Inverter Frequency",
         device_class=SensorDeviceClass.FREQUENCY,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="Hz",
