@@ -26,7 +26,7 @@ class ModbusSensorDescription(SensorEntityDescription, EntityFactory):
     scale: float | None = None
     post_process: Callable[[int], int] | None = None
     validate: list[BaseValidator] = field(default_factory=list)
-    signed: bool | None = True
+    signed: bool = True
 
     @property
     def entity_type(self) -> type[Entity]:
