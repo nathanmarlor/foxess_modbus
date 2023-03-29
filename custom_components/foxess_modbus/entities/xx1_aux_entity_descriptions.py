@@ -111,6 +111,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
         scale=0.1,
+        signed=False,
         validate=[Min(0)],
     ),
     ModbusSensorDescription(
@@ -131,6 +132,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
         scale=0.1,
+        signed=False,
         validate=[Min(0)],
     ),
     ModbusSensorDescription(
@@ -151,6 +153,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
         scale=0.1,
+        signed=False,
         validate=[Min(0)],
     ),
     ModbusSensorDescription(
@@ -171,6 +174,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
         scale=0.1,
+        signed=False,
         validate=[Min(0)],
     ),
     ModbusSensorDescription(
@@ -191,9 +195,8 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
         scale=0.1,
-        # reported as overflowing
-        # https://github.com/nathanmarlor/foxess_modbus/pull/91#issuecomment-1488266553
-        # validate=[Min(0)],
+        signed=False,
+        validate=[Min(0)],
     ),
     ModbusSensorDescription(
         key="grid_consumption_energy_today",
@@ -213,8 +216,8 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
         scale=0.1,
-        # currently overflows
-        # validate=[Min(0)],
+        signed=False,
+        validate=[Min(0)],
     ),
     ModbusSensorDescription(
         key="total_yield_today",
@@ -564,8 +567,8 @@ H1_AC1: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
         scale=0.1,
-        # currently overflows
-        # validate=[Range(0, 100)]
+        signed=False,
+        validate=[Min(0)],
     ),
     ModbusSelectDescription(
         key="work_mode",
