@@ -51,7 +51,7 @@ H1: list[EntityFactory] = [
         validate=[Range(0, 10000)],
     ),
     ModbusIntegrationSensorDescription(
-        key="pv1_power_sum_total",
+        key="pv1_energy_total",
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
@@ -92,7 +92,7 @@ H1: list[EntityFactory] = [
         validate=[Range(0, 10000)],
     ),
     ModbusIntegrationSensorDescription(
-        key="pv2_power_sum_total",
+        key="pv2_energy_total",
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
@@ -104,7 +104,7 @@ H1: list[EntityFactory] = [
     ),
     # These probably also apply to the AC1, but that's currently untested
     ModbusSensorDescription(
-        key="solar_sum_total",
+        key="solar_energy_total",
         address=11070,
         name="Solar Generation Total",
         device_class=SensorDeviceClass.ENERGY,
@@ -114,7 +114,7 @@ H1: list[EntityFactory] = [
         validate=[Min(0)],
     ),
     ModbusSensorDescription(
-        key="solar_sum_today",
+        key="solar_energy_today",
         address=11071,
         name="Solar Generation Today",
         device_class=SensorDeviceClass.ENERGY,
@@ -164,7 +164,7 @@ H1: list[EntityFactory] = [
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
-        key="feed_in_sum_total",
+        key="feed_in_energy_total",
         address=11079,
         name="Feed-in Total",
         device_class=SensorDeviceClass.ENERGY,
@@ -174,7 +174,7 @@ H1: list[EntityFactory] = [
         validate=[Min(0)],
     ),
     ModbusSensorDescription(
-        key="feed_in_sum_today",
+        key="feed_in_energy_today",
         address=11080,
         name="Feed-in Today",
         device_class=SensorDeviceClass.ENERGY,
@@ -184,7 +184,7 @@ H1: list[EntityFactory] = [
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
-        key="grid_consumption_sum_total",
+        key="grid_consumption_energy_total",
         address=11082,
         name="Grid Consumption Total",
         device_class=SensorDeviceClass.ENERGY,
@@ -194,7 +194,7 @@ H1: list[EntityFactory] = [
         validate=[Min(0)],
     ),
     ModbusSensorDescription(
-        key="grid_consumption_sum_today",
+        key="grid_consumption_energy_today",
         address=11083,
         name="Grid Consumption Today",
         device_class=SensorDeviceClass.ENERGY,
@@ -224,6 +224,53 @@ H1: list[EntityFactory] = [
         scale=0.1,
         # unsure if this actually goes negative
         validate=[Range(-100, 100)],
+    ),
+]
+
+AC1: list[EntityFactory] = [
+    ModbusIntegrationSensorDescription(
+        key="grid_consumption_energy_total",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement="kWh",
+        integration_method="left",
+        name="Grid Consumption Total",
+        round_digits=2,
+        source_entity="grid_consumption",
+        unit_time=UnitOfTime.HOURS,
+    ),
+    ModbusIntegrationSensorDescription(
+        key="feed_in_energy_total",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement="kWh",
+        integration_method="left",
+        name="Feed-in Total",
+        round_digits=2,
+        source_entity="feed_in",
+        unit_time=UnitOfTime.HOURS,
+    ),
+    ModbusIntegrationSensorDescription(
+        key="battery_charge_total",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement="kWh",
+        integration_method="left",
+        name="Battery Charge Total",
+        round_digits=2,
+        source_entity="battery_charge",
+        unit_time=UnitOfTime.HOURS,
+    ),
+    ModbusIntegrationSensorDescription(
+        key="battery_discharge_total",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement="kWh",
+        integration_method="left",
+        name="Battery Discharge Total",
+        round_digits=2,
+        source_entity="battery_discharge",
+        unit_time=UnitOfTime.HOURS,
     ),
 ]
 
@@ -323,7 +370,7 @@ H1_AC1: list[EntityFactory] = [
     ModbusSensorDescription(
         key="feed_in",
         address=11021,
-        name="Feed In",
+        name="Feed-in",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
@@ -361,6 +408,17 @@ H1_AC1: list[EntityFactory] = [
         native_unit_of_measurement="kW",
         scale=0.001,
         validate=[Range(-100, 100)],
+    ),
+    ModbusIntegrationSensorDescription(
+        key="load_power_total",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement="kWh",
+        integration_method="left",
+        name="Load Power Total",
+        round_digits=2,
+        source_entity="load_power",
+        unit_time=UnitOfTime.HOURS,
     ),
     ModbusSensorDescription(
         key="invtemp",
