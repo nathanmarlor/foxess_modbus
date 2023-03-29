@@ -1,10 +1,14 @@
 """Inverter sensor"""
 import logging
 
+from custom_components.foxess_modbus.entities.modbus_integration_sensor import (
+    ModbusIntegrationSensorDescription,
+)
 from custom_components.foxess_modbus.entities.validation import Min
 from custom_components.foxess_modbus.entities.validation import Range
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorStateClass
+from homeassistant.const import UnitOfTime
 
 from .entity_factory import EntityFactory
 from .modbus_sensor import ModbusSensorDescription
@@ -42,6 +46,17 @@ H1: list[EntityFactory] = [
         scale=0.001,
         validate=[Range(0, 10000)],
     ),
+    ModbusIntegrationSensorDescription(
+        key="pv1_energy_total",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement="kWh",
+        integration_method="left",
+        name="PV1 Power Total",
+        round_digits=2,
+        source_entity="pv1_power",
+        unit_time=UnitOfTime.HOURS,
+    ),
     ModbusSensorDescription(
         key="pv2_voltage",
         address=31003,
@@ -71,6 +86,17 @@ H1: list[EntityFactory] = [
         native_unit_of_measurement="kW",
         scale=0.001,
         validate=[Range(0, 10000)],
+    ),
+    ModbusIntegrationSensorDescription(
+        key="pv2_energy_total",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement="kWh",
+        integration_method="left",
+        name="PV2 Power Total",
+        round_digits=2,
+        source_entity="pv2_power",
+        unit_time=UnitOfTime.HOURS,
     ),
 ]
 
@@ -126,6 +152,17 @@ H1_AC1: list[EntityFactory] = [
         post_process=lambda v: v if v > 0 else 0,
         validate=[Range(0, 100)],
     ),
+    ModbusIntegrationSensorDescription(
+        key="feed_in_energy_total",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement="kWh",
+        integration_method="left",
+        name="Feed-in Total",
+        round_digits=2,
+        source_entity="feed_in",
+        unit_time=UnitOfTime.HOURS,
+    ),
     ModbusSensorDescription(
         key="grid_consumption",
         address=31014,
@@ -136,6 +173,17 @@ H1_AC1: list[EntityFactory] = [
         scale=0.001,
         post_process=lambda v: abs(v) if v < 0 else 0,
         validate=[Range(0, 100)],
+    ),
+    ModbusIntegrationSensorDescription(
+        key="grid_consumption_energy_total",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement="kWh",
+        integration_method="left",
+        name="Grid Consumption Total",
+        round_digits=2,
+        source_entity="grid_consumption",
+        unit_time=UnitOfTime.HOURS,
     ),
     ModbusSensorDescription(
         key="ct2_meter",
@@ -156,6 +204,17 @@ H1_AC1: list[EntityFactory] = [
         native_unit_of_measurement="kW",
         scale=0.001,
         validate=[Range(-100, 100)],
+    ),
+    ModbusIntegrationSensorDescription(
+        key="load_power_total",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement="kWh",
+        integration_method="left",
+        name="Load Power Total",
+        round_digits=2,
+        source_entity="load_power",
+        unit_time=UnitOfTime.HOURS,
     ),
     ModbusSensorDescription(
         key="ambtemp",
@@ -208,6 +267,17 @@ H1_AC1: list[EntityFactory] = [
         post_process=lambda v: v if v > 0 else 0,
         validate=[Range(0, 100)],
     ),
+    ModbusIntegrationSensorDescription(
+        key="battery_discharge_total",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement="kWh",
+        integration_method="left",
+        name="Battery Discharge Total",
+        round_digits=2,
+        source_entity="battery_discharge",
+        unit_time=UnitOfTime.HOURS,
+    ),
     ModbusSensorDescription(
         key="battery_charge",
         address=31022,
@@ -218,6 +288,17 @@ H1_AC1: list[EntityFactory] = [
         scale=0.001,
         post_process=lambda v: abs(v) if v < 0 else 0,
         validate=[Range(0, 100)],
+    ),
+    ModbusIntegrationSensorDescription(
+        key="battery_charge_total",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement="kWh",
+        integration_method="left",
+        name="Battery Charge Total",
+        round_digits=2,
+        source_entity="battery_charge",
+        unit_time=UnitOfTime.HOURS,
     ),
     ModbusSensorDescription(
         key="battery_temp",
