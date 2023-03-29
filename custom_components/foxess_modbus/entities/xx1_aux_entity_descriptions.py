@@ -51,15 +51,14 @@ H1: list[EntityFactory] = [
         validate=[Range(0, 10000)],
     ),
     ModbusIntegrationSensorDescription(
-        key="pv1_power_total",
-        address=11002,
+        key="pv1_power_sum_total",
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
         integration_method="left",
         name="PV1 Power Total",
         round_digits=2,
-        source_entity="sensor.pv1_power",
+        source_entity="pv1_power",
         unit_time=UnitOfTime.HOURS,
     ),
     ModbusSensorDescription(
@@ -91,6 +90,17 @@ H1: list[EntityFactory] = [
         native_unit_of_measurement="kW",
         scale=0.001,
         validate=[Range(0, 10000)],
+    ),
+    ModbusIntegrationSensorDescription(
+        key="pv2_power_sum_total",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement="kWh",
+        integration_method="left",
+        name="PV2 Power Total",
+        round_digits=2,
+        source_entity="pv2_power",
+        unit_time=UnitOfTime.HOURS,
     ),
     # These probably also apply to the AC1, but that's currently untested
     ModbusSensorDescription(

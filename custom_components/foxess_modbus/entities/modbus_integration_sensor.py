@@ -24,7 +24,8 @@ _LOGGER = logging.getLogger(__name__)
 class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory):
     """Custom sensor description"""
 
-    address: int
+    # Unused for this sensor type
+    address = 0
     integration_method: str
     name: str
     round_digits: int
@@ -37,7 +38,8 @@ class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory)
 
     @property
     def addresses(self) -> list[int]:
-        return [self.address]
+        # Unused for this sensor type
+        return []
 
     def create_entity(
         self, controller: EntityController, entry: ConfigEntry, inv_details
@@ -81,7 +83,9 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
 
         friendly_name = self._inv_details[FRIENDLY_NAME]
         if friendly_name != "":
-            source_entity = f"sensor.{friendly_name}_{source_entity.split('.')[1]}"
+            source_entity = f"sensor.{friendly_name}_{source_entity}"
+        else:
+            source_entity = f"sensor.{source_entity}"
 
         IntegrationSensor.__init__(
             self=self,
