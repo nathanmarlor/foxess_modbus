@@ -1,12 +1,16 @@
 """Inverter sensor"""
 import logging
 
+from custom_components.foxess_modbus.entities.modbus_integration_sensor import (
+    ModbusIntegrationSensorDescription,
+)
 from custom_components.foxess_modbus.entities.validation import Min
 from custom_components.foxess_modbus.entities.validation import Range
 from homeassistant.components.number import NumberDeviceClass
 from homeassistant.components.number import NumberMode
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorStateClass
+from homeassistant.const import UnitOfTime
 
 from .entity_factory import EntityFactory
 from .modbus_number import ModbusNumberDescription
@@ -45,6 +49,18 @@ H1: list[EntityFactory] = [
         native_unit_of_measurement="kW",
         scale=0.001,
         validate=[Range(0, 10000)],
+    ),
+    ModbusIntegrationSensorDescription(
+        key="pv1_power_total",
+        address=11002,
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement="kWh",
+        integration_method="left",
+        name="PV1 Power Total",
+        round_digits=2,
+        source_entity="sensor.pv1_power",
+        unit_time=UnitOfTime.HOURS,
     ),
     ModbusSensorDescription(
         key="pv2_voltage",
