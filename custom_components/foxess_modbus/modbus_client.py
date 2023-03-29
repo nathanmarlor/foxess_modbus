@@ -76,12 +76,8 @@ class ModbusClient:
             )
         if response.isError():
             raise ModbusIOException(f"Error reading registers: {response}")
-        # convert to signed integers
-        regs = [
-            reading if reading < 32768 else reading - 65536
-            for reading in response.registers
-        ]
-        return regs
+
+        return response.registers
 
     async def write_registers(self, register_address, register_values, slave):
         """Write registers"""
