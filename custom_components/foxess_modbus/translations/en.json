@@ -4,8 +4,7 @@
       "user": {
         "description": "Please choose how your modbus adapter is connected",
         "data": {
-          "modbus_type": "Modbus Type",
-          "energy_dashboard": "Automatically configure Energy Dashboard"
+          "modbus_type": "Modbus Type"
         }
       },
       "tcp": {
@@ -25,6 +24,11 @@
           "modbus_serial_host": "Modbus Serial Host",
           "modbus_slave": "Modbus Slave",
           "add_another": "Add another device"
+        }
+      },
+      "energy": {
+        "data": {
+          "energy_dashboard": "Automatically configure a basic Energy Dashboard? Warning: this will overwrite any existing settings."
         }
       }
     },

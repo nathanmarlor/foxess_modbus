@@ -66,7 +66,6 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Required(INVERTER_TYPE, default="TCP"): selector(
                     {"select": {"options": ["TCP", "SERIAL"]}}
                 ),
-                vol.Required(ENERGY_DASHBOARD, default=True): bool,
             }
         )
 
@@ -101,6 +100,12 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             }
         )
 
+        self._energy_dash = vol.Schema(
+            {
+                vol.Required(ENERGY_DASHBOARD, default=False): bool,
+            }
+        )
+
     async def async_step_init(self, user_input: dict[str, Any] = None):
         """Handle a flow initialized by the user."""
         self._errors = {}
@@ -111,9 +116,6 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle a flow initialized by the user."""
         self._errors = {}
         if user_input is not None:
-            if user_input[ENERGY_DASHBOARD]:
-                await self._setup_energy_dashboard()
-
             if user_input[INVERTER_TYPE] == TCP:
                 return await self.async_step_tcp(user_input)
             else:
@@ -138,7 +140,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     errors=self._errors,
                 )
             elif result:
-                return self.async_create_entry(title=_TITLE, data=self._data)
+                return await self.async_step_energy()
 
         return self.async_show_form(
             step_id="tcp", data_schema=self._modbus_tcp_schema, errors=self._errors
@@ -160,11 +162,24 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     errors=self._errors,
                 )
             elif result:
-                return self.async_create_entry(title=_TITLE, data=self._data)
+                return await self.async_step_energy()
 
         return self.async_show_form(
             step_id="serial",
             data_schema=self._modbus_serial_schema,
+            errors=self._errors,
+        )
+
+    async def async_step_energy(self, user_input: dict[str, Any] = None):
+        """Handle a flow initialized by the user."""
+        if user_input is not None:
+            if user_input[ENERGY_DASHBOARD]:
+                await self._setup_energy_dashboard()
+            return self.async_create_entry(title=_TITLE, data=self._data)
+
+        return self.async_show_form(
+            step_id="energy",
+            data_schema=self._energy_dash,
             errors=self._errors,
         )
 
@@ -226,31 +241,62 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def _setup_energy_dashboard(self):
         """Setup Energy Dashboard"""
         manager = await data.async_get_manager(self.hass)
-        energy_prefs = EnergyPreferencesUpdate(
-            energy_sources=[
-                SolarSourceType(
-                    type="solar", stat_energy_from="sensor.solar_sum_total"
-                ),
-                GridSourceType(
-                    type="grid",
-                    flow_from=[
-                        FlowFromGridSourceType(
-                            stat_energy_from="sensor.grid_consumption_sum_total"
-                        )
-                    ],
-                    flow_to=[
-                        FlowToGridSourceType(stat_energy_to="sensor.feed_in_sum_total")
-                    ],
-                    cost_adjustment_day=0,
-                ),
-                BatterySourceType(
-                    type="battery",
-                    stat_energy_to="sensor.battery_charge_total",
-                    stat_energy_from="sensor.battery_discharge_total",
-                ),
-            ]
+
+        friendly_names = self._get_friendly_names(self._data)
+
+        def _prefix_name(name):
+            if name != "":
+                return f"sensor.{name}_"
+            else:
+                return "sensor."
+
+        energy_prefs = EnergyPreferencesUpdate(energy_sources=[])
+        for name in friendly_names:
+            name_prefix = _prefix_name(name)
+            energy_prefs["energy_sources"].extend(
+                [
+                    SolarSourceType(
+                        type="solar", stat_energy_from=f"{name_prefix}pv1_energy_total"
+                    ),
+                    SolarSourceType(
+                        type="solar", stat_energy_from=f"{name_prefix}pv2_energy_total"
+                    ),
+                    BatterySourceType(
+                        type="battery",
+                        stat_energy_to=f"{name_prefix}battery_charge_total",
+                        stat_energy_from=f"{name_prefix}battery_discharge_total",
+                    ),
+                ]
+            )
+
+        grid_source = GridSourceType(
+            type="grid", flow_from=[], flow_to=[], cost_adjustment_day=0
         )
+        for name in friendly_names:
+            name_prefix = _prefix_name(name)
+            grid_source["flow_from"].append(
+                FlowFromGridSourceType(
+                    stat_energy_from=f"{name_prefix}grid_consumption_energy_total"
+                )
+            )
+            grid_source["flow_to"].append(
+                FlowToGridSourceType(
+                    stat_energy_to=f"{name_prefix}feed_in_energy_total"
+                )
+            )
+        energy_prefs["energy_sources"].append(grid_source)
+
         await manager.async_update(energy_prefs)
+
+    def _get_friendly_names(self, data_dict):
+        """Return all friendly names"""
+        names = []
+        inverters = {k: v for k, v in data_dict.items() if k in (TCP, SERIAL)}
+        for _, host_dict in inverters.items():
+            for _, name_dict in host_dict.items():
+                names.extend(list(name_dict.keys()))
+
+        return names
 
     @staticmethod
     @callback
