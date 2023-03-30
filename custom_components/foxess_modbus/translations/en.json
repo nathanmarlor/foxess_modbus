@@ -25,6 +25,12 @@
           "modbus_slave": "Modbus Slave",
           "add_another": "Add another device"
         }
+      },
+      "energy": {
+        "description": "Warning: this will overwrite any existing settings. \nWe recommend checking the configuration at (https://your-ha.com/config/energy)",
+        "data": {
+          "energy_dashboard": "Automatically configure the Energy Dashboard"
+        }
       }
     },
     "error": {

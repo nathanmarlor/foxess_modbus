@@ -3,7 +3,7 @@
   "name": "FoxESS - Modbus",
   "codeowners": ["@nathanmarlor"],
   "config_flow": true,
-  "dependencies": ["integration"],
+  "dependencies": ["energy", "integration"],
   "documentation": "https://github.com/nathanmarlor/foxess_modbus",
   "integration_type": "service",
   "iot_class": "local_push",
