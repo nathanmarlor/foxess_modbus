@@ -27,8 +27,9 @@
         }
       },
       "energy": {
+        "description": "Warning: this will overwrite any existing settings. \nWe recommend checking the configuration at (https://your-ha.com/config/energy)",
         "data": {
-          "energy_dashboard": "Automatically configure a basic Energy Dashboard? Warning: this will overwrite any existing settings."
+          "energy_dashboard": "Automatically configure the Energy Dashboard"
         }
       }
     },
