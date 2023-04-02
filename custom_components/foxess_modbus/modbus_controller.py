@@ -75,6 +75,7 @@ class ModbusController(EntityController, UnloadController):
         changed_addresses = set()
         for i, value in enumerate(values):
             address = start_address + i
+            value = int(value)  # Ensure that we've been given an int
             # Only store the result of the write if it's a register we care about ourselves
             if self._data.get(address, value) != value:
                 self._data[address] = value
