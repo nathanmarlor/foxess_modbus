@@ -119,32 +119,26 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
             json_dict={"last_enabled_value": self._last_enabled_value}
         )
 
-    def update_callback(self, changed_addresses: set[int]) -> None:
-        """Schedule a state update."""
+    def _address_updated(self) -> None:
         # If we've got a value of 0, and the other end of the period changes from
         # 0 to a non-zero value, that means that someone has enabled a force-charge window
         # with a start time of midnight, so we need to update ourselves.
         # Therefore, we need to be sensitive to other_address
-        if (self.entity_description.address in changed_addresses) or (
-            self.entity_description.other_address in changed_addresses
-        ):
-            value = self._controller.read(self.entity_description.address)
-            if value is not None:
-                other_value = self._controller.read(
-                    self.entity_description.other_address
-                )
-                rules = self.entity_description.validate
-                if (
-                    self._validate(rules, value)
-                    and other_value is not None
-                    and self._validate(rules, other_value)
-                    and _is_force_charge_enabled(value, other_value)
-                ):
-                    self._last_enabled_value = value
+        value = self._controller.read(self.entity_description.address)
+        if value is not None:
+            other_value = self._controller.read(self.entity_description.other_address)
+            rules = self.entity_description.validate
+            if (
+                self._validate(rules, value)
+                and other_value is not None
+                and self._validate(rules, other_value)
+                and _is_force_charge_enabled(value, other_value)
+            ):
+                self._last_enabled_value = value
 
-            # I'm not sure whether there are any cases where our exposed state will changed
-            # if other_address changes, but this won't change often, so be safe.
-            self.schedule_update_ha_state(True)
+        # I'm not sure whether there are any cases where our exposed state will changed
+        # if other_address changes, but this won't change often, so be safe.
+        super()._address_updated()
 
     @property
     def should_poll(self) -> bool:
@@ -211,10 +205,3 @@ class ModbusEnableForceChargeSensor(ModbusEntityMixin, BinarySensorEntity):
     @property
     def should_poll(self) -> bool:
         return False
-
-    def update_callback(self, changed_addresses: set[int]) -> None:
-        """Schedule a state update."""
-        if (self.entity_description.period_start_address in changed_addresses) or (
-            self.entity_description.period_end_address in changed_addresses
-        ):
-            self.schedule_update_ha_state(True)

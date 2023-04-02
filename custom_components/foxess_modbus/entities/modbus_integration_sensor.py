@@ -24,8 +24,6 @@ _LOGGER = logging.getLogger(__name__)
 class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory):
     """Custom sensor description"""
 
-    # Unused for this sensor type
-    address = 0
     integration_method: str
     name: str
     round_digits: int

@@ -22,7 +22,7 @@ class ModbusEntityMixin:
     It assumes that the following propties are defined on the class:
 
         controller: CallbackController
-        entity_description: EntityDescription
+        entity_description: EntityDescription, EntityFactory
         _inv_details
     """
 
@@ -65,8 +65,12 @@ class ModbusEntityMixin:
 
     def update_callback(self, changed_addresses: set[int]) -> None:
         """Schedule a state update."""
-        if self.entity_description.address in changed_addresses:
-            self.schedule_update_ha_state(True)
+        if any(x in changed_addresses for x in self.entity_description.addresses):
+            self._address_updated()
+
+    def _address_updated(self) -> None:
+        """Called when the controller reads an updated to any of the addresses in entity_description.addresses"""
+        self.schedule_update_ha_state(True)
 
     def _get_unique_id(self):
         """Get unique ID"""
