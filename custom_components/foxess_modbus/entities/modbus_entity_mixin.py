@@ -80,18 +80,31 @@ class ModbusEntityMixin:
         else:
             return f"{self.entity_description.key}"
 
-    def _validate(self, rules: list[BaseValidator], processed, original=None) -> bool:
+    def _validate(
+        self,
+        rules: list[BaseValidator],
+        processed,
+        original=None,
+        address_override: int | None = None,
+    ) -> bool:
         """Validate against a set of rules"""
         original = original if original is not None else processed
 
         valid = True
         for rule in rules:
             if not rule.validate(processed):
+                if address_override is not None:
+                    address = address_override
+                elif hasattr(self.entity_description, "address"):
+                    address = self.entity_description.address
+                else:
+                    address = None
                 _LOGGER.warning(
-                    "Value (%s: %s) for address (%s) failed validation against rule (%s : %s)",
+                    "Value (%s: %s) for entity '%s' address '%s' failed validation against rule (%s : %s)",
                     original,
                     processed,
-                    self.entity_description.address,
+                    self.entity_id,
+                    address,
                     type(rule).__name__,
                     vars(rule),
                 )

@@ -194,9 +194,17 @@ class ModbusEnableForceChargeSensor(ModbusEntityMixin, BinarySensorEntity):
 
         if (
             start_time is None
-            or not self._validate(rules, start_time)
+            or not self._validate(
+                rules,
+                start_time,
+                address_override=self.entity_description.period_start_address,
+            )
             or end_time is None
-            or not self._validate(rules, end_time)
+            or not self._validate(
+                rules,
+                end_time,
+                address_override=self.entity_description.period_end_address,
+            )
         ):
             return None
 
