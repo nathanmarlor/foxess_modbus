@@ -7,6 +7,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.core import ServiceCall
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
+from pymodbus.exceptions import ModbusIOException
 
 from ..const import DOMAIN
 from ..entities.modbus_charge_period_sensors import is_time_value_valid
@@ -187,4 +188,8 @@ async def _handler(
 
     assert not any(x for x in write_values if x is None)
 
-    await controller.write_registers(write_start_address, write_values)
+    try:
+        await controller.write_registers(write_start_address, write_values)
+    except ModbusIOException as ex:
+        _LOGGER.warning(ex, exc_info=1)
+        raise HomeAssistantError() from ex

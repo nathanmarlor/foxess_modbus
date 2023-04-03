@@ -4,13 +4,13 @@ write_registers:
   description: >
     Writes one or more registers
   fields:
-    friendly_name:
-      name: Friendly Name
-      description: Unique friendly name
-      example: "inverter_name"
-      default: "inverter_name"
+    inverter:
+      name: Inverter
+      description: Which inverter to target. Pass a device ID or unique friendly name.
+      required: true
+      example: ""
       selector:
-        text:
+        device:
     start_address:
       name: Start Address
       description: Start address to write to
@@ -35,7 +35,7 @@ update_charge_period:
   fields:
     inverter:
       name: Inverter
-      description: Which inverter to target.
+      description: Which inverter to target. Pass a device ID or unique friendly name.
       required: true
       example: ""
       selector:
