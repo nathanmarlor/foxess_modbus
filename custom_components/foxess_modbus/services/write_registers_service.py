@@ -1,13 +1,12 @@
-from typing import Any
-import voluptuous as vol
 import asyncio
 import logging
+from typing import Any
 
-from pymodbus.exceptions import ModbusIOException
-
-from homeassistant.helpers import config_validation as cv
+import voluptuous as vol
 from homeassistant.core import HomeAssistant
 from homeassistant.core import ServiceCall
+from homeassistant.helpers import config_validation as cv
+from pymodbus.exceptions import ModbusIOException
 
 from ..const import DOMAIN
 from ..const import FRIENDLY_NAME
@@ -45,6 +44,13 @@ async def _write_service(
         friendly_name = service_data.data.get(FRIENDLY_NAME, "")
         for inverter, controller in mapping:
             if inverter[FRIENDLY_NAME] == friendly_name:
-                await controller.write(service_data)
+                if {"start_address", "values"} <= set(service_data.data):
+                    start_address = service_data.data["start_address"]
+                    values = service_data.data["values"].split(",")
+                    await controller.write_registers(start_address, values)
+                else:
+                    _LOGGER.warning(
+                        "Modbus write service called with incorrect data format"
+                    )
     except ModbusIOException as ex:
         _LOGGER.warning(ex, exc_info=1)

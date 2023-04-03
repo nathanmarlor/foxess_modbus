@@ -35,7 +35,7 @@ class ModbusController(EntityController, UnloadController):
         self._hass = hass
         self._data = {x: None for x in connection_type_profile.all_addresses}
         self._client = client
-        self._connection_type_profile = connection_type_profile
+        self.connection_type_profile = connection_type_profile
         self._slave = slave
         self._poll_rate = poll_rate
         self._max_read = max_read
@@ -58,19 +58,11 @@ class ModbusController(EntityController, UnloadController):
         """Modbus status"""
         return self._data.get(address)
 
-    async def write(self, service) -> bool:
-        """Modbus write"""
-        if {"start_address", "values"} <= set(service.data):
-            start_address = service.data["start_address"]
-            values = service.data["values"].split(",")
-            await self._write_registers(start_address, values)
-        else:
-            _LOGGER.warning("Modbus write service called with incorrect data format")
-
     async def write_register(self, address, value) -> None:
-        await self._write_registers(address, [value])
+        await self.write_registers(address, [value])
 
-    async def _write_registers(self, start_address, values) -> None:
+    async def write_registers(self, start_address, values) -> None:
+        """Write multiple registers"""
         await self._client.write_registers(start_address, values, self._slave)
         changed_addresses = set()
         for i, value in enumerate(values):
@@ -83,13 +75,13 @@ class ModbusController(EntityController, UnloadController):
 
     async def refresh(self, *args) -> None:
         """Refresh modbus data"""
-        holding = self._connection_type_profile.connection_type.read_holding_registers
+        holding = self.connection_type_profile.connection_type.read_holding_registers
         try:
             changed_addresses = set()
             for (
                 start_address,
                 num_reads,
-            ) in self._connection_type_profile.create_read_ranges(self._max_read):
+            ) in self.connection_type_profile.create_read_ranges(self._max_read):
                 _LOGGER.debug(
                     "Reading addresses for (%s, %s)", start_address, num_reads
                 )

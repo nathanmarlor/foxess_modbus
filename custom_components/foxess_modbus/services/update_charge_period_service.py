@@ -1,19 +1,19 @@
-from typing import Any
-import voluptuous as vol
-import asyncio
 import logging
 from datetime import time
+from typing import Any
 
-from pymodbus.exceptions import ModbusIOException
-
-from homeassistant.helpers import config_validation as cv
+import voluptuous as vol
 from homeassistant.core import HomeAssistant
 from homeassistant.core import ServiceCall
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import config_validation as cv
 
 from ..const import DOMAIN
-from ..const import FRIENDLY_NAME
+from ..entities.modbus_charge_period_sensors import is_time_value_valid
+from ..entities.modbus_charge_period_sensors import parse_time_value
+from ..entities.modbus_charge_period_sensors import serialize_time_to_value
 from ..modbus_controller import ModbusController
+from .utils import get_controller_from_friendly_name_or_device_id
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
@@ -26,12 +26,12 @@ def _seconds_must_be_zero(value: time) -> time:
 
 def _start_end_must_be_present_if_enabled(data: dict[str, Any]) -> dict[str, Any]:
     if data["enable_force_charge"]:
-        if not "start" in data:
+        if "start" not in data:
             raise vol.Invalid(
                 "'start' must be specified if 'enable_force_charge' is True",
                 path=["start"],
             )
-        if not "end" in data:
+        if "end" not in data:
             raise vol.Invalid(
                 "'end' must be specified if 'enable_force_charge' is True", path=["end"]
             )
@@ -54,9 +54,10 @@ def _end_must_be_after_start(data: dict[str, Any]) -> dict[str, Any]:
 _SCHEMA = vol.Schema(
     vol.All(
         {
-            vol.Required("device", description="Inverter"): cv.string,
+            # Let the value to this be omitted, instead of forcing them to specify ''
+            vol.Required("inverter", description="Inverter"): vol.Any(cv.string, None),
             vol.Required("charge_period", description="Charge Period"): vol.All(
-                int, vol.Range(min=0, max=1)
+                int, vol.Range(min=1, max=2)
             ),
             vol.Required(
                 "enable_force_charge", description="Enable force charge"
@@ -80,8 +81,10 @@ _SCHEMA = vol.Schema(
 def register(
     hass: HomeAssistant, inverter_controllers: list[tuple[Any, ModbusController]]
 ) -> None:
+    """Register the service with HA"""
+
     async def _callback(service_data: ServiceCall):
-        await hass.loop.create_task(_handler(inverter_controllers, service_data))
+        await hass.loop.create_task(_handler(inverter_controllers, service_data, hass))
 
     hass.services.async_register(
         DOMAIN,
@@ -91,10 +94,97 @@ def register(
     )
 
 
+# pylint: disable-next=too-many-locals
 async def _handler(
     mapping: list[tuple[Any, ModbusController]],
     service_data: ServiceCall,
+    hass: HomeAssistant,
 ) -> None:
-    await asyncio.sleep(0.1)
-    _LOGGER.warning("OH NOES!!")
-    raise HomeAssistantError("Something something nooo")
+    controller = get_controller_from_friendly_name_or_device_id(
+        service_data.data["inverter"], mapping, hass
+    )
+    charge_period_index = service_data.data["charge_period"] - 1
+    enable_force_charge = service_data.data["enable_force_charge"]
+    enable_charge_from_grid = service_data.data["enable_charge_from_grid"]
+    start_time = service_data.data["start"]
+    end_time = service_data.data["end"]
+
+    type_profile = controller.connection_type_profile
+
+    assert 0 <= charge_period_index < len(type_profile.charge_periods)
+
+    # List of (address, value)
+    writes: list[tuple[int, int]] = []
+
+    # Make sure that none of the other time periods overlaps with this one
+    for i, charge_period in enumerate(type_profile.charge_periods):
+        if i != charge_period_index:
+            period_start_time_value = controller.read(
+                charge_period.period_start_address
+            )
+            period_end_time_value = controller.read(charge_period.period_end_address)
+            writes.append((charge_period.period_start_address, period_start_time_value))
+            writes.append((charge_period.period_end_address, period_end_time_value))
+            writes.append(
+                (
+                    charge_period.enable_charge_from_grid_address,
+                    controller.read(charge_period.enable_charge_from_grid_address),
+                )
+            )
+
+            if period_start_time_value is None or period_end_time_value is None:
+                raise HomeAssistantError(
+                    f"Data for charge period {i + 1} is not available. Please try again in a few seconds"
+                )
+            if not is_time_value_valid(
+                period_start_time_value
+            ) or not is_time_value_valid(period_end_time_value):
+                raise HomeAssistantError(
+                    f"Start time '{period_start_time_value}' or end time '{period_end_time_value}' for charge period {i + 1} is not valid"
+                )
+
+            if enable_force_charge:
+                period_start_time = parse_time_value(period_start_time_value)
+                period_end_time = parse_time_value(period_end_time_value)
+
+                # It's permissible to have two periods which have the same start/end time (at least the foxcloud app allows it)
+                if period_start_time < end_time and start_time < period_end_time:
+                    raise HomeAssistantError(
+                        f"Specified period {start_time}-{end_time} overlaps existing charge period {i + 1} {period_start_time}-{period_end_time}"
+                    )
+
+    # We expect enable_charge_from_grid, start, end to be next to each other, in that order
+    charge_period = type_profile.charge_periods[charge_period_index]
+
+    writes.append(
+        (
+            charge_period.period_start_address,
+            serialize_time_to_value(start_time) if enable_force_charge else 0,
+        )
+    )
+    writes.append(
+        (
+            charge_period.period_end_address,
+            serialize_time_to_value(end_time) if enable_force_charge else 0,
+        )
+    )
+    writes.append(
+        (
+            charge_period.enable_charge_from_grid_address,
+            1 if enable_charge_from_grid else 0,
+        )
+    )
+
+    # We expect all of the writes to have a contiguous set of addresses
+    write_values = [None] * len(writes)
+    write_start_address = min(write[0] for write in writes)
+
+    for address, value in writes:
+        i = address - write_start_address
+        assert i < len(write_values)
+        assert write_values[i] is None
+        write_values[i] = value
+
+    assert not any(x for x in write_values if x is None)
+
+    await controller.write_registers(write_start_address, write_values)

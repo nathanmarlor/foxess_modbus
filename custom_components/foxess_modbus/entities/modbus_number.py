@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import Callable
 
-from custom_components.foxess_modbus.entities.validation import BaseValidator
 from homeassistant.components.number import NumberEntity
 from homeassistant.components.number import NumberEntityDescription
 from homeassistant.components.number import NumberMode
@@ -12,6 +11,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
+from .base_validator import BaseValidator
 from .entity_factory import EntityFactory
 from .modbus_entity_mixin import ModbusEntityMixin
 

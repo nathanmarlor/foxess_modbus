@@ -26,5 +26,5 @@ class EntityController(ABC):
         """Write a single value to a register"""
 
     @abstractmethod
-    async def read(self, address: int) -> int | None:
+    def read(self, address: int) -> int | None:
         """Fetch the last-read value for the given address, or None if none is avaiable"""

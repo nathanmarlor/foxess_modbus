@@ -1,6 +1,5 @@
 import logging
 
-from custom_components.foxess_modbus.entities.validation import BaseValidator
 from homeassistant.const import ATTR_IDENTIFIERS
 from homeassistant.const import ATTR_MANUFACTURER
 from homeassistant.const import ATTR_MODEL
@@ -10,6 +9,7 @@ from ..const import DOMAIN
 from ..const import FRIENDLY_NAME
 from ..const import INVERTER_CONN
 from ..const import INVERTER_MODEL
+from .base_validator import BaseValidator
 
 _LOGGER = logging.getLogger(__name__)
 

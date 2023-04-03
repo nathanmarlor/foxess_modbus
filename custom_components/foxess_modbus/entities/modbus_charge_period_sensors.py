@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from dataclasses import field
 from datetime import time
 
-from custom_components.foxess_modbus.entities.validation import BaseValidator
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.binary_sensor import BinarySensorEntityDescription
@@ -17,14 +16,25 @@ from homeassistant.helpers.restore_state import RestoredExtraData
 from homeassistant.helpers.restore_state import RestoreEntity
 
 from ..common.entity_controller import EntityController
+from .base_validator import BaseValidator
 from .entity_factory import EntityFactory
 from .modbus_entity_mixin import ModbusEntityMixin
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def _parse_time(value: int) -> tuple[int, int]:
-    return ((value & 0xFF00) >> 8, value & 0xFF)
+def is_time_value_valid(value: int) -> bool:
+    hours, minutes = ((value & 0xFF00) >> 8, value & 0xFF)
+    return 0 <= hours <= 23 and 0 <= minutes <= 59
+
+
+def parse_time_value(value: int) -> time:
+    hours, minutes = ((value & 0xFF00) >> 8, value & 0xFF)
+    return time(hour=hours, minute=minutes)
+
+
+def serialize_time_to_value(time_value: time) -> int:
+    return (time_value.hour << 8) | time_value.minute
 
 
 def _is_force_charge_enabled(
@@ -100,8 +110,7 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
             and not _is_force_charge_enabled(value, other_value)
         ):
             value = self._last_enabled_value
-        hours, minutes = _parse_time(value)
-        value = time(hour=hours, minute=minutes)
+        value = parse_time_value(value)
 
         return value
 

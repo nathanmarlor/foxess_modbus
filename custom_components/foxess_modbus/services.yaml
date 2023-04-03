@@ -33,10 +33,11 @@ update_charge_period:
   description: >
     Updates one of the two charge periods (if supported by your inverter).
   fields:
-    device:
+    inverter:
       name: Inverter
       description: Which inverter to target.
       required: true
+      example: ""
       selector:
         device:
           device_class: "battery_charging"
@@ -44,6 +45,7 @@ update_charge_period:
       name: Charge Period
       description: Which charge period to update.
       required: true
+      example: 1
       selector:
         select:
           options:
@@ -55,12 +57,14 @@ update_charge_period:
       name: Enable force charge
       description: Whether to enable this force charge window.
       required: true
+      example: true
       selector:
         boolean:
     enable_charge_from_grid:
       name: Enable charge from grid
       description: Whether to charge the battery from the grid, or just prevent discharge.
       required: true
+      example: false
       selector:
         boolean:
     start:
@@ -68,7 +72,7 @@ update_charge_period:
       description: >
         The start of the charge period. This is only required if 'Enable force charge' is selected.
       required: true
-      default: "02:00:00"
+      example: "02:00:00"
       selector:
         time:
     end:
@@ -78,6 +82,6 @@ update_charge_period:
 
         This may not be less than or equal to 'Start' (time periods may not span midnight).
       required: true
-      default: "05:00:00"
+      example: "05:00:00"
       selector:
         time:

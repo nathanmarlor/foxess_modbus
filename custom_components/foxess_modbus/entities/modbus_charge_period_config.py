@@ -28,6 +28,10 @@ class ModbusChargePeriodConfig:
         enable_charge_from_grid_name: str,
         enable_charge_from_grid_address: int,
     ) -> None:
+        self.period_start_address = period_start_address
+        self.period_end_address = period_end_address
+        self.enable_charge_from_grid_address = enable_charge_from_grid_address
+
         self.period_start = ModbusChargePeriodStartEndSensorDescription(
             key=period_start_key,
             name=period_start_name,
