@@ -8,7 +8,8 @@ write_registers:
       name: Inverter
       description: Which inverter to target. Pass a device ID or unique friendly name.
       required: true
-      example: ""
+      default: "''"
+      example: "''"
       selector:
         device:
     start_address:
@@ -37,7 +38,8 @@ update_charge_period:
       name: Inverter
       description: Which inverter to target. Pass a device ID or unique friendly name.
       required: true
-      example: ""
+      default: "''"
+      example: "''"
       selector:
         device:
           device_class: "battery_charging"
