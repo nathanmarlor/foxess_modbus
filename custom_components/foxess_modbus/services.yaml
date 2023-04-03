@@ -12,6 +12,7 @@ write_registers:
       example: "''"
       selector:
         device:
+          integration: foxess_modbus
     start_address:
       name: Start Address
       description: Start address to write to
@@ -42,19 +43,21 @@ update_charge_period:
       example: "''"
       selector:
         device:
-          device_class: "battery_charging"
+          integration: foxess_modbus
+          entity:
+            device_class: "battery_charging"
     charge_period:
       name: Charge Period
       description: Which charge period to update.
       required: true
-      example: 1
+      example: "'1'"
       selector:
         select:
           options:
             - label: Time period 1
-              value: 1
+              value: "1"
             - label: Time period 2
-              value: 2
+              value: "2"
     enable_force_charge:
       name: Enable force charge
       description: Whether to enable this force charge window.

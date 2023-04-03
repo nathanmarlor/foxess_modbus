@@ -19,6 +19,18 @@ from .utils import get_controller_from_friendly_name_or_device_id
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
+def _integer(value: Any) -> int:
+    """Validate and coerce a boolean value."""
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str):
+        try:
+            return int(value)
+        except ValueError:
+            pass
+    raise vol.Invalid(f"invalid int value {value}")
+
+
 def _seconds_must_be_zero(value: time) -> time:
     if value.second != 0:
         raise vol.Invalid("Seconds component must be 0 if specified")
@@ -58,7 +70,7 @@ _SCHEMA = vol.Schema(
             # Let the value to this be omitted, instead of forcing them to specify ''
             vol.Required("inverter", description="Inverter"): vol.Any(cv.string, None),
             vol.Required("charge_period", description="Charge Period"): vol.All(
-                int, vol.Range(min=1, max=2)
+                _integer, vol.Range(min=1, max=2)
             ),
             vol.Required(
                 "enable_force_charge", description="Enable force charge"
