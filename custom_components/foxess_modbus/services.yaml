@@ -72,6 +72,7 @@ update_charge_period:
       description: >
         The start of the charge period. This is only required if 'Enable force charge' is selected.
       required: true
+      default: "02:00:00"
       example: "02:00:00"
       selector:
         time:
@@ -82,6 +83,7 @@ update_charge_period:
 
         This may not be less than or equal to 'Start' (time periods may not span midnight).
       required: true
+      default: "05:00:00"
       example: "05:00:00"
       selector:
         time:
