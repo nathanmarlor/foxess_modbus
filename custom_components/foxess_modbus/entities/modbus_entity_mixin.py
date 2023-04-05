@@ -43,6 +43,7 @@ class ModbusEntityMixin:
             attr_name = "FoxESS - Modbus"
 
         return {
+            # services/utils.py relies on the order of entries here. Update that if you update this!
             ATTR_IDENTIFIERS: {(DOMAIN, inv_model, conn_type, friendly_name)},
             ATTR_NAME: attr_name,
             ATTR_MODEL: f"{inv_model} - {conn_type}",
