@@ -124,12 +124,18 @@ async def _handler(
 
     type_profile = controller.connection_type_profile
 
+    if len(type_profile.charge_periods) == 0:
+        raise HomeAssistantError("Inverter does not support setting charge periods")
+    if charge_period_index >= len(type_profile.charge_periods):
+        raise HomeAssistantError(
+            f"Inverter does not support setting charge period {charge_period_index + 1}"
+        )
+
     assert 0 <= charge_period_index < len(type_profile.charge_periods)
 
     # List of (address, value)
     writes: list[tuple[int, int]] = []
 
-    # Make sure that none of the other time periods overlaps with this one
     for i, charge_period in enumerate(type_profile.charge_periods):
         if i != charge_period_index:
             period_start_time_value = controller.read(
@@ -164,6 +170,7 @@ async def _handler(
                 )
             )
 
+            # Make sure that this charge period does not overlap the one being set
             if enable_force_charge:
                 period_start_time = parse_time_value(period_start_time_value)
                 period_end_time = parse_time_value(period_end_time_value)
