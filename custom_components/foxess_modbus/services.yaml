@@ -92,3 +92,32 @@ update_charge_period:
       example: "05:00:00"
       selector:
         time:
+update_all_charge_periods:
+  name: Update All Charge Periods
+  description: Sets all charge periods in one service call. The service "Update Charge Period" is easier for end-users to use.
+  fields:
+    inverter:
+      name: Inverter
+      description: Which inverter to target. Pass a device ID or unique friendly name.
+      required: true
+      default: "''"
+      example: "''"
+      selector:
+        device:
+          integration: foxess_modbus
+          entity:
+            device_class: "battery_charging"
+    charge_periods:
+      name: Charge Periods
+      description: Charge periods to set. This should be an array of objects, one for each charge period. All charge periods must be specified. See the example data
+      required: true
+      default: ""
+      example: >
+        - enable_force_charge: true
+          enable_charge_from_grid: true
+          start: "01:00"
+          end: "03:00"
+        - enable_force_charge: false
+          enable_charge_from_grid: false
+      selector:
+        object:
