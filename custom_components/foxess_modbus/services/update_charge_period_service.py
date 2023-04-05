@@ -136,16 +136,15 @@ async def _handler(
                 charge_period.period_start_address
             )
             period_end_time_value = controller.read(charge_period.period_end_address)
-            writes.append((charge_period.period_start_address, period_start_time_value))
-            writes.append((charge_period.period_end_address, period_end_time_value))
-            writes.append(
-                (
-                    charge_period.enable_charge_from_grid_address,
-                    controller.read(charge_period.enable_charge_from_grid_address),
-                )
+            period_enable_charge_from_grid_value = controller.read(
+                charge_period.enable_charge_from_grid_address
             )
 
-            if period_start_time_value is None or period_end_time_value is None:
+            if (
+                period_start_time_value is None
+                or period_end_time_value is None
+                or period_enable_charge_from_grid_value is None
+            ):
                 raise HomeAssistantError(
                     f"Data for charge period {i + 1} is not available. Please try again in a few seconds"
                 )
@@ -155,6 +154,15 @@ async def _handler(
                 raise HomeAssistantError(
                     f"Start time '{period_start_time_value}' or end time '{period_end_time_value}' for charge period {i + 1} is not valid"
                 )
+
+            writes.append((charge_period.period_start_address, period_start_time_value))
+            writes.append((charge_period.period_end_address, period_end_time_value))
+            writes.append(
+                (
+                    charge_period.enable_charge_from_grid_address,
+                    period_enable_charge_from_grid_value,
+                )
+            )
 
             if enable_force_charge:
                 period_start_time = parse_time_value(period_start_time_value)
