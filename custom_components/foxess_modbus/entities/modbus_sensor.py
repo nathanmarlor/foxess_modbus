@@ -22,19 +22,25 @@ _LOGGER = logging.getLogger(__name__)
 class ModbusSensorDescription(SensorEntityDescription, EntityFactory):
     """Custom sensor description"""
 
-    address: int
+    # Array of registers which this value is split over, from lower-order bits to higher-order bits
+    addresses: list[int]
+    _addresses: list[int] = field(init=False, repr=False)
     scale: float | None = None
     post_process: Callable[[int], int] | None = None
     validate: list[BaseValidator] = field(default_factory=list)
     signed: bool = True
 
     @property
-    def entity_type(self) -> type[Entity]:
-        return SensorEntity
+    def addresses(self) -> list[int]:
+        return self._addresses
+
+    @addresses.setter
+    def addresses(self, value: list[int]) -> None:
+        self._addresses = value
 
     @property
-    def addresses(self) -> list[int]:
-        return [self.address]
+    def entity_type(self) -> type[Entity]:
+        return SensorEntity
 
     def create_entity(
         self, controller: EntityController, entry: ConfigEntry, inv_details
@@ -63,11 +69,19 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
     @property
     def native_value(self):
         """Return the value reported by the sensor."""
-        value = original = self._controller.read(self.entity_description.address)
-        if value is None:
-            return None
+        original = 0
+        for i, address in enumerate(self.entity_description.addresses):
+            register_value = self._controller.read(address)
+            if register_value is None:
+                return None
+            original |= (register_value & 0xFFFF) << (i * 16)
+
         if self.entity_description.signed:
-            value = value if value < 32768 else value - 65536
+            sign_bit = 1 << (len(self.entity_description.addresses) * 16 - 1)
+            original = (original & (sign_bit - 1)) - (original & sign_bit)
+
+        value = original
+
         if self.entity_description.scale is not None:
             value = value * self.entity_description.scale
         if self.entity_description.post_process is not None:
