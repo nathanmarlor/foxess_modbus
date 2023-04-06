@@ -18,7 +18,7 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 H1: list[EntityFactory] = [
     ModbusSensorDescription(
         key="pv1_voltage",
-        address=31000,
+        addresses=[31000],
         name="PV1 Voltage",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -28,7 +28,7 @@ H1: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="pv1_current",
-        address=31001,
+        addresses=[31001],
         name="PV1 Current",
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -38,7 +38,7 @@ H1: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="pv1_power",
-        address=31002,
+        addresses=[31002],
         name="PV1 Power",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -59,7 +59,7 @@ H1: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="pv2_voltage",
-        address=31003,
+        addresses=[31003],
         name="PV2 Voltage",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -69,7 +69,7 @@ H1: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="pv2_current",
-        address=31004,
+        addresses=[31004],
         name="PV2 Current",
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -79,7 +79,7 @@ H1: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="pv2_power",
-        address=31005,
+        addresses=[31005],
         name="PV2 Power",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -103,7 +103,7 @@ H1: list[EntityFactory] = [
 H1_AC1: list[EntityFactory] = [
     ModbusSensorDescription(
         key="rvolt",
-        address=31006,
+        addresses=[31006],
         name="Grid Voltage",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -113,7 +113,7 @@ H1_AC1: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="rcurrent",
-        address=31007,
+        addresses=[31007],
         name="Grid Current",
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -123,7 +123,7 @@ H1_AC1: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="rfreq",
-        address=31009,
+        addresses=[31009],
         name="Grid Frequency",
         device_class=SensorDeviceClass.FREQUENCY,
         state_class=SensorStateClass.MEASUREMENT,
@@ -133,7 +133,7 @@ H1_AC1: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="grid_ct",
-        address=31014,
+        addresses=[31014],
         name="Grid CT",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -143,7 +143,7 @@ H1_AC1: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="feed_in",
-        address=31014,
+        addresses=[31014],
         name="Feed In",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -165,7 +165,7 @@ H1_AC1: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="grid_consumption",
-        address=31014,
+        addresses=[31014],
         name="Grid Consumption",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -187,7 +187,7 @@ H1_AC1: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="ct2_meter",
-        address=31015,
+        addresses=[31015],
         name="CT2 Meter",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -197,7 +197,7 @@ H1_AC1: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="load_power",
-        address=31016,
+        addresses=[31016],
         name="Load Power",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -218,7 +218,7 @@ H1_AC1: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="ambtemp",
-        address=31018,
+        addresses=[31018],
         name="Ambient Temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -228,7 +228,7 @@ H1_AC1: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="invtemp",
-        address=31019,
+        addresses=[31019],
         name="Inverter Temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -238,7 +238,7 @@ H1_AC1: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="batvolt",
-        address=31020,
+        addresses=[31020],
         name="Battery Voltage",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -248,7 +248,7 @@ H1_AC1: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="bat_current",
-        address=31021,
+        addresses=[31021],
         name="Battery Current",
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -258,7 +258,7 @@ H1_AC1: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="battery_discharge",
-        address=31022,
+        addresses=[31022],
         name="Battery Discharge",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -280,7 +280,7 @@ H1_AC1: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="battery_charge",
-        address=31022,
+        addresses=[31022],
         name="Battery Charge",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -302,7 +302,7 @@ H1_AC1: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="battery_temp",
-        address=31023,
+        addresses=[31023],
         name="Battery Temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -312,7 +312,7 @@ H1_AC1: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="battery_soc",
-        address=31024,
+        addresses=[31024],
         name="Battery SoC",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
