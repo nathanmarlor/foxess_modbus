@@ -22,7 +22,7 @@ class ModbusEntityMixin:
     It assumes that the following propties are defined on the class:
 
         controller: CallbackController
-        entity_description: EntityDescription
+        entity_description: EntityDescription, EntityFactory
         _inv_details
     """
 
@@ -65,8 +65,12 @@ class ModbusEntityMixin:
 
     def update_callback(self, changed_addresses: set[int]) -> None:
         """Schedule a state update."""
-        if self.entity_description.address in changed_addresses:
-            self.schedule_update_ha_state(True)
+        if any(x in changed_addresses for x in self.entity_description.addresses):
+            self._address_updated()
+
+    def _address_updated(self) -> None:
+        """Called when the controller reads an updated to any of the addresses in entity_description.addresses"""
+        self.schedule_update_ha_state(True)
 
     def _get_unique_id(self):
         """Get unique ID"""
@@ -76,18 +80,31 @@ class ModbusEntityMixin:
         else:
             return f"{self.entity_description.key}"
 
-    def _validate(self, rules: list[BaseValidator], processed, original=None) -> bool:
+    def _validate(
+        self,
+        rules: list[BaseValidator],
+        processed,
+        original=None,
+        address_override: int | None = None,
+    ) -> bool:
         """Validate against a set of rules"""
         original = original if original is not None else processed
 
         valid = True
         for rule in rules:
             if not rule.validate(processed):
+                if address_override is not None:
+                    address = address_override
+                elif hasattr(self.entity_description, "address"):
+                    address = self.entity_description.address
+                else:
+                    address = None
                 _LOGGER.warning(
-                    "Value (%s: %s) for address (%s) failed validation against rule (%s : %s)",
+                    "Value (%s: %s) for entity '%s' address '%s' failed validation against rule (%s : %s)",
                     original,
                     processed,
-                    self.entity_description.address,
+                    self.entity_id,
+                    address,
                     type(rule).__name__,
                     vars(rule),
                 )
