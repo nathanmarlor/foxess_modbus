@@ -24,7 +24,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
-        validate=[Range(0, 1000)],
+        # This can go negative if no panels are attached
     ),
     ModbusSensorDescription(
         key="pv1_current",
@@ -44,7 +44,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
-        validate=[Range(0, 10000)],
+        # This can go negative if no panels are attached
     ),
     ModbusIntegrationSensorDescription(
         key="pv1_energy_total",
@@ -65,7 +65,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
-        validate=[Range(0, 1000)],
+        # This can go negative if no panels are attached
     ),
     ModbusSensorDescription(
         key="pv2_current",
@@ -85,7 +85,7 @@ H1: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
-        validate=[Range(0, 10000)],
+        # This can go negative if no panels are attached
     ),
     ModbusIntegrationSensorDescription(
         key="pv2_energy_total",
