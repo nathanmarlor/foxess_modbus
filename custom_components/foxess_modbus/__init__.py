@@ -7,15 +7,11 @@ https://github.com/nathanmarlor/foxess_modbus
 import asyncio
 import logging
 
-import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import config_validation as cv
-from pymodbus.exceptions import ModbusIOException
 
 from .const import DOMAIN
-from .const import FRIENDLY_NAME
 from .const import INVERTERS
 from .const import MAX_READ
 from .const import MODBUS_SLAVE
@@ -28,16 +24,10 @@ from .const import TCP
 from .inverter_profiles import inverter_connection_type_profile_from_config
 from .modbus_client import ModbusClient
 from .modbus_controller import ModbusController
+from .services import update_charge_period_service
+from .services import write_registers_service
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
-
-_WRITE_SCHEMA = vol.Schema(
-    {
-        vol.Optional("friendly_name", description="Friendly Name"): cv.string,
-        vol.Required("start_address", description="Start Address"): int,
-        vol.Required("values", description="Values"): cv.string,
-    }
-)
 
 
 async def async_setup(hass: HomeAssistant, config: Config):
@@ -89,14 +79,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             for _, inverter in name_dict.items():
                 create_controller(hass, client, inverter)
 
-    hass.services.async_register(
-        DOMAIN,
-        "write_registers",
-        lambda data: asyncio.run_coroutine_threadsafe(
-            write_service(inverter_controller, data), hass.loop
-        ),
-        _WRITE_SCHEMA,
-    )
+    write_registers_service.register(hass, inverter_controller)
+    update_charge_period_service.register(hass, inverter_controller)
 
     hass.data[DOMAIN][entry.entry_id] = {
         INVERTERS: inverter_controller,
@@ -107,18 +91,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     )
 
     return True
-
-
-async def write_service(*args):
-    """Write service"""
-    try:
-        mapping, service_data = args[0], args[1]
-        friendly_name = service_data.data.get(FRIENDLY_NAME, "")
-        for inverter, controller in mapping:
-            if inverter[FRIENDLY_NAME] == friendly_name:
-                await controller.write(service_data)
-    except ModbusIOException as ex:
-        _LOGGER.warning(ex, exc_info=1)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

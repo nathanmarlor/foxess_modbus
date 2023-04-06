@@ -4,13 +4,15 @@ write_registers:
   description: >
     Writes one or more registers
   fields:
-    friendly_name:
-      name: Friendly Name
-      description: Unique friendly name
-      example: "inverter_name"
-      default: "inverter_name"
+    inverter:
+      name: Inverter
+      description: Which inverter to target. Pass a device ID or unique friendly name.
+      required: true
+      default: "''"
+      example: "''"
       selector:
-        text:
+        device:
+          integration: foxess_modbus
     start_address:
       name: Start Address
       description: Start address to write to
@@ -28,3 +30,94 @@ write_registers:
       default: "1, 2, 3"
       selector:
         text:
+update_charge_period:
+  name: Update Charge Period
+  description: >
+    Updates one of the two charge periods (if supported by your inverter).
+  fields:
+    inverter:
+      name: Inverter
+      description: Which inverter to target. Pass a device ID or unique friendly name.
+      required: true
+      default: "''"
+      example: "''"
+      selector:
+        device:
+          integration: foxess_modbus
+          entity:
+            device_class: "battery_charging"
+    charge_period:
+      name: Charge Period
+      description: Which charge period to update.
+      required: true
+      example: "'1'"
+      selector:
+        select:
+          options:
+            - label: Time period 1
+              value: "1"
+            - label: Time period 2
+              value: "2"
+    enable_force_charge:
+      name: Enable force charge
+      description: Whether to enable this force charge window.
+      required: true
+      example: true
+      selector:
+        boolean:
+    enable_charge_from_grid:
+      name: Enable charge from grid
+      description: Whether to charge the battery from the grid, or just prevent discharge.
+      required: true
+      example: false
+      selector:
+        boolean:
+    start:
+      name: Period Start
+      description: >
+        The start of the charge period. This is only required if 'Enable force charge' is selected.
+      required: true
+      default: "02:00:00"
+      example: "02:00:00"
+      selector:
+        time:
+    end:
+      name: Period End
+      description: >
+        The end of the charge period. This is only required of 'Enable force charge' is selected.
+
+        This may not be less than or equal to 'Start' (time periods may not span midnight).
+      required: true
+      default: "05:00:00"
+      example: "05:00:00"
+      selector:
+        time:
+update_all_charge_periods:
+  name: Update All Charge Periods
+  description: Sets all charge periods in one service call. The service "Update Charge Period" is easier for end-users to use.
+  fields:
+    inverter:
+      name: Inverter
+      description: Which inverter to target. Pass a device ID or unique friendly name.
+      required: true
+      default: "''"
+      example: "''"
+      selector:
+        device:
+          integration: foxess_modbus
+          entity:
+            device_class: "battery_charging"
+    charge_periods:
+      name: Charge Periods
+      description: Charge periods to set. This should be an array of objects, one for each charge period. All charge periods must be specified. See the example data
+      required: true
+      default: ""
+      example: >
+        - enable_force_charge: true
+          enable_charge_from_grid: true
+          start: "01:00"
+          end: "03:00"
+        - enable_force_charge: false
+          enable_charge_from_grid: false
+      selector:
+        object:

@@ -28,6 +28,10 @@ class ModbusChargePeriodConfig:
         enable_charge_from_grid_name: str,
         enable_charge_from_grid_address: int,
     ) -> None:
+        self.period_start_address = period_start_address
+        self.period_end_address = period_end_address
+        self.enable_charge_from_grid_address = enable_charge_from_grid_address
+
         self.period_start = ModbusChargePeriodStartEndSensorDescription(
             key=period_start_key,
             name=period_start_name,
@@ -53,6 +57,8 @@ class ModbusChargePeriodConfig:
             key=enable_charge_from_grid_key,
             name=enable_charge_from_grid_name,
             address=enable_charge_from_grid_address,
+            # The 'Update Charge Period' service only accepts devices with this device_class,
+            # so ensure that only inverters which support this provide a sensor with this device_class
             device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
         )
 

@@ -1,14 +1,6 @@
 """Validation"""
-from abc import ABC
-from abc import abstractmethod
-
-
-class BaseValidator(ABC):
-    """Base validator"""
-
-    @abstractmethod
-    def validate(self, data) -> bool:
-        """Validate a value against a set of rules"""
+from .base_validator import BaseValidator
+from .modbus_charge_period_sensors import is_time_value_valid
 
 
 class Range(BaseValidator):
@@ -56,5 +48,4 @@ class Time(BaseValidator):
 
     def validate(self, data) -> bool:
         """Validate a value against a set of rules"""
-        hours, minutes = ((data & 0xFF00) >> 8, data & 0xFF)
-        return 0 <= hours <= 23 and 0 <= minutes <= 59
+        return is_time_value_valid(data)

@@ -3,7 +3,6 @@ import logging
 from dataclasses import dataclass
 from dataclasses import field
 
-from custom_components.foxess_modbus.entities.validation import BaseValidator
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.binary_sensor import BinarySensorEntityDescription
 from homeassistant.components.sensor import SensorStateClass
@@ -11,6 +10,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
+from .base_validator import BaseValidator
 from .entity_factory import EntityFactory
 from .modbus_entity_mixin import ModbusEntityMixin
 
