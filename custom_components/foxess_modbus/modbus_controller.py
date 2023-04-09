@@ -77,8 +77,9 @@ class ModbusController(EntityController, UnloadController):
     async def refresh(self, *args) -> None:
         """Refresh modbus data"""
         holding = self.connection_type_profile.connection_type.read_holding_registers
+        # List of (start address, [read values starting at that address])
+        read_values: list[tuple[int, list[int]]] = []
         try:
-            changed_addresses = set()
             for (
                 start_address,
                 num_reads,
@@ -89,6 +90,13 @@ class ModbusController(EntityController, UnloadController):
                 reads = await self._client.read_registers(
                     start_address, num_reads, holding, self._slave
                 )
+                read_values.append((start_address, reads))
+
+            # If we made it to here, then all reads succeeded. Write them to _data and notify the sensors.
+            # This avoids recording reads if poll failed partway through (ensuring that we don't record potentially
+            # inconsistent data)
+            changed_addresses = set()
+            for start_address, reads in read_values:
                 for i, value in enumerate(reads):
                     address = start_address + i
                     # We might be reading a register we don't care about (for efficiency). Discard it if so
@@ -103,7 +111,7 @@ class ModbusController(EntityController, UnloadController):
         except ModbusException as ex:
             _LOGGER.debug(f"Modbus exception when polling - {ex}")
         except Exception as ex:
-            _LOGGER.debug(f"General exception when polling - {ex!r}")
+            _LOGGER.warning(f"General exception when polling - {ex!r}")
 
     @staticmethod
     async def autodetect(client: ModbusClient, slave: int) -> tuple[str, str, str]:
