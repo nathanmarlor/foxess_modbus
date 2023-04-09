@@ -186,7 +186,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         if host in self._data[inv_type]:
             # TODO: Shouldn't we be checking for duplicate friendly names across all hosts?
             if friendly_name in self._data[inv_type][host]:
-                raise ValidationFailedExeption({"base": "modbus_duplicate"})
+                raise ValidationFailedException({"base": "modbus_duplicate"})
 
     async def async_add_inverter(self, inv_type, host, inverter):
         """Handle a flow initialized by the user."""
@@ -204,9 +204,12 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
     def _parse_inverter(self, user_input):
         """Parser inverter details"""
+        friendly_name = user_input[FRIENDLY_NAME]
+        if friendly_name != "" and not re.fullmatch(r"\w+", friendly_name):
+            raise ValidationFailedException({FRIENDLY_NAME: "invalid_friendly_name"})
         return {
             MODBUS_SLAVE: user_input[MODBUS_SLAVE],
-            FRIENDLY_NAME: user_input[FRIENDLY_NAME],
+            FRIENDLY_NAME: friendly_name,
         }
 
     async def _autodetect_modbus(self, inv_type, host, slave):
@@ -221,10 +224,10 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             return await ModbusController.autodetect(client, slave)
         except UnsupportedInverterException as ex:
             _LOGGER.warning(f"{ex}")
-            raise ValidationFailedExeption({"base": "modbus_model_not_supported"})
+            raise ValidationFailedException({"base": "modbus_model_not_supported"})
         except ConnectionException as ex:
             _LOGGER.warning(f"{ex}")
-            raise ValidationFailedExeption({"base": "modbus_error"})
+            raise ValidationFailedException({"base": "modbus_error"})
 
     async def _setup_energy_dashboard(self):
         """Setup Energy Dashboard"""
@@ -305,7 +308,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 result = await body(user_input)
                 if result is not None:
                     return result
-            except ValidationFailedExeption as ex:
+            except ValidationFailedException as ex:
                 errors = ex.errors
 
         schema_with_input = self.add_suggested_values_to_schema(data_schema, user_input)
@@ -344,6 +347,6 @@ class ModbusOptionsHandler(config_entries.OptionsFlow):
         return self.async_show_form(step_id="init", data_schema=options_schema)
 
 
-class ValidationFailedExeption(Exception):
+class ValidationFailedException(Exception):
     def __init__(self, errors: dict[str, str]):
         self.errors = errors
