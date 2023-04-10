@@ -5,11 +5,13 @@ from typing import Any
 
 from pymodbus.client import ModbusSerialClient
 from pymodbus.client import ModbusTcpClient
+from pymodbus.client import ModbusUdpClient
 from pymodbus.exceptions import ModbusIOException
 
 from .const import MODBUS_TYPE
 from .const import SERIAL
 from .const import TCP
+from .const import UDP
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -42,6 +44,7 @@ class ModbusClient:
         self._class = {
             SERIAL: ModbusSerialClient,
             TCP: CustomModbusTcpClient,
+            UDP: ModbusUdpClient,
         }
         self._poll_delay = 30 / 1000 if self._config_type == SERIAL else 0
 

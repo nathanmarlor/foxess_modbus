@@ -1,6 +1,7 @@
 """Contains information on the various adapters to connect to an inverter"""
 from dataclasses import dataclass
 
+from .const import SERIAL
 from .const import TCP
 from .const import UDP
 from .inverter_connection_types import CONNECTION_TYPES
@@ -26,6 +27,12 @@ ADAPTERS = {
             CONNECTION_TYPES["LAN"],
             setup_link="https://github.com/nathanmarlor/foxess_modbus/wiki",
             protocols=[TCP],
+        ),
+        InverterAdapter(
+            "serial",
+            CONNECTION_TYPES["AUX"],
+            setup_link="https://github.com/nathanmarlor/foxess_modbus/wiki",
+            protocols=[SERIAL],
         ),
         InverterAdapter(
             "usr-w610",

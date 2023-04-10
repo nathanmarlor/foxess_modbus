@@ -21,10 +21,37 @@
           "direct_connection_host": "Inverter hostname / IP address",
           "adapter_host": "Modbus adapter hostname / IP address",
           "adapter_port": "Modbus adapter port",
-          "adapter_slave": "Modbus adapter slave"
+          "inverter_slave": "Inverter slave ID"
         },
         "data_description": {
-          "protocol_with_recommendation": "We recommend using {recommended_protocol} with this adapter"
+          "protocol_with_recommendation": "We recommend using {recommended_protocol} with this adapter",
+          "inverter_slave": "This can be set from Settings -> Communication in the inverter menu"
+        }
+      },
+      "serial_adapter": {
+        "description": "Set up your adapter by following the instructions at {setup_link}.",
+        "data": {
+          "serial_device": "USB serial device",
+          "inverter_slave": "Inverter slave ID"
+        },
+        "data_description": {
+          "inverter_slave": "This can be set from Settings -> Communication in the inverter menu"
+        }
+      },
+      "friendly_name": {
+        "description": "If you have more than one inverter, give them each a name to tell them apart",
+        "data": {
+          "friendly_name": "Friendly Name"
+        },
+        "data_description": {
+          "friendly_name": "This is added as a prefix to all of the inverter's entity IDs"
+        }
+      },
+      "add_another_inverter": {
+        "description": "Set-up complete. Do you want to add another inverter?",
+        "menu_options": {
+          "energy": "I'm Done",
+          "select_adapter": "Add another Inverter"
         }
       },
       "tcp": {
@@ -78,6 +105,7 @@
     "inverter_adapters": {
       "options": {
         "direct": "Direct LAN Connection",
+        "serial": "USB to Modbus Adapter",
         "usr-w610": "USR-W610",
         "waveshare": "Waveshare Modbus RTU Relay"
       }

@@ -2,6 +2,7 @@
 import logging
 import re
 from collections import defaultdict
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 from typing import Awaitable
@@ -58,6 +59,17 @@ _DEFAULT_SLAVE = 247
 _LOGGER = logging.getLogger(__name__)
 
 
+@dataclass
+class InverterData:
+    adapter: InverterAdapter | None = None
+    inverter_base_model: str | None = None
+    inverter_model: str | None = None
+    modbus_slave: int | None = None
+    inverter_protocol: str | None = None  # TCP, UDP, SERIAL
+    host: str | None = None  # host:port or /dev/serial
+    friendly_name: str | None = None
+
+
 class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for foxess_modbus."""
 
@@ -67,7 +79,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     def __init__(self, config=None) -> None:
         """Initialize."""
         self._user_input = {}
-        self._inverter_data = {}
+        self._inverter_data = InverterData()
         self._config = config
         if config is None:
             self._data = defaultdict(dict)
@@ -142,15 +154,14 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, str] = None
     ) -> FlowResult:
         if user_input is None:
-            self._inverter_data = {}
+            self._inverter_data = InverterData()
 
         async def body(user_input):
             adapter = ADAPTERS[user_input["adapter"]]
-            self._inverter_data["adapter"] = adapter
+            self._inverter_data.adapter = adapter
             if SERIAL in adapter.protocols:
                 assert len(adapter.protocols) == 1
-                assert False  # TODO
-                return await self.async_step_tcp_adapter()
+                return await self.async_step_serial_adapter()
             return await self.async_step_tcp_adapter()
 
         schema = vol.Schema(
@@ -170,7 +181,8 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_tcp_adapter(
         self, user_input: dict[str, str] = None
     ) -> FlowResult:
-        adapter = cast(InverterAdapter, self._inverter_data["adapter"])
+        adapter = self._inverter_data.adapter
+        assert adapter is not None
 
         async def body(user_input):
             protocol = user_input.get(
@@ -182,12 +194,13 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             )
             assert host is not None
             port = user_input.get("adapter_port", _DEFAULT_PORT)
-            slave = user_input.get("adapter_slave", _DEFAULT_SLAVE)
+            host_and_port = f"{host}:{port}"
+            slave = user_input.get("inverter_slave", _DEFAULT_SLAVE)
             # TODO: Check for duplicate host/port/slave/protocol combinations
-            base_model, full_model = await self._autodetect_modbus(
-                protocol, adapter.connection_type, f"{host}:{port}", slave
+            await self._autodetect_modbus_and_save_to_inverter_data(
+                protocol, adapter.connection_type, host_and_port, slave
             )
-            return None  # TODO
+            return await self.async_step_friendly_name()
 
         schema_parts = {}
         description_placeholders = {"setup_link": adapter.setup_link}
@@ -215,21 +228,70 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     default=_DEFAULT_PORT,
                 )
             ] = int
-            schema_parts[
-                vol.Required(
-                    "adapter_slave",
-                    default=_DEFAULT_SLAVE,
-                )
-            ] = int
         else:
-            # If it's a direct connection we know what the port and slave are
+            # If it's a direct connection we know what the port is
             schema_parts[vol.Required("direct_connection_host")] = cv.string
+
+        schema_parts[
+            vol.Required(
+                "inverter_slave",
+                default=_DEFAULT_SLAVE,
+            )
+        ] = int
 
         schema = vol.Schema(schema_parts)
 
         return await self._with_default_form(
             body, user_input, "tcp_adapter", schema, description_placeholders
         )
+
+    async def async_step_serial_adapter(
+        self, user_input: dict[str, str] = None
+    ) -> FlowResult:
+        adapter = self._inverter_data.adapter
+        assert adapter is not None
+
+        async def body(user_input):
+            device = user_input["serial_device"]
+            slave = user_input.get("inverter_slave", _DEFAULT_SLAVE)
+            # TODO: Check for duplicate host/port/slave/protocol combinations
+            await self._autodetect_modbus_and_save_to_inverter_data(
+                SERIAL, adapter.connection_type, device, slave
+            )
+            return await self.async_step_friendly_name()
+
+        # TODO: Look at self._data.get(MODBUS_SERIAL_HOST etc)
+        schema = vol.Schema(
+            {
+                vol.Required(
+                    "serial_device",
+                    default="/dev/ttyUSB0",
+                ): cv.string,
+                vol.Required("inverter_slave", default=_DEFAULT_SLAVE): int,
+            }
+        )
+        description_placeholders = {"setup_link": adapter.setup_link}
+
+        return await self._with_default_form(
+            body, user_input, "serial_adapter", schema, description_placeholders
+        )
+
+    async def async_step_friendly_name(
+        self, user_input: dict[str, str] = None
+    ) -> FlowResult:
+        async def body(user_input):
+            friendly_name = user_input.get("friendly_name")
+            if friendly_name and not re.fullmatch(r"\w+", friendly_name):
+                raise ValidationFailedExeption(
+                    {"friendly_name": "invalid_friendly_name"}
+                )
+            self._inverter_data.friendly_name = friendly_name
+            # TODO: Save the inverter data!
+            return await self.async_step_add_another_inverter()
+
+        schema = vol.Schema({vol.Optional("friendly_name"): cv.string})
+
+        return await self._with_default_form(body, user_input, "friendly_name", schema)
 
     async def async_step_tcp(self, user_input: dict[str, Any] = None):
         """Handle a flow initialized by the user."""
@@ -274,6 +336,14 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             body, user_input, "serial", self._modbus_serial_schema
         )
 
+    async def async_step_add_another_inverter(
+        self, _user_input: dict[str, str] = None
+    ) -> FlowResult:
+        options = ["select_adapter", "energy"]
+        return self.async_show_menu(
+            step_id="add_another_inverter", menu_options=options
+        )
+
     async def async_step_energy(self, user_input: dict[str, Any] = None):
         """Handle a flow initialized by the user."""
 
@@ -282,9 +352,13 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 await self._setup_energy_dashboard()
             return self.async_create_entry(title=_TITLE, data=self._data)
 
-        return await self._with_default_form(
-            user_input, "energy", self._energy_dash, body
+        schema = vol.Schema(
+            {
+                vol.Required(ENERGY_DASHBOARD, default=False): bool,
+            }
         )
+
+        return await self._with_default_form(body, user_input, "energy", schema)
 
     def ensure_not_duplicate(self, inv_type, host, friendly_name):
         """Detect duplicates"""
@@ -296,7 +370,9 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_add_inverter(self, inv_type, host, inverter):
         """Handle a flow initialized by the user."""
         self.ensure_not_duplicate(inv_type, host, inverter[FRIENDLY_NAME])
-        details = await self._autodetect_modbus(inv_type, host, inverter[MODBUS_SLAVE])
+        details = await self._autodetect_modbus_and_save_to_inverter_data(
+            inv_type, host, inverter[MODBUS_SLAVE]
+        )
         base_model, full_model, inv_conn = details
         inverter[INVERTER_BASE] = base_model
         inverter[INVERTER_MODEL] = full_model
@@ -317,7 +393,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             FRIENDLY_NAME: friendly_name,
         }
 
-    async def _autodetect_modbus(
+    async def _autodetect_modbus_and_save_to_inverter_data(
         self, protocol: str, conn_type: InverterConnectionType, host: str, slave: int
     ) -> tuple[str, str]:
         """Return true if modbus connection can be established"""
@@ -330,7 +406,15 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             else:
                 params.update({"port": host, "baudrate": 9600})
             client = ModbusClient(self.hass, params)
-            return await ModbusController.autodetect(client, conn_type, slave)
+            base_model, full_model = await ModbusController.autodetect(
+                client, conn_type, slave
+            )
+
+            self._inverter_data.inverter_base_model = base_model
+            self._inverter_data.inverter_model = full_model
+            self._inverter_data.inverter_protocol = protocol
+            self._inverter_data.modbus_slave = slave
+            self._inverter_data.host = host
         except UnsupportedInverterException as ex:
             _LOGGER.warning(f"{ex}")
             raise ValidationFailedException({"base": "modbus_model_not_supported"})
