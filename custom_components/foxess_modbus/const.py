@@ -39,6 +39,7 @@ ADD_ANOTHER = "add_another"
 CONFIG_SAVE_TIME = "save_time"
 
 TCP = "TCP"
+UDP = "UDP"
 SERIAL = "SERIAL"
 
 CONTROLLER = "controllers"

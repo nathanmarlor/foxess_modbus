@@ -7,6 +7,26 @@
           "modbus_type": "Modbus Type"
         }
       },
+      "select_adapter": {
+        "description": "Choose how you connect to your inverter.",
+        "data": {
+          "adapter": null
+        }
+      },
+      "tcp_adapter": {
+        "description": "Set up your adapter by following the instructions at {setup_link}.",
+        "data": {
+          "protocol": "Protocol",
+          "protocol_with_recommendation": "Protocol",
+          "direct_connection_host": "Inverter hostname / IP address",
+          "adapter_host": "Modbus adapter hostname / IP address",
+          "adapter_port": "Modbus adapter port",
+          "adapter_slave": "Modbus adapter slave"
+        },
+        "data_description": {
+          "protocol_with_recommendation": "We recommend using {recommended_protocol} with this adapter"
+        }
+      },
       "tcp": {
         "description": "Please enter your Modbus IP and Port.\nSet friendly name if you have more than one inverter, otherwise leave blank.",
         "data": {
@@ -51,6 +71,15 @@
           "poll_rate": "Poll rate",
           "max_read": "Max read"
         }
+      }
+    }
+  },
+  "selector": {
+    "inverter_adapters": {
+      "options": {
+        "direct": "Direct LAN Connection",
+        "usr-w610": "USR-W610",
+        "waveshare": "Waveshare Modbus RTU Relay"
       }
     }
   }

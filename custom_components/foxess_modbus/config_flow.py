@@ -6,6 +6,8 @@ from datetime import datetime
 from typing import Any
 from typing import Awaitable
 from typing import Callable
+from typing import cast
+from typing import Mapping
 
 import voluptuous as vol
 from custom_components.foxess_modbus import ModbusClient
@@ -42,9 +44,16 @@ from .const import MODBUS_TYPE
 from .const import POLL_RATE
 from .const import SERIAL
 from .const import TCP
+from .const import UDP
+from .inverter_adapters import ADAPTERS
+from .inverter_adapters import InverterAdapter
+from .inverter_connection_types import InverterConnectionType
 from .modbus_controller import ModbusController
 
 _TITLE = "FoxESS - Modbus"
+
+_DEFAULT_PORT = 502
+_DEFAULT_SLAVE = 247
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -58,6 +67,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     def __init__(self, config=None) -> None:
         """Initialize."""
         self._user_input = {}
+        self._inverter_data = {}
         self._config = config
         if config is None:
             self._data = defaultdict(dict)
@@ -116,14 +126,109 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(self, user_input: dict[str, Any] = None):
         """Handle a flow initialized by the user."""
 
+        return await self.async_step_select_adapter()
+
+        # async def body(user_input):
+        #     if user_input[INVERTER_TYPE] == TCP:
+        #         return await self.async_step_tcp(user_input)
+        #     else:
+        #         return await self.async_step_serial(user_input)
+
+        # return await self._with_default_form(
+        #     body, user_input, "user", self._modbus_type_schema
+        # )
+
+    async def async_step_select_adapter(
+        self, user_input: dict[str, str] = None
+    ) -> FlowResult:
+        if user_input is None:
+            self._inverter_data = {}
+
         async def body(user_input):
-            if user_input[INVERTER_TYPE] == TCP:
-                return await self.async_step_tcp(user_input)
-            else:
-                return await self.async_step_serial(user_input)
+            adapter = ADAPTERS[user_input["adapter"]]
+            self._inverter_data["adapter"] = adapter
+            if SERIAL in adapter.protocols:
+                assert len(adapter.protocols) == 1
+                assert False  # TODO
+                return await self.async_step_tcp_adapter()
+            return await self.async_step_tcp_adapter()
+
+        schema = vol.Schema(
+            {
+                vol.Required("adapter"): selector(
+                    {
+                        "select": {
+                            "options": list(ADAPTERS.keys()),
+                            "translation_key": "inverter_adapters",
+                        }
+                    }
+                )
+            }
+        )
+        return await self._with_default_form(body, user_input, "select_adapter", schema)
+
+    async def async_step_tcp_adapter(
+        self, user_input: dict[str, str] = None
+    ) -> FlowResult:
+        adapter = cast(InverterAdapter, self._inverter_data["adapter"])
+
+        async def body(user_input):
+            protocol = user_input.get(
+                "protocol",
+                user_input.get("protocol_with_recommendation", adapter.protocols[0]),
+            )
+            host = user_input.get(
+                "adapter_host", user_input.get("direct_connection_host")
+            )
+            assert host is not None
+            port = user_input.get("adapter_port", _DEFAULT_PORT)
+            slave = user_input.get("adapter_slave", _DEFAULT_SLAVE)
+            # TODO: Check for duplicate host/port/slave/protocol combinations
+            base_model, full_model = await self._autodetect_modbus(
+                protocol, adapter.connection_type, f"{host}:{port}", slave
+            )
+            return None  # TODO
+
+        schema_parts = {}
+        description_placeholders = {"setup_link": adapter.setup_link}
+
+        if len(adapter.protocols) > 1:
+            # Prompt for TCP vs UDP if that's relevant
+            # If we provide a recommendation, show that
+            key = (
+                "protocol_with_recommendation"
+                if adapter.recommended_protocol is not None
+                else "protocol"
+            )
+            schema_parts[vol.Required(key)] = selector(
+                {"select": {"options": adapter.protocols}}
+            )
+            description_placeholders[
+                "recommended_protocol"
+            ] = adapter.recommended_protocol
+
+        if adapter.connection_type.key == "AUX":
+            schema_parts[vol.Required("adapter_host")] = cv.string
+            schema_parts[
+                vol.Required(
+                    "adapter_port",
+                    default=_DEFAULT_PORT,
+                )
+            ] = int
+            schema_parts[
+                vol.Required(
+                    "adapter_slave",
+                    default=_DEFAULT_SLAVE,
+                )
+            ] = int
+        else:
+            # If it's a direct connection we know what the port and slave are
+            schema_parts[vol.Required("direct_connection_host")] = cv.string
+
+        schema = vol.Schema(schema_parts)
 
         return await self._with_default_form(
-            user_input, "user", self._modbus_type_schema, body
+            body, user_input, "tcp_adapter", schema, description_placeholders
         )
 
     async def async_step_tcp(self, user_input: dict[str, Any] = None):
@@ -144,7 +249,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             return None
 
         return await self._with_default_form(
-            user_input, "tcp", self._modbus_tcp_schema, body
+            body, user_input, "tcp", self._modbus_tcp_schema
         )
 
     async def async_step_serial(self, user_input: dict[str, Any] = None):
@@ -166,7 +271,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             return None
 
         return await self._with_default_form(
-            user_input, "serial", self._modbus_serial_schema, body
+            body, user_input, "serial", self._modbus_serial_schema
         )
 
     async def async_step_energy(self, user_input: dict[str, Any] = None):
@@ -212,16 +317,20 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             FRIENDLY_NAME: friendly_name,
         }
 
-    async def _autodetect_modbus(self, inv_type, host, slave):
+    async def _autodetect_modbus(
+        self, protocol: str, conn_type: InverterConnectionType, host: str, slave: int
+    ) -> tuple[str, str]:
         """Return true if modbus connection can be established"""
         try:
-            params = {MODBUS_TYPE: inv_type}
-            if inv_type == TCP:
-                params.update({"host": host.split(":")[0], "port": host.split(":")[1]})
+            params = {MODBUS_TYPE: protocol}
+            if protocol in [TCP, UDP]:
+                params.update(
+                    {"host": host.split(":")[0], "port": int(host.split(":")[1])}
+                )
             else:
                 params.update({"port": host, "baudrate": 9600})
             client = ModbusClient(self.hass, params)
-            return await ModbusController.autodetect(client, slave)
+            return await ModbusController.autodetect(client, conn_type, slave)
         except UnsupportedInverterException as ex:
             _LOGGER.warning(f"{ex}")
             raise ValidationFailedException({"base": "modbus_model_not_supported"})
@@ -291,10 +400,11 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def _with_default_form(
         self,
+        body: Callable[[dict[str, str]], Awaitable[FlowResult | None]],
         user_input: dict[str, str] | None,
         step_id: str,
         data_schema: vol.Schema,
-        body: Callable[[dict[str, str]], Awaitable[FlowResult | None]],
+        description_placeholders: Mapping[str, str | None] | None = None,
     ):
         """
         If user_input is not None, call body() and return the result.
@@ -313,7 +423,10 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         schema_with_input = self.add_suggested_values_to_schema(data_schema, user_input)
         return self.async_show_form(
-            step_id=step_id, data_schema=schema_with_input, errors=errors
+            step_id=step_id,
+            data_schema=schema_with_input,
+            errors=errors,
+            description_placeholders=description_placeholders,
         )
 
     @staticmethod
