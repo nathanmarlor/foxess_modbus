@@ -21,6 +21,7 @@ from .const import POLL_RATE
 from .const import SERIAL
 from .const import STARTUP_MESSAGE
 from .const import TCP
+from .const import UDP
 from .inverter_profiles import inverter_connection_type_profile_from_config
 from .modbus_client import ModbusClient
 from .modbus_controller import ModbusController
@@ -66,13 +67,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         inverter_controller.append((inverter, controller))
 
     inverter_controller = []
-    inverters = {k: v for k, v in entry.data.items() if k in (TCP, SERIAL)}
+    inverters = {k: v for k, v in entry.data.items() if k in (TCP, UDP, SERIAL)}
     # create controllers for inverters
     for modbus_type, host_dict in inverters.items():
         for host, name_dict in host_dict.items():
             params = {MODBUS_TYPE: modbus_type}
-            if modbus_type == TCP:
-                params.update({"host": host.split(":")[0], "port": host.split(":")[1]})
+            if modbus_type in [TCP, UDP]:
+                params.update(
+                    {"host": host.split(":")[0], "port": int(host.split(":")[1])}
+                )
             else:
                 params.update({"port": host, "baudrate": 9600})
             client = ModbusClient(hass, params)
