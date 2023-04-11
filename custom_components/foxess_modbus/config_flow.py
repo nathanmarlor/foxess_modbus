@@ -80,6 +80,8 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Initialize."""
         self._user_input = {}
         self._inverter_data = InverterData()
+        self._all_inverters: list[InverterData] = []
+
         self._config = config
         if config is None:
             self._data = defaultdict(dict)
@@ -153,9 +155,6 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_select_adapter(
         self, user_input: dict[str, str] = None
     ) -> FlowResult:
-        if user_input is None:
-            self._inverter_data = InverterData()
-
         async def body(user_input):
             adapter = ADAPTERS[user_input["adapter"]]
             self._inverter_data.adapter = adapter
@@ -286,7 +285,8 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     {"friendly_name": "invalid_friendly_name"}
                 )
             self._inverter_data.friendly_name = friendly_name
-            # TODO: Save the inverter data!
+            self._all_inverters.append(self._inverter_data)
+            self._inverter_data = InverterData()
             return await self.async_step_add_another_inverter()
 
         schema = vol.Schema({vol.Optional("friendly_name"): cv.string})
@@ -350,7 +350,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         async def body(user_input):
             if user_input[ENERGY_DASHBOARD]:
                 await self._setup_energy_dashboard()
-            return self.async_create_entry(title=_TITLE, data=self._data)
+            return self.async_create_entry(title=_TITLE, data=self.create_entry_data())
 
         schema = vol.Schema(
             {
@@ -366,6 +366,21 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             # TODO: Shouldn't we be checking for duplicate friendly names across all hosts?
             if friendly_name in self._data[inv_type][host]:
                 raise ValidationFailedException({"base": "modbus_duplicate"})
+
+    def create_entry_data(self) -> dict[str, Any]:
+        entry = {}
+        for inverter in self._all_inverters:
+            protocol_data = entry.setdefault(inverter.inverter_protocol, {})
+            host_data = protocol_data.setdefault(inverter.host, {})
+            host_data[inverter.friendly_name] = {
+                INVERTER_BASE: inverter.inverter_base_model,
+                INVERTER_MODEL: inverter.inverter_model,
+                INVERTER_CONN: inverter.adapter.connection_type.key,
+                MODBUS_SLAVE: inverter.modbus_slave,
+                FRIENDLY_NAME: inverter.friendly_name,
+            }
+        entry[CONFIG_SAVE_TIME] = datetime.now()
+        return entry
 
     async def async_add_inverter(self, inv_type, host, inverter):
         """Handle a flow initialized by the user."""
