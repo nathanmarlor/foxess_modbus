@@ -41,6 +41,7 @@ from .const import TCP
 from .const import UDP
 from .inverter_adapters import ADAPTERS
 from .inverter_adapters import InverterAdapter
+from .inverter_adapters import InverterAdapterType
 from .inverter_connection_types import InverterConnectionType
 from .modbus_controller import ModbusController
 
@@ -56,6 +57,7 @@ _LOGGER = logging.getLogger(__name__)
 class InverterData:
     """Holds data gathered on an inverter as the user went through the flow"""
 
+    adapter_type: InverterAdapterType | None = None
     adapter: InverterAdapter | None = None
     inverter_base_model: str | None = None
     inverter_model: str | None = None
@@ -76,37 +78,83 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         self._inverter_data = InverterData()
         self._all_inverters: list[InverterData] = []
 
+        self._adapter_type_to_method = {
+            InverterAdapterType.DIRECT: self.async_step_tcp_adapter,
+            InverterAdapterType.SERIAL: self.async_step_serial_adapter,
+            InverterAdapterType.NETWORK: self.async_step_tcp_adapter,
+        }
+
     async def async_step_user(self, user_input: dict[str, Any] = None):
         """Handle a flow initialized by the user."""
 
-        return await self.async_step_select_adapter()
+        return await self.async_step_select_adapter_type()
 
-    async def async_step_select_adapter(
+    async def async_step_select_adapter_type(
         self, user_input: dict[str, str] = None
     ) -> FlowResult:
-        """Let the user select their adapter type / model"""
+        """Let the user select their adapter type"""
 
         async def body(user_input):
-            adapter = ADAPTERS[user_input["adapter"]]
-            self._inverter_data.adapter = adapter
-            if SERIAL in adapter.protocols:
-                assert len(adapter.protocols) == 1
-                return await self.async_step_serial_adapter()
-            return await self.async_step_tcp_adapter()
+            adapter_type = InverterAdapterType(user_input["adapter_type"])
+            self._inverter_data.adapter_type = adapter_type
+
+            adapters = [x for x in ADAPTERS.values() if x.type == adapter_type]
+
+            assert len(adapters) > 0
+            if len(adapters) == 1:
+                self._inverter_data.adapter = adapters[0]
+                return await self._adapter_type_to_method[adapter_type]()
+
+            return await self.async_step_select_adapter_model()
 
         schema = vol.Schema(
             {
-                vol.Required("adapter"): selector(
+                vol.Required("adapter_type"): selector(
                     {
                         "select": {
-                            "options": list(ADAPTERS.keys()),
-                            "translation_key": "inverter_adapters",
+                            "options": [x.value for x in InverterAdapterType],
+                            "translation_key": "inverter_adapter_types",
                         }
                     }
                 )
             }
         )
-        return await self._with_default_form(body, user_input, "select_adapter", schema)
+
+        return await self._with_default_form(
+            body, user_input, "select_adapter_type", schema
+        )
+
+    async def async_step_select_adapter_model(
+        self, user_input: dict[str, str] = None
+    ) -> FlowResult:
+        """Let the user select their adapter model"""
+
+        async def body(user_input):
+            self._inverter_data.adapter = ADAPTERS[user_input["adapter_model"]]
+            return await self._adapter_type_to_method[
+                self._inverter_data.adapter_type
+            ]()
+
+        adapters = [
+            x for x in ADAPTERS.values() if x.type == self._inverter_data.adapter_type
+        ]
+
+        schema = vol.Schema(
+            {
+                vol.Required("adapter_model"): selector(
+                    {
+                        "select": {
+                            "options": [x.id for x in adapters],
+                            "translation_key": "inverter_adapter_models",
+                        }
+                    }
+                )
+            }
+        )
+
+        return await self._with_default_form(
+            body, user_input, "select_adapter_model", schema
+        )
 
     async def async_step_tcp_adapter(
         self, user_input: dict[str, str] = None
@@ -119,7 +167,9 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         async def body(user_input):
             protocol = user_input.get(
                 "protocol",
-                user_input.get("protocol_with_recommendation", adapter.protocols[0]),
+                user_input.get(
+                    "protocol_with_recommendation", adapter.network_protocols[0]
+                ),
             )
             host = user_input.get(
                 "adapter_host", user_input.get("direct_connection_host")
@@ -136,7 +186,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         schema_parts = {}
         description_placeholders = {"setup_link": adapter.setup_link}
 
-        if len(adapter.protocols) > 1:
+        if len(adapter.network_protocols) > 1:
             # Prompt for TCP vs UDP if that's relevant
             # If we provide a recommendation, show that
             key = (
@@ -145,7 +195,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 else "protocol"
             )
             schema_parts[vol.Required(key)] = selector(
-                {"select": {"options": adapter.protocols}}
+                {"select": {"options": adapter.network_protocols}}
             )
             description_placeholders[
                 "recommended_protocol"

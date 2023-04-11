@@ -7,10 +7,16 @@
           "modbus_type": "Modbus Type"
         }
       },
-      "select_adapter": {
-        "description": "Choose how you connect to your inverter.",
+      "select_adapter_type": {
+        "description": "How do you connect to your inverter?",
         "data": {
-          "adapter": null
+          "adapter_type": null
+        }
+      },
+      "select_adapter_model": {
+        "description": "Choose your adapter model. This lets us use settings tailored to your adapter.",
+        "data": {
+          "adapter_model": null
         }
       },
       "tcp_adapter": {
@@ -84,12 +90,16 @@
     }
   },
   "selector": {
-    "inverter_adapters": {
+    "inverter_adapter_types": {
+      "direct": "Direct LAN Connection",
+      "serial": "USB to Modbus Adapter",
+      "network": "Ethernet to Modbus Adapter"
+    },
+    "inverter_adapter_models": {
       "options": {
-        "direct": "Direct LAN Connection",
-        "serial": "USB to Modbus Adapter",
         "usr-w610": "USR-W610",
-        "waveshare": "Waveshare Modbus RTU Relay"
+        "waveshare": "Waveshare Modbus RTU Relay",
+        "other_network": "Other"
       }
     }
   }
