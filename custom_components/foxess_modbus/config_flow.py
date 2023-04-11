@@ -194,8 +194,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             assert host is not None
             port = user_input.get("adapter_port", _DEFAULT_PORT)
             host_and_port = f"{host}:{port}"
-            slave = user_input.get("inverter_slave", _DEFAULT_SLAVE)
-            # TODO: Check for duplicate host/port/slave/protocol combinations
+            slave = user_input.get("modbus_slave", _DEFAULT_SLAVE)
             await self._autodetect_modbus_and_save_to_inverter_data(
                 protocol, adapter.connection_type, host_and_port, slave
             )
@@ -233,7 +232,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         schema_parts[
             vol.Required(
-                "inverter_slave",
+                "modbus_slave",
                 default=_DEFAULT_SLAVE,
             )
         ] = int
@@ -252,7 +251,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         async def body(user_input):
             device = user_input["serial_device"]
-            slave = user_input.get("inverter_slave", _DEFAULT_SLAVE)
+            slave = user_input.get("modbus_slave", _DEFAULT_SLAVE)
             # TODO: Check for duplicate host/port/slave/protocol combinations
             await self._autodetect_modbus_and_save_to_inverter_data(
                 SERIAL, adapter.connection_type, device, slave
@@ -266,7 +265,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     "serial_device",
                     default="/dev/ttyUSB0",
                 ): cv.string,
-                vol.Required("inverter_slave", default=_DEFAULT_SLAVE): int,
+                vol.Required("modbus_slave", default=_DEFAULT_SLAVE): int,
             }
         )
         description_placeholders = {"setup_link": adapter.setup_link}
@@ -284,6 +283,11 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 raise ValidationFailedExeption(
                     {"friendly_name": "invalid_friendly_name"}
                 )
+            if any(x for x in self._all_inverters if x.friendly_name == friendly_name):
+                raise ValidationFailedExeption(
+                    {"friendly_name": "duplicate_friendly_name"}
+                )
+
             self._inverter_data.friendly_name = friendly_name
             self._all_inverters.append(self._inverter_data)
             self._inverter_data = InverterData()
@@ -411,7 +415,15 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def _autodetect_modbus_and_save_to_inverter_data(
         self, protocol: str, conn_type: InverterConnectionType, host: str, slave: int
     ) -> tuple[str, str]:
-        """Return true if modbus connection can be established"""
+        if any(
+            x
+            for x in self._all_inverters
+            if x.inverter_protocol == protocol
+            and x.host == host
+            and x.modbus_slave == slave
+        ):
+            raise ValidationFailedExeption({"base": "duplicate_connection_details"})
+
         try:
             params = {MODBUS_TYPE: protocol}
             if protocol in [TCP, UDP]:

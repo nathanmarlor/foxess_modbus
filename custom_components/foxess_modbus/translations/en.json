@@ -21,21 +21,21 @@
           "direct_connection_host": "Inverter hostname / IP address",
           "adapter_host": "Modbus adapter hostname / IP address",
           "adapter_port": "Modbus adapter port",
-          "inverter_slave": "Inverter slave ID"
+          "modbus_slave": "Inverter slave ID"
         },
         "data_description": {
           "protocol_with_recommendation": "We recommend using {recommended_protocol} with this adapter",
-          "inverter_slave": "This can be set from Settings -> Communication in the inverter menu"
+          "modbus_slave": "This can be set from Settings -> Communication in the inverter menu"
         }
       },
       "serial_adapter": {
         "description": "Set up your adapter by following the instructions at {setup_link}.",
         "data": {
           "serial_device": "USB serial device",
-          "inverter_slave": "Inverter slave ID"
+          "modbus_slave": "Inverter slave ID"
         },
         "data_description": {
-          "inverter_slave": "This can be set from Settings -> Communication in the inverter menu"
+          "modbus_slave": "This can be set from Settings -> Communication in the inverter menu"
         }
       },
       "friendly_name": {
@@ -81,7 +81,8 @@
       }
     },
     "error": {
-      "modbus_duplicate": "Please enter a unique host/friendly name",
+      "duplicate_connection_details": "You have already set up an inverter with this address",
+      "duplicate_friendly_name": "Please enter a unique friendly name",
       "modbus_error": "Error - please check connection details",
       "modbus_model_not_supported": "Error - model is not supported",
       "invalid_friendly_name": "Friendly name must contain only lower-case letters, numbers and underscores"
