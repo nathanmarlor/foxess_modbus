@@ -91,9 +91,11 @@
   },
   "selector": {
     "inverter_adapter_types": {
-      "direct": "Direct LAN Connection",
-      "serial": "USB to Modbus Adapter",
-      "network": "Ethernet to Modbus Adapter"
+      "options": {
+        "direct": "Direct LAN Connection",
+        "serial": "USB to Modbus Adapter",
+        "network": "Ethernet to Modbus Adapter"
+      }
     },
     "inverter_adapter_models": {
       "options": {
