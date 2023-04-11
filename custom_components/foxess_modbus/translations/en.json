@@ -54,25 +54,6 @@
           "select_adapter": "Add another Inverter"
         }
       },
-      "tcp": {
-        "description": "Please enter your Modbus IP and Port.\nSet friendly name if you have more than one inverter, otherwise leave blank.",
-        "data": {
-          "friendly_name": "Friendly Name",
-          "modbus_host": "Modbus Host",
-          "modbus_port": "Modbus Port",
-          "modbus_slave": "Modbus Slave",
-          "add_another": "Add another device"
-        }
-      },
-      "serial": {
-        "description": "Please enter your serial or usb device id. \nSet friendly name if you have more than one inverter, otherwise leave blank.",
-        "data": {
-          "friendly_name": "Friendly Name",
-          "modbus_serial_host": "Modbus Serial Host",
-          "modbus_slave": "Modbus Slave",
-          "add_another": "Add another device"
-        }
-      },
       "energy": {
         "description": "Warning: this will overwrite any existing settings. \nWe recommend checking the configuration at (https://your-ha.com/config/energy)",
         "data": {

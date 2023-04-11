@@ -1,13 +1,11 @@
 """Adds config flow for foxess_modbus."""
 import logging
 import re
-from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 from typing import Awaitable
 from typing import Callable
-from typing import cast
 from typing import Mapping
 
 import voluptuous as vol
@@ -27,7 +25,6 @@ from homeassistant.helpers.selector import selector
 from pymodbus.exceptions import ConnectionException
 
 from .common.exceptions import UnsupportedInverterException
-from .const import ADD_ANOTHER
 from .const import CONFIG_SAVE_TIME
 from .const import DOMAIN
 from .const import ENERGY_DASHBOARD
@@ -35,11 +32,7 @@ from .const import FRIENDLY_NAME
 from .const import INVERTER_BASE
 from .const import INVERTER_CONN
 from .const import INVERTER_MODEL
-from .const import INVERTER_TYPE
 from .const import MAX_READ
-from .const import MODBUS_HOST
-from .const import MODBUS_PORT
-from .const import MODBUS_SERIAL_HOST
 from .const import MODBUS_SLAVE
 from .const import MODBUS_TYPE
 from .const import POLL_RATE
@@ -61,6 +54,8 @@ _LOGGER = logging.getLogger(__name__)
 
 @dataclass
 class InverterData:
+    """Holds data gathered on an inverter as the user went through the flow"""
+
     adapter: InverterAdapter | None = None
     inverter_base_model: str | None = None
     inverter_model: str | None = None
@@ -74,87 +69,23 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for foxess_modbus."""
 
     VERSION = 1
-    CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
+    CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
-    def __init__(self, config=None) -> None:
+    def __init__(self) -> None:
         """Initialize."""
-        self._user_input = {}
         self._inverter_data = InverterData()
         self._all_inverters: list[InverterData] = []
-
-        self._config = config
-        if config is None:
-            self._data = defaultdict(dict)
-        else:
-            self._data = dict(self._config.data)
-
-        self._modbus_type_schema = vol.Schema(
-            {
-                vol.Required(INVERTER_TYPE, default="TCP"): selector(
-                    {"select": {"options": ["TCP", "SERIAL"]}}
-                ),
-            }
-        )
-
-        self._modbus_tcp_schema = vol.Schema(
-            {
-                vol.Optional(FRIENDLY_NAME, default=""): cv.string,
-                vol.Required(MODBUS_HOST): cv.string,
-                vol.Required(
-                    MODBUS_PORT,
-                    default=502,
-                ): int,
-                vol.Required(
-                    MODBUS_SLAVE,
-                    default=247,
-                ): int,
-                vol.Required(ADD_ANOTHER): bool,
-            }
-        )
-
-        self._modbus_serial_schema = vol.Schema(
-            {
-                vol.Optional(FRIENDLY_NAME, default=""): cv.string,
-                vol.Required(
-                    MODBUS_SERIAL_HOST,
-                    default=self._data.get(MODBUS_SERIAL_HOST, "/dev/ttyUSB0"),
-                ): cv.string,
-                vol.Required(
-                    MODBUS_SLAVE,
-                    default=self._data.get(MODBUS_SLAVE, 247),
-                ): int,
-                vol.Required(ADD_ANOTHER): cv.boolean,
-            }
-        )
-
-        self._energy_dash = vol.Schema(
-            {
-                vol.Required(ENERGY_DASHBOARD, default=False): bool,
-            }
-        )
-
-    async def async_step_init(self, user_input: dict[str, Any] = None):
-        """Handle a flow initialized by the user."""
-        return await self.async_step_user(user_input)
 
     async def async_step_user(self, user_input: dict[str, Any] = None):
         """Handle a flow initialized by the user."""
 
         return await self.async_step_select_adapter()
 
-        # async def body(user_input):
-        #     if user_input[INVERTER_TYPE] == TCP:
-        #         return await self.async_step_tcp(user_input)
-        #     else:
-        #         return await self.async_step_serial(user_input)
-
-        # return await self._with_default_form(
-        #     body, user_input, "user", self._modbus_type_schema
-        # )
-
     async def async_step_select_adapter(
         self, user_input: dict[str, str] = None
     ) -> FlowResult:
+        """Let the user select their adapter type / model"""
+
         async def body(user_input):
             adapter = ADAPTERS[user_input["adapter"]]
             self._inverter_data.adapter = adapter
@@ -180,6 +111,8 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_tcp_adapter(
         self, user_input: dict[str, str] = None
     ) -> FlowResult:
+        """Let the user enter connection details for their TCP/UDP adapter"""
+
         adapter = self._inverter_data.adapter
         assert adapter is not None
 
@@ -246,6 +179,8 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_serial_adapter(
         self, user_input: dict[str, str] = None
     ) -> FlowResult:
+        """Let the user enter connection details for their serial adapter"""
+
         adapter = self._inverter_data.adapter
         assert adapter is not None
 
@@ -277,14 +212,16 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_friendly_name(
         self, user_input: dict[str, str] = None
     ) -> FlowResult:
+        """Let the user enter a friendly name for their inverter"""
+
         async def body(user_input):
-            friendly_name = user_input.get("friendly_name")
+            friendly_name = user_input.get("friendly_name", "")
             if friendly_name and not re.fullmatch(r"\w+", friendly_name):
-                raise ValidationFailedExeption(
+                raise ValidationFailedException(
                     {"friendly_name": "invalid_friendly_name"}
                 )
             if any(x for x in self._all_inverters if x.friendly_name == friendly_name):
-                raise ValidationFailedExeption(
+                raise ValidationFailedException(
                     {"friendly_name": "duplicate_friendly_name"}
                 )
 
@@ -297,64 +234,23 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         return await self._with_default_form(body, user_input, "friendly_name", schema)
 
-    async def async_step_tcp(self, user_input: dict[str, Any] = None):
-        """Handle a flow initialized by the user."""
-
-        async def body(user_input):
-            if MODBUS_HOST in user_input:
-                inverter = self._parse_inverter(user_input)
-                host = f"{user_input[MODBUS_HOST]}:{user_input[MODBUS_PORT]}"
-                await self.async_add_inverter(TCP, host, inverter)
-                if user_input[ADD_ANOTHER]:
-                    return self.async_show_form(
-                        step_id="user",
-                        data_schema=self._modbus_type_schema,
-                    )
-                else:
-                    return await self.async_step_energy()
-            return None
-
-        return await self._with_default_form(
-            body, user_input, "tcp", self._modbus_tcp_schema
-        )
-
-    async def async_step_serial(self, user_input: dict[str, Any] = None):
-        """Handle a flow initialized by the user."""
-
-        async def body(user_input):
-            if MODBUS_SERIAL_HOST in user_input:
-                inverter = self._parse_inverter(user_input)
-                await self.async_add_inverter(
-                    SERIAL, user_input[MODBUS_SERIAL_HOST], inverter
-                )
-                if user_input[ADD_ANOTHER]:
-                    return self.async_show_form(
-                        step_id="user",
-                        data_schema=self._modbus_type_schema,
-                    )
-                else:
-                    return await self.async_step_energy()
-            return None
-
-        return await self._with_default_form(
-            body, user_input, "serial", self._modbus_serial_schema
-        )
-
     async def async_step_add_another_inverter(
         self, _user_input: dict[str, str] = None
     ) -> FlowResult:
+        """Let the user choose whether to add another inverter"""
+
         options = ["select_adapter", "energy"]
         return self.async_show_menu(
             step_id="add_another_inverter", menu_options=options
         )
 
     async def async_step_energy(self, user_input: dict[str, Any] = None):
-        """Handle a flow initialized by the user."""
+        """Let the user choose whether to set up the energy dashboard"""
 
         async def body(user_input):
             if user_input[ENERGY_DASHBOARD]:
                 await self._setup_energy_dashboard()
-            return self.async_create_entry(title=_TITLE, data=self.create_entry_data())
+            return self.async_create_entry(title=_TITLE, data=self._create_entry_data())
 
         schema = vol.Schema(
             {
@@ -364,14 +260,9 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         return await self._with_default_form(body, user_input, "energy", schema)
 
-    def ensure_not_duplicate(self, inv_type, host, friendly_name):
-        """Detect duplicates"""
-        if host in self._data[inv_type]:
-            # TODO: Shouldn't we be checking for duplicate friendly names across all hosts?
-            if friendly_name in self._data[inv_type][host]:
-                raise ValidationFailedException({"base": "modbus_duplicate"})
+    def _create_entry_data(self) -> dict[str, Any]:
+        """Create the config entry for all inverters in self._all_inverters"""
 
-    def create_entry_data(self) -> dict[str, Any]:
         entry = {}
         for inverter in self._all_inverters:
             protocol_data = entry.setdefault(inverter.inverter_protocol, {})
@@ -386,35 +277,10 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         entry[CONFIG_SAVE_TIME] = datetime.now()
         return entry
 
-    async def async_add_inverter(self, inv_type, host, inverter):
-        """Handle a flow initialized by the user."""
-        self.ensure_not_duplicate(inv_type, host, inverter[FRIENDLY_NAME])
-        details = await self._autodetect_modbus_and_save_to_inverter_data(
-            inv_type, host, inverter[MODBUS_SLAVE]
-        )
-        base_model, full_model, inv_conn = details
-        inverter[INVERTER_BASE] = base_model
-        inverter[INVERTER_MODEL] = full_model
-        inverter[INVERTER_CONN] = inv_conn
-        # create dictionary entry
-        base_data = self._data.setdefault(inv_type, {})
-        host_data = base_data.setdefault(host, {})
-        host_data[inverter[FRIENDLY_NAME]] = inverter
-        self._data[CONFIG_SAVE_TIME] = datetime.now()
-
-    def _parse_inverter(self, user_input):
-        """Parser inverter details"""
-        friendly_name = user_input[FRIENDLY_NAME]
-        if friendly_name != "" and not re.fullmatch(r"\w+", friendly_name):
-            raise ValidationFailedException({FRIENDLY_NAME: "invalid_friendly_name"})
-        return {
-            MODBUS_SLAVE: user_input[MODBUS_SLAVE],
-            FRIENDLY_NAME: friendly_name,
-        }
-
     async def _autodetect_modbus_and_save_to_inverter_data(
         self, protocol: str, conn_type: InverterConnectionType, host: str, slave: int
     ) -> tuple[str, str]:
+        """Check that connection details are unique, then connect to the inverter and add its details to self._inverter_data"""
         if any(
             x
             for x in self._all_inverters
@@ -422,7 +288,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             and x.host == host
             and x.modbus_slave == slave
         ):
-            raise ValidationFailedExeption({"base": "duplicate_connection_details"})
+            raise ValidationFailedException({"base": "duplicate_connection_details"})
 
         try:
             params = {MODBUS_TYPE: protocol}
@@ -451,9 +317,10 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def _setup_energy_dashboard(self):
         """Setup Energy Dashboard"""
+
         manager = await data.async_get_manager(self.hass)
 
-        friendly_names = self._get_friendly_names(self._data)
+        friendly_names = [x.friendly_name for x in self._all_inverters]
 
         def _prefix_name(name):
             if name != "":
@@ -498,16 +365,6 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         energy_prefs["energy_sources"].append(grid_source)
 
         await manager.async_update(energy_prefs)
-
-    def _get_friendly_names(self, data_dict):
-        """Return all friendly names"""
-        names = []
-        inverters = {k: v for k, v in data_dict.items() if k in (TCP, SERIAL)}
-        for _, host_dict in inverters.items():
-            for _, name_dict in host_dict.items():
-                names.extend(list(name_dict.keys()))
-
-        return names
 
     async def _with_default_form(
         self,
