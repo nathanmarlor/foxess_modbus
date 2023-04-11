@@ -33,6 +33,7 @@ INVERTERS = "inverters"
 
 CONFIG_SAVE_TIME = "save_time"
 
+HOST = "host"
 TCP = "TCP"
 UDP = "UDP"
 SERIAL = "SERIAL"

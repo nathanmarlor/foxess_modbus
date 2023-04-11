@@ -18,6 +18,8 @@ from .const import MODBUS_SLAVE
 from .const import MODBUS_TYPE
 from .const import PLATFORMS
 from .const import POLL_RATE
+from .const import HOST
+from .const import FRIENDLY_NAME
 from .const import SERIAL
 from .const import STARTUP_MESSAGE
 from .const import TCP
@@ -64,35 +66,63 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             poll_rate,
             max_read,
         )
-        inverter_controller.append((inverter, controller))
+        inverter_controllers.append((inverter, controller))
 
-    inverter_controller = []
-    inverters = {k: v for k, v in entry.data.items() if k in (TCP, UDP, SERIAL)}
-    # create controllers for inverters
-    for modbus_type, host_dict in inverters.items():
-        for host, name_dict in host_dict.items():
-            params = {MODBUS_TYPE: modbus_type}
-            if modbus_type in [TCP, UDP]:
-                params.update(
-                    {"host": host.split(":")[0], "port": int(host.split(":")[1])}
-                )
+    inverter_controllers = []
+
+    # {(modbus_type, host): client}
+    clients: dict[tuple[str, str], ModbusClient] = {}
+    for inverter in entry.data[INVERTERS]:
+        client_key = (inverter[MODBUS_TYPE], inverter[HOST])
+        client = clients.get(client_key)
+        if client is None:
+            params = {MODBUS_TYPE: inverter[MODBUS_TYPE]}
+            if inverter[MODBUS_TYPE] in [TCP, UDP]:
+                host_parts = inverter[HOST].split(":")
+                params.update({"host": host_parts[0], "port": int(host_parts[1])})
             else:
-                params.update({"port": host, "baudrate": 9600})
+                params.update({"port": inverter[HOST], "baudrate": 9600})
             client = ModbusClient(hass, params)
-            for _, inverter in name_dict.items():
-                create_controller(hass, client, inverter)
+            clients[client_key] = client
+        create_controller(hass, client, inverter)
 
-    write_registers_service.register(hass, inverter_controller)
-    update_charge_period_service.register(hass, inverter_controller)
+    write_registers_service.register(hass, inverter_controllers)
+    update_charge_period_service.register(hass, inverter_controllers)
 
     hass.data[DOMAIN][entry.entry_id] = {
-        INVERTERS: inverter_controller,
+        INVERTERS: inverter_controllers,
     }
 
     hass.data[DOMAIN][entry.entry_id]["unload"] = entry.add_update_listener(
         async_reload_entry
     )
 
+    return True
+
+
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    _LOGGER.debug("Migrating from version %s", config_entry.version)
+
+    if config_entry.version == 1:
+        data = dict(config_entry.data)
+        data[INVERTERS] = []
+        for modbus_type, modbus_type_inverters in data.items():
+            if modbus_type in [TCP, UDP, SERIAL]:
+                for host, host_inverters in modbus_type_inverters.items():
+                    for friendly_name, inverter in host_inverters.items():
+                        inverter[MODBUS_TYPE] = modbus_type
+                        inverter[HOST] = host
+                        inverter[FRIENDLY_NAME] = friendly_name
+                        data[INVERTERS].append(inverter)
+
+        for modbus_type in [TCP, UDP, SERIAL]:
+            if modbus_type in data:
+                del data[modbus_type]
+
+        config_entry.version = 2
+        hass.config_entries.async_update_entry(config_entry, data=data)
+
+    _LOGGER.info("Migration to version %s successful", config_entry.version)
     return True
 
 

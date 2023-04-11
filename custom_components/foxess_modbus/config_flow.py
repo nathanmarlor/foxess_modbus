@@ -29,6 +29,7 @@ from .const import CONFIG_SAVE_TIME
 from .const import DOMAIN
 from .const import ENERGY_DASHBOARD
 from .const import FRIENDLY_NAME
+from .const import HOST
 from .const import INVERTER_BASE
 from .const import INVERTER_CONN
 from .const import INVERTER_MODEL
@@ -38,6 +39,7 @@ from .const import MODBUS_TYPE
 from .const import POLL_RATE
 from .const import SERIAL
 from .const import TCP
+from .const import INVERTERS
 from .const import UDP
 from .inverter_adapters import ADAPTERS
 from .inverter_adapters import InverterAdapter
@@ -67,10 +69,43 @@ class InverterData:
     friendly_name: str | None = None
 
 
-class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
+class FlowHandlerMixin:
+    async def _with_default_form(
+        self,
+        body: Callable[[dict[str, str]], Awaitable[FlowResult | None]],
+        user_input: dict[str, str] | None,
+        step_id: str,
+        data_schema: vol.Schema,
+        description_placeholders: Mapping[str, str | None] | None = None,
+    ):
+        """
+        If user_input is not None, call body() and return the result.
+        If body throws a ValidationFailedException, or returns None, or user_input is None,
+        show the default form specified by step_id and data_schema
+        """
+
+        errors: dict[str, str] | None = None
+        if user_input is not None:
+            try:
+                result = await body(user_input)
+                if result is not None:
+                    return result
+            except ValidationFailedException as ex:
+                errors = ex.errors
+
+        schema_with_input = self.add_suggested_values_to_schema(data_schema, user_input)
+        return self.async_show_form(
+            step_id=step_id,
+            data_schema=schema_with_input,
+            errors=errors,
+            description_placeholders=description_placeholders,
+        )
+
+
+class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for foxess_modbus."""
 
-    VERSION = 1
+    VERSION = 2
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     def __init__(self) -> None:
@@ -313,17 +348,18 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     def _create_entry_data(self) -> dict[str, Any]:
         """Create the config entry for all inverters in self._all_inverters"""
 
-        entry = {}
+        entry = {INVERTERS: []}
         for inverter in self._all_inverters:
-            protocol_data = entry.setdefault(inverter.inverter_protocol, {})
-            host_data = protocol_data.setdefault(inverter.host, {})
-            host_data[inverter.friendly_name] = {
+            inverter = {
                 INVERTER_BASE: inverter.inverter_base_model,
                 INVERTER_MODEL: inverter.inverter_model,
                 INVERTER_CONN: inverter.adapter.connection_type.key,
                 MODBUS_SLAVE: inverter.modbus_slave,
                 FRIENDLY_NAME: inverter.friendly_name,
+                MODBUS_TYPE: inverter.inverter_protocol,
+                HOST: inverter.host,
             }
+            entry[INVERTERS].append(inverter)
         entry[CONFIG_SAVE_TIME] = datetime.now()
         return entry
 
@@ -346,8 +382,10 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 params.update(
                     {"host": host.split(":")[0], "port": int(host.split(":")[1])}
                 )
-            else:
+            elif protocol == SERIAL:
                 params.update({"port": host, "baudrate": 9600})
+            else:
+                assert False
             client = ModbusClient(self.hass, params)
             base_model, full_model = await ModbusController.autodetect(
                 client, conn_type, slave
@@ -416,37 +454,6 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         await manager.async_update(energy_prefs)
 
-    async def _with_default_form(
-        self,
-        body: Callable[[dict[str, str]], Awaitable[FlowResult | None]],
-        user_input: dict[str, str] | None,
-        step_id: str,
-        data_schema: vol.Schema,
-        description_placeholders: Mapping[str, str | None] | None = None,
-    ):
-        """
-        If user_input is not None, call body() and return the result.
-        If body throws a ValidationFailedException, or returns None, or user_input is None,
-        show the default form specified by step_id and data_schema
-        """
-
-        errors: dict[str, str] | None = None
-        if user_input is not None:
-            try:
-                result = await body(user_input)
-                if result is not None:
-                    return result
-            except ValidationFailedException as ex:
-                errors = ex.errors
-
-        schema_with_input = self.add_suggested_values_to_schema(data_schema, user_input)
-        return self.async_show_form(
-            step_id=step_id,
-            data_schema=schema_with_input,
-            errors=errors,
-            description_placeholders=description_placeholders,
-        )
-
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
@@ -454,7 +461,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         return ModbusOptionsHandler(config_entry)
 
 
-class ModbusOptionsHandler(config_entries.OptionsFlow):
+class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
     """Options flow handler"""
 
     def __init__(self, config: config_entries.ConfigEntry) -> None:
