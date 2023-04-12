@@ -24,7 +24,7 @@
         "data": {
           "protocol": "Protocol",
           "protocol_with_recommendation": "Protocol",
-          "direct_connection_host": "Inverter hostname / IP address",
+          "lan_connection_host": "Inverter hostname / IP address",
           "adapter_host": "Modbus adapter hostname / IP address",
           "adapter_port": "Modbus adapter port",
           "modbus_slave": "Inverter slave ID"
@@ -80,11 +80,21 @@
   },
   "options": {
     "step": {
-      "init": {
-        "description": "Configure the poll rate and max read values\nRecommended: AUX: 10s / 8 max & LAN: 5s / 50 max",
+      "select_inverter": {
+        "description": "Select inverter to configure",
+        "data": {
+          "inverter": null
+        }
+      },
+      "inverter_options": {
+        "description": "Warning: only change these if you know what you are doing. Enable debug logging and watch it to see whether your new settings cause any problems",
         "data": {
           "poll_rate": "Poll rate",
           "max_read": "Max read"
+        },
+        "data_description": {
+          "poll_rate": "The default for your adapter type is {default_poll_rate}. Leave empty to restore default",
+          "max_read": "The default for your adapter type is {default_max_read}. Leave empty to restore default"
         }
       }
     }
@@ -92,7 +102,7 @@
   "selector": {
     "inverter_adapter_types": {
       "options": {
-        "direct": "Direct LAN Connection",
+        "lan": "Direct LAN Connection",
         "serial": "USB to Modbus Adapter",
         "network": "Ethernet to Modbus Adapter"
       }
@@ -101,7 +111,7 @@
       "options": {
         "usr-w610": "USR-W610",
         "waveshare": "Waveshare Modbus RTU Relay",
-        "other_network": "Other"
+        "network_other": "Other"
       }
     }
   }

@@ -12,7 +12,7 @@ class InverterAdapterType(str, Enum):
     """Describes the different means of connecting to an inverter"""
 
     # These values are used as translation keys in the config flow
-    DIRECT = "direct"
+    LAN = "lan"
     SERIAL = "serial"
     NETWORK = "network"
 
@@ -25,6 +25,8 @@ class InverterAdapter:
     type: InverterAdapterType
     connection_type: InverterConnectionType
     setup_link: str
+    poll_rate: int
+    max_read: int
     network_protocols: list[
         str
     ] | None = None  # If type is NETWORK/DIRECT, whether we support TCP and/or UDP
@@ -32,21 +34,29 @@ class InverterAdapter:
 
 
 # The order of elements in this array controls the order they appear in the config flow UI
+# Important: these ids are stored in the config entry, and used to fetch the adapter's settings at start-up
+# We therefore cannot remove or rename any of these!
 ADAPTERS = {
     x.id: x
     for x in [
         InverterAdapter(
-            "direct",
-            InverterAdapterType.DIRECT,
+            "lan",
+            InverterAdapterType.LAN,
             CONNECTION_TYPES["LAN"],
             setup_link="https://github.com/nathanmarlor/foxess_modbus/wiki",
             network_protocols=[TCP],
+            # TODO
+            poll_rate=10,
+            max_read=8,
         ),
         InverterAdapter(
-            "serial",
+            "serial_other",
             InverterAdapterType.SERIAL,
             CONNECTION_TYPES["AUX"],
             setup_link="https://github.com/nathanmarlor/foxess_modbus/wiki",
+            # TODO
+            poll_rate=10,
+            max_read=8,
         ),
         InverterAdapter(
             "usr-w610",
@@ -55,6 +65,8 @@ ADAPTERS = {
             setup_link="https://github.com/nathanmarlor/foxess_modbus/wiki",
             network_protocols=[TCP, UDP],
             recommended_protocol=UDP,
+            poll_rate=10,
+            max_read=8,
         ),
         InverterAdapter(
             "waveshare",
@@ -62,13 +74,19 @@ ADAPTERS = {
             CONNECTION_TYPES["AUX"],
             setup_link="https://github.com/nathanmarlor/foxess_modbus/wiki/Waveshare-RS485-to-ETH-(B)-Setup-Guide",
             network_protocols=[TCP],
+            # TODO
+            poll_rate=10,
+            max_read=50,
         ),
         InverterAdapter(
-            "other_network",
+            "network_other",
             InverterAdapterType.NETWORK,
             CONNECTION_TYPES["AUX"],
             setup_link="https://github.com/nathanmarlor/foxess_modbus/wiki",
             network_protocols=[TCP, UDP],
+            # TODO
+            poll_rate=10,
+            max_read=8,
         ),
     ]
 }

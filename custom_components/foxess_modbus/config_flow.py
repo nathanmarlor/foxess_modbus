@@ -1,6 +1,8 @@
 """Adds config flow for foxess_modbus."""
+import copy
 import logging
 import re
+import uuid
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
@@ -25,6 +27,7 @@ from homeassistant.helpers.selector import selector
 from pymodbus.exceptions import ConnectionException
 
 from .common.exceptions import UnsupportedInverterException
+from .const import ADAPTER_ID
 from .const import CONFIG_SAVE_TIME
 from .const import DOMAIN
 from .const import ENERGY_DASHBOARD
@@ -33,13 +36,13 @@ from .const import HOST
 from .const import INVERTER_BASE
 from .const import INVERTER_CONN
 from .const import INVERTER_MODEL
+from .const import INVERTERS
 from .const import MAX_READ
 from .const import MODBUS_SLAVE
 from .const import MODBUS_TYPE
 from .const import POLL_RATE
 from .const import SERIAL
 from .const import TCP
-from .const import INVERTERS
 from .const import UDP
 from .inverter_adapters import ADAPTERS
 from .inverter_adapters import InverterAdapter
@@ -72,8 +75,8 @@ class InverterData:
 class FlowHandlerMixin:
     async def _with_default_form(
         self,
-        body: Callable[[dict[str, str]], Awaitable[FlowResult | None]],
-        user_input: dict[str, str] | None,
+        body: Callable[[dict[str, Any]], Awaitable[FlowResult | None]],
+        user_input: dict[str, Any] | None,
         step_id: str,
         data_schema: vol.Schema,
         description_placeholders: Mapping[str, str | None] | None = None,
@@ -114,7 +117,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         self._all_inverters: list[InverterData] = []
 
         self._adapter_type_to_method = {
-            InverterAdapterType.DIRECT: self.async_step_tcp_adapter,
+            InverterAdapterType.LAN: self.async_step_tcp_adapter,
             InverterAdapterType.SERIAL: self.async_step_serial_adapter,
             InverterAdapterType.NETWORK: self.async_step_tcp_adapter,
         }
@@ -125,7 +128,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         return await self.async_step_select_adapter_type()
 
     async def async_step_select_adapter_type(
-        self, user_input: dict[str, str] = None
+        self, user_input: dict[str, Any] = None
     ) -> FlowResult:
         """Let the user select their adapter type"""
 
@@ -160,7 +163,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         )
 
     async def async_step_select_adapter_model(
-        self, user_input: dict[str, str] = None
+        self, user_input: dict[str, Any] = None
     ) -> FlowResult:
         """Let the user select their adapter model"""
 
@@ -192,7 +195,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         )
 
     async def async_step_tcp_adapter(
-        self, user_input: dict[str, str] = None
+        self, user_input: dict[str, Any] = None
     ) -> FlowResult:
         """Let the user enter connection details for their TCP/UDP adapter"""
 
@@ -206,9 +209,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                     "protocol_with_recommendation", adapter.network_protocols[0]
                 ),
             )
-            host = user_input.get(
-                "adapter_host", user_input.get("direct_connection_host")
-            )
+            host = user_input.get("adapter_host", user_input.get("lan_connection_host"))
             assert host is not None
             port = user_input.get("adapter_port", _DEFAULT_PORT)
             host_and_port = f"{host}:{port}"
@@ -246,7 +247,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             ] = int
         else:
             # If it's a direct connection we know what the port is
-            schema_parts[vol.Required("direct_connection_host")] = cv.string
+            schema_parts[vol.Required("lan_connection_host")] = cv.string
 
         schema_parts[
             vol.Required(
@@ -262,7 +263,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         )
 
     async def async_step_serial_adapter(
-        self, user_input: dict[str, str] = None
+        self, user_input: dict[str, Any] = None
     ) -> FlowResult:
         """Let the user enter connection details for their serial adapter"""
 
@@ -295,7 +296,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         )
 
     async def async_step_friendly_name(
-        self, user_input: dict[str, str] = None
+        self, user_input: dict[str, Any] = None
     ) -> FlowResult:
         """Let the user enter a friendly name for their inverter"""
 
@@ -320,7 +321,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         return await self._with_default_form(body, user_input, "friendly_name", schema)
 
     async def async_step_add_another_inverter(
-        self, _user_input: dict[str, str] = None
+        self, _user_input: dict[str, Any] = None
     ) -> FlowResult:
         """Let the user choose whether to add another inverter"""
 
@@ -348,7 +349,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
     def _create_entry_data(self) -> dict[str, Any]:
         """Create the config entry for all inverters in self._all_inverters"""
 
-        entry = {INVERTERS: []}
+        entry = {INVERTERS: {}}
         for inverter in self._all_inverters:
             inverter = {
                 INVERTER_BASE: inverter.inverter_base_model,
@@ -358,8 +359,9 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                 FRIENDLY_NAME: inverter.friendly_name,
                 MODBUS_TYPE: inverter.inverter_protocol,
                 HOST: inverter.host,
+                ADAPTER_ID: inverter.adapter.id,
             }
-            entry[INVERTERS].append(inverter)
+            entry[INVERTERS][str(uuid.uuid4())] = inverter
         entry[CONFIG_SAVE_TIME] = datetime.now()
         return entry
 
@@ -466,23 +468,108 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
 
     def __init__(self, config: config_entries.ConfigEntry) -> None:
         self._config = config
-        self._data = dict(self._config.data)
+        self._selected_inverter_id: str | None = None
 
-    async def async_step_init(self, user_input=None):
-        """Init options"""
-        if user_input is not None:
-            self._data[POLL_RATE] = user_input[POLL_RATE]
-            self._data[MAX_READ] = user_input[MAX_READ]
-            return self.async_create_entry(title=_TITLE, data=self._data)
+    async def async_step_init(self, _user_input=None):
+        """Start the config flow"""
 
-        options_schema = vol.Schema(
+        if len(self._config.data[INVERTERS]) == 1:
+            self._selected_inverter_id = next(iter(self._config.data[INVERTERS]))
+            return await self.async_step_inverter_options()
+
+        return await self.async_step_select_inverter()
+
+    async def async_step_select_inverter(
+        self, user_input: dict[str, Any] = None
+    ) -> FlowResult:
+        """Let the user select their inverter, if they have multiple inverters"""
+
+        async def body(user_input):
+            self._selected_inverter_id = user_input["inverter"]
+            return await self.async_step_inverter_options()
+
+        def create_label(inverter):
+            result = ""
+            if inverter[FRIENDLY_NAME]:
+                result = f"{inverter[FRIENDLY_NAME]} - "
+            result += f"{inverter[HOST]} ({inverter[MODBUS_SLAVE]})"
+            return result
+
+        schema = vol.Schema(
             {
-                vol.Required(POLL_RATE, default=self._data.get(POLL_RATE, 10)): int,
-                vol.Required(MAX_READ, default=self._data.get(MAX_READ, 8)): int,
+                vol.Required("inverter"): selector(
+                    {
+                        "select": {
+                            "options": [
+                                {
+                                    "label": create_label(inverter),
+                                    "value": inverter_id,
+                                }
+                                for inverter_id, inverter in self._config.data[
+                                    INVERTERS
+                                ].items()
+                            ]
+                        }
+                    }
+                )
             }
         )
 
-        return self.async_show_form(step_id="init", data_schema=options_schema)
+        return await self._with_default_form(
+            body, user_input, "select_inverter", schema
+        )
+
+    async def async_step_inverter_options(
+        self, user_input: dict[str, Any] = None
+    ) -> FlowResult:
+        """Let the user set the inverter's settings"""
+
+        async def body(user_input):
+            inverter_options = {}
+            poll_rate = user_input.get("poll_rate")
+            if poll_rate is not None:
+                inverter_options[POLL_RATE] = poll_rate
+            max_read = user_input.get("max_read")
+            if max_read is not None:
+                inverter_options[MAX_READ] = max_read
+
+            # We must not mutate any part of self._config.options, otherwise HA thinks we haven't changed the options
+            options = copy.deepcopy(dict(self._config.options))
+            options.setdefault(INVERTERS, {})[
+                self._selected_inverter_id
+            ] = inverter_options
+
+            return self.async_create_entry(title=_TITLE, data=options)
+
+        existing = self._config.options.get(INVERTERS, {}).get(
+            self._selected_inverter_id, {}
+        )
+        schema = vol.Schema(
+            {
+                vol.Optional(
+                    "poll_rate",
+                    description={"suggested_value": existing.get(POLL_RATE)},
+                ): vol.Any(None, int),
+                vol.Optional(
+                    "max_read", description={"suggested_value": existing.get(MAX_READ)}
+                ): vol.Any(None, int),
+            }
+        )
+        adapter = ADAPTERS[
+            self._config.data[INVERTERS][self._selected_inverter_id][ADAPTER_ID]
+        ]
+        description_placeholders = {
+            "default_poll_rate": adapter.poll_rate,
+            "default_max_read": adapter.max_read,
+        }
+
+        return await self._with_default_form(
+            body,
+            user_input,
+            "inverter_options",
+            schema,
+            description_placeholders=description_placeholders,
+        )
 
 
 class ValidationFailedException(Exception):

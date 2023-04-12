@@ -6,24 +6,30 @@ https://github.com/nathanmarlor/foxess_modbus
 """
 import asyncio
 import logging
+import uuid
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.typing import UNDEFINED
 
+from .const import ADAPTER_ID
+from .const import CONFIG_SAVE_TIME
 from .const import DOMAIN
+from .const import FRIENDLY_NAME
+from .const import HOST
+from .const import INVERTER_CONN
 from .const import INVERTERS
 from .const import MAX_READ
 from .const import MODBUS_SLAVE
 from .const import MODBUS_TYPE
 from .const import PLATFORMS
 from .const import POLL_RATE
-from .const import HOST
-from .const import FRIENDLY_NAME
 from .const import SERIAL
 from .const import STARTUP_MESSAGE
 from .const import TCP
 from .const import UDP
+from .inverter_adapters import ADAPTERS
 from .inverter_profiles import inverter_connection_type_profile_from_config
 from .modbus_client import ModbusClient
 from .modbus_controller import ModbusController
@@ -50,21 +56,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
                 hass.config_entries.async_forward_entry_setup(entry, platform)
             )
 
-    if len(entry.options) > 0:
-        # overwrite data with options
-        entry.data = entry.options
-
-    poll_rate = entry.data.get(POLL_RATE, 10)
-    max_read = entry.data.get(MAX_READ, 8)
-
     def create_controller(hass, client, inverter):
         controller = ModbusController(
             hass,
             client,
             inverter_connection_type_profile_from_config(inverter),
             inverter[MODBUS_SLAVE],
-            poll_rate,
-            max_read,
+            inverter[POLL_RATE],
+            inverter[MAX_READ],
         )
         inverter_controllers.append((inverter, controller))
 
@@ -72,7 +71,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     # {(modbus_type, host): client}
     clients: dict[tuple[str, str], ModbusClient] = {}
-    for inverter in entry.data[INVERTERS]:
+    for inverter_id, inverter in entry.data[INVERTERS].items():
+        # Merge in adapter options. This lets us tweak the adapters later, and those settings are reflected back to users#
+        adapter = ADAPTERS[inverter[ADAPTER_ID]]
+        inverter[MAX_READ] = adapter.max_read
+        inverter[POLL_RATE] = adapter.poll_rate
+
+        # Merge in the options, if any. These can override the adapter options set above
+        options = entry.options.get(INVERTERS, {}).get(inverter_id)
+        if options:
+            inverter.update(options)
+
         client_key = (inverter[MODBUS_TYPE], inverter[HOST])
         client = clients.get(client_key)
         if client is None:
@@ -104,23 +113,49 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
     _LOGGER.debug("Migrating from version %s", config_entry.version)
 
     if config_entry.version == 1:
-        data = dict(config_entry.data)
-        data[INVERTERS] = []
-        for modbus_type, modbus_type_inverters in data.items():
+        new_data = {
+            INVERTERS: {},
+            CONFIG_SAVE_TIME: config_entry.data[CONFIG_SAVE_TIME],
+        }
+        if config_entry.options:
+            inverter_options = {
+                POLL_RATE: config_entry.options[POLL_RATE],
+                MAX_READ: config_entry.options[MAX_READ],
+            }
+            options = {INVERTERS: {}}
+        else:
+            inverter_options = {}
+            options = UNDEFINED
+
+        for modbus_type, modbus_type_inverters in config_entry.data.items():
             if modbus_type in [TCP, UDP, SERIAL]:
                 for host, host_inverters in modbus_type_inverters.items():
                     for friendly_name, inverter in host_inverters.items():
+                        if friendly_name == "null":
+                            friendly_name = ""
                         inverter[MODBUS_TYPE] = modbus_type
                         inverter[HOST] = host
                         inverter[FRIENDLY_NAME] = friendly_name
-                        data[INVERTERS].append(inverter)
-
-        for modbus_type in [TCP, UDP, SERIAL]:
-            if modbus_type in data:
-                del data[modbus_type]
+                        # We can infer what the adapter type is, ish
+                        if modbus_type == TCP:
+                            if inverter[INVERTER_CONN] == "LAN":
+                                adapter = ADAPTERS["lan"]
+                            else:
+                                adapter = ADAPTERS["network_other"]
+                        elif modbus_type == SERIAL:
+                            adapter = ADAPTERS["serial_other"]
+                        else:
+                            assert False
+                        inverter[ADAPTER_ID] = adapter.id
+                        inverter_id = str(uuid.uuid4())
+                        new_data[INVERTERS][inverter_id] = inverter
+                        if inverter_options:
+                            options[INVERTERS][inverter_id] = inverter_options
 
         config_entry.version = 2
-        hass.config_entries.async_update_entry(config_entry, data=data)
+        hass.config_entries.async_update_entry(
+            config_entry, data=new_data, options=options
+        )
 
     _LOGGER.info("Migration to version %s successful", config_entry.version)
     return True

@@ -25,6 +25,7 @@ MODBUS_TYPE = "modbus_type"
 MODBUS_SERIAL_BAUD = "modbus_serial_baud"
 POLL_RATE = "poll_rate"
 MAX_READ = "max_read"
+ADAPTER_ID = "adapter_id"
 
 INVERTER_MODEL = "inverter_model"
 INVERTER_BASE = "inverter_base"
