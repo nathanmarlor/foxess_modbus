@@ -28,6 +28,7 @@ class ModbusClient:
             SERIAL: ModbusSerialClient,
             TCP: ModbusTcpClient,
         }
+        self._poll_delay = 30 / 1000 if self._config_type == SERIAL else 0
 
         self._client = self._class[self._config_type](**config)
         if auto_connect:
@@ -106,4 +107,9 @@ class ModbusClient:
     async def _async_pymodbus_call(self, call, *args):
         """Convert async to sync pymodbus call."""
         async with self._lock:
-            return await self._hass.async_add_executor_job(call, *args)
+            result = await self._hass.async_add_executor_job(call, *args)
+            # This seems to be required for serial devices, otherwise subsequent reads fail
+            # The HA modbus integration does the same
+            if self._poll_delay > 0:
+                await asyncio.sleep(self._poll_delay)
+            return result
