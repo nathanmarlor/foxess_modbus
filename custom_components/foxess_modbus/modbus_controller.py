@@ -1,6 +1,9 @@
 """Modbus controller"""
 import logging
+import threading
 from asyncio.exceptions import TimeoutError
+from contextlib import contextmanager
+from datetime import datetime
 from datetime import timedelta
 
 from homeassistant.helpers.event import async_track_time_interval
@@ -19,6 +22,16 @@ _LOGGER = logging.getLogger(__name__)
 
 # How many failed polls before we mark sensors as Unavailable
 _NUM_FAILED_POLLS_FOR_DISCONNECTION = 5
+
+
+@contextmanager
+def _acquire_nonblocking(lock: threading.Lock) -> bool:
+    locked = lock.acquire(False)
+    try:
+        yield locked
+    finally:
+        if locked:
+            lock.release()
 
 
 class ModbusController(EntityController, UnloadController):
@@ -41,6 +54,7 @@ class ModbusController(EntityController, UnloadController):
         self._slave = slave
         self._poll_rate = poll_rate
         self._max_read = max_read
+        self._refresh_lock = threading.Lock()
         self._num_failed_poll_attempts = 0
         self._is_connected = True  # Start off assuming we can connect
 
@@ -51,7 +65,7 @@ class ModbusController(EntityController, UnloadController):
         if self._hass is not None:
             refresh = async_track_time_interval(
                 self._hass,
-                self.refresh,
+                self._refresh,
                 timedelta(seconds=self._poll_rate),
             )
 
@@ -70,6 +84,13 @@ class ModbusController(EntityController, UnloadController):
 
     async def write_registers(self, start_address, values) -> None:
         """Write multiple registers"""
+        _LOGGER.debug(
+            "Writing registers for %s %s: (%s, %s)",
+            self._client,
+            self._slave,
+            start_address,
+            values,
+        )
         await self._client.write_registers(start_address, values, self._slave)
         changed_addresses = set()
         for i, value in enumerate(values):
@@ -81,64 +102,104 @@ class ModbusController(EntityController, UnloadController):
                 changed_addresses.add(address)
         self._notify_update(changed_addresses)
 
-    async def refresh(self, *args) -> None:
+    async def _refresh(self, _time: datetime) -> None:
         """Refresh modbus data"""
-        holding = self.connection_type_profile.connection_type.read_holding_registers
-        # List of (start address, [read values starting at that address])
-        read_values: list[tuple[int, list[int]]] = []
-        succeeded = False
-        try:
-            for (
-                start_address,
-                num_reads,
-            ) in self.connection_type_profile.create_read_ranges(self._max_read):
+        # Make sure that we don't do two refreshes at the same time, if one is too slow
+        with _acquire_nonblocking(self._refresh_lock) as acquired:
+            if not acquired:
+                _LOGGER.warning(
+                    "Aborting refresh of %s %s as a previous refresh is still in progress. Is your poll rate '%s' too high?",
+                    self._client,
+                    self._slave,
+                    self._poll_rate,
+                )
+                return
+
+            holding = (
+                self.connection_type_profile.connection_type.read_holding_registers
+            )
+            # List of (start address, [read values starting at that address])
+            read_values: list[tuple[int, list[int]]] = []
+            succeeded = False
+            try:
+                for (
+                    start_address,
+                    num_reads,
+                ) in self.connection_type_profile.create_read_ranges(self._max_read):
+                    _LOGGER.debug(
+                        "Reading addresses on %s %s: (%s, %s)",
+                        self._client,
+                        self._slave,
+                        start_address,
+                        num_reads,
+                    )
+                    reads = await self._client.read_registers(
+                        start_address, num_reads, holding, self._slave
+                    )
+                    read_values.append((start_address, reads))
+
+                # If we made it to here, then all reads succeeded. Write them to _data and notify the sensors.
+                # This avoids recording reads if poll failed partway through (ensuring that we don't record potentially
+                # inconsistent data)
+                succeeded = True
+                changed_addresses = set()
+                for start_address, reads in read_values:
+                    for i, value in enumerate(reads):
+                        address = start_address + i
+                        # We might be reading a register we don't care about (for efficiency). Discard it if so
+                        if self._data.get(address, value) != value:
+                            changed_addresses.add(address)
+                            self._data[address] = value
+
                 _LOGGER.debug(
-                    "Reading addresses for (%s, %s)", start_address, num_reads
+                    "Refresh of %s %s complete - notifying sensors: %s",
+                    self._client,
+                    self._slave,
+                    changed_addresses,
                 )
-                reads = await self._client.read_registers(
-                    start_address, num_reads, holding, self._slave
-                )
-                read_values.append((start_address, reads))
-
-            # If we made it to here, then all reads succeeded. Write them to _data and notify the sensors.
-            # This avoids recording reads if poll failed partway through (ensuring that we don't record potentially
-            # inconsistent data)
-            succeeded = True
-            changed_addresses = set()
-            for start_address, reads in read_values:
-                for i, value in enumerate(reads):
-                    address = start_address + i
-                    # We might be reading a register we don't care about (for efficiency). Discard it if so
-                    if self._data.get(address, value) != value:
-                        changed_addresses.add(address)
-                        self._data[address] = value
-
-            _LOGGER.debug("Refresh complete - notifying sensors: %s", changed_addresses)
-            self._notify_update(changed_addresses)
-        except TimeoutError:
-            _LOGGER.debug("Timed out when contacting device, cancelling poll loop")
-        except ModbusException as ex:
-            _LOGGER.debug(f"Modbus exception when polling - {ex}")
-        except Exception as ex:
-            _LOGGER.warning(f"General exception when polling - {ex!r}")
-
-        # Do this after recording new values in _data. That way the sensors show the new values when they
-        # become available after a disconnection
-        if succeeded:
-            self._num_failed_poll_attempts = 0
-            if not self._is_connected:
-                _LOGGER.debug("Poll succeeded: now connected")
-                self._is_connected = True
-                self._notify_is_connected_changed()
-        elif self._is_connected:
-            self._num_failed_poll_attempts += 1
-            if self._num_failed_poll_attempts >= _NUM_FAILED_POLLS_FOR_DISCONNECTION:
+                self._notify_update(changed_addresses)
+            except TimeoutError:
                 _LOGGER.debug(
-                    "%s failed poll attempts: now not connected",
-                    self._num_failed_poll_attempts,
+                    "Timed out when contacting device %s %s, cancelling poll loop",
+                    self._client,
+                    self._slave,
                 )
-                self._is_connected = False
-                self._notify_is_connected_changed()
+            except ModbusException as ex:
+                _LOGGER.debug(
+                    "Modbus exception when polling %s %s - %s",
+                    self._client,
+                    self._slave,
+                    ex,
+                )
+            except Exception as ex:
+                _LOGGER.warning(
+                    "General exception when polling %s %s - %s",
+                    self._client,
+                    self._slave,
+                    repr(ex),
+                    exc_info=True,
+                )
+
+            # Do this after recording new values in _data. That way the sensors show the new values when they
+            # become available after a disconnection
+            if succeeded:
+                self._num_failed_poll_attempts = 0
+                if not self._is_connected:
+                    _LOGGER.debug("Poll succeeded: now connected")
+                    self._is_connected = True
+                    self._notify_is_connected_changed()
+            elif self._is_connected:
+                self._num_failed_poll_attempts += 1
+                if (
+                    self._num_failed_poll_attempts
+                    >= _NUM_FAILED_POLLS_FOR_DISCONNECTION
+                ):
+                    _LOGGER.debug(
+                        "%s failed poll attempts: now not connected",
+                        self._num_failed_poll_attempts,
+                    )
+                    self._is_connected = False
+                    self._notify_is_connected_changed()
 
     @staticmethod
     async def autodetect(client: ModbusClient, slave: int) -> tuple[str, str, str]:

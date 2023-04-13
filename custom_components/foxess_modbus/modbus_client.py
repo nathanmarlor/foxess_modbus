@@ -20,6 +20,8 @@ class CustomModbusTcpClient(ModbusTcpClient):
 
     def connect(self) -> bool:
         was_connected = self.socket is not None
+        if not was_connected:
+            _LOGGER.debug("Connecting to %s", self.params)
         is_connected = super().connect()
         # pymodbus doesn't disable Nagle's algorithm. This slows down reads quite substantially as the
         # TCP stack waits to see if we're going to send anything else. Disable it ourselves.
@@ -47,14 +49,11 @@ class ModbusClient:
 
     async def close(self):
         """Close connection"""
-        _LOGGER.debug("Closing connection to modbus")
+        _LOGGER.debug("Closing connection to modbus on %s", self)
         await self._async_pymodbus_call(self._client.close)
 
     async def read_registers(self, start_address, num_registers, holding, slave):
         """Read registers"""
-        _LOGGER.debug(
-            f"Reading register: ({start_address}, {num_registers}, ({slave}))"
-        )
         if holding:
             response = await self._async_pymodbus_call(
                 self._client.read_holding_registers,
@@ -70,15 +69,12 @@ class ModbusClient:
                 slave,
             )
         if response.isError():
-            raise ModbusIOException(f"Error reading registers: {response}")
+            raise ModbusIOException(f"Error reading registers from {self}: {response}")
 
         return response.registers
 
     async def write_registers(self, register_address, register_values, slave):
         """Write registers"""
-        _LOGGER.debug(
-            f"Writing register: ({register_address}, {register_values}, {slave})"
-        )
         if len(register_values) > 1:
             register_values = [int(i) for i in register_values]
             response = await self._async_pymodbus_call(
@@ -95,7 +91,9 @@ class ModbusClient:
                 slave,
             )
         if response.isError():
-            raise ModbusIOException(f"Error writing holding register: {response}")
+            raise ModbusIOException(
+                f"Error writing holding register on {self}: {response}"
+            )
         return True
 
     async def _async_pymodbus_call(self, call, *args):
@@ -107,3 +105,10 @@ class ModbusClient:
             if self._poll_delay > 0:
                 await asyncio.sleep(self._poll_delay)
             return result
+
+    def __str__(self) -> str:
+        return (
+            f"{self._config['host']}"
+            if self._config_type == SERIAL
+            else f"{self._config_type.lower()}://{self._config['host']}:{self._config['port']}"
+        )
