@@ -59,7 +59,7 @@ ADAPTERS = {
             max_read=8,
         ),
         InverterAdapter(
-            "usr-w610",
+            "usr_w610",
             InverterAdapterType.NETWORK,
             CONNECTION_TYPES["AUX"],
             setup_link="https://github.com/nathanmarlor/foxess_modbus/wiki",

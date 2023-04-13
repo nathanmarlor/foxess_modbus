@@ -19,6 +19,12 @@
           "adapter_model": null
         }
       },
+      "select_adapter_model_due_to_migration": {
+        "description": "Choose the adapter model for the inverter \"{inverter}\". This lets us use settings tailored to your adapter.",
+        "data": {
+          "adapter_model": null
+        }
+      },
       "tcp_adapter": {
         "description": "Set up your adapter by following the instructions at {setup_link}.",
         "data": {
@@ -75,7 +81,8 @@
       "invalid_friendly_name": "Friendly name must contain only lower-case letters, numbers and underscores"
     },
     "abort": {
-      "single_instance_allowed": "Only a single instance is allowed."
+      "single_instance_allowed": "Only a single instance is allowed.",
+      "reconfigure_successful": "Successful"
     }
   },
   "options": {
@@ -109,7 +116,7 @@
     },
     "inverter_adapter_models": {
       "options": {
-        "usr-w610": "USR-W610",
+        "usr_w610": "USR-W610",
         "waveshare": "Waveshare Modbus RTU Relay",
         "network_other": "Other"
       }

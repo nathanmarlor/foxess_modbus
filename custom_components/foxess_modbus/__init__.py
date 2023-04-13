@@ -11,6 +11,7 @@ import uuid
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.typing import UNDEFINED
 
 from .const import ADAPTER_ID
@@ -20,6 +21,7 @@ from .const import FRIENDLY_NAME
 from .const import HOST
 from .const import INVERTER_CONN
 from .const import INVERTERS
+from .const import INVETER_ADAPTER_NEEDS_MANUAL_INPUT
 from .const import MAX_READ
 from .const import MODBUS_SLAVE
 from .const import MODBUS_TYPE
@@ -46,6 +48,7 @@ async def async_setup(hass: HomeAssistant, config: Config):
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up this integration using UI."""
+
     if hass.data.get(DOMAIN) is None:
         hass.data.setdefault(DOMAIN, {})
         _LOGGER.info(STARTUP_MESSAGE)
@@ -72,7 +75,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # {(modbus_type, host): client}
     clients: dict[tuple[str, str], ModbusClient] = {}
     for inverter_id, inverter in entry.data[INVERTERS].items():
-        # Merge in adapter options. This lets us tweak the adapters later, and those settings are reflected back to users#
+        # Merge in adapter options. This lets us tweak the adapters later, and those settings are reflected back to users
+        # Handle an adapter in need of manual input to complete migration
         adapter = ADAPTERS[inverter[ADAPTER_ID]]
         inverter[MAX_READ] = adapter.max_read
         inverter[POLL_RATE] = adapter.poll_rate
@@ -105,6 +109,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     hass.data[DOMAIN][entry.entry_id]["unload"] = entry.add_update_listener(
         async_reload_entry
     )
+
+    # Do this last, so sensors etc can continue to function in the meantime
+    for inverter in entry.data[INVERTERS].values():
+        if INVETER_ADAPTER_NEEDS_MANUAL_INPUT in inverter:
+            raise ConfigEntryAuthFailed(
+                "Configuration needs manual input. Please click 'RECONFIGURE'"
+            )
 
     return True
 
@@ -141,12 +152,15 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                             if inverter[INVERTER_CONN] == "LAN":
                                 adapter = ADAPTERS["lan"]
                             else:
-                                adapter = ADAPTERS["network_other"]
+                                # Go for the worst device, which is the W610
+                                adapter = ADAPTERS["usr_w610"]
                         elif modbus_type == SERIAL:
                             adapter = ADAPTERS["serial_other"]
-                        else:
-                            assert False
                         inverter[ADAPTER_ID] = adapter.id
+
+                        # If we need manual input to find the correct adapter type, prompt for this
+                        if modbus_type != TCP or inverter[INVERTER_CONN] != "LAN":
+                            inverter[INVETER_ADAPTER_NEEDS_MANUAL_INPUT] = True
                         inverter_id = str(uuid.uuid4())
                         new_data[INVERTERS][inverter_id] = inverter
                         if inverter_options:
