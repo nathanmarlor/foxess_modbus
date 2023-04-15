@@ -77,9 +77,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     for inverter_id, inverter in entry.data[INVERTERS].items():
         # Merge in adapter options. This lets us tweak the adapters later, and those settings are reflected back to users
         # Handle an adapter in need of manual input to complete migration
-        adapter = ADAPTERS[inverter[ADAPTER_ID]]
-        inverter[MAX_READ] = adapter.max_read
-        inverter[POLL_RATE] = adapter.poll_rate
+        inverter.update(ADAPTERS[inverter[ADAPTER_ID]].inverter_config())
 
         # Merge in the options, if any. These can override the adapter options set above
         options = entry.options.get(INVERTERS, {}).get(inverter_id)
@@ -150,13 +148,13 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                         # We can infer what the adapter type is, ish
                         if modbus_type == TCP:
                             if inverter[INVERTER_CONN] == "LAN":
-                                adapter = ADAPTERS["lan"]
+                                adapter = ADAPTERS["direct"]
                             else:
                                 # Go for the worst device, which is the W610
                                 adapter = ADAPTERS["usr_w610"]
                         elif modbus_type == SERIAL:
                             adapter = ADAPTERS["serial_other"]
-                        inverter[ADAPTER_ID] = adapter.id
+                        inverter[ADAPTER_ID] = adapter.adapter_id
 
                         # If we need manual input to find the correct adapter type, prompt for this
                         if modbus_type != TCP or inverter[INVERTER_CONN] != "LAN":

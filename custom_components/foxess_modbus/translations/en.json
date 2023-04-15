@@ -36,7 +36,7 @@
           "modbus_slave": "Inverter slave ID"
         },
         "data_description": {
-          "protocol_with_recommendation": "We recommend using {recommended_protocol} with this adapter",
+          "protocol_with_recommendation": "We recommend using {recommended_protocol} with this adapter, see the link above",
           "modbus_slave": "This can be set from Settings -> Communication in the inverter menu"
         }
       },
@@ -100,8 +100,8 @@
           "max_read": "Max read"
         },
         "data_description": {
-          "poll_rate": "The default for your adapter type is {default_poll_rate}. Leave empty to restore default",
-          "max_read": "The default for your adapter type is {default_max_read}. Leave empty to restore default"
+          "poll_rate": "The default for your adapter type is {default_poll_rate}. Leave empty to use the default",
+          "max_read": "The default for your adapter type is {default_max_read}. Leave empty to use the default"
         }
       }
     }
@@ -109,15 +109,19 @@
   "selector": {
     "inverter_adapter_types": {
       "options": {
-        "lan": "Direct LAN Connection",
+        "direct": "Direct LAN Connection",
         "serial": "USB to Modbus Adapter",
         "network": "Ethernet to Modbus Adapter"
       }
     },
     "inverter_adapter_models": {
       "options": {
+        "dsd_tech_sh_u10": "DSD TECH SH-U10",
+        "runcci_yun_usb_to_rs485_converter": "RUNCCI-YUN USB to RS485 Converter",
+        "serial_other": "Other",
+        "usr_tcp232_410s": "USR-TCP-410s",
         "usr_w610": "USR-W610",
-        "waveshare": "Waveshare Modbus RTU Relay",
+        "waveshare_rs485_to_eth_b": "Waveshare Modbus RTU Relay",
         "network_other": "Other"
       }
     }

@@ -1,8 +1,9 @@
 """Contains information on the various adapters to connect to an inverter"""
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
-from .const import TCP
+from .const import MAX_READ, POLL_RATE, TCP
 from .const import UDP
 from .inverter_connection_types import CONNECTION_TYPES
 from .inverter_connection_types import InverterConnectionType
@@ -12,16 +13,20 @@ class InverterAdapterType(str, Enum):
     """Describes the different means of connecting to an inverter"""
 
     # These values are used as translation keys in the config flow
-    LAN = "lan"
+    DIRECT = "direct"
     SERIAL = "serial"
     NETWORK = "network"
+
+
+_DEFAULT_POLL_RATE = 10
+_DEFAULT_MAX_READ = 50
 
 
 @dataclass
 class InverterAdapter:
     """Describes an adapter used to connect to an inverter"""
 
-    id: str  # Internal ID, also used as the translation key in the config flow
+    adapter_id: str  # Internal ID, also used as the translation key in the config flow
     type: InverterAdapterType
     connection_type: InverterConnectionType
     setup_link: str
@@ -32,61 +37,118 @@ class InverterAdapter:
     ] | None = None  # If type is NETWORK/DIRECT, whether we support TCP and/or UDP
     recommended_protocol: str | None = None
 
-
-# The order of elements in this array controls the order they appear in the config flow UI
-# Important: these ids are stored in the config entry, and used to fetch the adapter's settings at start-up
-# We therefore cannot remove or rename any of these!
-ADAPTERS = {
-    x.id: x
-    for x in [
-        InverterAdapter(
-            "lan",
-            InverterAdapterType.LAN,
-            CONNECTION_TYPES["LAN"],
-            setup_link="https://github.com/nathanmarlor/foxess_modbus/wiki",
+    @staticmethod
+    def direct(
+        adapter_id: str,
+        setup_link: str,
+        poll_rate: int = _DEFAULT_POLL_RATE,
+        max_read: int = _DEFAULT_MAX_READ,
+    ) -> "InverterAdapter":
+        return InverterAdapter(
+            adapter_id=adapter_id,
+            type=InverterAdapterType.DIRECT,
+            connection_type=CONNECTION_TYPES["LAN"],
+            setup_link=setup_link,
             network_protocols=[TCP],
-            # TODO
-            poll_rate=10,
-            max_read=8,
+            poll_rate=poll_rate,
+            max_read=max_read,
+        )
+
+    @staticmethod
+    def serial(
+        adapter_id: str,
+        setup_link: str,
+        poll_rate: int = _DEFAULT_POLL_RATE,
+        max_read: int = _DEFAULT_MAX_READ,
+    ) -> "InverterAdapter":
+        return InverterAdapter(
+            adapter_id=adapter_id,
+            type=InverterAdapterType.SERIAL,
+            connection_type=CONNECTION_TYPES["AUX"],
+            setup_link=setup_link,
+            poll_rate=poll_rate,
+            max_read=max_read,
+        )
+
+    @staticmethod
+    def network(
+        adapter_id: str,
+        setup_link: str,
+        network_protocols: list[str],
+        recommended_protocol: str | None = None,
+        poll_rate: int = _DEFAULT_POLL_RATE,
+        max_read: int = _DEFAULT_MAX_READ,
+    ) -> "InverterAdapter":
+        return InverterAdapter(
+            adapter_id=adapter_id,
+            type=InverterAdapterType.NETWORK,
+            connection_type=CONNECTION_TYPES["AUX"],
+            setup_link=setup_link,
+            network_protocols=network_protocols,
+            recommended_protocol=recommended_protocol,
+            poll_rate=poll_rate,
+            max_read=max_read,
+        )
+
+    def inverter_config(self) -> dict[str, Any]:
+        """
+        Generate a dict which is merged into the user's inverter config.
+        User preferences are then merged in on top of this"""
+        return {
+            POLL_RATE: self.poll_rate,
+            MAX_READ: self.max_read,
+        }
+
+
+# IMPORTANT!! READ!
+# * These keys are stored in user config. Do not rename or remove any!
+#   (If you do, you'll need to write a migration to handle your change).
+# * These keys map to strings, see the selects in languages/en.json
+# * The order of elements in this array controls the order they appear in the config flow UI.
+ADAPTERS = {
+    x.adapter_id: x
+    for x in [
+        # Direct LAN Connection
+        InverterAdapter.direct(
+            "direct",
+            "https://github.com/nathanmarlor/foxess_modbus/wiki/Direct-Ethernet-Connection-to-Inverter",
         ),
-        InverterAdapter(
+        # Serial Adapters
+        InverterAdapter.serial(
+            "dsd_tech_sh_u10",
+            "https://github.com/nathanmarlor/foxess_modbus/wiki/DSD-TECH-SH-U10",
+        ),
+        InverterAdapter.serial(
+            "runcci_yun_usb_to_rs485_converter",
+            "https://github.com/nathanmarlor/foxess_modbus/wiki/RUNCCI-YUN-USB-to-RS485-Converter",
+        ),
+        InverterAdapter.serial(
             "serial_other",
-            InverterAdapterType.SERIAL,
-            CONNECTION_TYPES["AUX"],
-            setup_link="https://github.com/nathanmarlor/foxess_modbus/wiki",
-            # TODO
-            poll_rate=10,
-            max_read=8,
+            "https://github.com/nathanmarlor/foxess_modbus/wiki/Other-Serial-Adapter",
         ),
-        InverterAdapter(
+        # Network adapters
+        InverterAdapter.network(
+            "usr_tcp232_410s",
+            "https://github.com/nathanmarlor/foxess_modbus/wiki/USR-TCP232-410s",
+            network_protocols=[TCP, UDP],
+        ),
+        InverterAdapter.network(
             "usr_w610",
-            InverterAdapterType.NETWORK,
-            CONNECTION_TYPES["AUX"],
-            setup_link="https://github.com/nathanmarlor/foxess_modbus/wiki",
+            "https://github.com/nathanmarlor/foxess_modbus/wiki/USR-W610",
             network_protocols=[TCP, UDP],
             recommended_protocol=UDP,
             poll_rate=10,
             max_read=8,
         ),
-        InverterAdapter(
-            "waveshare",
-            InverterAdapterType.NETWORK,
-            CONNECTION_TYPES["AUX"],
-            setup_link="https://github.com/nathanmarlor/foxess_modbus/wiki/Waveshare-RS485-to-ETH-(B)-Setup-Guide",
-            network_protocols=[TCP],
-            # TODO
-            poll_rate=10,
-            max_read=50,
-        ),
-        InverterAdapter(
-            "network_other",
-            InverterAdapterType.NETWORK,
-            CONNECTION_TYPES["AUX"],
-            setup_link="https://github.com/nathanmarlor/foxess_modbus/wiki",
+        InverterAdapter.network(
+            "waveshare_rs485_to_eth_b",
+            "https://github.com/nathanmarlor/foxess_modbus/wiki/Waveshare-RS485-to-ETH-%28B%29",
             network_protocols=[TCP, UDP],
-            # TODO
-            poll_rate=10,
-            max_read=8,
+        ),
+        InverterAdapter.network(
+            "network_other",
+            "https://github.com/nathanmarlor/foxess_modbus/wiki/Other-Ethernet-Adapter",
+            network_protocols=[TCP, UDP],
         ),
     ]
 }

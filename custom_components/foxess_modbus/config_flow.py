@@ -125,7 +125,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         self._all_inverters: list[InverterData] = []
 
         self._adapter_type_to_method = {
-            InverterAdapterType.LAN: self.async_step_tcp_adapter,
+            InverterAdapterType.DIRECT: self.async_step_tcp_adapter,
             InverterAdapterType.SERIAL: self.async_step_serial_adapter,
             InverterAdapterType.NETWORK: self.async_step_tcp_adapter,
         }
@@ -133,7 +133,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         self._config_entry_due_to_migration: config_entries.ConfigEntry | None = None
         self._remaining_inverters_due_to_migration: list[str] | None = None
 
-    async def async_step_user(self, user_input: dict[str, Any] = None):
+    async def async_step_user(self, _user_input: dict[str, Any] = None):
         """Handle a flow initialized by the user."""
 
         return await self.async_step_select_adapter_type()
@@ -246,7 +246,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         async def complete_callback(adapter: InverterAdapter):
             inverter_id = self._remaining_inverters_due_to_migration.pop(0)
             inverter = self._config_entry_due_to_migration.data[INVERTERS][inverter_id]
-            inverter[ADAPTER_ID] = adapter.id
+            inverter[ADAPTER_ID] = adapter.adapter_id
             del inverter[INVETER_ADAPTER_NEEDS_MANUAL_INPUT]
 
             if len(self._remaining_inverters_due_to_migration) > 0:
@@ -284,7 +284,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                 vol.Required("adapter_model"): selector(
                     {
                         "select": {
-                            "options": [x.id for x in adapters],
+                            "options": [x.adapter_id for x in adapters],
                             "translation_key": "inverter_adapter_models",
                         }
                     }
@@ -465,7 +465,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                 FRIENDLY_NAME: inverter.friendly_name,
                 MODBUS_TYPE: inverter.inverter_protocol,
                 HOST: inverter.host,
-                ADAPTER_ID: inverter.adapter.id,
+                ADAPTER_ID: inverter.adapter.adapter_id,
             }
             entry[INVERTERS][str(uuid.uuid4())] = inverter
         entry[CONFIG_SAVE_TIME] = datetime.now()
