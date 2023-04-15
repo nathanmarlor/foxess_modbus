@@ -228,7 +228,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 params.update({"host": host.split(":")[0], "port": host.split(":")[1]})
             else:
                 params.update({"port": host, "baudrate": 9600})
-            client = ModbusClient(self.hass, params, False)
+            client = ModbusClient(self.hass, params)
             return (True, await ModbusController.autodetect(client, slave))
         except UnsupportedInverterException as ex:
             _LOGGER.warning(f"{ex}")

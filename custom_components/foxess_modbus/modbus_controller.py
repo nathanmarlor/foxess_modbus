@@ -114,7 +114,6 @@ class ModbusController(EntityController, UnloadController):
         """
         for conn_type_name, conn_type in CONNECTION_TYPES.items():
             try:
-                await client.connect()
                 result = await client.read_registers(
                     conn_type.serial_start_address,
                     10,
