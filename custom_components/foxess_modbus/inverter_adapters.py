@@ -19,7 +19,7 @@ class InverterAdapterType(str, Enum):
 
 
 _DEFAULT_POLL_RATE = 10
-_DEFAULT_MAX_READ = 50
+_DEFAULT_MAX_READ = 100  # Perhaps a bit optimistic?
 
 
 @dataclass
@@ -137,7 +137,6 @@ ADAPTERS = {
             "https://github.com/nathanmarlor/foxess_modbus/wiki/USR-W610",
             network_protocols=[TCP, UDP],
             recommended_protocol=UDP,
-            poll_rate=10,
             max_read=8,
         ),
         InverterAdapter.network(
