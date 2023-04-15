@@ -28,10 +28,12 @@ class InverterModelConnectionTypeProfile:
         self,
         connection_type: InverterConnectionType,
         entity_descriptions: list[EntityFactory],
+        invalid_register_ranges: list[tuple[int, int]],
         charge_periods: list[ModbusChargePeriodConfig],
     ) -> None:
         self.connection_type = connection_type
         self.entity_descriptions = entity_descriptions
+        self.invalid_register_ranges = invalid_register_ranges
         self.charge_periods = charge_periods
 
         for charge_period in charge_periods:
@@ -46,6 +48,8 @@ class InverterModelConnectionTypeProfile:
                 ),
             )
         )
+
+        assert not any(self._overlaps_invalid_range(x, x) for x in self.all_addresses)
 
     def create_read_ranges(self, max_read: int) -> Iterable[tuple[int, int]]:
         """
@@ -73,7 +77,14 @@ class InverterModelConnectionTypeProfile:
         for address in self.all_addresses:
             if start_address is None:
                 start_address, read_size = address, 1
-            elif address <= start_address + max_read - 1:
+            # If we're just increasing the previous read size by 1, then don't test whether we're extending
+            # the read over an invalid range (as we assume that registers we're reading to read won't be
+            # inside invalid ranges, tested in __init__). This also assumes that read_size != max_read here.
+            elif address == start_address + 1 or (
+                address <= start_address + max_read - 1
+                and not self._overlaps_invalid_range(start_address, address - 1)
+            ):
+                # There's a previous read which we can extend
                 read_size = address - start_address + 1
             else:
                 # There's a previous read, and we can't extend it to cover this address
@@ -86,6 +97,12 @@ class InverterModelConnectionTypeProfile:
 
         if start_address is not None:
             yield (start_address, read_size)
+
+    def _overlaps_invalid_range(self, start_address, end_address):
+        return any(
+            r[0] <= end_address and start_address <= r[1]
+            for r in self.invalid_register_ranges
+        )
 
     def create_entities(
         self,
@@ -122,12 +139,14 @@ INVERTER_PROFILES = {
                     connection_type=CONNECTION_TYPES["AUX"],
                     entity_descriptions=xx1_aux_entity_descriptions.H1
                     + xx1_aux_entity_descriptions.H1_AC1,
+                    invalid_register_ranges=xx1_aux_entity_descriptions.INVALID_RANGES,
                     charge_periods=xx1_aux_charge_periods.H1_AC1,
                 ),
                 InverterModelConnectionTypeProfile(
                     connection_type=CONNECTION_TYPES["LAN"],
                     entity_descriptions=xx1_lan_entity_descriptions.H1
                     + xx1_lan_entity_descriptions.H1_AC1,
+                    invalid_register_ranges=[],
                     charge_periods=[],
                 ),
             ],
@@ -139,11 +158,13 @@ INVERTER_PROFILES = {
                     connection_type=CONNECTION_TYPES["AUX"],
                     entity_descriptions=xx1_aux_entity_descriptions.AC1
                     + xx1_aux_entity_descriptions.H1_AC1,
+                    invalid_register_ranges=xx1_aux_entity_descriptions.INVALID_RANGES,
                     charge_periods=xx1_aux_charge_periods.H1_AC1,
                 ),
                 InverterModelConnectionTypeProfile(
                     connection_type=CONNECTION_TYPES["LAN"],
                     entity_descriptions=xx1_lan_entity_descriptions.H1_AC1,
+                    invalid_register_ranges=[],
                     charge_periods=[],
                 ),
             ],
@@ -155,12 +176,14 @@ INVERTER_PROFILES = {
                     connection_type=CONNECTION_TYPES["AUX"],
                     entity_descriptions=xx1_aux_entity_descriptions.H1
                     + xx1_aux_entity_descriptions.H1_AC1,
+                    invalid_register_ranges=xx1_aux_entity_descriptions.INVALID_RANGES,
                     charge_periods=xx1_aux_charge_periods.H1_AC1,
                 ),
                 InverterModelConnectionTypeProfile(
                     connection_type=CONNECTION_TYPES["LAN"],
                     entity_descriptions=xx1_lan_entity_descriptions.H1
                     + xx1_lan_entity_descriptions.H1_AC1,
+                    invalid_register_ranges=[],
                     charge_periods=[],
                 ),
             ],
