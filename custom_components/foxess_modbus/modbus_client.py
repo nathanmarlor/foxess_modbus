@@ -14,6 +14,20 @@ from .const import TCP
 _LOGGER = logging.getLogger(__name__)
 
 
+class CustomModbusTcpClient(ModbusTcpClient):
+    def __init__(self, **kwargs: any) -> None:
+        super().__init__(**kwargs)
+
+    def connect(self) -> bool:
+        was_connected = self.socket is not None
+        is_connected = super().connect()
+        # pymodbus doesn't disable Nagle's algorithm. This slows down reads quite substantially as the
+        # TCP stack waits to see if we're going to send anything else. Disable it ourselves.
+        if not was_connected and is_connected:
+            self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
+        return is_connected
+
+
 class ModbusClient:
     """Modbus"""
 
@@ -26,7 +40,7 @@ class ModbusClient:
         self._config_type = config[MODBUS_TYPE]
         self._class = {
             SERIAL: ModbusSerialClient,
-            TCP: ModbusTcpClient,
+            TCP: CustomModbusTcpClient,
         }
 
         self._client = self._class[self._config_type](**config)
