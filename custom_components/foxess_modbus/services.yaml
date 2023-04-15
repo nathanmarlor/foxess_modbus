@@ -67,7 +67,9 @@ update_charge_period:
         boolean:
     enable_charge_from_grid:
       name: Enable charge from grid
-      description: Whether to charge the battery from the grid, or just prevent discharge.
+      description: >
+        If set, the battery will charge from PV and the grid during this force charge window, until it reaches Max SoC.
+        If unset, the battery will charge from PV but not the grid during this force charge window, and won't discharge.
       required: true
       example: false
       selector:
