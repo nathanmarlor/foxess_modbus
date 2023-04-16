@@ -19,9 +19,9 @@ from .const import CONFIG_SAVE_TIME
 from .const import DOMAIN
 from .const import FRIENDLY_NAME
 from .const import HOST
+from .const import INVERTER_ADAPTER_NEEDS_MANUAL_INPUT
 from .const import INVERTER_CONN
 from .const import INVERTERS
-from .const import INVETER_ADAPTER_NEEDS_MANUAL_INPUT
 from .const import MAX_READ
 from .const import MODBUS_SLAVE
 from .const import MODBUS_TYPE
@@ -110,7 +110,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     # Do this last, so sensors etc can continue to function in the meantime
     for inverter in entry.data[INVERTERS].values():
-        if INVETER_ADAPTER_NEEDS_MANUAL_INPUT in inverter:
+        if INVERTER_ADAPTER_NEEDS_MANUAL_INPUT in inverter:
             raise ConfigEntryAuthFailed(
                 "Configuration needs manual input. Please click 'RECONFIGURE'"
             )
@@ -158,7 +158,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
 
                         # If we need manual input to find the correct adapter type, prompt for this
                         if modbus_type != TCP or inverter[INVERTER_CONN] != "LAN":
-                            inverter[INVETER_ADAPTER_NEEDS_MANUAL_INPUT] = True
+                            inverter[INVERTER_ADAPTER_NEEDS_MANUAL_INPUT] = True
                         inverter_id = str(uuid.uuid4())
                         new_data[INVERTERS][inverter_id] = inverter
                         if inverter_options:

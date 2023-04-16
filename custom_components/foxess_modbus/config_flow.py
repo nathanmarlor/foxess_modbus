@@ -30,14 +30,13 @@ from .common.exceptions import UnsupportedInverterException
 from .const import ADAPTER_ID
 from .const import CONFIG_SAVE_TIME
 from .const import DOMAIN
-from .const import ENERGY_DASHBOARD
 from .const import FRIENDLY_NAME
 from .const import HOST
+from .const import INVERTER_ADAPTER_NEEDS_MANUAL_INPUT
 from .const import INVERTER_BASE
 from .const import INVERTER_CONN
 from .const import INVERTER_MODEL
 from .const import INVERTERS
-from .const import INVETER_ADAPTER_NEEDS_MANUAL_INPUT
 from .const import MAX_READ
 from .const import MODBUS_SLAVE
 from .const import MODBUS_TYPE
@@ -124,7 +123,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         self._inverter_data = InverterData()
         self._all_inverters: list[InverterData] = []
 
-        self._adapter_type_to_method = {
+        self._adapter_type_to_step = {
             InverterAdapterType.DIRECT: self.async_step_tcp_adapter,
             InverterAdapterType.SERIAL: self.async_step_serial_adapter,
             InverterAdapterType.NETWORK: self.async_step_tcp_adapter,
@@ -150,7 +149,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         self._remaining_inverters_due_to_migration = [
             k
             for k, x in self._config_entry_due_to_migration.data[INVERTERS].items()
-            if INVETER_ADAPTER_NEEDS_MANUAL_INPUT in x
+            if INVERTER_ADAPTER_NEEDS_MANUAL_INPUT in x
         ]
         assert len(self._remaining_inverters_due_to_migration) > 0
 
@@ -170,7 +169,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             assert len(adapters) > 0
             if len(adapters) == 1:
                 self._inverter_data.adapter = adapters[0]
-                return await self._adapter_type_to_method[adapter_type]()
+                return await self._adapter_type_to_step[adapter_type]()
 
             return await self.async_step_select_adapter_model()
 
@@ -198,9 +197,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
 
         async def complete_callback(adapter: InverterAdapter):
             self._inverter_data.adapter = adapter
-            return await self._adapter_type_to_method[
-                self._inverter_data.adapter_type
-            ]()
+            return await self._adapter_type_to_step[self._inverter_data.adapter_type]()
 
         return await self._select_adapter_model_helper(
             "select_adapter_model",
@@ -247,7 +244,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             inverter_id = self._remaining_inverters_due_to_migration.pop(0)
             inverter = self._config_entry_due_to_migration.data[INVERTERS][inverter_id]
             inverter[ADAPTER_ID] = adapter.adapter_id
-            del inverter[INVETER_ADAPTER_NEEDS_MANUAL_INPUT]
+            del inverter[INVERTER_ADAPTER_NEEDS_MANUAL_INPUT]
 
             if len(self._remaining_inverters_due_to_migration) > 0:
                 return await step(None)
@@ -274,6 +271,8 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         complete_callback: Callable[[InverterAdapter], Awaitable[FlowResult]],
         description_placeholders: Mapping[str, str | None] | None = None,
     ) -> FlowResult:
+        """Helper used in the steps which let the user select their adapter model"""
+
         async def body(user_input):
             return await complete_callback(ADAPTERS[user_input["adapter_model"]])
 
@@ -431,7 +430,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
     ) -> FlowResult:
         """Let the user choose whether to add another inverter"""
 
-        options = ["select_adapter", "energy"]
+        options = ["select_adapter_type", "energy"]
         return self.async_show_menu(
             step_id="add_another_inverter", menu_options=options
         )
@@ -440,13 +439,13 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         """Let the user choose whether to set up the energy dashboard"""
 
         async def body(user_input):
-            if user_input[ENERGY_DASHBOARD]:
+            if user_input["energy_dashboard"]:
                 await self._setup_energy_dashboard()
             return self.async_create_entry(title=_TITLE, data=self._create_entry_data())
 
         schema = vol.Schema(
             {
-                vol.Required(ENERGY_DASHBOARD, default=False): bool,
+                vol.Required("energy_dashboard", default=False): bool,
             }
         )
 
@@ -505,10 +504,10 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             self._inverter_data.modbus_slave = slave
             self._inverter_data.host = host
         except UnsupportedInverterException as ex:
-            _LOGGER.warning(f"{ex}")
+            _LOGGER.warning("%s", ex)
             raise ValidationFailedException({"base": "modbus_model_not_supported"})
         except ConnectionException as ex:
-            _LOGGER.warning(f"{ex}")
+            _LOGGER.warning("%s", ex)
             raise ValidationFailedException({"base": "modbus_error"})
 
     async def _setup_energy_dashboard(self):
@@ -621,7 +620,7 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
     async def async_step_inverter_options(
         self, user_input: dict[str, Any] = None
     ) -> FlowResult:
-        """Let the user set the inverter's settings"""
+        """Let the user set the selected inverter's settings"""
 
         async def body(user_input):
             inverter_options = {}
@@ -672,5 +671,7 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
 
 
 class ValidationFailedException(Exception):
+    """Throw to cause a validation error to be shown"""
+
     def __init__(self, errors: dict[str, str]):
         self.errors = errors

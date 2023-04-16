@@ -1,28 +1,22 @@
 {
   "config": {
     "step": {
-      "user": {
-        "description": "Please choose how your modbus adapter is connected",
-        "data": {
-          "modbus_type": "Modbus Type"
-        }
-      },
       "select_adapter_type": {
         "description": "How do you connect to your inverter?",
         "data": {
-          "adapter_type": null
+          "adapter_type": ""
         }
       },
       "select_adapter_model": {
         "description": "Choose your adapter model. This lets us use settings tailored to your adapter.",
         "data": {
-          "adapter_model": null
+          "adapter_model": ""
         }
       },
       "select_adapter_model_due_to_migration": {
         "description": "Choose the adapter model for the inverter \"{inverter}\". This lets us use settings tailored to your adapter.",
         "data": {
-          "adapter_model": null
+          "adapter_model": ""
         }
       },
       "tcp_adapter": {
@@ -51,7 +45,7 @@
         }
       },
       "friendly_name": {
-        "description": "If you have more than one inverter, give them each a name to tell them apart",
+        "description": "If you have more than one inverter, give them each a name to tell them apart.",
         "data": {
           "friendly_name": "Friendly Name"
         },
@@ -62,12 +56,12 @@
       "add_another_inverter": {
         "description": "Set-up complete. Do you want to add another inverter?",
         "menu_options": {
-          "energy": "I'm Done",
-          "select_adapter": "Add another Inverter"
+          "energy": "I'm done",
+          "select_adapter_type": "Add another inverter"
         }
       },
       "energy": {
-        "description": "Warning: this will overwrite any existing settings. \nWe recommend checking the configuration at (https://your-ha.com/config/energy)",
+        "description": "Warning: this will overwrite any existing settings.\nWe recommend checking the configuration at (https://your-ha.com/config/energy).",
         "data": {
           "energy_dashboard": "Automatically configure the Energy Dashboard"
         }
@@ -81,20 +75,19 @@
       "invalid_friendly_name": "Friendly name must contain only lower-case letters, numbers and underscores"
     },
     "abort": {
-      "single_instance_allowed": "Only a single instance is allowed.",
-      "reconfigure_successful": "Successful"
+      "reconfigure_successful": "Successful. We can now use settings specific to your adapter."
     }
   },
   "options": {
     "step": {
       "select_inverter": {
-        "description": "Select inverter to configure",
+        "description": "Select inverter to configure.",
         "data": {
-          "inverter": null
+          "inverter": ""
         }
       },
       "inverter_options": {
-        "description": "Warning: only change these if you know what you are doing. Enable debug logging and watch it to see whether your new settings cause any problems",
+        "description": "Warning: only change these if you know what you are doing. Enable debug logging and watch it to see whether your new settings cause any problems.",
         "data": {
           "poll_rate": "Poll rate",
           "max_read": "Max read"

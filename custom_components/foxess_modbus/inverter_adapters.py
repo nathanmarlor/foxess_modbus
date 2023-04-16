@@ -3,7 +3,9 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
-from .const import MAX_READ, POLL_RATE, TCP
+from .const import MAX_READ
+from .const import POLL_RATE
+from .const import TCP
 from .const import UDP
 from .inverter_connection_types import CONNECTION_TYPES
 from .inverter_connection_types import InverterConnectionType
