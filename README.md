@@ -33,7 +33,8 @@ Supported models:
 ## Installation
 
 <details>
-   <summary><b>Migrating from the StealChestnut version?</b></summary></p>
+   <summary><b>Migrating from the StealthChestnut version?</b></summary></p>
+
 NOTE: When transferring away from the StealthChestnut HA-FoxESS-Modbus version, before installing this integration please remove the modbus: include from the configuration.yaml, it will look similar to this (depending on the path you chose)
 
 `modbus: !include custom_components/foxmodbuslan/modbusUSB.yaml`
