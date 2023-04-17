@@ -130,6 +130,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         }
 
         self._config_entry_due_to_migration: config_entries.ConfigEntry | None = None
+        self._config_entry_data_after_migration: dict[str, Any] | None = None
         self._remaining_inverters_due_to_migration: list[str] | None = None
 
     async def async_step_user(self, _user_input: dict[str, Any] = None):
@@ -145,6 +146,9 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
 
         self._config_entry_due_to_migration = self.hass.config_entries.async_get_entry(
             self.context["entry_id"]
+        )
+        self._config_entry_data_after_migration = copy.deepcopy(
+            dict(self._config_entry_due_to_migration.data)
         )
         self._remaining_inverters_due_to_migration = [
             k
@@ -216,7 +220,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
 
         async def step(user_input):
             inverter_id = self._remaining_inverters_due_to_migration[0]
-            inverter = self._config_entry_due_to_migration.data[INVERTERS][inverter_id]
+            inverter = self._config_entry_data_after_migration[INVERTERS][inverter_id]
             protocol = inverter[MODBUS_TYPE]  # TCP, UDP, SERIAL
             if protocol in [TCP, UDP]:
                 assert (
@@ -242,7 +246,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
 
         async def complete_callback(adapter: InverterAdapter):
             inverter_id = self._remaining_inverters_due_to_migration.pop(0)
-            inverter = self._config_entry_due_to_migration.data[INVERTERS][inverter_id]
+            inverter = self._config_entry_data_after_migration[INVERTERS][inverter_id]
             inverter[ADAPTER_ID] = adapter.adapter_id
             del inverter[INVERTER_ADAPTER_NEEDS_MANUAL_INPUT]
 
@@ -251,7 +255,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
 
             self.hass.config_entries.async_update_entry(
                 self._config_entry_due_to_migration,
-                data=self._config_entry_due_to_migration.data,
+                data=self._config_entry_data_after_migration,
             )
             # https://github.com/home-assistant/core/blob/208a44e437e836fdc36292203fd4348f9fa7c331/homeassistant/components/esphome/config_flow.py#L245
             self.hass.async_create_task(
