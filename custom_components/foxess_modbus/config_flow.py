@@ -21,6 +21,7 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.selector import selector
 from pymodbus.exceptions import ConnectionException
+from slugify import slugify
 
 from .common.exceptions import UnsupportedInverterException
 from .const import ADD_ANOTHER
@@ -205,7 +206,7 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Parser inverter details"""
         return {
             MODBUS_SLAVE: user_input[MODBUS_SLAVE],
-            FRIENDLY_NAME: user_input[FRIENDLY_NAME],
+            FRIENDLY_NAME: slugify(user_input[FRIENDLY_NAME], separator="_"),
         }
 
     async def _autodetect_modbus(self, inv_type, host, slave):
