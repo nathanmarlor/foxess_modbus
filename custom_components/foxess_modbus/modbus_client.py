@@ -14,42 +14,36 @@ from .const import TCP
 _LOGGER = logging.getLogger(__name__)
 
 
+class CustomModbusTcpClient(ModbusTcpClient):
+    def __init__(self, **kwargs: any) -> None:
+        super().__init__(**kwargs)
+
+    def connect(self) -> bool:
+        was_connected = self.socket is not None
+        is_connected = super().connect()
+        # pymodbus doesn't disable Nagle's algorithm. This slows down reads quite substantially as the
+        # TCP stack waits to see if we're going to send anything else. Disable it ourselves.
+        if not was_connected and is_connected:
+            self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
+        return is_connected
+
+
 class ModbusClient:
     """Modbus"""
 
-    def __init__(self, hass, config: dict[str, Any], auto_connect: bool = True):
+    def __init__(self, hass, config: dict[str, Any]):
         """Init"""
         self._hass = hass
         self._config = config
-        self._auto_connect = auto_connect
         self._lock = asyncio.Lock()
         self._config_type = config[MODBUS_TYPE]
         self._class = {
             SERIAL: ModbusSerialClient,
-            TCP: ModbusTcpClient,
+            TCP: CustomModbusTcpClient,
         }
         self._poll_delay = 30 / 1000 if self._config_type == SERIAL else 0
 
         self._client = self._class[self._config_type](**config)
-        if auto_connect:
-            self._hass.async_create_task(self.connect())
-
-    async def connect(self):
-        """Connect to device"""
-
-        def connect_impl():
-            result = self._client.connect()
-            # pymodbus doesn't disable Nagle's algorithm. This slows down reads quite substantially as the
-            # TCP stack waits to see if we're going to send anything else. Disable it ourselves.
-            if isinstance(self._client, ModbusTcpClient) and self._client.socket:
-                self._client.socket.setsockopt(
-                    socket.IPPROTO_TCP, socket.TCP_NODELAY, True
-                )
-            return result
-
-        _LOGGER.debug(f"Connecting to modbus - ({self._config})")
-        if not await self._async_pymodbus_call(connect_impl):
-            _LOGGER.debug("Connect failed, pymodbus will retry")
 
     async def close(self):
         """Close connection"""
