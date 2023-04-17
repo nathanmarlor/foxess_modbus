@@ -138,27 +138,6 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
 
         return await self.async_step_select_adapter_type()
 
-    async def async_step_reauth(self, _user_input: dict[str, Any] = None) -> FlowResult:
-        """
-        We use re-authentication as a hack to get users migrating from version 1 who are using
-        a TCP or SERIAL adapter to select their inverter type
-        """
-
-        self._config_entry_due_to_migration = self.hass.config_entries.async_get_entry(
-            self.context["entry_id"]
-        )
-        self._config_entry_data_after_migration = copy.deepcopy(
-            dict(self._config_entry_due_to_migration.data)
-        )
-        self._remaining_inverters_due_to_migration = [
-            k
-            for k, x in self._config_entry_due_to_migration.data[INVERTERS].items()
-            if INVERTER_ADAPTER_NEEDS_MANUAL_INPUT in x
-        ]
-        assert len(self._remaining_inverters_due_to_migration) > 0
-
-        return await self.async_step_select_adapter_model_due_to_migration()
-
     async def async_step_select_adapter_type(
         self, user_input: dict[str, Any] = None
     ) -> FlowResult:
@@ -208,99 +187,6 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             user_input=user_input,
             adapter_type=self._inverter_data.adapter_type,
             complete_callback=complete_callback,
-        )
-
-    async def async_step_select_adapter_model_due_to_migration(
-        self, user_input: dict[str, Any] = None
-    ) -> FlowResult:
-        """
-        Called from async_step_reauth when we've done a migration, and need the user to select their adapter.
-        Loops through all inverters in _remaining_inverters_due_to_migration and prompts for the adapter for each.
-        """
-
-        async def step(user_input):
-            inverter_id = self._remaining_inverters_due_to_migration[0]
-            inverter = self._config_entry_data_after_migration[INVERTERS][inverter_id]
-            protocol = inverter[MODBUS_TYPE]  # TCP, UDP, SERIAL
-            if protocol in [TCP, UDP]:
-                assert (
-                    inverter[INVERTER_CONN] == "AUX"
-                )  # We don't expect to be called for LAN
-                adapter_type = InverterAdapterType.NETWORK
-            elif protocol == SERIAL:
-                adapter_type = InverterAdapterType.SERIAL
-            else:
-                assert False
-
-            description_placeholders = {
-                "inverter": self._create_label_for_inverter(inverter),
-            }
-
-            return await self._select_adapter_model_helper(
-                "select_adapter_model_due_to_migration",
-                user_input=user_input,
-                adapter_type=adapter_type,
-                complete_callback=complete_callback,
-                description_placeholders=description_placeholders,
-            )
-
-        async def complete_callback(adapter: InverterAdapter):
-            inverter_id = self._remaining_inverters_due_to_migration.pop(0)
-            inverter = self._config_entry_data_after_migration[INVERTERS][inverter_id]
-            inverter[ADAPTER_ID] = adapter.adapter_id
-            del inverter[INVERTER_ADAPTER_NEEDS_MANUAL_INPUT]
-
-            if len(self._remaining_inverters_due_to_migration) > 0:
-                return await step(None)
-
-            self.hass.config_entries.async_update_entry(
-                self._config_entry_due_to_migration,
-                data=self._config_entry_data_after_migration,
-            )
-            # https://github.com/home-assistant/core/blob/208a44e437e836fdc36292203fd4348f9fa7c331/homeassistant/components/esphome/config_flow.py#L245
-            self.hass.async_create_task(
-                self.hass.config_entries.async_reload(
-                    self._config_entry_due_to_migration.entry_id
-                )
-            )
-            return self.async_abort(reason="reconfigure_successful")
-
-        return await step(user_input)
-
-    async def _select_adapter_model_helper(
-        self,
-        step_id: str,
-        user_input: dict[str, Any] | None,
-        adapter_type: InverterAdapterType,
-        complete_callback: Callable[[InverterAdapter], Awaitable[FlowResult]],
-        description_placeholders: Mapping[str, str | None] | None = None,
-    ) -> FlowResult:
-        """Helper used in the steps which let the user select their adapter model"""
-
-        async def body(user_input):
-            return await complete_callback(ADAPTERS[user_input["adapter_model"]])
-
-        adapters = [x for x in ADAPTERS.values() if x.type == adapter_type]
-
-        schema = vol.Schema(
-            {
-                vol.Required("adapter_model"): selector(
-                    {
-                        "select": {
-                            "options": [x.adapter_id for x in adapters],
-                            "translation_key": "inverter_adapter_models",
-                        }
-                    }
-                )
-            }
-        )
-
-        return await self._with_default_form(
-            body,
-            user_input,
-            step_id,
-            schema,
-            description_placeholders=description_placeholders,
         )
 
     async def async_step_tcp_adapter(
@@ -473,6 +359,122 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             entry[INVERTERS][str(uuid.uuid4())] = inverter
         entry[CONFIG_SAVE_TIME] = datetime.now()
         return entry
+
+    # Migration support -- handle manual steps needed to complete a migration
+
+    async def async_step_reauth(self, _user_input: dict[str, Any] = None) -> FlowResult:
+        """
+        We use re-authentication as a hack to get users migrating from version 1 who are using
+        a TCP or SERIAL adapter to select their inverter type
+        """
+
+        self._config_entry_due_to_migration = self.hass.config_entries.async_get_entry(
+            self.context["entry_id"]
+        )
+        self._config_entry_data_after_migration = copy.deepcopy(
+            dict(self._config_entry_due_to_migration.data)
+        )
+        self._remaining_inverters_due_to_migration = [
+            k
+            for k, x in self._config_entry_due_to_migration.data[INVERTERS].items()
+            if INVERTER_ADAPTER_NEEDS_MANUAL_INPUT in x
+        ]
+        assert len(self._remaining_inverters_due_to_migration) > 0
+
+        return await self.async_step_select_adapter_model_due_to_migration()
+
+    async def async_step_select_adapter_model_due_to_migration(
+        self, user_input: dict[str, Any] = None
+    ) -> FlowResult:
+        """
+        Called from async_step_reauth when we've done a migration, and need the user to select their adapter.
+        Loops through all inverters in _remaining_inverters_due_to_migration and prompts for the adapter for each.
+        """
+
+        async def step(user_input):
+            inverter_id = self._remaining_inverters_due_to_migration[0]
+            inverter = self._config_entry_data_after_migration[INVERTERS][inverter_id]
+            protocol = inverter[MODBUS_TYPE]  # TCP, UDP, SERIAL
+            if protocol in [TCP, UDP]:
+                assert (
+                    inverter[INVERTER_CONN] == "AUX"
+                )  # We don't expect to be called for LAN
+                adapter_type = InverterAdapterType.NETWORK
+            elif protocol == SERIAL:
+                adapter_type = InverterAdapterType.SERIAL
+            else:
+                assert False
+
+            description_placeholders = {
+                "inverter": self._create_label_for_inverter(inverter),
+            }
+
+            return await self._select_adapter_model_helper(
+                "select_adapter_model_due_to_migration",
+                user_input=user_input,
+                adapter_type=adapter_type,
+                complete_callback=complete_callback,
+                description_placeholders=description_placeholders,
+            )
+
+        async def complete_callback(adapter: InverterAdapter):
+            inverter_id = self._remaining_inverters_due_to_migration.pop(0)
+            inverter = self._config_entry_data_after_migration[INVERTERS][inverter_id]
+            inverter[ADAPTER_ID] = adapter.adapter_id
+            del inverter[INVERTER_ADAPTER_NEEDS_MANUAL_INPUT]
+
+            if len(self._remaining_inverters_due_to_migration) > 0:
+                return await step(None)
+
+            self.hass.config_entries.async_update_entry(
+                self._config_entry_due_to_migration,
+                data=self._config_entry_data_after_migration,
+            )
+            # https://github.com/home-assistant/core/blob/208a44e437e836fdc36292203fd4348f9fa7c331/homeassistant/components/esphome/config_flow.py#L245
+            self.hass.async_create_task(
+                self.hass.config_entries.async_reload(
+                    self._config_entry_due_to_migration.entry_id
+                )
+            )
+            return self.async_abort(reason="reconfigure_successful")
+
+        return await step(user_input)
+
+    async def _select_adapter_model_helper(
+        self,
+        step_id: str,
+        user_input: dict[str, Any] | None,
+        adapter_type: InverterAdapterType,
+        complete_callback: Callable[[InverterAdapter], Awaitable[FlowResult]],
+        description_placeholders: Mapping[str, str | None] | None = None,
+    ) -> FlowResult:
+        """Helper used in the steps which let the user select their adapter model"""
+
+        async def body(user_input):
+            return await complete_callback(ADAPTERS[user_input["adapter_model"]])
+
+        adapters = [x for x in ADAPTERS.values() if x.type == adapter_type]
+
+        schema = vol.Schema(
+            {
+                vol.Required("adapter_model"): selector(
+                    {
+                        "select": {
+                            "options": [x.adapter_id for x in adapters],
+                            "translation_key": "inverter_adapter_models",
+                        }
+                    }
+                )
+            }
+        )
+
+        return await self._with_default_form(
+            body,
+            user_input,
+            step_id,
+            schema,
+            description_placeholders=description_placeholders,
+        )
 
     async def _autodetect_modbus_and_save_to_inverter_data(
         self, protocol: str, conn_type: InverterConnectionType, host: str, slave: int

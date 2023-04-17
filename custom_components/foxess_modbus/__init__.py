@@ -49,9 +49,19 @@ async def async_setup(hass: HomeAssistant, config: Config):
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up this integration using UI."""
 
-    if hass.data.get(DOMAIN) is None:
-        hass.data.setdefault(DOMAIN, {})
+    if DOMAIN not in hass.data:
         _LOGGER.info(STARTUP_MESSAGE)
+
+    # Create this before throwing ConfigEntryAuthFailed, so the sensors, etc, platforms don't fail
+    hass.data.setdefault(DOMAIN, {}).setdefault(entry.entry_id, {})[INVERTERS] = []
+
+    # This does need to be done first. Otherwise when the user does the migration HA will call this function again, but won't unload anything
+    # which was previously loaded
+    for inverter in entry.data[INVERTERS].values():
+        if INVERTER_ADAPTER_NEEDS_MANUAL_INPUT in inverter:
+            raise ConfigEntryAuthFailed(
+                "Configuration needs manual input. Please click 'RECONFIGURE'"
+            )
 
     for platform in PLATFORMS:
         if entry.options.get(platform, True):
@@ -100,20 +110,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     write_registers_service.register(hass, inverter_controllers)
     update_charge_period_service.register(hass, inverter_controllers)
 
-    hass.data[DOMAIN][entry.entry_id] = {
-        INVERTERS: inverter_controllers,
-    }
+    hass.data[DOMAIN][entry.entry_id][INVERTERS] = inverter_controllers
 
     hass.data[DOMAIN][entry.entry_id]["unload"] = entry.add_update_listener(
         async_reload_entry
     )
-
-    # Do this last, so sensors etc can continue to function in the meantime
-    for inverter in entry.data[INVERTERS].values():
-        if INVERTER_ADAPTER_NEEDS_MANUAL_INPUT in inverter:
-            raise ConfigEntryAuthFailed(
-                "Configuration needs manual input. Please click 'RECONFIGURE'"
-            )
 
     return True
 
