@@ -32,6 +32,34 @@ Supported models:
 
 ## Installation
 
+<details>
+   <summary><b>Migrating from the StealChestnut version?</b></summary></p>
+NOTE: When transferring away from the StealthChestnut HA-FoxESS-Modbus version, before installing this integration please remove the modbus: include from the configuration.yaml, it will look similar to this (depending on the path you chose)
+
+`modbus: !include custom_components/foxmodbuslan/modbusUSB.yaml`
+
+AND if you have added the custom sensors (example listed below), remove them from your configuration.yaml as they are now provided from within the integration.
+
+```
+  - name: "Battery Discharge"
+    device_class: "power"
+    unit_of_measurement: "kW"
+    state: >
+       {% if (states('sensor.battery_discharge_power') | float(default=0) ) > 0 %}
+       {{ states('sensor.battery_discharge_power') | float(default=0) * 1 }}
+       {% else %}
+       0
+       {% endif %}
+```
+
+Save the configuration.yaml, Check Configuration is OK and Restart Home Assistant
+
+Now install the FoxESS modbus integration via HACS
+
+</details>
+
+---
+
 Recommend installation through [HACS][hacs]
 
 1. Navigate to HACS integrations
@@ -84,11 +112,19 @@ Recommend installation through [HACS][hacs]
 
 A service to write any modbus address is available, similar to the native Home Assistant service.
 
-- **Friendly Name**: Friendly name of inverter, or blank if not set.
-- **Start Address**: Start address to write to
-- **Values**: One or more values to write
+![Service](images/svc-write.png)
 
-![Service](images/service.png)
+<b>Update Charge Periods</b></p>
+
+Updates one of the two charge periods (if supported by your inverter).
+
+![Service](images/svc-charge-1.png)
+
+<b>Update All Charge Periods</b></p>
+
+Sets all charge periods in one service call. The service "Update Charge Period" is easier for end-users to use.
+
+![Service](images/svc-charge-2.png)
 
 ---
 
