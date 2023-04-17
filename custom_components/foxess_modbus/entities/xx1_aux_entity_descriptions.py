@@ -620,3 +620,6 @@ H1_AC1: list[EntityFactory] = [
         validate=[Range(0, 100)],
     ),
 ]
+
+# The whole of this range produces 'invalid frame error' if we try and read it
+INVALID_RANGES = [(11096, 39999)]
