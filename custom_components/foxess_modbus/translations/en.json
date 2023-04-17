@@ -36,7 +36,8 @@
     "error": {
       "modbus_duplicate": "Please enter a unique host/friendly name",
       "modbus_error": "Error - please check connection details",
-      "modbus_model_not_supported": "Error - model is not supported"
+      "modbus_model_not_supported": "Error - model is not supported",
+      "invalid_friendly_name": "Friendly name must contain only lower-case letters, numbers and underscores"
     },
     "abort": {
       "single_instance_allowed": "Only a single instance is allowed."
