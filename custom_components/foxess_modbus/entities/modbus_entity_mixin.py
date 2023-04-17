@@ -1,5 +1,8 @@
 import logging
 
+from custom_components.foxess_modbus.common.entity_controller import (
+    EntityUpdateListener,
+)
 from homeassistant.const import ATTR_IDENTIFIERS
 from homeassistant.const import ATTR_MANUFACTURER
 from homeassistant.const import ATTR_MODEL
@@ -14,14 +17,14 @@ from .base_validator import BaseValidator
 _LOGGER = logging.getLogger(__name__)
 
 
-class ModbusEntityMixin:
+class ModbusEntityMixin(EntityUpdateListener):
     """
     Mixin for subclasses of Entity
 
     This provides properties which are common to all FoxESS entities.
     It assumes that the following propties are defined on the class:
 
-        controller: CallbackController
+        _controller: CallbackController
         entity_description: EntityDescription, EntityFactory
         _inv_details
     """
@@ -59,15 +62,27 @@ class ModbusEntityMixin:
         else:
             return self.entity_description.name
 
+    @property
+    def available(self) -> bool:
+        """Return True if entity is available."""
+        return self._controller.is_connected
+
     async def async_added_to_hass(self) -> None:
         """Add update callback after being added to hass."""
         await super().async_added_to_hass()
         self._controller.add_update_listener(self)
 
+    async def async_will_remove_from_hass(self) -> None:
+        """Called when the entity is about to be removed from hass"""
+        self._controller.remove_update_listener(self)
+        await super().async_will_remove_from_hass()
+
     def update_callback(self, changed_addresses: set[int]) -> None:
-        """Schedule a state update."""
         if any(x in changed_addresses for x in self.entity_description.addresses):
             self._address_updated()
+
+    def is_connected_changed_callback(self) -> None:
+        self.schedule_update_ha_state(True)
 
     def _address_updated(self) -> None:
         """Called when the controller reads an updated to any of the addresses in entity_description.addresses"""
@@ -111,3 +126,10 @@ class ModbusEntityMixin:
                 )
                 valid = False
         return valid
+
+    # Implement reference equality
+    def __eq__(self, other):
+        return self is other
+
+    def __hash__(self):
+        return id(self)
