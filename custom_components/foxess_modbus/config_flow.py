@@ -1,6 +1,5 @@
 """Adds config flow for foxess_modbus."""
 import logging
-import re
 from collections import defaultdict
 from datetime import datetime
 from typing import Any
@@ -204,12 +203,9 @@ class ModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
     def _parse_inverter(self, user_input):
         """Parser inverter details"""
-        friendly_name = user_input[FRIENDLY_NAME]
-        if friendly_name != "" and not re.fullmatch(r"\w+", friendly_name):
-            raise ValidationFailedException({FRIENDLY_NAME: "invalid_friendly_name"})
         return {
             MODBUS_SLAVE: user_input[MODBUS_SLAVE],
-            FRIENDLY_NAME: friendly_name,
+            FRIENDLY_NAME: user_input[FRIENDLY_NAME],
         }
 
     async def _autodetect_modbus(self, inv_type, host, slave):

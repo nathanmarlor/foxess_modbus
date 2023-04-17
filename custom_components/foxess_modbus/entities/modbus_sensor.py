@@ -64,7 +64,7 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
         self.entity_description = entity_description
         self._entry = entry
         self._inv_details = inv_details
-        self.entity_id = "sensor." + self._get_unique_id()
+        self._attr_unique_id = "sensor." + self._get_unique_id()
 
     @property
     def native_value(self):
