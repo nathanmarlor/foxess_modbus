@@ -27,7 +27,7 @@ from homeassistant.helpers.selector import selector
 from pymodbus.exceptions import ConnectionException
 
 from .common.exceptions import UnsupportedInverterException
-from .const import ADAPTER_ID
+from .const import ADAPTER_ID, AUX
 from .const import CONFIG_SAVE_TIME
 from .const import DOMAIN
 from .const import FRIENDLY_NAME
@@ -46,7 +46,6 @@ from .const import UDP
 from .inverter_adapters import ADAPTERS
 from .inverter_adapters import InverterAdapter
 from .inverter_adapters import InverterAdapterType
-from .inverter_connection_types import InverterConnectionType
 from .modbus_controller import ModbusController
 
 _TITLE = "FoxESS - Modbus"
@@ -222,7 +221,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             host_and_port = f"{host}:{port}"
             slave = user_input.get("modbus_slave", _DEFAULT_SLAVE)
             await self._autodetect_modbus_and_save_to_inverter_data(
-                protocol, adapter.connection_type, host_and_port, slave
+                protocol, host_and_port, slave
             )
             return await self.async_step_friendly_name()
 
@@ -244,7 +243,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                 "recommended_protocol"
             ] = adapter.recommended_protocol
 
-        if adapter.connection_type.key == "AUX":
+        if adapter.connection_type == AUX:
             schema_parts[vol.Required("adapter_host")] = cv.string
             schema_parts[
                 vol.Required(
@@ -282,7 +281,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             slave = user_input.get("modbus_slave", _DEFAULT_SLAVE)
             # TODO: Check for duplicate host/port/slave/protocol combinations
             await self._autodetect_modbus_and_save_to_inverter_data(
-                SERIAL, adapter.connection_type, device, slave
+                SERIAL, device, slave
             )
             return await self.async_step_friendly_name()
 
@@ -361,7 +360,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             inverter = {
                 INVERTER_BASE: inverter.inverter_base_model,
                 INVERTER_MODEL: inverter.inverter_model,
-                INVERTER_CONN: inverter.adapter.connection_type.key,
+                INVERTER_CONN: inverter.adapter.connection_type,
                 MODBUS_SLAVE: inverter.modbus_slave,
                 FRIENDLY_NAME: inverter.friendly_name,
                 MODBUS_TYPE: inverter.inverter_protocol,
@@ -409,7 +408,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         )
 
     async def _autodetect_modbus_and_save_to_inverter_data(
-        self, protocol: str, conn_type: InverterConnectionType, host: str, slave: int
+        self, protocol: str, host: str, slave: int
     ) -> tuple[str, str]:
         """Check that connection details are unique, then connect to the inverter and add its details to self._inverter_data"""
         if any(
@@ -433,7 +432,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                 assert False
             client = ModbusClient(self.hass, params)
             base_model, full_model = await ModbusController.autodetect(
-                client, conn_type, slave
+                client, slave
             )
 
             self._inverter_data.inverter_base_model = base_model

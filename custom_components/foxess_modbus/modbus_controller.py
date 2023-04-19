@@ -14,8 +14,9 @@ from pymodbus.exceptions import ModbusException
 from .common.entity_controller import EntityController
 from .common.entity_controller import ModbusControllerEntity
 from .common.exceptions import UnsupportedInverterException
+from .common.register_type import RegisterType
 from .common.unload_controller import UnloadController
-from .inverter_connection_types import InverterConnectionType
+from .const import AUX
 from .inverter_profiles import INVERTER_PROFILES
 from .inverter_profiles import InverterModelConnectionTypeProfile
 from .modbus_client import ModbusClient
@@ -24,6 +25,8 @@ _LOGGER = logging.getLogger(__name__)
 
 # How many failed polls before we mark sensors as Unavailable
 _NUM_FAILED_POLLS_FOR_DISCONNECTION = 5
+
+_SERIAL_START_ADDRESS = 30000
 
 
 @contextmanager
@@ -285,39 +288,38 @@ class ModbusController(EntityController, UnloadController):
             listener.is_connected_changed_callback()
 
     @staticmethod
-    async def autodetect(
-        client: ModbusClient, conn_type: InverterConnectionType, slave: int
-    ) -> tuple[str, str]:
+    async def autodetect(client: ModbusClient, slave: int) -> tuple[str, str]:
         """
         Attempts to auto-detect the inverter type at the other end of the given connection
 
         :returns: Tuple of (inverter type name e.g. "H1", inverter full name e.g. "H1-3.7")
         """
         try:
+            # All known inverter types expose the serial number at holding register 30000
+            # The H1 series expose the holding registers over both LAN and AUX, and the H3
+            # only expose holding
             result = await client.read_registers(
-                conn_type.serial_start_address,
+                _SERIAL_START_ADDRESS,
                 10,
-                conn_type.read_holding_registers,
+                RegisterType.HOLDING,
                 slave,
             )
             inverter_str = "".join([chr(i) for i in result])
             for model_key, model in INVERTER_PROFILES.items():
-                if conn_type.key in model.connection_types:
-                    base_model = inverter_str[: len(model.model)]
-                    if base_model == model.model:
-                        full_model = inverter_str[: len(model.model) + 4]
-                        _LOGGER.info(
-                            "Autodetected inverter as %s using %s connection",
-                            full_model,
-                            conn_type.key,
-                        )
-                        return model_key, full_model
+                base_model = inverter_str[: len(model.model)]
+                if base_model == model.model:
+                    full_model = inverter_str[: len(model.model) + 4]
+                    _LOGGER.info(
+                        "Autodetected inverter as %s",
+                        full_model,
+                    )
+                    return model_key, full_model
             # here we've read the model type, but been unable to match it against a supported model
             raise UnsupportedInverterException(
                 f"Inverter ({inverter_str}) not supported"
             )
         except ModbusException:
-            _LOGGER.warning("Failed to autodetect (%s)", conn_type.key)
+            _LOGGER.warning("Failed to autodetect (%s)", client)
         finally:
             await client.close()
 
