@@ -1,8 +1,7 @@
 from abc import ABC
 from abc import abstractmethod
 
-from ..const import AUX
-from ..const import LAN
+from ..common.register_type import RegisterType
 
 
 class InverterModelSpec(ABC):
@@ -10,46 +9,48 @@ class InverterModelSpec(ABC):
 
     @abstractmethod
     def addresses_for_inverter_model(
-        self, inverter_model: str, connection_type: str
+        self, inverter_model: str, register_type: RegisterType
     ) -> list[int] | None:
         """
-        If this spec supports the given inverter model (e.g. "H1") and connection type (e.g. "LAN"), return the list
+        If this spec supports the given inverter model (e.g. "H1") and register type (e.g. "holding"), return the list
         of addresses which it cares about (or an empty list if it dosen't rely on any addresses).
 
-        If this spec does not support the given inverter model and connection type, return None
+        If this spec does not support the given inverter model and register type, return None
         """
 
 
 class ModbusAddressSpecBase(InverterModelSpec):
     """
-    InverterModelSpec for entities which want to use a list of supported models, and a dict of {connection type: [addresses]} for those models.
+    InverterModelSpec for entities which want to use a list of supported models, and a dict of {register type: [addresses]} for those models.
 
     Entities should normally use one of the other types, which are a bit neater to interface with.
     """
 
-    def __init__(self, models: list[str], addresses: dict[str, list[int]]) -> None:
+    def __init__(
+        self, models: list[str], addresses: dict[RegisterType, list[int]]
+    ) -> None:
         self._models = models
         self._addresses = addresses
 
     def addresses_for_inverter_model(
-        self, inverter_model: str, connection_type: str
+        self, inverter_model: str, register_type: RegisterType
     ) -> list[int] | None:
         if inverter_model not in self._models:
             return None
-        return self._addresses.get(connection_type)
+        return self._addresses.get(register_type)
 
 
 class ModbusAddressSpec(ModbusAddressSpecBase):
     """InverterModelSpec for entities which rely on a single modbus register"""
 
     def __init__(
-        self, models: list[str], aux: int | None = None, lan: int | None = None
+        self, models: list[str], input: int | None = None, holding: int | None = None
     ) -> None:
         addresses = {}
-        if aux is not None:
-            addresses[AUX] = [aux]
-        if lan is not None:
-            addresses[LAN] = [lan]
+        if input is not None:
+            addresses[RegisterType.INPUT] = [input]
+        if holding is not None:
+            addresses[RegisterType.HOLDING] = [holding]
         super().__init__(models, addresses)
 
 
@@ -59,30 +60,29 @@ class ModbusAddressesSpec(ModbusAddressSpecBase):
     def __init__(
         self,
         models: list[str],
-        lan: list[int] | None = None,
-        aux: list[int] | None = None,
+        input: list[int] | None = None,
+        holding: list[int] | None = None,
     ) -> None:
         addresses = {}
-        if aux is not None:
-            addresses[AUX] = aux
-        if lan is not None:
-            addresses[LAN] = lan
+        if input is not None:
+            addresses[RegisterType.INPUT] = input
+        if holding is not None:
+            addresses[RegisterType.HOLDING] = holding
         super().__init__(models, addresses)
 
 
 class EntitySpec(InverterModelSpec):
     """InverterModelSpec for entities which don't rely on any addresses at all"""
 
-    def __init__(self, connection_types: list[str], models: list[str]) -> None:
-        self._connection_types = connection_types
+    def __init__(self, register_types: list[RegisterType], models: list[str]) -> None:
+        self._register_types = register_types
         self._models = models
 
     def addresses_for_inverter_model(
-        self, inverter_model: str, connection_type: str
+        self, inverter_model: str, register_type: str
     ) -> list[int] | None:
         return (
             []
-            if connection_type in self._connection_types
-            and inverter_model in self._models
+            if register_type in self._register_types and inverter_model in self._models
             else None
         )

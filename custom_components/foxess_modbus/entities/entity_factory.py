@@ -7,6 +7,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
+from ..common.register_type import RegisterType
 from .inverter_model_spec import InverterModelSpec
 
 
@@ -23,7 +24,7 @@ class EntityFactory(ABC):
         self,
         controller: EntityController,
         inverter_model: str,
-        connection_type: str,
+        register_type: RegisterType,
         entry: ConfigEntry,
         inv_details: dict[str, Any],
     ) -> Entity:
@@ -33,7 +34,7 @@ class EntityFactory(ABC):
         self,
         address_specs: list[InverterModelSpec],
         inverter_model: str,
-        connection_type: str,
+        register_type: RegisterType,
     ) -> int | None:
         """
         Helper to fetch single address of an entity, on this inverter model and connection type combination, given the
@@ -45,9 +46,7 @@ class EntityFactory(ABC):
 
         result: int | None = None
         for spec in address_specs:
-            addresses = spec.addresses_for_inverter_model(
-                inverter_model, connection_type
-            )
+            addresses = spec.addresses_for_inverter_model(inverter_model, register_type)
             if addresses is not None:
                 assert len(addresses) == 1
                 assert (
@@ -60,7 +59,7 @@ class EntityFactory(ABC):
         self,
         address_specs: list[InverterModelSpec],
         inverter_model: str,
-        connection_type: str,
+        register_type: RegisterType,
     ) -> list[int] | None:
         """Helper to fetch the addresses of an entity, on this inverter and connection type combination, given the
         set of which was given to the entity description. Returns None if this entity is not supported
@@ -71,9 +70,7 @@ class EntityFactory(ABC):
 
         result: list[int] | None = None
         for spec in address_specs:
-            addresses = spec.addresses_for_inverter_model(
-                inverter_model, connection_type
-            )
+            addresses = spec.addresses_for_inverter_model(inverter_model, register_type)
             if addresses is not None:
                 assert (
                     result is None

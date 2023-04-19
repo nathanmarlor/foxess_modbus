@@ -10,6 +10,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
+from ..common.register_type import RegisterType
 from .base_validator import BaseValidator
 from .entity_factory import EntityFactory
 from .inverter_model_spec import ModbusAddressSpec
@@ -33,12 +34,12 @@ class ModbusBinarySensorDescription(BinarySensorEntityDescription, EntityFactory
         self,
         controller: EntityController,
         inverter_model: str,
-        connection_type: str,
+        register_type: RegisterType,
         entry: ConfigEntry,
         inv_details,
     ) -> Entity | None:
         address = self._address_for_inverter_model(
-            self.address, inverter_model, connection_type
+            self.address, inverter_model, register_type
         )
         return (
             ModbusBinarySensor(controller, self, address, entry, inv_details)

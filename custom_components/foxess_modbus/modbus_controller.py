@@ -53,7 +53,7 @@ class ModbusController(EntityController, UnloadController):
         self._update_listeners: set[ModbusControllerEntity] = set()
         self._data = {}
         self._client = client
-        self.connection_type_profile = connection_type_profile
+        self._connection_type_profile = connection_type_profile
         self.charge_periods = connection_type_profile.create_charge_periods()
         self._slave = slave
         self._poll_rate = poll_rate
@@ -119,9 +119,6 @@ class ModbusController(EntityController, UnloadController):
                 )
                 return
 
-            holding = (
-                self.connection_type_profile.connection_type.read_holding_registers
-            )
             # List of (start address, [read values starting at that address])
             read_values: list[tuple[int, list[int]]] = []
             succeeded = False
@@ -138,7 +135,10 @@ class ModbusController(EntityController, UnloadController):
                         num_reads,
                     )
                     reads = await self._client.read_registers(
-                        start_address, num_reads, holding, self._slave
+                        start_address,
+                        num_reads,
+                        self._connection_type_profile.register_type,
+                        self._slave,
                     )
                     read_values.append((start_address, reads))
 
@@ -237,7 +237,7 @@ class ModbusController(EntityController, UnloadController):
             # inside invalid ranges, tested in __init__). This also assumes that read_size != max_read here.
             elif address == start_address + 1 or (
                 address <= start_address + max_read - 1
-                and not self.connection_type_profile.overlaps_invalid_range(
+                and not self._connection_type_profile.overlaps_invalid_range(
                     start_address, address - 1
                 )
             ):
@@ -258,7 +258,7 @@ class ModbusController(EntityController, UnloadController):
     def register_modbus_entity(self, listener: ModbusControllerEntity) -> None:
         self._update_listeners.add(listener)
         for address in listener.addresses:
-            assert not self.connection_type_profile.overlaps_invalid_range(
+            assert not self._connection_type_profile.overlaps_invalid_range(
                 address, address
             )
             if address not in self._data:

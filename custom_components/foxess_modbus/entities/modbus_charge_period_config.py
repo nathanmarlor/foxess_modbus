@@ -4,8 +4,7 @@ from dataclasses import dataclass
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 
-from ..const import AUX
-from ..const import LAN
+from ..common.register_type import RegisterType
 from .inverter_model_spec import ModbusAddressSpecBase
 from .modbus_binary_sensor import ModbusBinarySensorDescription
 from .modbus_charge_period_sensors import ModbusChargePeriodStartEndSensorDescription
@@ -38,38 +37,38 @@ class ChargePeriodAddressSpec:
     def __init__(
         self,
         models: list[str],
-        lan: ModbusChargePeriodConfig | None = None,
-        aux: ModbusChargePeriodConfig | None = None,
+        input: ModbusChargePeriodConfig | None = None,
+        holding: ModbusChargePeriodConfig | None = None,
     ) -> None:
         self.models = models
-        self.connection_types: dict[str, ModbusChargePeriodConfig] = {}
-        if aux is not None:
-            self.connection_types[AUX] = aux
-        if lan is not None:
-            self.connection_types[LAN] = lan
+        self.register_types: dict[RegisterType, ModbusChargePeriodConfig] = {}
+        if input is not None:
+            self.register_types[RegisterType.INPUT] = input
+        if holding is not None:
+            self.register_types[RegisterType.HOLDING] = holding
 
     def get_start_address(self) -> ModbusAddressSpecBase:
         """Gets a ModbusAddressSpecBase instance to describe the start address"""
 
         addresses = {}
-        for connection_type, period_addresses in self.connection_types.items():
-            addresses[connection_type] = [period_addresses.period_start_address]
+        for register_type, period_addresses in self.register_types.items():
+            addresses[register_type] = [period_addresses.period_start_address]
         return ModbusAddressSpecBase(self.models, addresses)
 
     def get_end_address(self) -> dict[str, list[int]]:
         """Gets a ModbusAddressSpecBase instance to describe the end address"""
 
         addresses = {}
-        for connection_type, period_addresses in self.connection_types.items():
-            addresses[connection_type] = [period_addresses.period_end_address]
+        for register_type, period_addresses in self.register_types.items():
+            addresses[register_type] = [period_addresses.period_end_address]
         return ModbusAddressSpecBase(self.models, addresses)
 
     def get_enable_charge_from_grid_address(self) -> dict[str, list[int]]:
         """Gets a ModbusAddressSpecBase instance to describe 'enable charge from grid' address"""
 
         addresses = {}
-        for connection_type, period_addresses in self.connection_types.items():
-            addresses[connection_type] = [
+        for register_type, period_addresses in self.register_types.items():
+            addresses[register_type] = [
                 period_addresses.enable_charge_from_grid_address
             ]
         return ModbusAddressSpecBase(self.models, addresses)
@@ -143,7 +142,7 @@ class ModbusChargePeriodFactory:
         ]
 
     def create_charge_period_config_if_supported(
-        self, inverter_model: str, connection_type: str
+        self, inverter_model: str, register_type: RegisterType
     ) -> ModbusChargePeriodConfig | None:
         """
         If the inverter model / connection type supports a charge period, fetches a ModbusChargePeriodConfig containing
@@ -153,7 +152,7 @@ class ModbusChargePeriodFactory:
         result: ModbusChargePeriodConfig | None = None
         for address_spec in self.address_specs:
             if inverter_model in address_spec.models:
-                config = address_spec.connection_types.get(connection_type)
+                config = address_spec.register_types.get(register_type)
                 if config is not None:
                     assert result is None
                     result = config

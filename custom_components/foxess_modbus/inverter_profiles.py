@@ -6,6 +6,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
 
 from .common.entity_controller import EntityController
+from .common.register_type import RegisterType
 from .const import AC1
 from .const import AIO_H1
 from .const import AUX
@@ -18,8 +19,6 @@ from .entities.charge_periods import CHARGE_PERIODS
 from .entities.entity_descriptions import ENTITIES
 from .entities.modbus_charge_period_config import ModbusChargePeriodConfig
 from .entities.modbus_sensor import ModbusSensor
-from .inverter_connection_types import CONNECTION_TYPES
-from .inverter_connection_types import InverterConnectionType
 
 _LOGGER = logging.getLogger(__package__)
 
@@ -30,11 +29,13 @@ class InverterModelConnectionTypeProfile:
     def __init__(
         self,
         inverter_model: str,
-        connection_type: InverterConnectionType,
+        connection_type: str,
+        register_type: RegisterType,
         invalid_register_ranges: list[tuple[int, int]],
     ) -> None:
         self.inverter_model = inverter_model
         self.connection_type = connection_type
+        self.register_type = register_type
         self.invalid_register_ranges = invalid_register_ranges
 
     def overlaps_invalid_range(self, start_address, end_address):
@@ -59,7 +60,7 @@ class InverterModelConnectionTypeProfile:
                 entity = entity_factory.create_entity_if_supported(
                     controller,
                     self.inverter_model,
-                    self.connection_type.key,
+                    self.register_type,
                     entry,
                     inverter_details,
                 )
@@ -76,7 +77,7 @@ class InverterModelConnectionTypeProfile:
         for charge_period_factory in CHARGE_PERIODS:
             charge_period = (
                 charge_period_factory.create_charge_period_config_if_supported(
-                    self.inverter_model, self.connection_type
+                    self.inverter_model, self.register_type
                 )
             )
             if charge_period is not None:
@@ -95,11 +96,13 @@ class InverterModelProfile:
     def add_connection_type(
         self,
         connection_type: str,
+        register_type: RegisterType,
         invalid_register_ranges: list[tuple[int, int]],
     ) -> "InverterModelProfile":
         self.connection_types[connection_type] = InverterModelConnectionTypeProfile(
             self.model,
-            CONNECTION_TYPES[connection_type],
+            connection_type,
+            register_type,
             invalid_register_ranges,
         )
         return self
@@ -111,28 +114,34 @@ INVERTER_PROFILES = {
         InverterModelProfile(H1)
         .add_connection_type(
             AUX,
+            RegisterType.INPUT,
             invalid_register_ranges=invalid_ranges.H1_AC1,
         )
         .add_connection_type(
             LAN,
+            RegisterType.HOLDING,
             invalid_register_ranges=[],
         ),
         InverterModelProfile(AC1)
         .add_connection_type(
             AUX,
+            RegisterType.INPUT,
             invalid_register_ranges=invalid_ranges.H1_AC1,
         )
         .add_connection_type(
             LAN,
+            RegisterType.HOLDING,
             invalid_register_ranges=[],
         ),
         InverterModelProfile(AIO_H1)
         .add_connection_type(
             AUX,
+            RegisterType.INPUT,
             invalid_register_ranges=invalid_ranges.H1_AC1,
         )
         .add_connection_type(
             LAN,
+            RegisterType.HOLDING,
             invalid_register_ranges=[],
         ),
     ]

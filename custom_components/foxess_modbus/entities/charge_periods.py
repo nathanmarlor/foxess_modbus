@@ -15,7 +15,7 @@ CHARGE_PERIODS = [
         addresses=[
             ChargePeriodAddressSpec(
                 models=[H1, AIO_H1, AC1],
-                aux=ModbusChargePeriodConfig(
+                input=ModbusChargePeriodConfig(
                     period_start_address=41002,
                     period_end_address=41003,
                     enable_charge_from_grid_address=41001,
@@ -35,7 +35,7 @@ CHARGE_PERIODS = [
         addresses=[
             ChargePeriodAddressSpec(
                 models=[H1, AIO_H1, AC1],
-                aux=ModbusChargePeriodConfig(
+                input=ModbusChargePeriodConfig(
                     period_start_address=41005,
                     period_end_address=41006,
                     enable_charge_from_grid_address=41004,

@@ -11,6 +11,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
+from ..common.register_type import RegisterType
 from .base_validator import BaseValidator
 from .entity_factory import EntityFactory
 from .inverter_model_spec import ModbusAddressesSpec
@@ -37,12 +38,12 @@ class ModbusSensorDescription(SensorEntityDescription, EntityFactory):
         self,
         controller: EntityController,
         inverter_model: str,
-        connection_type: str,
+        register_type: RegisterType,
         entry: ConfigEntry,
         inv_details,
     ) -> Entity | None:
         addresses = self._addresses_for_inverter_model(
-            self.addresses, inverter_model, connection_type
+            self.addresses, inverter_model, register_type
         )
         return (
             ModbusSensor(controller, self, addresses, entry, inv_details)

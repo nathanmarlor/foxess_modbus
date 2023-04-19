@@ -15,6 +15,7 @@ from homeassistant.const import UnitOfTime
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
+from ..common.register_type import RegisterType
 from .entity_factory import EntityFactory
 from .inverter_model_spec import EntitySpec
 
@@ -40,13 +41,13 @@ class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory)
         self,
         controller: EntityController,
         inverter_model: str,
-        connection_type: str,
+        register_type: RegisterType,
         entry: ConfigEntry,
         inv_details,
     ) -> Entity | None:
         if (
             self._addresses_for_inverter_model(
-                self.models, inverter_model, connection_type
+                self.models, inverter_model, register_type
             )
             is None
         ):
