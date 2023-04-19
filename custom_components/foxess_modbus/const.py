@@ -27,8 +27,6 @@ POLL_RATE = "poll_rate"
 MAX_READ = "max_read"
 ADAPTER_ID = "adapter_id"
 
-INVERTER_ADAPTER_NEEDS_MANUAL_INPUT = "inverter_adapter_needs_manual_input"
-
 INVERTER_MODEL = "inverter_model"
 INVERTER_BASE = "inverter_base"
 INVERTER_CONN = "inverter_conn"

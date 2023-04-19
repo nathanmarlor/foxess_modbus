@@ -11,7 +11,6 @@ import uuid
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.typing import UNDEFINED
 
 from .const import ADAPTER_ID
@@ -19,7 +18,6 @@ from .const import CONFIG_SAVE_TIME
 from .const import DOMAIN
 from .const import FRIENDLY_NAME
 from .const import HOST
-from .const import INVERTER_ADAPTER_NEEDS_MANUAL_INPUT
 from .const import INVERTER_CONN
 from .const import INVERTERS
 from .const import MAX_READ
@@ -54,14 +52,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     # Create this before throwing ConfigEntryAuthFailed, so the sensors, etc, platforms don't fail
     hass.data.setdefault(DOMAIN, {}).setdefault(entry.entry_id, {})[INVERTERS] = []
-
-    # This does need to be done first. Otherwise when the user does the migration HA will call this function again, but won't unload anything
-    # which was previously loaded
-    for inverter in entry.data[INVERTERS].values():
-        if INVERTER_ADAPTER_NEEDS_MANUAL_INPUT in inverter:
-            raise ConfigEntryAuthFailed(
-                "Configuration needs manual input. Please click 'RECONFIGURE'"
-            )
 
     for platform in PLATFORMS:
         if entry.options.get(platform, True):
@@ -157,9 +147,6 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                             adapter = ADAPTERS["serial_other"]
                         inverter[ADAPTER_ID] = adapter.adapter_id
 
-                        # If we need manual input to find the correct adapter type, prompt for this
-                        if modbus_type != TCP or inverter[INVERTER_CONN] != "LAN":
-                            inverter[INVERTER_ADAPTER_NEEDS_MANUAL_INPUT] = True
                         inverter_id = str(uuid.uuid4())
                         new_data[INVERTERS][inverter_id] = inverter
                         if inverter_options:

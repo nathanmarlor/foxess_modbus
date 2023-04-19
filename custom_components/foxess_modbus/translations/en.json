@@ -13,12 +13,6 @@
           "adapter_model": ""
         }
       },
-      "select_adapter_model_due_to_migration": {
-        "description": "Choose the adapter model for the inverter \"{inverter}\". This lets us use settings tailored to your adapter.",
-        "data": {
-          "adapter_model": ""
-        }
-      },
       "tcp_adapter": {
         "description": "Set up your adapter by following the instructions at {setup_link}.",
         "data": {
