@@ -16,6 +16,7 @@ from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
 from .entity_factory import EntityFactory
+from .inverter_model_spec import EntitySpec
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,6 +25,7 @@ _LOGGER = logging.getLogger(__name__)
 class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory):
     """Custom sensor description"""
 
+    models: list[EntitySpec]
     integration_method: str
     name: str
     round_digits: int
@@ -34,14 +36,22 @@ class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory)
     def entity_type(self) -> type[Entity]:
         return SensorEntity
 
-    @property
-    def addresses(self) -> list[int]:
-        # Unused for this sensor type
-        return []
+    def create_entity_if_supported(
+        self,
+        controller: EntityController,
+        inverter_model: str,
+        connection_type: str,
+        entry: ConfigEntry,
+        inv_details,
+    ) -> Entity | None:
+        if (
+            self._addresses_for_inverter_model(
+                self.models, inverter_model, connection_type
+            )
+            is None
+        ):
+            return None
 
-    def create_entity(
-        self, controller: EntityController, entry: ConfigEntry, inv_details
-    ) -> Entity:
         # this piggybacks on the existing factory to create IntegrationSensors
         return ModbusIntegrationSensor(
             controller=controller,
@@ -109,3 +119,7 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
     @property
     def should_poll(self) -> bool:
         return False
+
+    @property
+    def addresses(self) -> list[int]:
+        return []

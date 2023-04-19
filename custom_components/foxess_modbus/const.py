@@ -14,6 +14,7 @@ AUX = "AUX"
 LAN = "LAN"
 
 # Inverter models. These need to match the string returned from the inverter
+# Also matches config[INVERTER_BASE]
 H1 = "H1"
 AC1 = "AC1"
 AIO_H1 = "AIO-H1"

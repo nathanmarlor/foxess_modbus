@@ -13,10 +13,9 @@ from .const import H1
 from .const import INVERTER_BASE
 from .const import INVERTER_CONN
 from .const import LAN
-from .entities import xx1_aux_charge_periods
-from .entities import xx1_aux_entity_descriptions
-from .entities import xx1_lan_entity_descriptions
-from .entities.entity_factory import EntityFactory
+from .entities import invalid_ranges
+from .entities.charge_periods import CHARGE_PERIODS
+from .entities.entity_descriptions import ENTITIES
 from .entities.modbus_charge_period_config import ModbusChargePeriodConfig
 from .entities.modbus_sensor import ModbusSensor
 from .inverter_connection_types import CONNECTION_TYPES
@@ -30,18 +29,13 @@ class InverterModelConnectionTypeProfile:
 
     def __init__(
         self,
+        inverter_model: str,
         connection_type: InverterConnectionType,
-        entity_descriptions: list[EntityFactory],
         invalid_register_ranges: list[tuple[int, int]],
-        charge_periods: list[ModbusChargePeriodConfig],
     ) -> None:
+        self.inverter_model = inverter_model
         self.connection_type = connection_type
-        self.entity_descriptions = entity_descriptions
         self.invalid_register_ranges = invalid_register_ranges
-        self.charge_periods = charge_periods
-
-        for charge_period in charge_periods:
-            self.entity_descriptions.extend(charge_period.entity_descriptions)
 
     def overlaps_invalid_range(self, start_address, end_address):
         return any(
@@ -56,85 +50,106 @@ class InverterModelConnectionTypeProfile:
         entry: ConfigEntry,
         inverter_details: dict[str, Any],
     ) -> list[ModbusSensor]:
-        """Create and return all entities of the given type"""
-        return list(
-            entity.create_entity(controller, entry, inverter_details)
-            for entity in self.entity_descriptions
-            if entity.entity_type == entity_type
-        )
+        """Create all of the entities of the given type which support this inverter/connection combination"""
+
+        result = []
+
+        for entity_factory in ENTITIES:
+            if entity_factory.entity_type == entity_type:
+                entity = entity_factory.create_entity_if_supported(
+                    controller,
+                    self.inverter_model,
+                    self.connection_type.key,
+                    entry,
+                    inverter_details,
+                )
+                if entity is not None:
+                    result.append(entity)
+
+        return result
+
+    def create_charge_periods(self) -> list[ModbusChargePeriodConfig]:
+        """Create all of the charge periods which support this inverter/connection combination"""
+
+        result = []
+
+        for charge_period_factory in CHARGE_PERIODS:
+            charge_period = (
+                charge_period_factory.create_charge_period_config_if_supported(
+                    self.inverter_model, self.connection_type
+                )
+            )
+            if charge_period is not None:
+                result.append(charge_period)
+
+        return result
 
 
 class InverterModelProfile:
     """Describes the capabilities of an inverter model"""
 
-    def __init__(
-        self, model: str, connection_types: list[InverterModelConnectionTypeProfile]
-    ) -> None:
+    def __init__(self, model: str) -> None:
         self.model = model
-        self.connection_types = {x.connection_type.key: x for x in connection_types}
+        self.connection_types: dict[str, InverterModelConnectionTypeProfile] = {}
+
+    def add_connection_type(
+        self,
+        connection_type: str,
+        invalid_register_ranges: list[tuple[int, int]],
+    ) -> "InverterModelProfile":
+        self.connection_types[connection_type] = InverterModelConnectionTypeProfile(
+            self.model,
+            CONNECTION_TYPES[connection_type],
+            invalid_register_ranges,
+        )
+        return self
 
 
 INVERTER_PROFILES = {
     x.model: x
     for x in [
-        InverterModelProfile(
-            model=H1,
-            connection_types=[
-                InverterModelConnectionTypeProfile(
-                    connection_type=CONNECTION_TYPES[AUX],
-                    entity_descriptions=xx1_aux_entity_descriptions.H1
-                    + xx1_aux_entity_descriptions.H1_AC1,
-                    invalid_register_ranges=xx1_aux_entity_descriptions.INVALID_RANGES,
-                    charge_periods=xx1_aux_charge_periods.H1_AC1,
-                ),
-                InverterModelConnectionTypeProfile(
-                    connection_type=CONNECTION_TYPES[LAN],
-                    entity_descriptions=xx1_lan_entity_descriptions.H1
-                    + xx1_lan_entity_descriptions.H1_AC1,
-                    invalid_register_ranges=[],
-                    charge_periods=[],
-                ),
-            ],
+        InverterModelProfile(H1)
+        .add_connection_type(
+            AUX,
+            invalid_register_ranges=invalid_ranges.H1_AC1,
+        )
+        .add_connection_type(
+            LAN,
+            invalid_register_ranges=[],
         ),
-        InverterModelProfile(
-            model=AC1,
-            connection_types=[
-                InverterModelConnectionTypeProfile(
-                    connection_type=CONNECTION_TYPES[AUX],
-                    entity_descriptions=xx1_aux_entity_descriptions.AC1
-                    + xx1_aux_entity_descriptions.H1_AC1,
-                    invalid_register_ranges=xx1_aux_entity_descriptions.INVALID_RANGES,
-                    charge_periods=xx1_aux_charge_periods.H1_AC1,
-                ),
-                InverterModelConnectionTypeProfile(
-                    connection_type=CONNECTION_TYPES[LAN],
-                    entity_descriptions=xx1_lan_entity_descriptions.H1_AC1,
-                    invalid_register_ranges=[],
-                    charge_periods=[],
-                ),
-            ],
+        InverterModelProfile(AC1)
+        .add_connection_type(
+            AUX,
+            invalid_register_ranges=invalid_ranges.H1_AC1,
+        )
+        .add_connection_type(
+            LAN,
+            invalid_register_ranges=[],
         ),
-        InverterModelProfile(
-            model=AIO_H1,
-            connection_types=[
-                InverterModelConnectionTypeProfile(
-                    connection_type=CONNECTION_TYPES[AUX],
-                    entity_descriptions=xx1_aux_entity_descriptions.H1
-                    + xx1_aux_entity_descriptions.H1_AC1,
-                    invalid_register_ranges=xx1_aux_entity_descriptions.INVALID_RANGES,
-                    charge_periods=xx1_aux_charge_periods.H1_AC1,
-                ),
-                InverterModelConnectionTypeProfile(
-                    connection_type=CONNECTION_TYPES[LAN],
-                    entity_descriptions=xx1_lan_entity_descriptions.H1
-                    + xx1_lan_entity_descriptions.H1_AC1,
-                    invalid_register_ranges=[],
-                    charge_periods=[],
-                ),
-            ],
+        InverterModelProfile(AIO_H1)
+        .add_connection_type(
+            AUX,
+            invalid_register_ranges=invalid_ranges.H1_AC1,
+        )
+        .add_connection_type(
+            LAN,
+            invalid_register_ranges=[],
         ),
     ]
 }
+
+
+def create_entities(
+    entity_type: type[Entity],
+    controller: EntityController,
+    entry: ConfigEntry,
+    inverter_config: dict[str, Any],
+) -> list[ModbusSensor]:
+    """Create all of the entities which support the inverter described by the given configuration object"""
+
+    return inverter_connection_type_profile_from_config(
+        inverter_config
+    ).create_entities(entity_type, controller, entry, inverter_config)
 
 
 def inverter_connection_type_profile_from_config(

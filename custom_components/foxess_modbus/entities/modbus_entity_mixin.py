@@ -67,10 +67,6 @@ class ModbusEntityMixin(ModbusControllerEntity):
         """Return True if entity is available."""
         return self._controller.is_connected
 
-    @property
-    def addresses(self) -> list[int]:
-        return self.entity_description.addresses
-
     async def async_added_to_hass(self) -> None:
         """Add update callback after being added to hass."""
         await super().async_added_to_hass()
@@ -114,17 +110,15 @@ class ModbusEntityMixin(ModbusControllerEntity):
         for rule in rules:
             if not rule.validate(processed):
                 if address_override is not None:
-                    address = address_override
-                elif hasattr(self.entity_description, "address"):
-                    address = self.entity_description.address
+                    addresses = [address_override]
                 else:
-                    address = None
+                    addresses = self.addresses
                 _LOGGER.warning(
-                    "Value (%s: %s) for entity '%s' address '%s' failed validation against rule (%s : %s)",
+                    "Value (%s: %s) for entity '%s' address(es) '%s' failed validation against rule (%s : %s)",
                     original,
                     processed,
                     self.entity_id,
-                    address,
+                    addresses,
                     type(rule).__name__,
                     vars(rule),
                 )

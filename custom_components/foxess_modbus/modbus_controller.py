@@ -54,6 +54,7 @@ class ModbusController(EntityController, UnloadController):
         self._data = {}
         self._client = client
         self.connection_type_profile = connection_type_profile
+        self.charge_periods = connection_type_profile.create_charge_periods()
         self._slave = slave
         self._poll_rate = poll_rate
         self._max_read = max_read
