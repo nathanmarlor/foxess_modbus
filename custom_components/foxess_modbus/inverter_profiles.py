@@ -11,6 +11,7 @@ from .const import AC1
 from .const import AIO_H1
 from .const import AUX
 from .const import H1
+from .const import H3
 from .const import INVERTER_BASE
 from .const import INVERTER_CONN
 from .const import LAN
@@ -140,6 +141,14 @@ INVERTER_PROFILES = {
             invalid_register_ranges=invalid_ranges.H1_AC1,
         )
         .add_connection_type(
+            LAN,
+            RegisterType.HOLDING,
+            invalid_register_ranges=[],
+        ),
+        # The H3 seems to use holding registers for everything, so we currently can't automatically
+        # tell the difference between AUX and LAN. That should be fixed with the config flow rework.
+        # For now, detect everything as LAN.
+        InverterModelProfile(H3).add_connection_type(
             LAN,
             RegisterType.HOLDING,
             invalid_register_ranges=[],
