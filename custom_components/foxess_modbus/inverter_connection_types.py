@@ -1,6 +1,9 @@
 """Contains knowledge of the various ways to connect to inverters"""
 import logging
 
+from .const import AUX
+from .const import LAN
+
 _LOGGER = logging.getLogger(__package__)
 
 
@@ -19,10 +22,10 @@ CONNECTION_TYPES = {
     x.key: x
     for x in [
         InverterConnectionType(
-            key="AUX", read_holding_registers=False, serial_start_address=10000
+            key=AUX, read_holding_registers=False, serial_start_address=10000
         ),
         InverterConnectionType(
-            key="LAN", read_holding_registers=True, serial_start_address=30000
+            key=LAN, read_holding_registers=True, serial_start_address=30000
         ),
     ]
 }

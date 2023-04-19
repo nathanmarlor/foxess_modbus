@@ -6,8 +6,13 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
 
 from .common.entity_controller import EntityController
+from .const import AC1
+from .const import AIO_H1
+from .const import AUX
+from .const import H1
 from .const import INVERTER_BASE
 from .const import INVERTER_CONN
+from .const import LAN
 from .entities import xx1_aux_charge_periods
 from .entities import xx1_aux_entity_descriptions
 from .entities import xx1_lan_entity_descriptions
@@ -73,17 +78,17 @@ INVERTER_PROFILES = {
     x.model: x
     for x in [
         InverterModelProfile(
-            model="H1",
+            model=H1,
             connection_types=[
                 InverterModelConnectionTypeProfile(
-                    connection_type=CONNECTION_TYPES["AUX"],
+                    connection_type=CONNECTION_TYPES[AUX],
                     entity_descriptions=xx1_aux_entity_descriptions.H1
                     + xx1_aux_entity_descriptions.H1_AC1,
                     invalid_register_ranges=xx1_aux_entity_descriptions.INVALID_RANGES,
                     charge_periods=xx1_aux_charge_periods.H1_AC1,
                 ),
                 InverterModelConnectionTypeProfile(
-                    connection_type=CONNECTION_TYPES["LAN"],
+                    connection_type=CONNECTION_TYPES[LAN],
                     entity_descriptions=xx1_lan_entity_descriptions.H1
                     + xx1_lan_entity_descriptions.H1_AC1,
                     invalid_register_ranges=[],
@@ -92,17 +97,17 @@ INVERTER_PROFILES = {
             ],
         ),
         InverterModelProfile(
-            model="AC1",
+            model=AC1,
             connection_types=[
                 InverterModelConnectionTypeProfile(
-                    connection_type=CONNECTION_TYPES["AUX"],
+                    connection_type=CONNECTION_TYPES[AUX],
                     entity_descriptions=xx1_aux_entity_descriptions.AC1
                     + xx1_aux_entity_descriptions.H1_AC1,
                     invalid_register_ranges=xx1_aux_entity_descriptions.INVALID_RANGES,
                     charge_periods=xx1_aux_charge_periods.H1_AC1,
                 ),
                 InverterModelConnectionTypeProfile(
-                    connection_type=CONNECTION_TYPES["LAN"],
+                    connection_type=CONNECTION_TYPES[LAN],
                     entity_descriptions=xx1_lan_entity_descriptions.H1_AC1,
                     invalid_register_ranges=[],
                     charge_periods=[],
@@ -110,17 +115,17 @@ INVERTER_PROFILES = {
             ],
         ),
         InverterModelProfile(
-            model="AIO-H1",
+            model=AIO_H1,
             connection_types=[
                 InverterModelConnectionTypeProfile(
-                    connection_type=CONNECTION_TYPES["AUX"],
+                    connection_type=CONNECTION_TYPES[AUX],
                     entity_descriptions=xx1_aux_entity_descriptions.H1
                     + xx1_aux_entity_descriptions.H1_AC1,
                     invalid_register_ranges=xx1_aux_entity_descriptions.INVALID_RANGES,
                     charge_periods=xx1_aux_charge_periods.H1_AC1,
                 ),
                 InverterModelConnectionTypeProfile(
-                    connection_type=CONNECTION_TYPES["LAN"],
+                    connection_type=CONNECTION_TYPES[LAN],
                     entity_descriptions=xx1_lan_entity_descriptions.H1
                     + xx1_lan_entity_descriptions.H1_AC1,
                     invalid_register_ranges=[],
