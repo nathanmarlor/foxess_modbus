@@ -5,12 +5,14 @@ from asyncio.exceptions import TimeoutError
 from contextlib import contextmanager
 from datetime import datetime
 from datetime import timedelta
+from typing import Iterable
 
 from homeassistant.helpers.event import async_track_time_interval
 from pymodbus.exceptions import ConnectionException
 from pymodbus.exceptions import ModbusException
 
 from .common.entity_controller import EntityController
+from .common.entity_controller import ModbusControllerEntity
 from .common.exceptions import UnsupportedInverterException
 from .common.unload_controller import UnloadController
 from .inverter_connection_types import InverterConnectionType
@@ -48,7 +50,8 @@ class ModbusController(EntityController, UnloadController):
     ) -> None:
         """Init"""
         self._hass = hass
-        self._data = {x: None for x in connection_type_profile.all_addresses}
+        self._update_listeners: set[ModbusControllerEntity] = set()
+        self._data = {}
         self._client = client
         self.connection_type_profile = connection_type_profile
         self._slave = slave
@@ -125,7 +128,7 @@ class ModbusController(EntityController, UnloadController):
                 for (
                     start_address,
                     num_reads,
-                ) in self.connection_type_profile.create_read_ranges(self._max_read):
+                ) in self._create_read_ranges(self._max_read):
                     _LOGGER.debug(
                         "Reading addresses on %s %s: (%s, %s)",
                         self._client,
@@ -200,6 +203,85 @@ class ModbusController(EntityController, UnloadController):
                     )
                     self._is_connected = False
                     self._notify_is_connected_changed()
+
+    def _create_read_ranges(self, max_read: int) -> Iterable[tuple[int, int]]:
+        """
+        Generates a set of read ranges to cover the addresses of all registers on this inverter,
+        respecting the maxumum number of registers to read at a time
+
+        :returns: Sequence of tuples of (start_address, num_registers_to_read)
+        """
+
+        # The idea here is that read operations are expensive (there seems to be a large round-trip time at least
+        # with the W610), but reading additional unneeded registers is relatively cheap (probably < 1ms).
+
+        # To give some intuition, here are some examples of the groupings we want to achieve, assuming max_read = 5
+        # 1,2 / 4,5 -> 1,2,3,4,5 (i.e. to read the registers 1, 2, 4 and 5, we'll do a single read spanning 1-5)
+        # 1,2 / 5,6,7,8 -> 1,2 / 5,6,7,8
+        # 1,2 / 5,6,7,8,9 -> 1,2 / 5,6,7,8,9
+        # 1,2 / 5,6,7,8,9,10 -> 1,2,3,4,5 / 6,7,8,9,10
+        # 1,2,3 / 5,6,7 / 9,10 -> 1,2,3,4,5 / 6,7,8,9,10
+
+        # The problem as a whole looks like it's NP-hard (although I can't find a name for it).
+        # We're therefore going to use a fairly simple algorithm which just makes each read as large as it can be.
+
+        start_address: int | None = None
+        read_size = 0
+        # TODO: Do we want to cache the result of this?
+        for address in sorted(self._data.keys()):
+            if start_address is None:
+                start_address, read_size = address, 1
+            # If we're just increasing the previous read size by 1, then don't test whether we're extending
+            # the read over an invalid range (as we assume that registers we're reading to read won't be
+            # inside invalid ranges, tested in __init__). This also assumes that read_size != max_read here.
+            elif address == start_address + 1 or (
+                address <= start_address + max_read - 1
+                and not self.connection_type_profile.overlaps_invalid_range(
+                    start_address, address - 1
+                )
+            ):
+                # There's a previous read which we can extend
+                read_size = address - start_address + 1
+            else:
+                # There's a previous read, and we can't extend it to cover this address
+                yield (start_address, read_size)
+                start_address, read_size = address, 1
+
+            if read_size == max_read:
+                yield (start_address, read_size)
+                start_address, read_size = None, 0
+
+        if start_address is not None:
+            yield (start_address, read_size)
+
+    def register_modbus_entity(self, listener: ModbusControllerEntity) -> None:
+        self._update_listeners.add(listener)
+        for address in listener.addresses:
+            assert not self.connection_type_profile.overlaps_invalid_range(
+                address, address
+            )
+            if address not in self._data:
+                self._data[address] = None
+
+    def remove_modbus_entity(self, listener: ModbusControllerEntity) -> None:
+        self._update_listeners.discard(listener)
+        # If this was the only entity listening on this address, remove it from self._data
+        other_addresses = set(
+            address for entity in self._update_listeners for address in entity.addresses
+        )
+        for address in listener.addresses:
+            if address not in other_addresses and address in self._data:
+                del self._data[address]
+
+    def _notify_update(self, changed_addresses: set[int]) -> None:
+        """Notify listeners"""
+        for listener in self._update_listeners:
+            listener.update_callback(changed_addresses)
+
+    def _notify_is_connected_changed(self) -> None:
+        """Notify listeners that the availability states of the inverter changed"""
+        for listener in self._update_listeners:
+            listener.is_connected_changed_callback()
 
     @staticmethod
     async def autodetect(

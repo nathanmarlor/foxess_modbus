@@ -1,7 +1,6 @@
 """Defines the different inverter models and connection types"""
 import logging
 from typing import Any
-from typing import Iterable
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
@@ -39,66 +38,7 @@ class InverterModelConnectionTypeProfile:
         for charge_period in charge_periods:
             self.entity_descriptions.extend(charge_period.entity_descriptions)
 
-        self.all_addresses = sorted(
-            set(
-                (
-                    address
-                    for entity in self.entity_descriptions
-                    for address in entity.addresses
-                ),
-            )
-        )
-
-        assert not any(self._overlaps_invalid_range(x, x) for x in self.all_addresses)
-
-    def create_read_ranges(self, max_read: int) -> Iterable[tuple[int, int]]:
-        """
-        Generates a set of read ranges to cover the addresses of all registers on this inverter,
-        respecting the maxumum number of registers to read at a time
-
-        :returns: Sequence of tuples of (start_address, num_registers_to_read)
-        """
-
-        # The idea here is that read operations are expensive (there seems to be a large round-trip time at least
-        # with the W610), but reading additional unneeded registers is relatively cheap (probably < 1ms).
-
-        # To give some intuition, here are some examples of the groupings we want to achieve, assuming max_read = 5
-        # 1,2 / 4,5 -> 1,2,3,4,5 (i.e. to read the registers 1, 2, 4 and 5, we'll do a single read spanning 1-5)
-        # 1,2 / 5,6,7,8 -> 1,2 / 5,6,7,8
-        # 1,2 / 5,6,7,8,9 -> 1,2 / 5,6,7,8,9
-        # 1,2 / 5,6,7,8,9,10 -> 1,2,3,4,5 / 6,7,8,9,10
-        # 1,2,3 / 5,6,7 / 9,10 -> 1,2,3,4,5 / 6,7,8,9,10
-
-        # The problem as a whole looks like it's NP-hard (although I can't find a name for it).
-        # We're therefore going to use a fairly simple algorithm which just makes each read as large as it can be.
-
-        start_address: int | None = None
-        read_size = 0
-        for address in self.all_addresses:
-            if start_address is None:
-                start_address, read_size = address, 1
-            # If we're just increasing the previous read size by 1, then don't test whether we're extending
-            # the read over an invalid range (as we assume that registers we're reading to read won't be
-            # inside invalid ranges, tested in __init__). This also assumes that read_size != max_read here.
-            elif address == start_address + 1 or (
-                address <= start_address + max_read - 1
-                and not self._overlaps_invalid_range(start_address, address - 1)
-            ):
-                # There's a previous read which we can extend
-                read_size = address - start_address + 1
-            else:
-                # There's a previous read, and we can't extend it to cover this address
-                yield (start_address, read_size)
-                start_address, read_size = address, 1
-
-            if read_size == max_read:
-                yield (start_address, read_size)
-                start_address, read_size = None, 0
-
-        if start_address is not None:
-            yield (start_address, read_size)
-
-    def _overlaps_invalid_range(self, start_address, end_address):
+    def overlaps_invalid_range(self, start_address, end_address):
         return any(
             r[0] <= end_address and start_address <= r[1]
             for r in self.invalid_register_ranges
