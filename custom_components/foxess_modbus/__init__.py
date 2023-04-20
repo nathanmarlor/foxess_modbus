@@ -75,12 +75,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # {(modbus_type, host): client}
     clients: dict[tuple[str, str], ModbusClient] = {}
     for inverter_id, inverter in entry.data[INVERTERS].items():
+        options = entry.options.get(INVERTERS, {}).get(inverter_id)
+
+        # Pick the adapter out of the user options if it's there
+        adapter_id = options.get(ADAPTER_ID, inverter[ADAPTER_ID])
+
         # Merge in adapter options. This lets us tweak the adapters later, and those settings are reflected back to users
         # Handle an adapter in need of manual input to complete migration
-        inverter.update(ADAPTERS[inverter[ADAPTER_ID]].inverter_config())
+        # Do this after the lines above, so we can respond to an adapter in the options
+        inverter.update(ADAPTERS[adapter_id].inverter_config())
 
-        # Merge in the options, if any. These can override the adapter options set above
-        options = entry.options.get(INVERTERS, {}).get(inverter_id)
+        # Merge in the user's options, if any. These can override the adapter options set above
         if options:
             inverter.update(options)
 

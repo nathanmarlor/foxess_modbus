@@ -10,7 +10,7 @@
       "select_adapter_model": {
         "description": "Choose your adapter model. This lets us use settings tailored to your adapter.",
         "data": {
-          "adapter_model": ""
+          "adapter_id": ""
         }
       },
       "tcp_adapter": {
@@ -83,6 +83,7 @@
       "inverter_options": {
         "description": "Warning: only change these if you know what you are doing. Enable debug logging and watch it to see whether your new settings cause any problems.",
         "data": {
+          "adapter_id": "Adapter",
           "poll_rate": "Poll rate",
           "max_read": "Max read"
         },

@@ -383,13 +383,13 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         """Helper used in the steps which let the user select their adapter model"""
 
         async def body(user_input):
-            return await complete_callback(ADAPTERS[user_input["adapter_model"]])
+            return await complete_callback(ADAPTERS[user_input["adapter_id"]])
 
         adapters = [x for x in ADAPTERS.values() if x.type == adapter_type]
 
         schema = vol.Schema(
             {
-                vol.Required("adapter_model"): selector(
+                vol.Required("adapter_id"): selector(
                     {
                         "select": {
                             "options": [x.adapter_id for x in adapters],
@@ -560,8 +560,19 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
     ) -> FlowResult:
         """Let the user set the selected inverter's settings"""
 
+        config = self._config.data[INVERTERS][self._selected_inverter_id]
+        options = self._config.options.get(INVERTERS, {}).get(
+            self._selected_inverter_id, {}
+        )
+
+        current_adapter = ADAPTERS[options.get(ADAPTER_ID, config[ADAPTER_ID])]
+
         async def body(user_input):
             inverter_options = {}
+
+            adapter_id = user_input["adapter_id"]
+            if adapter_id != current_adapter.adapter_id:
+                inverter_options[ADAPTER_ID] = adapter_id
             poll_rate = user_input.get("poll_rate")
             if poll_rate is not None:
                 inverter_options[POLL_RATE] = poll_rate
@@ -577,17 +588,27 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
 
             return self.async_create_entry(title=_TITLE, data=options)
 
-        existing = self._config.options.get(INVERTERS, {}).get(
-            self._selected_inverter_id, {}
-        )
+        adapters = [x for x in ADAPTERS.values() if x.type == current_adapter.type]
+
         schema = vol.Schema(
             {
+                vol.Required(
+                    "adapter_id", default=current_adapter.adapter_id
+                ): selector(
+                    {
+                        "select": {
+                            "options": [x.adapter_id for x in adapters],
+                            "mode": "dropdown",
+                            "translation_key": "inverter_adapter_models",
+                        }
+                    }
+                ),
                 vol.Optional(
                     "poll_rate",
-                    description={"suggested_value": existing.get(POLL_RATE)},
+                    description={"suggested_value": options.get(POLL_RATE)},
                 ): vol.Any(None, int),
                 vol.Optional(
-                    "max_read", description={"suggested_value": existing.get(MAX_READ)}
+                    "max_read", description={"suggested_value": options.get(MAX_READ)}
                 ): vol.Any(None, int),
             }
         )
