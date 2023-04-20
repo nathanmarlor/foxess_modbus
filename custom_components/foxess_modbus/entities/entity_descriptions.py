@@ -1030,7 +1030,9 @@ _INVERTER_ENTITIES = [
     ModbusSensorDescription(
         key="grid_consumption_energy_today",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11083]),
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11083], holding=[32014]
+            ),
             ModbusAddressesSpec(models=[H3], holding=[32014]),
         ],
         name="Grid Consumption Today",
