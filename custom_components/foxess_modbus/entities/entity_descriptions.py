@@ -179,20 +179,6 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES = [
         validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
-        key="invbatpower",
-        addresses=[
-            ModbusAddressesSpec(
-                models=[H1, AIO_H1, AC1], input=[11008], holding=[31022]
-            )
-        ],
-        name="Inverter Battery Power",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        scale=0.001,
-        validate=[Range(-10000, 10000)],
-    ),
-    ModbusSensorDescription(
         key="load_power",
         addresses=[
             ModbusAddressesSpec(
@@ -459,6 +445,21 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
 
 _INVERTER_ENTITIES = [
     ModbusSensorDescription(
+        key="invbatpower",
+        addresses=[
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11008], holding=[31022]
+            ),
+            ModbusAddressesSpec(models=[H3], holding=[31036]),
+        ],
+        name="Inverter Battery Power",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="kW",
+        scale=0.001,
+        validate=[Range(-10000, 10000)],
+    ),
+    ModbusSensorDescription(
         key="battery_discharge",
         addresses=[
             ModbusAddressesSpec(
@@ -479,7 +480,8 @@ _INVERTER_ENTITIES = [
         addresses=[
             ModbusAddressesSpec(
                 models=[H1, AIO_H1, AC1], input=[11008], holding=[31022]
-            )
+            ),
+            ModbusAddressesSpec(models=[H3], holding=[31036]),
         ],
         name="Battery Charge",
         device_class=SensorDeviceClass.POWER,
