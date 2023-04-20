@@ -836,7 +836,9 @@ _INVERTER_ENTITIES = [
     ModbusSensorDescription(
         key="solar_energy_total",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11070, 11069]),
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11070, 11069], holding=[32001, 32000]
+            ),
             ModbusAddressesSpec(models=[H3], holding=[32001, 32000]),
         ],
         name="Solar Generation Total",
@@ -865,6 +867,7 @@ _INVERTER_ENTITIES = [
     ModbusSensorDescription(
         key="battery_charge_total",
         addresses=[
+            # TODO: There are holding registers for H1, but we currently use an integration
             ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11073, 11072]),
             ModbusAddressesSpec(models=[H3], holding=[32004, 32003]),
         ],
@@ -893,7 +896,9 @@ _INVERTER_ENTITIES = [
     ModbusSensorDescription(
         key="battery_charge_today",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11074]),
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11074], holding=[32005]
+            ),
             ModbusAddressesSpec(models=[H3], holding=[32005]),
         ],
         name="Battery Charge Today",
@@ -906,6 +911,7 @@ _INVERTER_ENTITIES = [
     ModbusSensorDescription(
         key="battery_discharge_total",
         addresses=[
+            # TODO: There are holding registers for H1, but we currently use an integration
             ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11076, 11075]),
             ModbusAddressesSpec(models=[H3], holding=[32007, 32006]),
         ],
@@ -934,7 +940,9 @@ _INVERTER_ENTITIES = [
     ModbusSensorDescription(
         key="battery_discharge_today",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11077]),
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11077], holding=[32008]
+            ),
             ModbusAddressesSpec(models=[H3], holding=[32008]),
         ],
         name="Battery Discharge Today",
@@ -947,6 +955,7 @@ _INVERTER_ENTITIES = [
     ModbusSensorDescription(
         key="feed_in_energy_total",
         addresses=[
+            # TODO: There are holding registers for H1, but we currently use an integration
             ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11079, 11078]),
             ModbusAddressesSpec(models=[H3], holding=[32010, 32009]),
         ],
@@ -975,7 +984,9 @@ _INVERTER_ENTITIES = [
     ModbusSensorDescription(
         key="feed_in_energy_today",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11080]),
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11080], holding=[32011]
+            ),
             ModbusAddressesSpec(models=[H3], holding=[32011]),
         ],
         name="Feed-in Today",
@@ -988,6 +999,7 @@ _INVERTER_ENTITIES = [
     ModbusSensorDescription(
         key="grid_consumption_energy_total",
         addresses=[
+            # TODO: There are holding registers for H1, but we currently use an integration
             ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11082, 11081]),
             ModbusAddressesSpec(models=[H3], holding=[32013, 32012]),
         ],
