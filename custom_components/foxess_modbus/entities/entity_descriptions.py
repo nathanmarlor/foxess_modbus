@@ -152,7 +152,11 @@ _PV_ENTITIES: list[EntityFactory] = [
 _H1_CURRENT_VOLTAGE_POWER_ENTITIES = [
     ModbusSensorDescription(
         key="invbatvolt",
-        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11006])],
+        addresses=[
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11006], holding=[31020]
+            )
+        ],
         name="Inverter Battery Voltage",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -162,7 +166,11 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES = [
     ),
     ModbusSensorDescription(
         key="invbatcurrent",
-        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11007])],
+        addresses=[
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11007], holding=[31021]
+            )
+        ],
         name="Inverter Battery Current",
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -511,7 +519,11 @@ _INVERTER_ENTITIES = [
     ),
     ModbusSensorDescription(
         key="rpower",
-        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11011])],
+        addresses=[
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11011], holding=[31008]
+            )
+        ],
         name="Inverter Power",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -536,7 +548,11 @@ _INVERTER_ENTITIES = [
     ),
     ModbusSensorDescription(
         key="eps_rvolt",
-        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11015])],
+        addresses=[
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11015], holding=[31010]
+            )
+        ],
         name="EPS Voltage",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -545,8 +561,39 @@ _INVERTER_ENTITIES = [
         validate=[Range(0, 300)],
     ),
     ModbusSensorDescription(
+        key="eps_rcurrent",
+        addresses=[
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11016], holding=[31011]
+            )
+        ],
+        name="EPS Current",
+        device_class=SensorDeviceClass.CURRENT,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="A",
+        scale=0.1,
+        validate=[Range(0, 100)],
+    ),
+    ModbusSensorDescription(
+        key="eps_rpower",
+        addresses=[
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11017], holding=[31012]
+            )
+        ],
+        name="EPS Power",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="kW",
+        scale=0.001,
+        validate=[Range(-10000, 10000)],
+    ),
+    ModbusSensorDescription(
         key="eps_frequency",
         addresses=[
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11020], holding=[31013]
+            ),
             ModbusAddressesSpec(models=[H3], holding=[31025]),
         ],
         name="Inverter Frequency",
@@ -647,9 +694,7 @@ _INVERTER_ENTITIES = [
     ModbusSensorDescription(
         key="batvolt",
         addresses=[
-            ModbusAddressesSpec(
-                models=[H1, AIO_H1, AC1], input=[11034], holding=[31020]
-            ),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11034]),
             ModbusAddressesSpec(models=[H3], holding=[31034]),
         ],
         name="Battery Voltage",
@@ -662,9 +707,7 @@ _INVERTER_ENTITIES = [
     ModbusSensorDescription(
         key="bat_current",
         addresses=[
-            ModbusAddressesSpec(
-                models=[H1, AIO_H1, AC1], input=[11035], holding=[31021]
-            ),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11035]),
             ModbusAddressesSpec(models=[H3], holding=[31035]),
         ],
         name="Battery Current",
