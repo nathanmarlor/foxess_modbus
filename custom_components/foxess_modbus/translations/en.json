@@ -8,7 +8,7 @@
         }
       },
       "select_adapter_model": {
-        "description": "Choose your adapter model. This lets us use settings tailored to your adapter.",
+        "description": "Choose your adapter model. This lets us use settings tailored to your adapter. If you don't see your model, choose \"Other\" and let us know: https://github.com/nathanmarlor/foxess_modbus/discussions/new.",
         "data": {
           "adapter_id": ""
         }
