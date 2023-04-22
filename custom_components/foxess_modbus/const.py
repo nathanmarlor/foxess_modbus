@@ -19,26 +19,24 @@ ATTR_ENTRY_TYPE = "entry_type"
 
 # Modbus Options
 FRIENDLY_NAME = "friendly_name"
-MODBUS_HOST = "modbus_host"
-MODBUS_PORT = "modbus_port"
 MODBUS_SLAVE = "modbus_slave"
 MODBUS_DEVICE = "modbus_device"
 MODBUS_TYPE = "modbus_type"
-MODBUS_SERIAL_HOST = "modbus_serial_host"
 MODBUS_SERIAL_BAUD = "modbus_serial_baud"
 POLL_RATE = "poll_rate"
 MAX_READ = "max_read"
+ADAPTER_ID = "adapter_id"
 
-INVERTER_TYPE = "inverter_type"
 INVERTER_MODEL = "inverter_model"
 INVERTER_BASE = "inverter_base"
 INVERTER_CONN = "inverter_conn"
 INVERTERS = "inverters"
 
-ADD_ANOTHER = "add_another"
 CONFIG_SAVE_TIME = "save_time"
 
+HOST = "host"
 TCP = "TCP"
+UDP = "UDP"
 SERIAL = "SERIAL"
 
 CONTROLLER = "controllers"
@@ -47,7 +45,8 @@ INVERTER = "inverter"
 CONNECTION = "connection"
 MODBUS = "modbus"
 
-ENERGY_DASHBOARD = "energy_dashboard"
+# Used as a key in the inverter config to indicate that the adapter was migrated from config version 1
+ADAPTER_WAS_MIGRATED = "adapter_was_migrated"
 
 # Defaults
 DEFAULT_NAME = DOMAIN

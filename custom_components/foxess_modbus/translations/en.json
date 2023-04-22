@@ -1,56 +1,116 @@
 {
   "config": {
     "step": {
-      "user": {
-        "description": "Please choose how your modbus adapter is connected",
+      "select_adapter_type": {
+        "description": "How do you connect to your inverter?",
         "data": {
-          "modbus_type": "Modbus Type"
+          "adapter_type": ""
         }
       },
-      "tcp": {
-        "description": "Please enter your Modbus IP and Port.\nSet friendly name if you have more than one inverter, otherwise leave blank.",
+      "select_adapter_model": {
+        "description": "Choose your adapter model. This lets us use settings tailored to your adapter. If you don't see your model, choose \"Other\" and let us know: https://github.com/nathanmarlor/foxess_modbus/discussions/new.",
         "data": {
-          "friendly_name": "Friendly Name",
-          "modbus_host": "Modbus Host",
-          "modbus_port": "Modbus Port",
-          "modbus_slave": "Modbus Slave",
-          "add_another": "Add another device"
+          "adapter_id": ""
         }
       },
-      "serial": {
-        "description": "Please enter your serial or usb device id. \nSet friendly name if you have more than one inverter, otherwise leave blank.",
+      "tcp_adapter": {
+        "description": "Set up your adapter by following the instructions at {setup_link}.",
         "data": {
-          "friendly_name": "Friendly Name",
-          "modbus_serial_host": "Modbus Serial Host",
-          "modbus_slave": "Modbus Slave",
-          "add_another": "Add another device"
+          "protocol": "Protocol",
+          "protocol_with_recommendation": "Protocol",
+          "lan_connection_host": "Inverter hostname / IP address",
+          "adapter_host": "Modbus adapter hostname / IP address",
+          "adapter_port": "Modbus adapter port",
+          "modbus_slave": "Inverter slave ID"
+        },
+        "data_description": {
+          "protocol_with_recommendation": "We recommend using {recommended_protocol} with this adapter, see the link above",
+          "modbus_slave": "This can be set from Settings -> Communication in the inverter menu"
+        }
+      },
+      "serial_adapter": {
+        "description": "Set up your adapter by following the instructions at {setup_link}.",
+        "data": {
+          "serial_device": "USB serial device",
+          "modbus_slave": "Inverter slave ID"
+        },
+        "data_description": {
+          "modbus_slave": "This can be set from Settings -> Communication in the inverter menu"
+        }
+      },
+      "friendly_name": {
+        "description": "If you have more than one inverter, give them each a name to tell them apart.",
+        "data": {
+          "friendly_name": "Friendly Name"
+        },
+        "data_description": {
+          "friendly_name": "This is added as a prefix to all of the inverter's entity IDs"
+        }
+      },
+      "add_another_inverter": {
+        "description": "Set-up complete. Do you want to add another inverter?",
+        "menu_options": {
+          "energy": "I'm done",
+          "select_adapter_type": "Add another inverter"
         }
       },
       "energy": {
-        "description": "Warning: this will overwrite any existing settings. \nWe recommend checking the configuration at (https://your-ha.com/config/energy)",
+        "description": "Warning: this will overwrite any existing settings.\nWe recommend checking the configuration at (https://your-ha.com/config/energy).",
         "data": {
           "energy_dashboard": "Automatically configure the Energy Dashboard"
         }
       }
     },
     "error": {
-      "modbus_duplicate": "Please enter a unique host/friendly name",
+      "duplicate_connection_details": "You have already set up an inverter with this address",
+      "duplicate_friendly_name": "Please enter a unique friendly name",
       "modbus_error": "Error - please check connection details",
       "modbus_model_not_supported": "Error - model is not supported",
       "invalid_friendly_name": "Friendly name must contain only lower-case letters, numbers and underscores"
     },
     "abort": {
-      "single_instance_allowed": "Only a single instance is allowed."
+      "reconfigure_successful": "Successful. We can now use settings specific to your adapter."
     }
   },
   "options": {
     "step": {
-      "init": {
-        "description": "Configure the poll rate and max read values\nRecommended: AUX: 10s / 8 max & LAN: 5s / 50 max",
+      "select_inverter": {
+        "description": "Select inverter to configure.",
         "data": {
+          "inverter": ""
+        }
+      },
+      "inverter_options": {
+        "description": "Options for \"{inverter}\".",
+        "data": {
+          "adapter_id": "Adapter",
           "poll_rate": "Poll rate",
           "max_read": "Max read"
+        },
+        "data_description": {
+          "poll_rate": "The default for your adapter type is {default_poll_rate}. Leave empty to use the default",
+          "max_read": "The default for your adapter type is {default_max_read}. Leave empty to use the default. Warning: Look at the debug log for problems if you increase this!"
         }
+      }
+    }
+  },
+  "selector": {
+    "inverter_adapter_types": {
+      "options": {
+        "direct": "Direct LAN Connection",
+        "serial": "USB to Modbus Adapter",
+        "network": "Ethernet to Modbus Adapter"
+      }
+    },
+    "inverter_adapter_models": {
+      "options": {
+        "dsd_tech_sh_u10": "DSD TECH SH-U10",
+        "runcci_yun_usb_to_rs485_converter": "RUNCCI-YUN USB to RS485 Converter",
+        "serial_other": "Other",
+        "usr_tcp232_410s": "USR-TCP-410s",
+        "usr_w610": "USR-W610",
+        "waveshare_rs485_to_eth_b": "Waveshare Modbus RTU Relay",
+        "network_other": "Other"
       }
     }
   }
