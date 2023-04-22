@@ -5,9 +5,11 @@ For more details about this integration, please refer to
 https://github.com/nathanmarlor/foxess_modbus
 """
 import asyncio
+import copy
 import logging
 import uuid
 
+from homeassistant.components.energy import data
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
@@ -120,6 +122,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
     _LOGGER.debug("Migrating from version %s", config_entry.version)
 
     if config_entry.version == 1:
+        # Introduce adapter selection
         new_data = {
             INVERTERS: {},
             CONFIG_SAVE_TIME: config_entry.data[CONFIG_SAVE_TIME],
@@ -159,10 +162,29 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                         if inverter_options:
                             options[INVERTERS][inverter_id] = inverter_options
 
-        config_entry.version = 2
         hass.config_entries.async_update_entry(
             config_entry, data=new_data, options=options
         )
+        config_entry.version = 2
+
+    if config_entry.version == 2:
+        # Fix a badly-set-up energy dashboard
+        energy_manager = await data.async_get_manager(hass)
+        energy_data = copy.deepcopy(energy_manager.data)
+        for energy_source in energy_data.get("energy_sources", []):
+            if energy_source["type"] == "solar":
+                energy_source.setdefault("config_entry_solar_forecast", None)
+            elif energy_source["type"] == "grid":
+                for flow_from in energy_source.get("flow_from", []):
+                    flow_from.setdefault("stat_cost", None)
+                    flow_from.setdefault("entity_energy_price", None)
+                    flow_from.setdefault("number_energy_price", None)
+                for flow_to in energy_source.get("flow_to", []):
+                    flow_to.setdefault("stat_compensation", None)
+                    flow_to.setdefault("entity_energy_price", None)
+                    flow_to.setdefault("number_energy_price", None)
+        await energy_manager.async_update(energy_data)
+        config_entry.version = 3
 
     _LOGGER.info("Migration to version %s successful", config_entry.version)
     return True
