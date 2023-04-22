@@ -570,8 +570,9 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
         async def body(user_input):
             inverter_options = {}
 
-            adapter_id = user_input["adapter_id"]
-            if adapter_id != current_adapter.adapter_id:
+            # This won't be set if there's only a single adapter of that type, e.g. direct LAN conniction
+            adapter_id = user_input.get("adapter_id", None)
+            if adapter_id is not None and adapter_id != current_adapter.adapter_id:
                 inverter_options[ADAPTER_ID] = adapter_id
             poll_rate = user_input.get("poll_rate")
             if poll_rate is not None:
@@ -590,34 +591,37 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
 
         adapters = [x for x in ADAPTERS.values() if x.type == current_adapter.type]
 
-        schema = vol.Schema(
-            {
-                vol.Required(
-                    "adapter_id", default=current_adapter.adapter_id
-                ): selector(
-                    {
-                        "select": {
-                            "options": [x.adapter_id for x in adapters],
-                            "mode": "dropdown",
-                            "translation_key": "inverter_adapter_models",
-                        }
+        schema_parts = {}
+        if len(adapters) > 1:
+            schema_parts[
+                vol.Required("adapter_id", default=current_adapter.adapter_id)
+            ] = selector(
+                {
+                    "select": {
+                        "options": [x.adapter_id for x in adapters],
+                        "mode": "dropdown",
+                        "translation_key": "inverter_adapter_models",
                     }
-                ),
-                vol.Optional(
-                    "poll_rate",
-                    description={"suggested_value": options.get(POLL_RATE)},
-                ): vol.Any(None, int),
-                vol.Optional(
-                    "max_read", description={"suggested_value": options.get(MAX_READ)}
-                ): vol.Any(None, int),
-            }
-        )
-        adapter = ADAPTERS[
-            self._config.data[INVERTERS][self._selected_inverter_id][ADAPTER_ID]
-        ]
+                }
+            )
+
+        schema_parts[
+            vol.Optional(
+                "poll_rate",
+                description={"suggested_value": options.get(POLL_RATE)},
+            )
+        ] = vol.Any(None, int)
+        schema_parts[
+            vol.Optional(
+                "max_read", description={"suggested_value": options.get(MAX_READ)}
+            )
+        ] = vol.Any(None, int)
+
+        schema = vol.Schema(schema_parts)
+
         description_placeholders = {
-            "default_poll_rate": adapter.poll_rate,
-            "default_max_read": adapter.max_read,
+            "default_poll_rate": current_adapter.poll_rate,
+            "default_max_read": current_adapter.max_read,
         }
 
         return await self._with_default_form(
