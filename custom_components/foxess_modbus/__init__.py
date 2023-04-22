@@ -75,7 +75,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # {(modbus_type, host): client}
     clients: dict[tuple[str, str], ModbusClient] = {}
     for inverter_id, inverter in entry.data[INVERTERS].items():
-        options = entry.options.get(INVERTERS, {}).get(inverter_id)
+        # Remember that there might not be any options
+        options = entry.options.get(INVERTERS, {}).get(inverter_id, {})
 
         # Pick the adapter out of the user options if it's there
         adapter_id = options.get(ADAPTER_ID, inverter[ADAPTER_ID])
