@@ -147,8 +147,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                             if inverter[INVERTER_CONN] == "LAN":
                                 adapter = ADAPTERS["direct"]
                             else:
-                                # Go for the worst device, which is the W610
-                                adapter = ADAPTERS["usr_w610"]
+                                adapter = ADAPTERS["network_other"]
                         elif modbus_type == SERIAL:
                             adapter = ADAPTERS["serial_other"]
                         inverter[ADAPTER_ID] = adapter.adapter_id
