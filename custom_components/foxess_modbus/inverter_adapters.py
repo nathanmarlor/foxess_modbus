@@ -21,7 +21,7 @@ class InverterAdapterType(str, Enum):
 
 
 _DEFAULT_POLL_RATE = 10
-_DEFAULT_MAX_READ = 100  # Perhaps a bit optimistic?
+_DEFAULT_MAX_READ = 20  # Be safe by default
 
 
 @dataclass
@@ -119,6 +119,7 @@ ADAPTERS = {
         InverterAdapter.serial(
             "dsd_tech_sh_u10",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/DSD-TECH-SH-U10",
+            max_read=100,
         ),
         InverterAdapter.serial(
             "runcci_yun_usb_to_rs485_converter",
@@ -133,6 +134,7 @@ ADAPTERS = {
             "usr_tcp232_410s",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/USR-TCP232-410s",
             network_protocols=[TCP, UDP],
+            max_read=100,
         ),
         InverterAdapter.network(
             "usr_w610",
@@ -145,6 +147,7 @@ ADAPTERS = {
             "waveshare_rs485_to_eth_b",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/Waveshare-RS485-to-ETH-%28B%29",
             network_protocols=[TCP, UDP],
+            max_read=100,
         ),
         InverterAdapter.network(
             "network_other",
