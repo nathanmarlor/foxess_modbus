@@ -16,7 +16,6 @@ from .common.entity_controller import ModbusControllerEntity
 from .common.exceptions import UnsupportedInverterException
 from .common.register_type import RegisterType
 from .common.unload_controller import UnloadController
-from .const import AUX
 from .inverter_profiles import INVERTER_PROFILES
 from .inverter_profiles import InverterModelConnectionTypeProfile
 from .modbus_client import ModbusClient

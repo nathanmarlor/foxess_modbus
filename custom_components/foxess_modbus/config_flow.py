@@ -27,7 +27,8 @@ from homeassistant.helpers.selector import selector
 from pymodbus.exceptions import ConnectionException
 
 from .common.exceptions import UnsupportedInverterException
-from .const import ADAPTER_ID, AUX
+from .const import ADAPTER_ID
+from .const import AUX
 from .const import CONFIG_SAVE_TIME
 from .const import DOMAIN
 from .const import FRIENDLY_NAME
@@ -431,9 +432,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             else:
                 assert False
             client = ModbusClient(self.hass, params)
-            base_model, full_model = await ModbusController.autodetect(
-                client, slave
-            )
+            base_model, full_model = await ModbusController.autodetect(client, slave)
 
             self._inverter_data.inverter_base_model = base_model
             self._inverter_data.inverter_model = full_model

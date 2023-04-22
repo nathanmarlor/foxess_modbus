@@ -3,7 +3,9 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
-from .const import AUX, LAN, MAX_READ
+from .const import AUX
+from .const import LAN
+from .const import MAX_READ
 from .const import POLL_RATE
 from .const import TCP
 from .const import UDP
