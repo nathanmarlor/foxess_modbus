@@ -413,8 +413,9 @@ H1_AC1: list[EntityFactory] = [
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
-        scale=0.1,
+        scale=0.001,
         signed=False,
+        entity_registry_enabled_default=False,
         validate=[Min(0)],
     ),
     ModbusSensorDescription(
