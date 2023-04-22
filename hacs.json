@@ -1,6 +1,6 @@
 {
   "name": "FoxESS - Modbus",
   "hacs": "1.20.0",
-  "homeassistant": "2022.2.0",
+  "homeassistant": "2023.3.0",
   "render_readme": true
 }
