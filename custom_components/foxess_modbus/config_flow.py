@@ -620,6 +620,8 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
         schema = vol.Schema(schema_parts)
 
         description_placeholders = {
+            # TODO: Will need changing if we let them set the friendly name / host / port
+            "inverter": self._create_label_for_inverter(config),
             "default_poll_rate": current_adapter.poll_rate,
             "default_max_read": current_adapter.max_read,
         }
