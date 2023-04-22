@@ -45,6 +45,9 @@ INVERTER = "inverter"
 CONNECTION = "connection"
 MODBUS = "modbus"
 
+# Used as a key in the inverter config to indicate that the adapter was migrated from config version 1
+ADAPTER_WAS_MIGRATED = "adapter_was_migrated"
+
 # Defaults
 DEFAULT_NAME = DOMAIN
 

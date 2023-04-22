@@ -14,6 +14,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import UNDEFINED
 
 from .const import ADAPTER_ID
+from .const import ADAPTER_WAS_MIGRATED
 from .const import CONFIG_SAVE_TIME
 from .const import DOMAIN
 from .const import FRIENDLY_NAME
@@ -151,6 +152,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                         elif modbus_type == SERIAL:
                             adapter = ADAPTERS["serial_other"]
                         inverter[ADAPTER_ID] = adapter.adapter_id
+                        inverter[ADAPTER_WAS_MIGRATED] = True
 
                         inverter_id = str(uuid.uuid4())
                         new_data[INVERTERS][inverter_id] = inverter
