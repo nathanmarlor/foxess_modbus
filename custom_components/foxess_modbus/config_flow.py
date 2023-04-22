@@ -114,7 +114,7 @@ class FlowHandlerMixin:
 class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for foxess_modbus."""
 
-    VERSION = 2
+    VERSION = 3
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     def __init__(self) -> None:
@@ -467,10 +467,14 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             energy_prefs["energy_sources"].extend(
                 [
                     SolarSourceType(
-                        type="solar", stat_energy_from=f"{name_prefix}pv1_energy_total"
+                        type="solar",
+                        stat_energy_from=f"{name_prefix}pv1_energy_total",
+                        config_entry_solar_forecast=None,
                     ),
                     SolarSourceType(
-                        type="solar", stat_energy_from=f"{name_prefix}pv2_energy_total"
+                        type="solar",
+                        stat_energy_from=f"{name_prefix}pv2_energy_total",
+                        config_entry_solar_forecast=None,
                     ),
                     BatterySourceType(
                         type="battery",
@@ -481,18 +485,24 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             )
 
         grid_source = GridSourceType(
-            type="grid", flow_from=[], flow_to=[], cost_adjustment_day=0
+            type="grid", flow_from=[], flow_to=[], cost_adjustment_day=0.0
         )
         for name in friendly_names:
             name_prefix = _prefix_name(name)
             grid_source["flow_from"].append(
                 FlowFromGridSourceType(
-                    stat_energy_from=f"{name_prefix}grid_consumption_energy_total"
+                    stat_energy_from=f"{name_prefix}grid_consumption_energy_total",
+                    stat_cost=None,
+                    entity_energy_price=None,
+                    number_energy_price=None,
                 )
             )
             grid_source["flow_to"].append(
                 FlowToGridSourceType(
-                    stat_energy_to=f"{name_prefix}feed_in_energy_total"
+                    stat_energy_to=f"{name_prefix}feed_in_energy_total",
+                    stat_compensation=None,
+                    entity_energy_price=None,
+                    number_energy_price=None,
                 )
             )
         energy_prefs["energy_sources"].append(grid_source)
