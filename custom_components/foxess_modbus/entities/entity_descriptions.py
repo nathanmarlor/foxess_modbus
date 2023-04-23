@@ -605,7 +605,7 @@ _INVERTER_ENTITIES = [
             ModbusAddressesSpec(models=[H3], holding=[31025]),
         ],
         entity_registry_enabled_default=False,
-        name="Inverter Frequency",
+        name="EPS Frequency",
         device_class=SensorDeviceClass.FREQUENCY,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="Hz",
