@@ -288,6 +288,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
     ModbusSensorDescription(
         key="eps_power_R",
         addresses=[ModbusAddressesSpec(models=[H3], holding=[31022])],
+        entity_registry_enabled_default=False,
         name="EPS Power R",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -298,6 +299,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
     ModbusSensorDescription(
         key="eps_power_S",
         addresses=[ModbusAddressesSpec(models=[H3], holding=[31023])],
+        entity_registry_enabled_default=False,
         name="EPS Power S",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -308,6 +310,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
     ModbusSensorDescription(
         key="eps_power_T",
         addresses=[ModbusAddressesSpec(models=[H3], holding=[31024])],
+        entity_registry_enabled_default=False,
         name="EPS Power T",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -555,6 +558,7 @@ _INVERTER_ENTITIES = [
                 models=[H1, AIO_H1, AC1], input=[11015], holding=[31010]
             )
         ],
+        entity_registry_enabled_default=False,
         name="EPS Voltage",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -569,6 +573,7 @@ _INVERTER_ENTITIES = [
                 models=[H1, AIO_H1, AC1], input=[11016], holding=[31011]
             )
         ],
+        entity_registry_enabled_default=False,
         name="EPS Current",
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -583,6 +588,7 @@ _INVERTER_ENTITIES = [
                 models=[H1, AIO_H1, AC1], input=[11017], holding=[31012]
             )
         ],
+        entity_registry_enabled_default=False,
         name="EPS Power",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -598,6 +604,7 @@ _INVERTER_ENTITIES = [
             ),
             ModbusAddressesSpec(models=[H3], holding=[31025]),
         ],
+        entity_registry_enabled_default=False,
         name="Inverter Frequency",
         device_class=SensorDeviceClass.FREQUENCY,
         state_class=SensorStateClass.MEASUREMENT,
