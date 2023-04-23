@@ -71,8 +71,8 @@ Recommend installation through [HACS][hacs]
    - Search for 'FoxESS - Modbus'
    - Download
 5. Restart Home Assistant
-6. Go to Settings > Devices and Services > Add Integration 
-7. Search for and select 'FoxESS - Modbus' (If the integration is  not found, empty your browser cache and reload the page).
+6. Go to Settings > Devices and Services > Add Integration
+7. Search for and select 'FoxESS - Modbus' (If the integration is  not found, empty your browser cache and reload the page)
 8. Proceed with the configuration
 
 ## Configuration and Options
