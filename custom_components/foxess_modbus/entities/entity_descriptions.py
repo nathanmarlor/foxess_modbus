@@ -1112,11 +1112,12 @@ _INVERTER_ENTITIES = [
         validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
-        key="load_energy_total",
+        key="load_power_total",
         addresses=[
-            ModbusAddressesSpec(
-                models=[H1, AIO_H1, AC1], input=[11091, 11090], holding=[32022, 32021]
-            ),
+            # TODO: There are registers for H1, but we currently use an integration
+            # ModbusAddressesSpec(
+            #     models=[H1, AIO_H1, AC1], input=[11091, 11090], holding=[32022, 32021]
+            # ),
             ModbusAddressesSpec(models=[H3], holding=[32022, 32021]),
         ],
         name="Load Energy Total",
@@ -1126,6 +1127,23 @@ _INVERTER_ENTITIES = [
         scale=0.1,
         signed=False,
         validate=[Min(0)],
+    ),
+    ModbusIntegrationSensorDescription(
+        key="load_power_total",
+        models=[
+            EntitySpec(
+                models=[H1, AIO_H1, AC1],
+                register_types=[RegisterType.INPUT, RegisterType.HOLDING],
+            )
+        ],
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement="kWh",
+        integration_method="left",
+        name="Load Energy Total",
+        round_digits=2,
+        source_entity="load_power",
+        unit_time=UnitOfTime.HOURS,
     ),
     ModbusSensorDescription(
         key="load_energy_today",
