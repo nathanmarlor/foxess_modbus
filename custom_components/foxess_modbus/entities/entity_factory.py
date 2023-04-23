@@ -49,9 +49,8 @@ class EntityFactory(ABC):
             addresses = spec.addresses_for_inverter_model(inverter_model, register_type)
             if addresses is not None:
                 assert len(addresses) == 1
-                assert (
-                    result is None
-                )  # We shouldn't get more than one spec which matches
+                # We shouldn't get more than one spec which matches
+                assert result is None
                 result = addresses[0]
         return result
 
@@ -72,8 +71,7 @@ class EntityFactory(ABC):
         for spec in address_specs:
             addresses = spec.addresses_for_inverter_model(inverter_model, register_type)
             if addresses is not None:
-                assert (
-                    result is None
-                )  # We shouldn't get more than one spec which matches
+                # We shouldn't get more than one spec which matches
+                assert result is None
                 result = addresses
         return result
