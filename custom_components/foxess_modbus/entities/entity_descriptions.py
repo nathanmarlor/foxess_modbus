@@ -28,9 +28,7 @@ _PV_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="pv1_voltage",
         addresses=[
-            ModbusAddressesSpec(
-                models=[H1, AIO_H1, H3], input=[11000], holding=[31000]
-            ),
+            ModbusAddressesSpec(models=[H1, AIO_H1], input=[11000], holding=[31000]),
             ModbusAddressesSpec(models=[H3], holding=[31000]),
         ],
         name="PV1 Voltage",
@@ -186,6 +184,151 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES = [
             )
         ],
         name="Load Power",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="kW",
+        scale=0.001,
+        validate=[Range(-100, 100)],
+    ),
+    ModbusSensorDescription(
+        key="rvolt",
+        addresses=[
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11009], holding=[31006]
+            )
+        ],
+        name="Inverter Voltage",
+        device_class=SensorDeviceClass.VOLTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="V",
+        scale=0.1,
+        validate=[Range(0, 300)],
+    ),
+    ModbusSensorDescription(
+        key="rcurrent",
+        addresses=[
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11010], holding=[31007]
+            )
+        ],
+        name="Inverter Current",
+        device_class=SensorDeviceClass.CURRENT,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="A",
+        scale=0.1,
+        validate=[Range(0, 100)],
+    ),
+    ModbusSensorDescription(
+        key="rpower",
+        addresses=[
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11011], holding=[31008]
+            )
+        ],
+        name="Inverter Power",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="kW",
+        scale=0.001,
+        validate=[Range(-10000, 10000)],
+    ),
+    ModbusSensorDescription(
+        key="eps_rvolt",
+        addresses=[
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11015], holding=[31010]
+            )
+        ],
+        entity_registry_enabled_default=False,
+        name="EPS Voltage",
+        device_class=SensorDeviceClass.VOLTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="V",
+        scale=0.1,
+        validate=[Range(0, 300)],
+    ),
+    ModbusSensorDescription(
+        key="eps_rcurrent",
+        addresses=[
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11016], holding=[31011]
+            )
+        ],
+        entity_registry_enabled_default=False,
+        name="EPS Current",
+        device_class=SensorDeviceClass.CURRENT,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="A",
+        scale=0.1,
+        validate=[Range(0, 100)],
+    ),
+    ModbusSensorDescription(
+        key="eps_rpower",
+        addresses=[
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11017], holding=[31012]
+            )
+        ],
+        entity_registry_enabled_default=False,
+        name="EPS Power",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="kW",
+        scale=0.001,
+        validate=[Range(-10000, 10000)],
+    ),
+    ModbusSensorDescription(
+        key="grid_ct",
+        addresses=[
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11021], holding=[31014]
+            )
+        ],
+        name="Grid CT",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="kW",
+        scale=0.001,
+        validate=[Range(-100, 100)],
+    ),
+    ModbusSensorDescription(
+        key="feed_in",
+        addresses=[
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11021], holding=[31014]
+            )
+        ],
+        name="Feed-in",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="kW",
+        scale=0.001,
+        post_process=lambda v: v if v > 0 else 0,
+        validate=[Range(0, 100)],
+    ),
+    ModbusSensorDescription(
+        key="grid_consumption",
+        addresses=[
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11021], holding=[31014]
+            )
+        ],
+        name="Grid Consumption",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="kW",
+        scale=0.001,
+        post_process=lambda v: abs(v) if v < 0 else 0,
+        validate=[Range(0, 100)],
+    ),
+    ModbusSensorDescription(
+        key="ct2_meter",
+        addresses=[
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1], input=[11022], holding=[31015]
+            )
+        ],
+        name="CT2 Meter",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
@@ -495,48 +638,6 @@ _INVERTER_ENTITIES = [
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
-        key="rvolt",
-        addresses=[
-            ModbusAddressesSpec(
-                models=[H1, AIO_H1, AC1], input=[11009], holding=[31006]
-            )
-        ],
-        name="Inverter Voltage",
-        device_class=SensorDeviceClass.VOLTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="V",
-        scale=0.1,
-        validate=[Range(0, 300)],
-    ),
-    ModbusSensorDescription(
-        key="rcurrent",
-        addresses=[
-            ModbusAddressesSpec(
-                models=[H1, AIO_H1, AC1], input=[11010], holding=[31007]
-            )
-        ],
-        name="Inverter Current",
-        device_class=SensorDeviceClass.CURRENT,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="A",
-        scale=0.1,
-        validate=[Range(0, 100)],
-    ),
-    ModbusSensorDescription(
-        key="rpower",
-        addresses=[
-            ModbusAddressesSpec(
-                models=[H1, AIO_H1, AC1], input=[11011], holding=[31008]
-            )
-        ],
-        name="Inverter Power",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        scale=0.001,
-        validate=[Range(-10000, 10000)],
-    ),
-    ModbusSensorDescription(
         key="rfreq",
         addresses=[
             ModbusAddressesSpec(
@@ -550,51 +651,6 @@ _INVERTER_ENTITIES = [
         native_unit_of_measurement="Hz",
         scale=0.01,
         validate=[Range(0, 60)],
-    ),
-    ModbusSensorDescription(
-        key="eps_rvolt",
-        addresses=[
-            ModbusAddressesSpec(
-                models=[H1, AIO_H1, AC1], input=[11015], holding=[31010]
-            )
-        ],
-        entity_registry_enabled_default=False,
-        name="EPS Voltage",
-        device_class=SensorDeviceClass.VOLTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="V",
-        scale=0.1,
-        validate=[Range(0, 300)],
-    ),
-    ModbusSensorDescription(
-        key="eps_rcurrent",
-        addresses=[
-            ModbusAddressesSpec(
-                models=[H1, AIO_H1, AC1], input=[11016], holding=[31011]
-            )
-        ],
-        entity_registry_enabled_default=False,
-        name="EPS Current",
-        device_class=SensorDeviceClass.CURRENT,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="A",
-        scale=0.1,
-        validate=[Range(0, 100)],
-    ),
-    ModbusSensorDescription(
-        key="eps_rpower",
-        addresses=[
-            ModbusAddressesSpec(
-                models=[H1, AIO_H1, AC1], input=[11017], holding=[31012]
-            )
-        ],
-        entity_registry_enabled_default=False,
-        name="EPS Power",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        scale=0.001,
-        validate=[Range(-10000, 10000)],
     ),
     ModbusSensorDescription(
         key="eps_frequency",
@@ -611,64 +667,6 @@ _INVERTER_ENTITIES = [
         native_unit_of_measurement="Hz",
         scale=0.01,
         validate=[Range(0, 60)],
-    ),
-    ModbusSensorDescription(
-        key="grid_ct",
-        addresses=[
-            ModbusAddressesSpec(
-                models=[H1, AIO_H1, AC1], input=[11021], holding=[31014]
-            )
-        ],
-        name="Grid CT",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        scale=0.001,
-        validate=[Range(-100, 100)],
-    ),
-    ModbusSensorDescription(
-        key="feed_in",
-        addresses=[
-            ModbusAddressesSpec(
-                models=[H1, AIO_H1, AC1], input=[11021], holding=[31014]
-            )
-        ],
-        name="Feed-in",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        scale=0.001,
-        post_process=lambda v: v if v > 0 else 0,
-        validate=[Range(0, 100)],
-    ),
-    ModbusSensorDescription(
-        key="grid_consumption",
-        addresses=[
-            ModbusAddressesSpec(
-                models=[H1, AIO_H1, AC1], input=[11021], holding=[31014]
-            )
-        ],
-        name="Grid Consumption",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        scale=0.001,
-        post_process=lambda v: abs(v) if v < 0 else 0,
-        validate=[Range(0, 100)],
-    ),
-    ModbusSensorDescription(
-        key="ct2_meter",
-        addresses=[
-            ModbusAddressesSpec(
-                models=[H1, AIO_H1, AC1], input=[11022], holding=[31015]
-            )
-        ],
-        name="CT2 Meter",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        scale=0.001,
-        validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
         key="invtemp",
@@ -981,11 +979,11 @@ _INVERTER_ENTITIES = [
         models=[
             EntitySpec(models=[H1, AIO_H1, AC1], register_types=[RegisterType.HOLDING]),
         ],
+        name="Feed-in Total",
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
         integration_method="left",
-        name="Feed-in Total",
         round_digits=2,
         source_entity="feed_in",
         unit_time=UnitOfTime.HOURS,
