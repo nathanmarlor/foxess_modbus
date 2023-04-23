@@ -145,11 +145,14 @@ INVERTER_PROFILES = {
             RegisterType.HOLDING,
             invalid_register_ranges=[],
         ),
-        # The H3 seems to use holding registers for everything, so we currently can't automatically
-        # tell the difference between AUX and LAN. That should be fixed with the config flow rework.
-        # For now, detect everything as LAN.
+        # The H3 seems to use holding registers for everything
         InverterModelProfile(H3).add_connection_type(
             LAN,
+            RegisterType.HOLDING,
+            invalid_register_ranges=[],
+        ),
+        InverterModelProfile(H3).add_connection_type(
+            AUX,
             RegisterType.HOLDING,
             invalid_register_ranges=[],
         ),
