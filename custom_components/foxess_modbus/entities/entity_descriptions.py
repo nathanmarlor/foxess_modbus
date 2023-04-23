@@ -826,13 +826,13 @@ _INVERTER_ENTITIES = [
     ModbusSensorDescription(
         key="bms_watthours_total",
         addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11049])],
+        entity_registry_enabled_default=False,
         name="BMS Watthours Total",
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
-        scale=0.001,
+        scale=0.1,
         signed=False,
-        entity_registry_enabled_default=False,
         validate=[Min(0)],
     ),
     ModbusSensorDescription(
