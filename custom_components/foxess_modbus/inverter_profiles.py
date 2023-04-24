@@ -100,6 +100,7 @@ class InverterModelProfile:
         register_type: RegisterType,
         invalid_register_ranges: list[tuple[int, int]],
     ) -> "InverterModelProfile":
+        assert connection_type not in self.connection_types
         self.connection_types[connection_type] = InverterModelConnectionTypeProfile(
             self.model,
             connection_type,
@@ -146,12 +147,13 @@ INVERTER_PROFILES = {
             invalid_register_ranges=[],
         ),
         # The H3 seems to use holding registers for everything
-        InverterModelProfile(H3).add_connection_type(
+        InverterModelProfile(H3)
+        .add_connection_type(
             LAN,
             RegisterType.HOLDING,
             invalid_register_ranges=[],
-        ),
-        InverterModelProfile(H3).add_connection_type(
+        )
+        .add_connection_type(
             AUX,
             RegisterType.HOLDING,
             invalid_register_ranges=[],
