@@ -9,8 +9,10 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
+from ..common.register_type import RegisterType
 from .base_validator import BaseValidator
 from .entity_factory import EntityFactory
+from .inverter_model_spec import ModbusAddressSpec
 from .modbus_entity_mixin import ModbusEntityMixin
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -20,7 +22,7 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 class ModbusSelectDescription(SelectEntityDescription, EntityFactory):
     """Custom select entity description"""
 
-    address: int
+    address: list[ModbusAddressSpec]
     options_map: dict[int, str]
     validate: list[BaseValidator] = field(default_factory=list)
 
@@ -28,14 +30,22 @@ class ModbusSelectDescription(SelectEntityDescription, EntityFactory):
     def entity_type(self) -> type[Entity]:
         return SelectEntity
 
-    @property
-    def addresses(self) -> list[int]:
-        return [self.address]
-
-    def create_entity(
-        self, controller: EntityController, entry: ConfigEntry, inv_details
-    ) -> Entity:
-        return ModbusSelect(controller, self, entry, inv_details)
+    def create_entity_if_supported(
+        self,
+        controller: EntityController,
+        inverter_model: str,
+        register_type: RegisterType,
+        entry: ConfigEntry,
+        inv_details,
+    ) -> Entity | None:
+        address = self._address_for_inverter_model(
+            self.address, inverter_model, register_type
+        )
+        return (
+            ModbusSelect(controller, self, address, entry, inv_details)
+            if address is not None
+            else None
+        )
 
 
 class ModbusSelect(ModbusEntityMixin, SelectEntity):
@@ -45,6 +55,7 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
         self,
         controller: EntityController,
         entity_description: ModbusSelectDescription,
+        address: int,
         entry: ConfigEntry,
         inv_details,
     ) -> None:
@@ -52,6 +63,7 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
 
         self._controller = controller
         self.entity_description = entity_description
+        self._address = address
         self._entry = entry
         self._inv_details = inv_details
         self.entity_id = "select." + self._get_unique_id()
@@ -59,7 +71,7 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
 
     @property
     def current_option(self) -> str | None:
-        value = self._controller.read(self.entity_description.address)
+        value = self._controller.read(self._address)
         if value is None:
             return None
         if not self._validate(self.entity_description.validate, value):
@@ -70,7 +82,7 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
             _LOGGER.warning(
                 "Select option (%s) for address (%s) is not valid. Valid values: (%s)",
                 value,
-                self.entity_description.address,
+                self._address,
                 self.entity_description.options_map,
             )
         return selected
@@ -85,13 +97,17 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
                 "Failed to write unknown value '%s' to register '%s' with address %s. Valid values: %s",
                 option,
                 self.name,
-                self.entity_description.address,
+                self._address,
                 self.options,
             )
             return
 
-        await self._controller.write_register(self.entity_description.address, value)
+        await self._controller.write_register(self._address, value)
 
     @property
     def should_poll(self) -> bool:
         return False
+
+    @property
+    def addresses(self) -> list[int]:
+        return [self._address]

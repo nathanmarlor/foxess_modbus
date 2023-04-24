@@ -5,15 +5,17 @@ from asyncio.exceptions import TimeoutError
 from contextlib import contextmanager
 from datetime import datetime
 from datetime import timedelta
+from typing import Iterable
 
 from homeassistant.helpers.event import async_track_time_interval
 from pymodbus.exceptions import ConnectionException
 from pymodbus.exceptions import ModbusException
 
 from .common.entity_controller import EntityController
+from .common.entity_controller import ModbusControllerEntity
 from .common.exceptions import UnsupportedInverterException
+from .common.register_type import RegisterType
 from .common.unload_controller import UnloadController
-from .inverter_connection_types import InverterConnectionType
 from .inverter_profiles import INVERTER_PROFILES
 from .inverter_profiles import InverterModelConnectionTypeProfile
 from .modbus_client import ModbusClient
@@ -22,6 +24,8 @@ _LOGGER = logging.getLogger(__name__)
 
 # How many failed polls before we mark sensors as Unavailable
 _NUM_FAILED_POLLS_FOR_DISCONNECTION = 5
+
+_SERIAL_START_ADDRESS = 30000
 
 
 @contextmanager
@@ -48,9 +52,11 @@ class ModbusController(EntityController, UnloadController):
     ) -> None:
         """Init"""
         self._hass = hass
-        self._data = {x: None for x in connection_type_profile.all_addresses}
+        self._update_listeners: set[ModbusControllerEntity] = set()
+        self._data = {}
         self._client = client
-        self.connection_type_profile = connection_type_profile
+        self._connection_type_profile = connection_type_profile
+        self.charge_periods = connection_type_profile.create_charge_periods()
         self._slave = slave
         self._poll_rate = poll_rate
         self._max_read = max_read
@@ -115,9 +121,6 @@ class ModbusController(EntityController, UnloadController):
                 )
                 return
 
-            holding = (
-                self.connection_type_profile.connection_type.read_holding_registers
-            )
             # List of (start address, [read values starting at that address])
             read_values: list[tuple[int, list[int]]] = []
             succeeded = False
@@ -125,7 +128,7 @@ class ModbusController(EntityController, UnloadController):
                 for (
                     start_address,
                     num_reads,
-                ) in self.connection_type_profile.create_read_ranges(self._max_read):
+                ) in self._create_read_ranges(self._max_read):
                     _LOGGER.debug(
                         "Reading addresses on %s %s: (%s, %s)",
                         self._client,
@@ -134,7 +137,10 @@ class ModbusController(EntityController, UnloadController):
                         num_reads,
                     )
                     reads = await self._client.read_registers(
-                        start_address, num_reads, holding, self._slave
+                        start_address,
+                        num_reads,
+                        self._connection_type_profile.register_type,
+                        self._slave,
                     )
                     read_values.append((start_address, reads))
 
@@ -201,40 +207,118 @@ class ModbusController(EntityController, UnloadController):
                     self._is_connected = False
                     self._notify_is_connected_changed()
 
+    def _create_read_ranges(self, max_read: int) -> Iterable[tuple[int, int]]:
+        """
+        Generates a set of read ranges to cover the addresses of all registers on this inverter,
+        respecting the maxumum number of registers to read at a time
+
+        :returns: Sequence of tuples of (start_address, num_registers_to_read)
+        """
+
+        # The idea here is that read operations are expensive (there seems to be a large round-trip time at least
+        # with the W610), but reading additional unneeded registers is relatively cheap (probably < 1ms).
+
+        # To give some intuition, here are some examples of the groupings we want to achieve, assuming max_read = 5
+        # 1,2 / 4,5 -> 1,2,3,4,5 (i.e. to read the registers 1, 2, 4 and 5, we'll do a single read spanning 1-5)
+        # 1,2 / 5,6,7,8 -> 1,2 / 5,6,7,8
+        # 1,2 / 5,6,7,8,9 -> 1,2 / 5,6,7,8,9
+        # 1,2 / 5,6,7,8,9,10 -> 1,2,3,4,5 / 6,7,8,9,10
+        # 1,2,3 / 5,6,7 / 9,10 -> 1,2,3,4,5 / 6,7,8,9,10
+
+        # The problem as a whole looks like it's NP-hard (although I can't find a name for it).
+        # We're therefore going to use a fairly simple algorithm which just makes each read as large as it can be.
+
+        start_address: int | None = None
+        read_size = 0
+        # TODO: Do we want to cache the result of this?
+        for address in sorted(self._data.keys()):
+            if start_address is None:
+                start_address, read_size = address, 1
+            # If we're just increasing the previous read size by 1, then don't test whether we're extending
+            # the read over an invalid range (as we assume that registers we're reading to read won't be
+            # inside invalid ranges, tested in __init__). This also assumes that read_size != max_read here.
+            elif address == start_address + 1 or (
+                address <= start_address + max_read - 1
+                and not self._connection_type_profile.overlaps_invalid_range(
+                    start_address, address - 1
+                )
+            ):
+                # There's a previous read which we can extend
+                read_size = address - start_address + 1
+            else:
+                # There's a previous read, and we can't extend it to cover this address
+                yield (start_address, read_size)
+                start_address, read_size = address, 1
+
+            if read_size == max_read:
+                yield (start_address, read_size)
+                start_address, read_size = None, 0
+
+        if start_address is not None:
+            yield (start_address, read_size)
+
+    def register_modbus_entity(self, listener: ModbusControllerEntity) -> None:
+        self._update_listeners.add(listener)
+        for address in listener.addresses:
+            assert not self._connection_type_profile.overlaps_invalid_range(
+                address, address
+            )
+            if address not in self._data:
+                self._data[address] = None
+
+    def remove_modbus_entity(self, listener: ModbusControllerEntity) -> None:
+        self._update_listeners.discard(listener)
+        # If this was the only entity listening on this address, remove it from self._data
+        other_addresses = set(
+            address for entity in self._update_listeners for address in entity.addresses
+        )
+        for address in listener.addresses:
+            if address not in other_addresses and address in self._data:
+                del self._data[address]
+
+    def _notify_update(self, changed_addresses: set[int]) -> None:
+        """Notify listeners"""
+        for listener in self._update_listeners:
+            listener.update_callback(changed_addresses)
+
+    def _notify_is_connected_changed(self) -> None:
+        """Notify listeners that the availability states of the inverter changed"""
+        for listener in self._update_listeners:
+            listener.is_connected_changed_callback()
+
     @staticmethod
-    async def autodetect(
-        client: ModbusClient, conn_type: InverterConnectionType, slave: int
-    ) -> tuple[str, str]:
+    async def autodetect(client: ModbusClient, slave: int) -> tuple[str, str]:
         """
         Attempts to auto-detect the inverter type at the other end of the given connection
 
         :returns: Tuple of (inverter type name e.g. "H1", inverter full name e.g. "H1-3.7")
         """
         try:
+            # All known inverter types expose the serial number at holding register 30000
+            # The H1 series expose the holding registers over both LAN and AUX, and the H3
+            # only expose holding
             result = await client.read_registers(
-                conn_type.serial_start_address,
+                _SERIAL_START_ADDRESS,
                 10,
-                conn_type.read_holding_registers,
+                RegisterType.HOLDING,
                 slave,
             )
             inverter_str = "".join([chr(i) for i in result])
             for model_key, model in INVERTER_PROFILES.items():
-                if conn_type.key in model.connection_types:
-                    base_model = inverter_str[: len(model.model)]
-                    if base_model == model.model:
-                        full_model = inverter_str[: len(model.model) + 4]
-                        _LOGGER.info(
-                            "Autodetected inverter as %s using %s connection",
-                            full_model,
-                            conn_type.key,
-                        )
-                        return model_key, full_model
+                base_model = inverter_str[: len(model.model)]
+                if base_model == model.model:
+                    full_model = inverter_str[: len(model.model) + 4]
+                    _LOGGER.info(
+                        "Autodetected inverter as %s",
+                        full_model,
+                    )
+                    return model_key, full_model
             # here we've read the model type, but been unable to match it against a supported model
             raise UnsupportedInverterException(
                 f"Inverter ({inverter_str}) not supported"
             )
         except ModbusException:
-            _LOGGER.warning("Failed to autodetect (%s)", conn_type.key)
+            _LOGGER.warning("Failed to autodetect (%s)", client)
         finally:
             await client.close()
 

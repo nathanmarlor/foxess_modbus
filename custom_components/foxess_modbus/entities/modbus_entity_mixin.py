@@ -1,7 +1,7 @@
 import logging
 
 from custom_components.foxess_modbus.common.entity_controller import (
-    EntityUpdateListener,
+    ModbusControllerEntity,
 )
 from homeassistant.const import ATTR_IDENTIFIERS
 from homeassistant.const import ATTR_MANUFACTURER
@@ -17,7 +17,7 @@ from .base_validator import BaseValidator
 _LOGGER = logging.getLogger(__name__)
 
 
-class ModbusEntityMixin(EntityUpdateListener):
+class ModbusEntityMixin(ModbusControllerEntity):
     """
     Mixin for subclasses of Entity
 
@@ -70,22 +70,22 @@ class ModbusEntityMixin(EntityUpdateListener):
     async def async_added_to_hass(self) -> None:
         """Add update callback after being added to hass."""
         await super().async_added_to_hass()
-        self._controller.add_update_listener(self)
+        self._controller.register_modbus_entity(self)
 
     async def async_will_remove_from_hass(self) -> None:
         """Called when the entity is about to be removed from hass"""
-        self._controller.remove_update_listener(self)
+        self._controller.remove_modbus_entity(self)
         await super().async_will_remove_from_hass()
 
     def update_callback(self, changed_addresses: set[int]) -> None:
-        if any(x in changed_addresses for x in self.entity_description.addresses):
+        if any(x in changed_addresses for x in self.addresses):
             self._address_updated()
 
     def is_connected_changed_callback(self) -> None:
         self.schedule_update_ha_state(True)
 
     def _address_updated(self) -> None:
-        """Called when the controller reads an updated to any of the addresses in entity_description.addresses"""
+        """Called when the controller reads an updated to any of the addresses in self.addresses"""
         self.schedule_update_ha_state(True)
 
     def _get_unique_id(self):
@@ -110,17 +110,15 @@ class ModbusEntityMixin(EntityUpdateListener):
         for rule in rules:
             if not rule.validate(processed):
                 if address_override is not None:
-                    address = address_override
-                elif hasattr(self.entity_description, "address"):
-                    address = self.entity_description.address
+                    addresses = [address_override]
                 else:
-                    address = None
+                    addresses = self.addresses
                 _LOGGER.warning(
-                    "Value (%s: %s) for entity '%s' address '%s' failed validation against rule (%s : %s)",
+                    "Value (%s: %s) for entity '%s' address(es) '%s' failed validation against rule (%s : %s)",
                     original,
                     processed,
                     self.entity_id,
-                    address,
+                    addresses,
                     type(rule).__name__,
                     vars(rule),
                 )

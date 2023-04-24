@@ -1,11 +1,14 @@
 """Entity Factory"""
 from abc import ABC
 from abc import abstractmethod
+from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
+from ..common.register_type import RegisterType
+from .inverter_model_spec import InverterModelSpec
 
 
 class EntityFactory(ABC):
@@ -16,13 +19,59 @@ class EntityFactory(ABC):
     def entity_type(self) -> type[Entity]:
         """Fetch the type of entity that this factory creates"""
 
-    @property
     @abstractmethod
-    def addresses(self) -> list[int]:
-        """Fetch the set of modbus addresses on which the created entity will depend"""
-
-    @abstractmethod
-    def create_entity(
-        self, controller: EntityController, entry: ConfigEntry, inv_details
+    def create_entity_if_supported(
+        self,
+        controller: EntityController,
+        inverter_model: str,
+        register_type: RegisterType,
+        entry: ConfigEntry,
+        inv_details: dict[str, Any],
     ) -> Entity:
         """Instantiate a new entity. The returned type must match self.entity_type"""
+
+    def _address_for_inverter_model(
+        self,
+        address_specs: list[InverterModelSpec],
+        inverter_model: str,
+        register_type: RegisterType,
+    ) -> int | None:
+        """
+        Helper to fetch single address of an entity, on this inverter model and connection type combination, given the
+        set of InverterModelSpec which was given to the entity description. Returns None if this entity is not supported
+        on the model/connection type combination.
+
+        This will assert if the InverterModelSpec gives more than one address, or more than one member in address_specs matches.
+        """
+
+        result: int | None = None
+        for spec in address_specs:
+            addresses = spec.addresses_for_inverter_model(inverter_model, register_type)
+            if addresses is not None:
+                assert len(addresses) == 1
+                # We shouldn't get more than one spec which matches
+                assert result is None
+                result = addresses[0]
+        return result
+
+    def _addresses_for_inverter_model(
+        self,
+        address_specs: list[InverterModelSpec],
+        inverter_model: str,
+        register_type: RegisterType,
+    ) -> list[int] | None:
+        """Helper to fetch the addresses of an entity, on this inverter and connection type combination, given the
+        set of which was given to the entity description. Returns None if this entity is not supported
+        on the model/connection type combination.
+
+        This will assert if more than one member in address_specs matches.
+        """
+
+        result: list[int] | None = None
+        for spec in address_specs:
+            addresses = spec.addresses_for_inverter_model(inverter_model, register_type)
+            if addresses is not None:
+                # We shouldn't get more than one spec which matches
+                assert result is None
+                result = addresses
+        return result

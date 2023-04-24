@@ -3,12 +3,12 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
+from .const import AUX
+from .const import LAN
 from .const import MAX_READ
 from .const import POLL_RATE
 from .const import TCP
 from .const import UDP
-from .inverter_connection_types import CONNECTION_TYPES
-from .inverter_connection_types import InverterConnectionType
 
 
 class InverterAdapterType(str, Enum):
@@ -30,7 +30,7 @@ class InverterAdapter:
 
     adapter_id: str  # Internal ID, also used as the translation key in the config flow
     type: InverterAdapterType
-    connection_type: InverterConnectionType
+    connection_type: str  # AUX / LAN
     setup_link: str
     poll_rate: int
     max_read: int
@@ -49,7 +49,7 @@ class InverterAdapter:
         return InverterAdapter(
             adapter_id=adapter_id,
             type=InverterAdapterType.DIRECT,
-            connection_type=CONNECTION_TYPES["LAN"],
+            connection_type=LAN,
             setup_link=setup_link,
             network_protocols=[TCP],
             poll_rate=poll_rate,
@@ -66,7 +66,7 @@ class InverterAdapter:
         return InverterAdapter(
             adapter_id=adapter_id,
             type=InverterAdapterType.SERIAL,
-            connection_type=CONNECTION_TYPES["AUX"],
+            connection_type=AUX,
             setup_link=setup_link,
             poll_rate=poll_rate,
             max_read=max_read,
@@ -84,7 +84,7 @@ class InverterAdapter:
         return InverterAdapter(
             adapter_id=adapter_id,
             type=InverterAdapterType.NETWORK,
-            connection_type=CONNECTION_TYPES["AUX"],
+            connection_type=AUX,
             setup_link=setup_link,
             network_protocols=network_protocols,
             recommended_protocol=recommended_protocol,

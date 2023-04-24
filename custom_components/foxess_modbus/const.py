@@ -9,6 +9,17 @@ ISSUE_URL = "https://github.com/nathanmarlor/foxess_modbus/issues"
 # Icons
 ICON = "mdi:format-quote-close"
 
+# Inverter connection types
+AUX = "AUX"
+LAN = "LAN"
+
+# Inverter models. These need to match the string returned from the inverter
+# Also matches config[INVERTER_BASE]
+H1 = "H1"
+AC1 = "AC1"
+AIO_H1 = "AIO-H1"
+H3 = "H3"
+
 # Platforms
 SENSOR = "sensor"
 BINARY_SENSOR = "binary_sensor"

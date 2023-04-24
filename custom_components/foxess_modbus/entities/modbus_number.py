@@ -11,8 +11,10 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
+from ..common.register_type import RegisterType
 from .base_validator import BaseValidator
 from .entity_factory import EntityFactory
+from .inverter_model_spec import ModbusAddressSpec
 from .modbus_entity_mixin import ModbusEntityMixin
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -22,7 +24,7 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 class ModbusNumberDescription(NumberEntityDescription, EntityFactory):
     """Custom number entity description"""
 
-    address: int | None = 0
+    address: list[ModbusAddressSpec]
     mode: NumberMode = NumberMode.AUTO
     scale: float | None = None
     post_process: Callable[[int], int] | None = None
@@ -32,14 +34,22 @@ class ModbusNumberDescription(NumberEntityDescription, EntityFactory):
     def entity_type(self) -> type[Entity]:
         return NumberEntity
 
-    @property
-    def addresses(self) -> list[int]:
-        return [self.address]
-
-    def create_entity(
-        self, controller: EntityController, entry: ConfigEntry, inv_details
-    ) -> Entity:
-        return ModbusNumber(controller, self, entry, inv_details)
+    def create_entity_if_supported(
+        self,
+        controller: EntityController,
+        inverter_model: str,
+        register_type: RegisterType,
+        entry: ConfigEntry,
+        inv_details,
+    ) -> Entity | None:
+        address = self._address_for_inverter_model(
+            self.address, inverter_model, register_type
+        )
+        return (
+            ModbusNumber(controller, self, address, entry, inv_details)
+            if address is not None
+            else None
+        )
 
 
 class ModbusNumber(ModbusEntityMixin, NumberEntity):
@@ -49,6 +59,7 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
         self,
         controller: EntityController,
         entity_description: ModbusNumberDescription,
+        address: int,
         entry: ConfigEntry,
         inv_details,
     ) -> None:
@@ -56,6 +67,7 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
 
         self._controller = controller
         self.entity_description = entity_description
+        self._address = address
         self._entry = entry
         self._inv_details = inv_details
         self.entity_id = "number." + self._get_unique_id()
@@ -63,7 +75,7 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
     @property
     def native_value(self):
         """Return the value reported by the sensor."""
-        value = original = self._controller.read(self.entity_description.address)
+        value = original = self._controller.read(self._address)
         if value is None:
             return None
         if self.entity_description.scale is not None:
@@ -87,10 +99,12 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
             )
         )
 
-        await self._controller.write_register(
-            self.entity_description.address, int_value
-        )
+        await self._controller.write_register(self._address, int_value)
 
     @property
     def should_poll(self) -> bool:
         return False
+
+    @property
+    def addresses(self) -> list[int]:
+        return [self._address]

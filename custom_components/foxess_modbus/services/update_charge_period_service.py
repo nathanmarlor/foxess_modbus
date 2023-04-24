@@ -198,8 +198,6 @@ async def _update_charge_period(
     )
     charge_period_index = service_data.data["charge_period"] - 1
 
-    type_profile = controller.connection_type_profile
-
     charge_periods = [
         ChargePeriod(
             enable_force_charge=service_data.data["enable_force_charge"],
@@ -210,7 +208,7 @@ async def _update_charge_period(
     ]
 
     # Add the other charge periods, which aren't being set right now, to charge_periods
-    for i, charge_period in enumerate(type_profile.charge_periods):
+    for i, charge_period in enumerate(controller.charge_periods):
         if i == charge_period_index:
             continue
 
@@ -251,17 +249,15 @@ async def _update_charge_period(
 async def _set_charge_periods(
     controller: ModbusController, charge_periods: list[ChargePeriod]
 ) -> None:
-    type_profile = controller.connection_type_profile
-
-    if len(type_profile.charge_periods) == 0:
+    if len(controller.charge_periods) == 0:
         raise HomeAssistantError("Inverter does not support setting charge periods")
-    if len(charge_periods) > len(type_profile.charge_periods):
+    if len(charge_periods) > len(controller.charge_periods):
         raise HomeAssistantError(
-            f"Inverter does not support setting charge period {len(type_profile.charge_periods)}"
+            f"Inverter does not support setting charge period {len(controller.charge_periods)}"
         )
-    if len(charge_periods) < len(type_profile.charge_periods):
+    if len(charge_periods) < len(controller.charge_periods):
         raise HomeAssistantError(
-            f"Entries must be provided for all charge periods. Expected {len(type_profile.charge_periods)} "
+            f"Entries must be provided for all charge periods. Expected {len(controller.charge_periods)} "
             + f"charge periods, got {len(charge_periods)}"
         )
 
@@ -281,7 +277,7 @@ async def _set_charge_periods(
 
     # List of (address, value)
     writes: list[tuple[int, int]] = []
-    for charge_period, config in zip(charge_periods, type_profile.charge_periods):
+    for charge_period, config in zip(charge_periods, controller.charge_periods):
         writes.append(
             (
                 config.period_start_address,

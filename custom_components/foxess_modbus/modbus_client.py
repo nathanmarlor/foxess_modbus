@@ -8,6 +8,7 @@ from pymodbus.client import ModbusTcpClient
 from pymodbus.client import ModbusUdpClient
 from pymodbus.exceptions import ModbusIOException
 
+from .common.register_type import RegisterType
 from .const import MODBUS_TYPE
 from .const import SERIAL
 from .const import TCP
@@ -55,22 +56,31 @@ class ModbusClient:
         _LOGGER.debug("Closing connection to modbus on %s", self)
         await self._async_pymodbus_call(self._client.close)
 
-    async def read_registers(self, start_address, num_registers, holding, slave):
+    async def read_registers(
+        self,
+        start_address: int,
+        num_registers: int,
+        register_type: RegisterType,
+        slave: int,
+    ):
         """Read registers"""
-        if holding:
+        if register_type == RegisterType.HOLDING:
             response = await self._async_pymodbus_call(
                 self._client.read_holding_registers,
                 start_address,
                 num_registers,
                 slave,
             )
-        else:
+        elif register_type == RegisterType.INPUT:
             response = await self._async_pymodbus_call(
                 self._client.read_input_registers,
                 start_address,
                 num_registers,
                 slave,
             )
+        else:
+            assert False
+
         if response.isError():
             raise ModbusIOException(f"Error reading registers from {self}: {response}")
 

@@ -7,7 +7,7 @@ from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
 from .const import INVERTERS
-from .inverter_profiles import inverter_connection_type_profile_from_config
+from .inverter_profiles import create_entities
 
 _LOGGER = logging.getLogger(__package__)
 
@@ -21,7 +21,5 @@ async def async_setup_entry(
 
     for inverter, controller in inverters:
         async_add_devices(
-            inverter_connection_type_profile_from_config(inverter).create_entities(
-                BinarySensorEntity, controller, entry, inverter
-            )
+            create_entities(BinarySensorEntity, controller, entry, inverter)
         )
