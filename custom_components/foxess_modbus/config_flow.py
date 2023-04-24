@@ -131,6 +131,9 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
     async def async_step_user(self, _user_input: dict[str, Any] = None):
         """Handle a flow initialized by the user."""
 
+        await self.async_set_unique_id(DOMAIN)
+        self._abort_if_unique_id_configured()
+
         return await self.async_step_select_adapter_type()
 
     async def async_step_select_adapter_type(
