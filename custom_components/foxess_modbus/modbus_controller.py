@@ -295,15 +295,15 @@ class ModbusController(EntityController, UnloadController):
         """
         Attempts to auto-detect the inverter type at the other end of the given connection
 
-        :returns: Tuple of (inverter type name e.g. "H1", inverter full name e.g. "H1-3.7")
+        :returns: Tuple of (inverter type name e.g. "H1", inverter full name e.g. "H1-3.7-E")
         """
         try:
-            # All known inverter types expose the serial number at holding register 30000
-            # The H1 series expose the holding registers over both LAN and AUX, and the H3
-            # only expose holding.
-            # Holding registers 30000-300015 seem to be all used for the model (with registers
-            # after the model containing 32 (an ascii space) or 0, whereas input registers 10008 onwards
+            # All known inverter types expose the model number at holding register 30000 onwards.
+            # (The H1 series additional expose some model info in input registers))
+            # Holding registers 30000-300015 seem to be all used for the model, with registers
+            # after the model containing 32 (an ascii space) or 0. Input registers 10008 onwards
             # are for the serial number (and there doesn't seem to be enough space to hold all models!)
+            # The H3 starts the model number with a space, annoyingly.
             result = []
             start_address = _MODEL_START_ADDRESS
             while len(result) < _MODEL_LENGTH:
@@ -317,25 +317,31 @@ class ModbusController(EntityController, UnloadController):
                 )
                 start_address += adapter.max_read
 
-            # Stop as soon as we find a space or something non-ASCII
+            # Stop as soon as we find something non-printable-ASCII
             full_model = ""
             for char in result:
-                if char > 0x20 and char < 0x7F:  # Exclude space (0x20)
+                if 0x20 <= char < 0x7F:
                     full_model += chr(char)
                 else:
                     break
+            # Take off tailing spaces and H3's leading space
+            full_model = full_model.strip()
             for model in INVERTER_PROFILES.values():
                 if full_model.startswith(model.model):
                     _LOGGER.info(
-                        "Autodetected inverter as %s (%s)", full_model, model.model
+                        "Autodetected inverter as '%s' (%s)", model.model, full_model
                     )
                     return model.model, full_model
 
             # We've read the model type, but been unable to match it against a supported model
-            _LOGGER.warning("Did not recognise inverter model %s", full_model)
+            _LOGGER.warning(
+                "Did not recognise inverter model '%s' (%s)", full_model, result
+            )
             raise UnsupportedInverterException(f"Inverter ({full_model}) not supported")
         except ModbusException:
-            _LOGGER.warning("Failed to autodetect (%s)", client, exc_info=True)
+            _LOGGER.warning(
+                "Autodetect: failed to connect to (%s)", client, exc_info=True
+            )
         finally:
             await client.close()
 
