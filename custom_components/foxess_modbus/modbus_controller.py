@@ -16,6 +16,7 @@ from .common.entity_controller import ModbusControllerEntity
 from .common.exceptions import UnsupportedInverterException
 from .common.register_type import RegisterType
 from .common.unload_controller import UnloadController
+from .inverter_adapters import InverterAdapter
 from .inverter_profiles import INVERTER_PROFILES
 from .inverter_profiles import InverterModelConnectionTypeProfile
 from .modbus_client import ModbusClient
@@ -25,7 +26,8 @@ _LOGGER = logging.getLogger(__name__)
 # How many failed polls before we mark sensors as Unavailable
 _NUM_FAILED_POLLS_FOR_DISCONNECTION = 5
 
-_SERIAL_START_ADDRESS = 30000
+_MODEL_START_ADDRESS = 30000
+_MODEL_LENGTH = 15
 
 
 @contextmanager
@@ -287,7 +289,9 @@ class ModbusController(EntityController, UnloadController):
             listener.is_connected_changed_callback()
 
     @staticmethod
-    async def autodetect(client: ModbusClient, slave: int) -> tuple[str, str]:
+    async def autodetect(
+        client: ModbusClient, slave: int, adapter: InverterAdapter
+    ) -> tuple[str, str]:
         """
         Attempts to auto-detect the inverter type at the other end of the given connection
 
@@ -296,29 +300,42 @@ class ModbusController(EntityController, UnloadController):
         try:
             # All known inverter types expose the serial number at holding register 30000
             # The H1 series expose the holding registers over both LAN and AUX, and the H3
-            # only expose holding
-            result = await client.read_registers(
-                _SERIAL_START_ADDRESS,
-                10,
-                RegisterType.HOLDING,
-                slave,
-            )
-            inverter_str = "".join([chr(i) for i in result])
-            for model_key, model in INVERTER_PROFILES.items():
-                base_model = inverter_str[: len(model.model)]
-                if base_model == model.model:
-                    full_model = inverter_str[: len(model.model) + 4]
-                    _LOGGER.info(
-                        "Autodetected inverter as %s",
-                        full_model,
+            # only expose holding.
+            # Holding registers 30000-300015 seem to be all used for the model (with registers
+            # after the model containing 32 (an ascii space) or 0, whereas input registers 10008 onwards
+            # are for the serial number (and there doesn't seem to be enough space to hold all models!)
+            result = []
+            start_address = _MODEL_START_ADDRESS
+            while len(result) < _MODEL_LENGTH:
+                result.extend(
+                    await client.read_registers(
+                        start_address,
+                        min(adapter.max_read, _MODEL_LENGTH - len(result)),
+                        RegisterType.HOLDING,
+                        slave,
                     )
-                    return model_key, full_model
-            # here we've read the model type, but been unable to match it against a supported model
-            raise UnsupportedInverterException(
-                f"Inverter ({inverter_str}) not supported"
-            )
+                )
+                start_address += adapter.max_read
+
+            # Stop as soon as we find a space or something non-ASCII
+            full_model = ""
+            for char in result:
+                if char > 0x20 and char < 0x7F:  # Exclude space (0x20)
+                    full_model += chr(char)
+                else:
+                    break
+            for model in INVERTER_PROFILES.values():
+                if full_model.startswith(model.model):
+                    _LOGGER.info(
+                        "Autodetected inverter as %s (%s)", full_model, model.model
+                    )
+                    return model.model, full_model
+
+            # We've read the model type, but been unable to match it against a supported model
+            _LOGGER.warning("Did not recognise inverter model %s", full_model)
+            raise UnsupportedInverterException(f"Inverter ({full_model}) not supported")
         except ModbusException:
-            _LOGGER.warning("Failed to autodetect (%s)", client)
+            _LOGGER.warning("Failed to autodetect (%s)", client, exc_info=True)
         finally:
             await client.close()
 

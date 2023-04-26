@@ -228,7 +228,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             host_and_port = f"{host}:{port}"
             slave = user_input.get("modbus_slave", _DEFAULT_SLAVE)
             await self._autodetect_modbus_and_save_to_inverter_data(
-                protocol, host_and_port, slave
+                protocol, host_and_port, slave, adapter
             )
             return await self.async_step_friendly_name()
 
@@ -287,7 +287,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             device = user_input["serial_device"]
             slave = user_input.get("modbus_slave", _DEFAULT_SLAVE)
             await self._autodetect_modbus_and_save_to_inverter_data(
-                SERIAL, device, slave
+                SERIAL, device, slave, adapter
             )
             return await self.async_step_friendly_name()
 
@@ -487,7 +487,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         )
 
     async def _autodetect_modbus_and_save_to_inverter_data(
-        self, protocol: str, host: str, slave: int
+        self, protocol: str, host: str, slave: int, adapter: InverterAdapter
     ) -> tuple[str, str]:
         """Check that connection details are unique, then connect to the inverter and add its details to self._inverter_data"""
         if any(
@@ -510,7 +510,9 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             else:
                 assert False
             client = ModbusClient(self.hass, params)
-            base_model, full_model = await ModbusController.autodetect(client, slave)
+            base_model, full_model = await ModbusController.autodetect(
+                client, slave, adapter
+            )
 
             self._inverter_data.inverter_base_model = base_model
             self._inverter_data.inverter_model = full_model
