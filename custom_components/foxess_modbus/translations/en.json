@@ -39,12 +39,15 @@
         }
       },
       "friendly_name": {
-        "description": "If you have more than one inverter, give them each a name to tell them apart.",
+        "description": "If you have more than one inverter, give this one a name to tell them apart.",
         "data": {
-          "friendly_name": "Friendly Name"
+          "friendly_name": "Friendly Name",
+          "autogenerate_entity_id_prefix": "Use the Friendly Name to auto-generate a prefix for all entity IDs",
+          "entity_id_prefix": "Entity ID Prefix"
         },
         "data_description": {
-          "friendly_name": "This is added as a prefix to all of the inverter's entity IDs"
+          "friendly_name": "Added to the end of all entity names",
+          "entity_id_prefix": "Added as a prefix to all of this inverter's entity IDs"
         }
       },
       "add_another_inverter": {
@@ -63,10 +66,12 @@
     },
     "error": {
       "duplicate_connection_details": "You have already set up an inverter with this address",
-      "duplicate_friendly_name": "Please enter a unique friendly name",
+      "duplicate_friendly_name": "One of your other inverters has this friendly name. Please specify another",
+      "duplicate_entity_id_prefix": "Please enter a unique entity ID prefix",
+      "unable_to_generate_entity_id_prefix": "Unable to generate a unique entity ID prefix. Please specify one manually",
+      "invalid_entity_id_prefix": "Entity ID prefix must contain only lower-case letters, numbers and underscores",
       "modbus_error": "Error - please check connection details",
-      "modbus_model_not_supported": "Error - model is not supported",
-      "invalid_friendly_name": "Friendly name must contain only lower-case letters, numbers and underscores"
+      "modbus_model_not_supported": "Error - model is not supported"
     },
     "abort": {
       "reconfigure_successful": "Successful. We can now use settings specific to your adapter."

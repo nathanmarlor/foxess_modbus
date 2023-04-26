@@ -25,6 +25,7 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.selector import selector
 from pymodbus.exceptions import ConnectionException
+from slugify import slugify
 
 from .common.exceptions import UnsupportedInverterException
 from .const import ADAPTER_ID
@@ -68,6 +69,7 @@ class InverterData:
     modbus_slave: int | None = None
     inverter_protocol: str | None = None  # TCP, UDP, SERIAL
     host: str | None = None  # host:port or /dev/serial
+    entity_id_prefix: str | None = None
     friendly_name: str | None = None
 
 
@@ -307,25 +309,87 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
     ) -> FlowResult:
         """Let the user enter a friendly name for their inverter"""
 
-        async def body(user_input):
+        # This is a bit involved, so we'll avoid _with_default_form
+
+        def generate_entity_id_prefix(friendly_name: str) -> str:
+            return slugify(friendly_name, separator="_", regex_pattern=r"\W")
+
+        def is_unique_entity_id_prefix(entity_id_prefix: str) -> bool:
+            return not any(
+                x for x in self._all_inverters if x.entity_id_prefix == entity_id_prefix
+            )
+
+        show_entity_id_prefix_input = False
+        errors = {}
+        if user_input:
+            ready_to_submit = True
+
             friendly_name = user_input.get("friendly_name", "")
-            if friendly_name and not re.fullmatch(r"\w+", friendly_name):
-                raise ValidationFailedException(
-                    {"friendly_name": "invalid_friendly_name"}
-                )
+            autogenerate_entity_id_prefix = user_input.get(
+                "autogenerate_entity_id_prefix", True
+            )
+
             if any(x for x in self._all_inverters if x.friendly_name == friendly_name):
-                raise ValidationFailedException(
-                    {"friendly_name": "duplicate_friendly_name"}
-                )
+                errors["friendly_name"] = "duplicate_friendly_name"
+            else:
+                # 1. If they unchecked "auto-generate entity ID prefix"...
+                if not autogenerate_entity_id_prefix:
+                    # a. If we haven't yet shown the input box, then show this and pre-populate with our guess. Don't check whether our value is valid at this point
+                    if "entity_id_prefix" not in user_input:
+                        show_entity_id_prefix_input = True
+                        ready_to_submit = False
+                        user_input["entity_id_prefix"] = generate_entity_id_prefix(
+                            friendly_name
+                        )
+                    # b. If they input a value (or submitted our auto-generated value), validate it
+                    else:
+                        entity_id_prefix = user_input["entity_id_prefix"]
+                        show_entity_id_prefix_input = True
+                        if entity_id_prefix and not re.fullmatch(
+                            r"\w+", entity_id_prefix
+                        ):
+                            errors["entity_id_prefix"] = "invalid_entity_id_prefix"
+                        elif not is_unique_entity_id_prefix(entity_id_prefix):
+                            errors["entity_id_prefix"] = "duplicate_entity_id_prefix"
 
-            self._inverter_data.friendly_name = friendly_name
-            self._all_inverters.append(self._inverter_data)
-            self._inverter_data = InverterData()
-            return await self.async_step_add_another_inverter()
+                # 2. If checked "auto-generate entity ID prefix"...
+                else:
+                    # Try and generate one ourselves
+                    entity_id_prefix = generate_entity_id_prefix(friendly_name)
+                    # a. If it's not unique, then show an error, show an input box, and check the "specify an entity ID" checkbox
+                    if not is_unique_entity_id_prefix(entity_id_prefix):
+                        show_entity_id_prefix_input = True
+                        user_input["autogenerate_entity_id_prefix"] = False
+                        user_input["entity_id_prefix"] = entity_id_prefix
+                        errors[
+                            "entity_id_prefix"
+                        ] = "unable_to_generate_entity_id_prefix"
 
-        schema = vol.Schema({vol.Optional("friendly_name"): cv.string})
+            # If we got to here, then we're all good. Don't move on if they checked the "specify entity ID prefix" checkbox
+            if ready_to_submit and not errors:
+                self._inverter_data.entity_id_prefix = entity_id_prefix
+                self._inverter_data.friendly_name = friendly_name
+                self._all_inverters.append(self._inverter_data)
+                self._inverter_data = InverterData()
+                return await self.async_step_add_another_inverter()
 
-        return await self._with_default_form(body, user_input, "friendly_name", schema)
+        schema_parts = {}
+        schema_parts[vol.Optional("friendly_name")] = cv.string
+        schema_parts[
+            vol.Required("autogenerate_entity_id_prefix", default=True)
+        ] = cv.boolean
+        if show_entity_id_prefix_input:
+            schema_parts[vol.Optional("entity_id_prefix", default="")] = vol.Any(
+                None, str
+            )
+        schema = vol.Schema(schema_parts)
+
+        schema_with_input = self.add_suggested_values_to_schema(schema, user_input)
+        return self.async_show_form(
+            step_id="friendly_name",
+            data_schema=schema_with_input,
+            errors=errors,
+        )
 
     async def async_step_add_another_inverter(
         self, _user_input: dict[str, Any] = None
