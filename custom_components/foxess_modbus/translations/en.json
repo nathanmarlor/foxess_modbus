@@ -74,6 +74,7 @@
       "modbus_model_not_supported": "Error - model is not supported"
     },
     "abort": {
+      "already_configured": "You can only set up this integration once. If you need to reconfigure, click \"CONFIGURE\" or delete and then add again.",
       "reconfigure_successful": "Successful. We can now use settings specific to your adapter."
     }
   },
