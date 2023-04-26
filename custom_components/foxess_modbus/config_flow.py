@@ -11,7 +11,6 @@ from typing import Callable
 from typing import Mapping
 
 import voluptuous as vol
-from custom_components.foxess_modbus import ModbusClient
 from homeassistant import config_entries
 from homeassistant.components.energy import data
 from homeassistant.components.energy.data import BatterySourceType
@@ -25,12 +24,14 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.selector import selector
 from pymodbus.exceptions import ConnectionException
+from slugify import slugify
 
 from .common.exceptions import UnsupportedInverterException
 from .const import ADAPTER_ID
 from .const import AUX
 from .const import CONFIG_SAVE_TIME
 from .const import DOMAIN
+from .const import ENTITY_ID_PREFIX
 from .const import FRIENDLY_NAME
 from .const import HOST
 from .const import INVERTER_BASE
@@ -47,6 +48,7 @@ from .const import UDP
 from .inverter_adapters import ADAPTERS
 from .inverter_adapters import InverterAdapter
 from .inverter_adapters import InverterAdapterType
+from .modbus_client import ModbusClient
 from .modbus_controller import ModbusController
 
 _TITLE = "FoxESS - Modbus"
@@ -68,6 +70,7 @@ class InverterData:
     modbus_slave: int | None = None
     inverter_protocol: str | None = None  # TCP, UDP, SERIAL
     host: str | None = None  # host:port or /dev/serial
+    entity_id_prefix: str | None = None
     friendly_name: str | None = None
 
 
@@ -114,7 +117,7 @@ class FlowHandlerMixin:
 class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for foxess_modbus."""
 
-    VERSION = 3
+    VERSION = 4
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     def __init__(self) -> None:
@@ -280,7 +283,6 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         async def body(user_input):
             device = user_input["serial_device"]
             slave = user_input.get("modbus_slave", _DEFAULT_SLAVE)
-            # TODO: Check for duplicate host/port/slave/protocol combinations
             await self._autodetect_modbus_and_save_to_inverter_data(
                 SERIAL, device, slave
             )
@@ -307,25 +309,93 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
     ) -> FlowResult:
         """Let the user enter a friendly name for their inverter"""
 
-        async def body(user_input):
+        # This is a bit involved, so we'll avoid _with_default_form
+
+        def generate_entity_id_prefix(friendly_name: str | None) -> str:
+            return (
+                slugify(friendly_name, separator="_", regex_pattern=r"\W").strip("_")
+                if friendly_name
+                else ""
+            )
+
+        def is_unique_entity_id_prefix(entity_id_prefix: str) -> bool:
+            return not any(
+                x for x in self._all_inverters if x.entity_id_prefix == entity_id_prefix
+            )
+
+        show_entity_id_prefix_input = False
+        errors = {}
+        if user_input:
+            ready_to_submit = True
+
             friendly_name = user_input.get("friendly_name", "")
-            if friendly_name and not re.fullmatch(r"\w+", friendly_name):
-                raise ValidationFailedException(
-                    {"friendly_name": "invalid_friendly_name"}
-                )
+            autogenerate_entity_id_prefix = user_input.get(
+                "autogenerate_entity_id_prefix", True
+            )
+
             if any(x for x in self._all_inverters if x.friendly_name == friendly_name):
-                raise ValidationFailedException(
-                    {"friendly_name": "duplicate_friendly_name"}
-                )
+                errors["friendly_name"] = "duplicate_friendly_name"
+            else:
+                # 1. If they unchecked "auto-generate entity ID prefix"...
+                if not autogenerate_entity_id_prefix:
+                    # a. If we haven't yet shown the input box, then show this and pre-populate with our guess. Don't check whether our value is valid at this point
+                    if "entity_id_prefix" not in user_input:
+                        show_entity_id_prefix_input = True
+                        ready_to_submit = False
+                        user_input["entity_id_prefix"] = generate_entity_id_prefix(
+                            friendly_name
+                        )
+                    # b. If they input a value (or submitted our auto-generated value), validate it
+                    else:
+                        entity_id_prefix = user_input["entity_id_prefix"]
+                        show_entity_id_prefix_input = True
+                        if entity_id_prefix and (
+                            not re.fullmatch(r"[a-z0-9_]+", entity_id_prefix)
+                            or entity_id_prefix.startswith("_")
+                            or entity_id_prefix.endswith("_")
+                        ):
+                            errors["entity_id_prefix"] = "invalid_entity_id_prefix"
+                        elif not is_unique_entity_id_prefix(entity_id_prefix):
+                            errors["entity_id_prefix"] = "duplicate_entity_id_prefix"
 
-            self._inverter_data.friendly_name = friendly_name
-            self._all_inverters.append(self._inverter_data)
-            self._inverter_data = InverterData()
-            return await self.async_step_add_another_inverter()
+                # 2. If checked "auto-generate entity ID prefix"...
+                else:
+                    # Try and generate one ourselves
+                    entity_id_prefix = generate_entity_id_prefix(friendly_name)
+                    # a. If it's not unique, then show an error, show an input box, and check the "specify an entity ID" checkbox
+                    if not is_unique_entity_id_prefix(entity_id_prefix):
+                        show_entity_id_prefix_input = True
+                        user_input["autogenerate_entity_id_prefix"] = False
+                        user_input["entity_id_prefix"] = entity_id_prefix
+                        errors[
+                            "entity_id_prefix"
+                        ] = "unable_to_generate_entity_id_prefix"
 
-        schema = vol.Schema({vol.Optional("friendly_name"): cv.string})
+            # If we got to here, then we're all good. Don't move on if they checked the "specify entity ID prefix" checkbox
+            if ready_to_submit and not errors:
+                self._inverter_data.entity_id_prefix = entity_id_prefix
+                self._inverter_data.friendly_name = friendly_name
+                self._all_inverters.append(self._inverter_data)
+                self._inverter_data = InverterData()
+                return await self.async_step_add_another_inverter()
 
-        return await self._with_default_form(body, user_input, "friendly_name", schema)
+        schema_parts = {}
+        schema_parts[vol.Optional("friendly_name")] = cv.string
+        schema_parts[
+            vol.Required("autogenerate_entity_id_prefix", default=True)
+        ] = cv.boolean
+        if show_entity_id_prefix_input:
+            schema_parts[vol.Optional("entity_id_prefix", default="")] = vol.Any(
+                None, str
+            )
+        schema = vol.Schema(schema_parts)
+
+        schema_with_input = self.add_suggested_values_to_schema(schema, user_input)
+        return self.async_show_form(
+            step_id="friendly_name",
+            data_schema=schema_with_input,
+            errors=errors,
+        )
 
     async def async_step_add_another_inverter(
         self, _user_input: dict[str, Any] = None
@@ -363,7 +433,12 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                 INVERTER_MODEL: inverter.inverter_model,
                 INVERTER_CONN: inverter.adapter.connection_type,
                 MODBUS_SLAVE: inverter.modbus_slave,
-                FRIENDLY_NAME: inverter.friendly_name,
+                ENTITY_ID_PREFIX: inverter.entity_id_prefix
+                if inverter.entity_id_prefix
+                else "",
+                FRIENDLY_NAME: inverter.friendly_name
+                if inverter.friendly_name
+                else None,
                 MODBUS_TYPE: inverter.inverter_protocol,
                 HOST: inverter.host,
                 ADAPTER_ID: inverter.adapter.adapter_id,
@@ -451,17 +526,17 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
 
         manager = await data.async_get_manager(self.hass)
 
-        friendly_names = [x.friendly_name for x in self._all_inverters]
+        entity_id_prefixes = [x.entity_id_prefix for x in self._all_inverters]
 
         def _prefix_name(name):
-            if name != "":
+            if name:
                 return f"sensor.{name}_"
             else:
                 return "sensor."
 
         energy_prefs = EnergyPreferencesUpdate(energy_sources=[])
-        for name in friendly_names:
-            name_prefix = _prefix_name(name)
+        for entity_id_prefix in entity_id_prefixes:
+            name_prefix = _prefix_name(entity_id_prefix)
             energy_prefs["energy_sources"].extend(
                 [
                     SolarSourceType(
@@ -485,8 +560,8 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         grid_source = GridSourceType(
             type="grid", flow_from=[], flow_to=[], cost_adjustment_day=0.0
         )
-        for name in friendly_names:
-            name_prefix = _prefix_name(name)
+        for entity_id_prefix in entity_id_prefixes:
+            name_prefix = _prefix_name(entity_id_prefix)
             grid_source["flow_from"].append(
                 FlowFromGridSourceType(
                     stat_energy_from=f"{name_prefix}grid_consumption_energy_total",

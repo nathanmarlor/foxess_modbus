@@ -2,10 +2,6 @@
 import logging
 from dataclasses import dataclass
 
-from custom_components.foxess_modbus.const import FRIENDLY_NAME
-from custom_components.foxess_modbus.entities.modbus_entity_mixin import (
-    ModbusEntityMixin,
-)
 from homeassistant.components.integration.sensor import IntegrationSensor
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
@@ -16,8 +12,10 @@ from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
 from ..common.register_type import RegisterType
+from ..const import ENTITY_ID_PREFIX
 from .entity_factory import EntityFactory
 from .inverter_model_spec import EntitySpec
+from .modbus_entity_mixin import ModbusEntityMixin
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -90,9 +88,9 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
         self.entity_description = entity_description
         self.entity_id = "sensor." + self._get_unique_id()
 
-        friendly_name = self._inv_details[FRIENDLY_NAME]
-        if friendly_name != "":
-            source_entity = f"sensor.{friendly_name}_{source_entity}"
+        entity_id_prefix = self._inv_details[ENTITY_ID_PREFIX]
+        if entity_id_prefix != "":
+            source_entity = f"sensor.{entity_id_prefix}_{source_entity}"
         else:
             source_entity = f"sensor.{source_entity}"
 

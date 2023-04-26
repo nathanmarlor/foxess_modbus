@@ -9,6 +9,7 @@ from homeassistant.const import ATTR_MODEL
 from homeassistant.const import ATTR_NAME
 
 from ..const import DOMAIN
+from ..const import ENTITY_ID_PREFIX
 from ..const import FRIENDLY_NAME
 from ..const import INVERTER_CONN
 from ..const import INVERTER_MODEL
@@ -90,9 +91,9 @@ class ModbusEntityMixin(ModbusControllerEntity):
 
     def _get_unique_id(self):
         """Get unique ID"""
-        friendly_name = self._inv_details[FRIENDLY_NAME]
-        if friendly_name != "":
-            return f"{friendly_name}_{self.entity_description.key}"
+        entity_id_prefix = self._inv_details[ENTITY_ID_PREFIX]
+        if entity_id_prefix != "":
+            return f"{entity_id_prefix}_{self.entity_description.key}"
         else:
             return f"{self.entity_description.key}"
 
