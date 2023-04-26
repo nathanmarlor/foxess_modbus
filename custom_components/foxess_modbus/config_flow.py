@@ -11,7 +11,6 @@ from typing import Callable
 from typing import Mapping
 
 import voluptuous as vol
-from custom_components.foxess_modbus import ModbusClient
 from homeassistant import config_entries
 from homeassistant.components.energy import data
 from homeassistant.components.energy.data import BatterySourceType
@@ -49,6 +48,7 @@ from .const import UDP
 from .inverter_adapters import ADAPTERS
 from .inverter_adapters import InverterAdapter
 from .inverter_adapters import InverterAdapterType
+from .modbus_client import ModbusClient
 from .modbus_controller import ModbusController
 
 _TITLE = "FoxESS - Modbus"
@@ -311,8 +311,12 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
 
         # This is a bit involved, so we'll avoid _with_default_form
 
-        def generate_entity_id_prefix(friendly_name: str) -> str:
-            return slugify(friendly_name, separator="_", regex_pattern=r"\W")
+        def generate_entity_id_prefix(friendly_name: str | None) -> str:
+            return (
+                slugify(friendly_name, separator="_", regex_pattern=r"\W").strip("_")
+                if friendly_name
+                else ""
+            )
 
         def is_unique_entity_id_prefix(entity_id_prefix: str) -> bool:
             return not any(
@@ -345,8 +349,10 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                     else:
                         entity_id_prefix = user_input["entity_id_prefix"]
                         show_entity_id_prefix_input = True
-                        if entity_id_prefix and not re.fullmatch(
-                            r"\w+", entity_id_prefix
+                        if entity_id_prefix and (
+                            not re.fullmatch(r"[a-z0-9_]+", entity_id_prefix)
+                            or entity_id_prefix.startswith("_")
+                            or entity_id_prefix.endswith("_")
                         ):
                             errors["entity_id_prefix"] = "invalid_entity_id_prefix"
                         elif not is_unique_entity_id_prefix(entity_id_prefix):
