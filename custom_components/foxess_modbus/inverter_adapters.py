@@ -114,6 +114,7 @@ ADAPTERS = {
         InverterAdapter.direct(
             "direct",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/Direct-Ethernet-Connection-to-Inverter",
+            max_read=100,
         ),
         # Serial Adapters
         InverterAdapter.serial(
