@@ -19,6 +19,7 @@ from .const import ADAPTER_ID
 from .const import ADAPTER_WAS_MIGRATED
 from .const import CONFIG_SAVE_TIME
 from .const import DOMAIN
+from .const import ENTITY_ID_PREFIX
 from .const import FRIENDLY_NAME
 from .const import HOST
 from .const import INVERTER_CONN
@@ -186,6 +187,12 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                         flow_to.setdefault("number_energy_price", None)
             await energy_manager.async_update(energy_data)
         config_entry.version = 3
+
+    if config_entry.version == 3:
+        # Add entity ID prefix
+        for inverter in config_entry.data.get(INVERTERS, {}).values():
+            inverter[ENTITY_ID_PREFIX] = inverter[FRIENDLY_NAME]
+        config_entry.version = 4
 
     _LOGGER.info("Migration to version %s successful", config_entry.version)
     return True

@@ -32,6 +32,7 @@ from .const import ADAPTER_ID
 from .const import AUX
 from .const import CONFIG_SAVE_TIME
 from .const import DOMAIN
+from .const import ENTITY_ID_PREFIX
 from .const import FRIENDLY_NAME
 from .const import HOST
 from .const import INVERTER_BASE
@@ -116,7 +117,7 @@ class FlowHandlerMixin:
 class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for foxess_modbus."""
 
-    VERSION = 3
+    VERSION = 4
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     def __init__(self) -> None:
@@ -282,7 +283,6 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         async def body(user_input):
             device = user_input["serial_device"]
             slave = user_input.get("modbus_slave", _DEFAULT_SLAVE)
-            # TODO: Check for duplicate host/port/slave/protocol combinations
             await self._autodetect_modbus_and_save_to_inverter_data(
                 SERIAL, device, slave
             )
@@ -427,7 +427,12 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                 INVERTER_MODEL: inverter.inverter_model,
                 INVERTER_CONN: inverter.adapter.connection_type,
                 MODBUS_SLAVE: inverter.modbus_slave,
-                FRIENDLY_NAME: inverter.friendly_name,
+                ENTITY_ID_PREFIX: inverter.entity_id_prefix
+                if inverter.entity_id_prefix
+                else "",
+                FRIENDLY_NAME: inverter.friendly_name
+                if inverter.friendly_name
+                else None,
                 MODBUS_TYPE: inverter.inverter_protocol,
                 HOST: inverter.host,
                 ADAPTER_ID: inverter.adapter.adapter_id,
@@ -515,17 +520,17 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
 
         manager = await data.async_get_manager(self.hass)
 
-        friendly_names = [x.friendly_name for x in self._all_inverters]
+        entity_id_prefixes = [x.entity_id_prefix for x in self._all_inverters]
 
         def _prefix_name(name):
-            if name != "":
+            if name:
                 return f"sensor.{name}_"
             else:
                 return "sensor."
 
         energy_prefs = EnergyPreferencesUpdate(energy_sources=[])
-        for name in friendly_names:
-            name_prefix = _prefix_name(name)
+        for entity_id_prefix in entity_id_prefixes:
+            name_prefix = _prefix_name(entity_id_prefix)
             energy_prefs["energy_sources"].extend(
                 [
                     SolarSourceType(
@@ -549,8 +554,8 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         grid_source = GridSourceType(
             type="grid", flow_from=[], flow_to=[], cost_adjustment_day=0.0
         )
-        for name in friendly_names:
-            name_prefix = _prefix_name(name)
+        for entity_id_prefix in entity_id_prefixes:
+            name_prefix = _prefix_name(entity_id_prefix)
             grid_source["flow_from"].append(
                 FlowFromGridSourceType(
                     stat_energy_from=f"{name_prefix}grid_consumption_energy_total",

@@ -29,6 +29,7 @@ PLATFORMS = [SENSOR, BINARY_SENSOR, SELECT, NUMBER]
 ATTR_ENTRY_TYPE = "entry_type"
 
 # Modbus Options
+ENTITY_ID_PREFIX = "entity_id_prefix"
 FRIENDLY_NAME = "friendly_name"
 MODBUS_SLAVE = "modbus_slave"
 MODBUS_DEVICE = "modbus_device"
