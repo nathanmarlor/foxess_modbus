@@ -8,11 +8,11 @@ from datetime import timedelta
 from typing import Iterable
 
 from homeassistant.helpers.event import async_track_time_interval
-from pymodbus.exceptions import ConnectionException
 from pymodbus.exceptions import ModbusException
 
 from .common.entity_controller import EntityController
 from .common.entity_controller import ModbusControllerEntity
+from .common.exceptions import AutoconnectFailedException
 from .common.exceptions import UnsupportedInverterException
 from .common.register_type import RegisterType
 from .common.unload_controller import UnloadController
@@ -297,7 +297,13 @@ class ModbusController(EntityController, UnloadController):
 
         :returns: Tuple of (inverter type name e.g. "H1", inverter full name e.g. "H1-3.7-E")
         """
+        # Annoyingly pymodbus logs the important stuff to its logger, and doesn't add that info to the exceptions it throws
+        spy_handler = _SpyHandler()
+        pymodbus_logger = logging.getLogger("pymodbus")
+
         try:
+            pymodbus_logger.addHandler(spy_handler)
+
             # All known inverter types expose the model number at holding register 30000 onwards.
             # (The H1 series additional expose some model info in input registers))
             # Holding registers 30000-300015 seem to be all used for the model, with registers
@@ -338,11 +344,20 @@ class ModbusController(EntityController, UnloadController):
                 "Did not recognise inverter model '%s' (%s)", full_model, result
             )
             raise UnsupportedInverterException(full_model)
-        except ModbusException:
-            _LOGGER.warning(
+        except Exception as ex:
+            _LOGGER.error(
                 "Autodetect: failed to connect to (%s)", client, exc_info=True
             )
+            raise AutoconnectFailedException(spy_handler.records) from ex
         finally:
+            pymodbus_logger.removeHandler(spy_handler)
             await client.close()
 
-        raise ConnectionException("Could not connect to Modbus device")
+
+class _SpyHandler(logging.Handler):
+    def __init__(self) -> None:
+        super().__init__(level=logging.ERROR)
+        self.records: list[logging.LogRecord] = []
+
+    def emit(self, record: logging.LogRecord) -> None:
+        self.records.append(record)

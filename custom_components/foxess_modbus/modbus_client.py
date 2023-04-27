@@ -6,13 +6,14 @@ from typing import Any
 from pymodbus.client import ModbusSerialClient
 from pymodbus.client import ModbusTcpClient
 from pymodbus.client import ModbusUdpClient
-from pymodbus.exceptions import ModbusIOException
+from pymodbus.pdu import ModbusResponse
 
 from .common.register_type import RegisterType
 from .const import MODBUS_TYPE
 from .const import SERIAL
 from .const import TCP
 from .const import UDP
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -82,7 +83,10 @@ class ModbusClient:
             assert False
 
         if response.isError():
-            raise ModbusIOException(f"Error reading registers from {self}: {response}")
+            message = f"Error reading registers. Type: {register_type}; start: {start_address}; count: {num_registers}; slave: {slave}"
+            if isinstance(response, BaseException):
+                raise ModbusClientFailedException(message, self, response) from response
+            raise ModbusClientFailedException(message, self, response)
 
         return response.registers
 
@@ -104,9 +108,11 @@ class ModbusClient:
                 slave,
             )
         if response.isError():
-            raise ModbusIOException(
-                f"Error writing holding register on {self}: {response}"
-            )
+            message = f"Error writing registers. Start: {register_address}; values: {register_values}; slave: {slave}"
+            if isinstance(response, BaseException):
+                raise ModbusClientFailedException(message, self, response) from response
+            raise ModbusClientFailedException(message, self, response)
+
         return True
 
     async def _async_pymodbus_call(self, call, *args):
@@ -121,7 +127,22 @@ class ModbusClient:
 
     def __str__(self) -> str:
         return (
-            f"{self._config['host']}"
+            f"{self._config['port']}"
             if self._config_type == SERIAL
             else f"{self._config_type.lower()}://{self._config['host']}:{self._config['port']}"
         )
+
+
+class ModbusClientFailedException(Exception):
+    """Raised when the ModbusClient fails to read/write"""
+
+    def __init__(
+        self, message: str, client: ModbusClient, response: ModbusResponse | Exception
+    ) -> None:
+        super().__init__(f"{message} from {client}: {response}")
+        self.message = message
+        self.client = client
+        self.response = response
+
+    def __str__(self) -> str:
+        return f"{self.message} from {self.client}: {self.response}"

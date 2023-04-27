@@ -24,8 +24,10 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.selector import selector
 from pymodbus.exceptions import ConnectionException
+from pymodbus.exceptions import ModbusIOException
 from slugify import slugify
 
+from .common.exceptions import AutoconnectFailedException
 from .common.exceptions import UnsupportedInverterException
 from .const import ADAPTER_ID
 from .const import AUX
@@ -38,6 +40,7 @@ from .const import INVERTER_BASE
 from .const import INVERTER_CONN
 from .const import INVERTER_MODEL
 from .const import INVERTERS
+from .const import LAN
 from .const import MAX_READ
 from .const import MODBUS_SLAVE
 from .const import MODBUS_TYPE
@@ -49,6 +52,7 @@ from .inverter_adapters import ADAPTERS
 from .inverter_adapters import InverterAdapter
 from .inverter_adapters import InverterAdapterType
 from .modbus_client import ModbusClient
+from .modbus_client import ModbusClientFailedException
 from .modbus_controller import ModbusController
 
 _TITLE = "FoxESS - Modbus"
@@ -526,12 +530,71 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             self._inverter_data.host = host
         except UnsupportedInverterException as ex:
             raise ValidationFailedException(
-                {"base": "modbus_model_not_supported"},
-                error_placeholders={"model": ex.full_model},
+                {"base": "inverter_model_not_supported"},
+                error_placeholders={"not_supported_model": ex.full_model},
             ) from ex
-        except ConnectionException as ex:
-            _LOGGER.warning("%s", ex)
-            raise ValidationFailedException({"base": "modbus_error"})
+        except AutoconnectFailedException as ex:
+
+            def get_details(ex: Exception, use_exception: bool) -> str:
+                if ex.log_records:
+                    parts = []
+                    if use_exception:
+                        parts.append(str(ex.__cause__))
+                    parts.extend(record.message for record in ex.log_records)
+                    result = "; ".join(parts)
+                else:
+                    # Oh. Fall back
+                    result = str(ex.__cause__)
+                return result
+
+            if isinstance(ex.__cause__, ConnectionException):
+                # Mainly TCP timeouts. The actual exception message dosen't contain anything interesting here
+                raise ValidationFailedException(
+                    {
+                        "base": "unable_to_connect_to_inverter"
+                        if adapter.connection_type == LAN
+                        else "unable_to_connect_to_adapter"
+                    },
+                    error_placeholders={"error_details": get_details(ex, False)},
+                ) from ex
+
+            if isinstance(ex.__cause__, ModbusIOException):
+                # This is for things like invalid frames. The exception message here can be useful
+                raise ValidationFailedException(
+                    {
+                        "base": "unable_to_communicate_with_inverter"
+                        if adapter.connection_type == LAN
+                        else "adapter_unable_to_communicate_with_inverter"
+                    },
+                    error_placeholders={"error_details": get_details(ex, True)},
+                ) from ex
+
+            if isinstance(ex.__cause__, ModbusClientFailedException):
+                # This happens for things like UDP timeouts, inverter not connected to adapter, etc.
+                # Annoyingly everything *seems* to come through as a ModbusIOException, so we can't tell exactly what's going on.
+                # The error message here isn't useful to us. However, if it's got a __cause__ that can be interesting, and if it doesn't the .response is useful
+                client_failed_ex = ex.__cause__
+                detail_parts = [str(client_failed_ex.response)]
+                detail_parts.extend(record.message for record in ex.log_records)
+                details = "; ".join(detail_parts)
+
+                raise ValidationFailedException(
+                    {
+                        "base": "other_inverter_error"
+                        if adapter.connection_type == LAN
+                        else "other_adapter_error"
+                    },
+                    error_placeholders={"error_details": details},
+                ) from ex
+
+            raise ValidationFailedException(
+                {
+                    "base": "other_inverter_error"
+                    if adapter.connection_type == LAN
+                    else "other_adapter_error"
+                },
+                error_placeholders={"error_details": get_details(ex, True)},
+            ) from ex
 
     async def _setup_energy_dashboard(self):
         """Setup Energy Dashboard"""
