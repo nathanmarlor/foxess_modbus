@@ -334,10 +334,10 @@ class ModbusController(EntityController, UnloadController):
                     return model.model, full_model
 
             # We've read the model type, but been unable to match it against a supported model
-            _LOGGER.warning(
+            _LOGGER.error(
                 "Did not recognise inverter model '%s' (%s)", full_model, result
             )
-            raise UnsupportedInverterException(f"Inverter ({full_model}) not supported")
+            raise UnsupportedInverterException(full_model)
         except ModbusException:
             _LOGGER.warning(
                 "Autodetect: failed to connect to (%s)", client, exc_info=True

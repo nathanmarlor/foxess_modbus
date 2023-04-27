@@ -97,6 +97,11 @@ class FlowHandlerMixin:
                     return result
             except ValidationFailedException as ex:
                 errors = ex.errors
+                if ex.errors:
+                    if description_placeholders is None:
+                        description_placeholders = ex.error_placeholders
+                    else:
+                        description_placeholders.update(ex.error_placeholders)
 
         schema_with_input = self.add_suggested_values_to_schema(data_schema, user_input)
         return self.async_show_form(
@@ -520,8 +525,10 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             self._inverter_data.modbus_slave = slave
             self._inverter_data.host = host
         except UnsupportedInverterException as ex:
-            _LOGGER.warning("%s", ex)
-            raise ValidationFailedException({"base": "modbus_model_not_supported"})
+            raise ValidationFailedException(
+                {"base": "modbus_model_not_supported"},
+                error_placeholders={"model": ex.full_model},
+            ) from ex
         except ConnectionException as ex:
             _LOGGER.warning("%s", ex)
             raise ValidationFailedException({"base": "modbus_error"})
@@ -726,5 +733,8 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
 class ValidationFailedException(Exception):
     """Throw to cause a validation error to be shown"""
 
-    def __init__(self, errors: dict[str, str]):
+    def __init__(
+        self, errors: dict[str, str], error_placeholders: dict[str, str] | None = None
+    ):
         self.errors = errors
+        self.error_placeholders = error_placeholders

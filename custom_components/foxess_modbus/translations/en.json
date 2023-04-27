@@ -71,7 +71,7 @@
       "unable_to_generate_entity_id_prefix": "Unable to generate a unique entity ID prefix. Please specify one manually",
       "invalid_entity_id_prefix": "Entity ID prefix must contain only lower-case letters, numbers and underscores, and must not begin/end with an underscore",
       "modbus_error": "Error - please check connection details",
-      "modbus_model_not_supported": "Error - model is not supported"
+      "modbus_model_not_supported": "Error: Inverter model '{model}' is not supported"
     },
     "abort": {
       "already_configured": "You can only set up this integration once. If you need to reconfigure, click \"CONFIGURE\" or delete and then add again.",
