@@ -194,6 +194,15 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             inverter[ENTITY_ID_PREFIX] = inverter[FRIENDLY_NAME]
         config_entry.version = 4
 
+    if config_entry.version == 4:
+        # Version 2 migration might leave POLL_RATE and MAX_READ in config_entry.data
+        for inverter in config_entry.data.get(INVERTERS, {}).values():
+            if POLL_RATE in inverter:
+                del inverter[POLL_RATE]
+            if MAX_READ in inverter:
+                del inverter[MAX_READ]
+        config_entry.version = 5
+
     _LOGGER.info("Migration to version %s successful", config_entry.version)
     return True
 
