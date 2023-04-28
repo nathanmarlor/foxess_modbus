@@ -54,11 +54,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     if DOMAIN not in hass.data:
         _LOGGER.info(STARTUP_MESSAGE)
 
+    # It turns out that HA really doesn't like us mutating the ConfigEntry it passes us!
+    # Since we merge in the options etc, do this on a copy.
+    # From here on, do not access entry.data and entry.options directly!
+    entry_data = copy.deepcopy(dict(entry.data))
+    entry_options = copy.deepcopy(dict(entry.options))
+
     # Create this before throwing ConfigEntryAuthFailed, so the sensors, etc, platforms don't fail
     hass.data.setdefault(DOMAIN, {}).setdefault(entry.entry_id, {})[INVERTERS] = []
 
     for platform in PLATFORMS:
-        if entry.options.get(platform, True):
+        if entry_options.get(platform, True):
             hass.async_add_job(
                 hass.config_entries.async_forward_entry_setup(entry, platform)
             )
@@ -78,9 +84,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     # {(modbus_type, host): client}
     clients: dict[tuple[str, str], ModbusClient] = {}
-    for inverter_id, inverter in entry.data[INVERTERS].items():
+    for inverter_id, inverter in entry_data[INVERTERS].items():
         # Remember that there might not be any options
-        options = entry.options.get(INVERTERS, {}).get(inverter_id, {})
+        options = entry_options.get(INVERTERS, {}).get(inverter_id, {})
 
         # Pick the adapter out of the user options if it's there
         adapter_id = options.get(ADAPTER_ID, inverter[ADAPTER_ID])
@@ -193,6 +199,17 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         for inverter in config_entry.data.get(INVERTERS, {}).values():
             inverter[ENTITY_ID_PREFIX] = inverter[FRIENDLY_NAME]
         config_entry.version = 4
+
+    if config_entry.version == 4:
+        # Old versions accidentally mutated ConfigEntry.data
+        for inverter in config_entry.data.get(INVERTERS, {}).values():
+            inverter.pop(POLL_RATE, None)
+            inverter.pop(MAX_READ, None)
+            if inverter[FRIENDLY_NAME] is None:
+                inverter[FRIENDLY_NAME] = ""
+            if inverter[ENTITY_ID_PREFIX] is None:
+                inverter[ENTITY_ID_PREFIX] = ""
+        config_entry.version = 5
 
     _LOGGER.info("Migration to version %s successful", config_entry.version)
     return True
