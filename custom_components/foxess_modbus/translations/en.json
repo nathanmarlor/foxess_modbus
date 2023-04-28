@@ -70,8 +70,13 @@
       "duplicate_entity_id_prefix": "Please enter a unique entity ID prefix",
       "unable_to_generate_entity_id_prefix": "Unable to generate a unique entity ID prefix. Please specify one manually",
       "invalid_entity_id_prefix": "Entity ID prefix must contain only lower-case letters, numbers and underscores, and must not begin/end with an underscore",
-      "modbus_error": "Error - please check connection details",
-      "modbus_model_not_supported": "Error - model is not supported"
+      "inverter_model_not_supported": "Inverter model '{not_supported_model}' is not supported",
+      "unable_to_connect_to_adapter": "Unable to connect to your adapter. Ensure that the adapter is properly configured (see the setup link above) and the connection details are correct, then try again. Details: {error_details}",
+      "unable_to_connect_to_inverter": "Unable to connect to your inverter. Make sure the connection details are correct and try again. Details: {error_details}",
+      "adapter_unable_to_communicate_with_inverter": "The adapter was unable to connect to the inverter. Ensure the adapter is properly configured and is correctly wired to your inverter (see the setup link above), then try again. Details: {error_details}",
+      "unable_to_communicate_with_inverter": "Error communicating with your inverter. Ensure that it has a compatible firmware version. Details: {error_details}",
+      "other_adapter_error": "Error connecting to your adapter or inverter. Ensure the adapter is properly configured and is correctly wired to your inverter (see the setup link above), then try again. Details: {error_details}",
+      "other_inverter_error": "Error connecting to your inverter. Details: {error_details}"
     },
     "abort": {
       "already_configured": "You can only set up this integration once. If you need to reconfigure, click \"CONFIGURE\" or delete and then add again.",

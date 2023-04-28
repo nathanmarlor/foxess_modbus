@@ -1,18 +1,16 @@
 """Modbus controller"""
 import logging
 import threading
-from asyncio.exceptions import TimeoutError
 from contextlib import contextmanager
 from datetime import datetime
 from datetime import timedelta
 from typing import Iterable
 
 from homeassistant.helpers.event import async_track_time_interval
-from pymodbus.exceptions import ConnectionException
-from pymodbus.exceptions import ModbusException
 
 from .common.entity_controller import EntityController
 from .common.entity_controller import ModbusControllerEntity
+from .common.exceptions import AutoconnectFailedException
 from .common.exceptions import UnsupportedInverterException
 from .common.register_type import RegisterType
 from .common.unload_controller import UnloadController
@@ -20,6 +18,7 @@ from .inverter_adapters import InverterAdapter
 from .inverter_profiles import INVERTER_PROFILES
 from .inverter_profiles import InverterModelConnectionTypeProfile
 from .modbus_client import ModbusClient
+from .modbus_client import ModbusClientFailedException
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -125,7 +124,7 @@ class ModbusController(EntityController, UnloadController):
 
             # List of (start address, [read values starting at that address])
             read_values: list[tuple[int, list[int]]] = []
-            succeeded = False
+            exception = None
             try:
                 for (
                     start_address,
@@ -149,7 +148,6 @@ class ModbusController(EntityController, UnloadController):
                 # If we made it to here, then all reads succeeded. Write them to _data and notify the sensors.
                 # This avoids recording reads if poll failed partway through (ensuring that we don't record potentially
                 # inconsistent data)
-                succeeded = True
                 changed_addresses = set()
                 for start_address, reads in read_values:
                     for i, value in enumerate(reads):
@@ -166,22 +164,18 @@ class ModbusController(EntityController, UnloadController):
                     changed_addresses,
                 )
                 self._notify_update(changed_addresses)
-            except TimeoutError:
+            except ModbusClientFailedException as ex:
+                exception = ex
                 _LOGGER.debug(
-                    "Timed out when contacting device %s %s, cancelling poll loop",
+                    "Modbus error when polling %s %s: %s",
                     self._client,
                     self._slave,
-                )
-            except ModbusException as ex:
-                _LOGGER.debug(
-                    "Modbus exception when polling %s %s - %s",
-                    self._client,
-                    self._slave,
-                    ex,
+                    ex.response,
                 )
             except Exception as ex:
+                exception = ex
                 _LOGGER.warning(
-                    "General exception when polling %s %s - %s",
+                    "General exception when polling %s %s: %s",
                     self._client,
                     self._slave,
                     repr(ex),
@@ -190,10 +184,14 @@ class ModbusController(EntityController, UnloadController):
 
             # Do this after recording new values in _data. That way the sensors show the new values when they
             # become available after a disconnection
-            if succeeded:
+            if exception is None:
                 self._num_failed_poll_attempts = 0
                 if not self._is_connected:
-                    _LOGGER.debug("Poll succeeded: now connected")
+                    _LOGGER.info(
+                        "%s %s - poll succeeded: now connected",
+                        self._client,
+                        self._slave,
+                    )
                     self._is_connected = True
                     self._notify_is_connected_changed()
             elif self._is_connected:
@@ -202,9 +200,12 @@ class ModbusController(EntityController, UnloadController):
                     self._num_failed_poll_attempts
                     >= _NUM_FAILED_POLLS_FOR_DISCONNECTION
                 ):
-                    _LOGGER.debug(
-                        "%s failed poll attempts: now not connected",
+                    _LOGGER.warning(
+                        "%s %s - %s failed poll attempts: now not connected. Last error: %s",
+                        self._client,
+                        self._slave,
                         self._num_failed_poll_attempts,
+                        exception,
                     )
                     self._is_connected = False
                     self._notify_is_connected_changed()
@@ -297,7 +298,13 @@ class ModbusController(EntityController, UnloadController):
 
         :returns: Tuple of (inverter type name e.g. "H1", inverter full name e.g. "H1-3.7-E")
         """
+        # Annoyingly pymodbus logs the important stuff to its logger, and doesn't add that info to the exceptions it throws
+        spy_handler = _SpyHandler()
+        pymodbus_logger = logging.getLogger("pymodbus")
+
         try:
+            pymodbus_logger.addHandler(spy_handler)
+
             # All known inverter types expose the model number at holding register 30000 onwards.
             # (The H1 series additional expose some model info in input registers))
             # Holding registers 30000-300015 seem to be all used for the model, with registers
@@ -334,15 +341,24 @@ class ModbusController(EntityController, UnloadController):
                     return model.model, full_model
 
             # We've read the model type, but been unable to match it against a supported model
-            _LOGGER.warning(
+            _LOGGER.error(
                 "Did not recognise inverter model '%s' (%s)", full_model, result
             )
-            raise UnsupportedInverterException(f"Inverter ({full_model}) not supported")
-        except ModbusException:
-            _LOGGER.warning(
+            raise UnsupportedInverterException(full_model)
+        except Exception as ex:
+            _LOGGER.error(
                 "Autodetect: failed to connect to (%s)", client, exc_info=True
             )
+            raise AutoconnectFailedException(spy_handler.records) from ex
         finally:
+            pymodbus_logger.removeHandler(spy_handler)
             await client.close()
 
-        raise ConnectionException("Could not connect to Modbus device")
+
+class _SpyHandler(logging.Handler):
+    def __init__(self) -> None:
+        super().__init__(level=logging.ERROR)
+        self.records: list[logging.LogRecord] = []
+
+    def emit(self, record: logging.LogRecord) -> None:
+        self.records.append(record)
