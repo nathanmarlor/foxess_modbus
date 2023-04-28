@@ -41,7 +41,7 @@ class ModbusEntityMixin(ModbusControllerEntity):
         friendly_name = self._inv_details[FRIENDLY_NAME]
         inv_model = self._inv_details[INVERTER_MODEL]
         conn_type = self._inv_details[INVERTER_CONN]
-        if friendly_name != "":
+        if friendly_name:
             attr_name = f"FoxESS - Modbus ({friendly_name})"
         else:
             attr_name = "FoxESS - Modbus"
@@ -58,7 +58,7 @@ class ModbusEntityMixin(ModbusControllerEntity):
     def name(self) -> str:
         """Return the name of the sensor."""
         friendly_name = self._inv_details[FRIENDLY_NAME]
-        if friendly_name != "":
+        if friendly_name:
             return f"{self.entity_description.name} ({friendly_name})"
         else:
             return self.entity_description.name
@@ -92,7 +92,7 @@ class ModbusEntityMixin(ModbusControllerEntity):
     def _get_unique_id(self):
         """Get unique ID"""
         entity_id_prefix = self._inv_details[ENTITY_ID_PREFIX]
-        if entity_id_prefix != "":
+        if entity_id_prefix:
             return f"{entity_id_prefix}_{self.entity_description.key}"
         else:
             return f"{self.entity_description.key}"

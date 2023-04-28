@@ -439,9 +439,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                 ENTITY_ID_PREFIX: inverter.entity_id_prefix
                 if inverter.entity_id_prefix
                 else "",
-                FRIENDLY_NAME: inverter.friendly_name
-                if inverter.friendly_name
-                else None,
+                FRIENDLY_NAME: inverter.friendly_name if inverter.friendly_name else "",
                 MODBUS_TYPE: inverter.inverter_protocol,
                 HOST: inverter.host,
                 ADAPTER_ID: inverter.adapter.adapter_id,

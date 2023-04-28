@@ -203,10 +203,12 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
     if config_entry.version == 4:
         # Old versions accidentally mutated ConfigEntry.data
         for inverter in config_entry.data.get(INVERTERS, {}).values():
-            if POLL_RATE in inverter:
-                del inverter[POLL_RATE]
-            if MAX_READ in inverter:
-                del inverter[MAX_READ]
+            inverter.pop(POLL_RATE, None)
+            inverter.pop(MAX_READ, None)
+            if inverter[FRIENDLY_NAME] is None:
+                inverter[FRIENDLY_NAME] = ""
+            if inverter[ENTITY_ID_PREFIX] is None:
+                inverter[ENTITY_ID_PREFIX] = ""
         config_entry.version = 5
 
     _LOGGER.info("Migration to version %s successful", config_entry.version)

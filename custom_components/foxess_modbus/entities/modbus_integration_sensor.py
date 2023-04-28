@@ -89,7 +89,7 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
         self.entity_id = "sensor." + self._get_unique_id()
 
         entity_id_prefix = self._inv_details[ENTITY_ID_PREFIX]
-        if entity_id_prefix != "":
+        if entity_id_prefix:
             source_entity = f"sensor.{entity_id_prefix}_{source_entity}"
         else:
             source_entity = f"sensor.{source_entity}"
