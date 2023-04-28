@@ -79,6 +79,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # {(modbus_type, host): client}
     clients: dict[tuple[str, str], ModbusClient] = {}
     for inverter_id, inverter in entry.data[INVERTERS].items():
+        # It turns out that HA really doesn't like us mutating the ConfigEntry it passes us!
+        # Since we merge in the options etc, do this on a copy
+        inverter = copy.deepcopy(inverter)
+
         # Remember that there might not be any options
         options = entry.options.get(INVERTERS, {}).get(inverter_id, {})
 
