@@ -33,11 +33,11 @@ write_registers:
 update_charge_period:
   name: Update Charge Period
   description: >
-    Updates one of the two charge periods (if supported by your inverter).
+    Updates one of the two charge periods (if supported by your inverter, see https://github.com/nathanmarlor/foxess_modbus/wiki/Supported-Features)
   fields:
     inverter:
       name: Inverter
-      description: Which inverter to target. Pass a device ID or unique friendly name.
+      description: Which inverter to target. Pass a device ID or unique friendly name. If your inverter isn't listed here, it probably isn't supported.
       required: true
       default: "''"
       example: "''"
@@ -96,11 +96,11 @@ update_charge_period:
         time:
 update_all_charge_periods:
   name: Update All Charge Periods
-  description: Sets all charge periods in one service call. The service "Update Charge Period" is easier for end-users to use.
+  description: Sets all charge periods in one service call (if supported by your inverter, see https://github.com/nathanmarlor/foxess_modbus/wiki/Supported-Features). The service "Update Charge Period" is easier for end-users to use.
   fields:
     inverter:
       name: Inverter
-      description: Which inverter to target. Pass a device ID or unique friendly name.
+      description: Which inverter to target. Pass a device ID or unique friendly name. If your inverter isn't listed here, it probably isn't supported.
       required: true
       default: "''"
       example: "''"
