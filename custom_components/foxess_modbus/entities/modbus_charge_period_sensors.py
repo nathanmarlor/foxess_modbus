@@ -239,7 +239,7 @@ class ModbusEnableForceChargeSensor(ModbusEntityMixin, BinarySensorEntity):
         self._entry = entry
         self._inv_details = inv_details
         self.entity_id = "binary_sensor." + self._get_unique_id()
-        self._attr_device_class = BinarySensorDeviceClass.BATTERY_CHARGING
+        self._attr_device_class = BinarySensorDeviceClass.POWER
 
     @property
     def is_on(self) -> bool | None:

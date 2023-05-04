@@ -45,7 +45,9 @@ update_charge_period:
         device:
           integration: foxess_modbus
           entity:
-            device_class: "battery_charging"
+            # Only charge periods provide binary_sensors with class power, for charge period on/off
+            domain: "binary_sensor"
+            device_class: "power"
     charge_period:
       name: Charge Period
       description: Which charge period to update.
@@ -108,7 +110,9 @@ update_all_charge_periods:
         device:
           integration: foxess_modbus
           entity:
-            device_class: "battery_charging"
+            # Only charge periods provide binary_sensors with class power, for charge period on/off
+            domain: "binary_sensor"
+            device_class: "power"
     charge_periods:
       name: Charge Periods
       description: Charge periods to set. This should be an array of objects, one for each charge period. All charge periods must be specified. See the example data
