@@ -31,6 +31,8 @@ Supported models:
 - H1 (including AC1 and AIO)
 - H3
 
+**[See the wiki](https://github.com/nathanmarlor/foxess_modbus/wiki) for how-to articles and FAQs**
+
 ## Installation
 
 Migrating from StealthChesnut's HA-FoxESS-Modbus? [Read this](https://github.com/nathanmarlor/foxess_modbus/wiki/Migrating-from-HA-FoxESS-Modbus).
