@@ -22,44 +22,20 @@ A Home Assistant custom component designed to ease integrating modbus data from 
 
 Features include:
 
-- Autodetect inverter connection type (i.e. W610 / Direct LAN)
 - Read registers in bulk to improve Home Assistant performance
 - Direct decoding of values (i.e. force charge periods)
+- Set charge periods, work mode, min/max SoC (when connected over RS485 only)
 
 Supported models:
 
-- H1 TCP / USB
+- H1 (including AC1 and AIO)
+- H3
+
+**[See the wiki](https://github.com/nathanmarlor/foxess_modbus/wiki) for how-to articles and FAQs**
 
 ## Installation
 
-<details>
-   <summary><b>Migrating from the StealthChestnut version?</b></summary></p>
-
-NOTE: When transferring away from the StealthChestnut HA-FoxESS-Modbus version, before installing this integration please remove the modbus: include from the configuration.yaml, it will look similar to this (depending on the path you chose)
-
-`modbus: !include custom_components/foxmodbuslan/modbusUSB.yaml`
-
-AND if you have added the custom sensors (example listed below), remove them from your configuration.yaml as they are now provided from within the integration.
-
-```
-  - name: "Battery Discharge"
-    device_class: "power"
-    unit_of_measurement: "kW"
-    state: >
-       {% if (states('sensor.battery_discharge_power') | float(default=0) ) > 0 %}
-       {{ states('sensor.battery_discharge_power') | float(default=0) * 1 }}
-       {% else %}
-       0
-       {% endif %}
-```
-
-Save the configuration.yaml, Check Configuration is OK and Restart Home Assistant
-
-Now install the FoxESS modbus integration via HACS
-
-</details>
-
----
+Migrating from StealthChesnut's HA-FoxESS-Modbus? [Read this](https://github.com/nathanmarlor/foxess_modbus/wiki/Migrating-from-HA-FoxESS-Modbus).
 
 Recommend installation through [HACS][hacs]
 
@@ -74,32 +50,6 @@ Recommend installation through [HACS][hacs]
 6. Go to Settings > Devices and Services > Add Integration
 7. Search for and select 'FoxESS - Modbus' (If the integration is not found, empty your browser cache and reload the page)
 8. Proceed with the configuration
-
-## Configuration and Options
-
-<b>Select connection type</b></p>
-
-- **TCP**: TCP connection (i.e. W610/LAN)
-- **Serial**: USB connection
-
-![TCP](images/select.png)
-
-<b>Serial Inverter Setup</b></p>
-
-- **Modbus Host**: Path to your USB host (default /dev/ttyUSB0)
-- **Modbus Slave**: Slave ID (default 247)
-- **Add another device**: Add more than one inverter
-
-![TCP](images/serial.png)
-
-<b>TCP Inverter Setup</b></p>
-
-- **Modbus Host**: IP Adddress of your Modbus (i.e. W610/LAN) host
-- **Modbus Port**: Port number (default 502)
-- **Modbus Slave**: Slave ID (default 247)
-- **Add another device**: Add more than one inverter
-
-![TCP](images/tcp.png)
 
 ## Usage
 
