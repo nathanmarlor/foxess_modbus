@@ -131,7 +131,7 @@ class ModbusChargePeriodFactory:
             address=enable_charge_from_grid_address,
             # The 'Update Charge Period' service only accepts devices with this device_class,
             # so ensure that only inverters which support this provide a sensor with this device_class
-            device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
+            device_class=BinarySensorDeviceClass.POWER,
         )
 
         self.entity_descriptions = [
