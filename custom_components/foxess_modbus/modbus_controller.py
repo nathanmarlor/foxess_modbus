@@ -7,6 +7,7 @@ from datetime import timedelta
 from typing import Iterable
 
 from homeassistant.helpers.event import async_track_time_interval
+from pymodbus.exceptions import ConnectionException
 
 from .common.entity_controller import EntityController
 from .common.entity_controller import ModbusControllerEntity
@@ -164,6 +165,14 @@ class ModbusController(EntityController, UnloadController):
                     changed_addresses,
                 )
                 self._notify_update(changed_addresses)
+            except ConnectionException as ex:
+                exception = ex
+                _LOGGER.debug(
+                    "Failed to connect to %s %s: %s",
+                    self._client,
+                    self._slave,
+                    ex,
+                )
             except ModbusClientFailedException as ex:
                 exception = ex
                 _LOGGER.debug(
