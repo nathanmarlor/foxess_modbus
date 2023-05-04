@@ -132,6 +132,12 @@ ADAPTERS = {
         ),
         # Network adapters
         InverterAdapter.network(
+            "elfin_ew11",
+            "https://github.com/nathanmarlor/foxess_modbus/wiki/Elfin-EW11",
+            network_protocols=[TCP, UDP],
+            max_read=100,
+        ),
+        InverterAdapter.network(
             "usr_tcp232_410s",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/USR-TCP232-410s",
             network_protocols=[TCP, UDP],
