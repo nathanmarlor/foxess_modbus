@@ -1167,24 +1167,25 @@ _INVERTER_ENTITIES = [
         name="Inverter State Code",
         state_class=SensorStateClass.MEASUREMENT,
     ),
-    ModbusSensorDescription(
-        key="fault1_code",
-        addresses=[ModbusAddressesSpec(models=[H3], holding=[31044])],
-        name="Inverter Fault 1 Code",
-        state_class=SensorStateClass.MEASUREMENT,
-    ),
-    ModbusSensorDescription(
-        key="fault2_code",
-        addresses=[ModbusAddressesSpec(models=[H3], holding=[31045])],
-        name="Inverter Fault 2 Code",
-        state_class=SensorStateClass.MEASUREMENT,
-    ),
-    ModbusSensorDescription(
-        key="fault3_code",
-        addresses=[ModbusAddressesSpec(models=[H3], holding=[31046])],
-        name="Inverter Fault 3 Code",
-        state_class=SensorStateClass.MEASUREMENT,
-    ),
+    # We'll re-introduce these as a single sensor showing the current fault code(s)
+    # ModbusSensorDescription(
+    #     key="fault1_code",
+    #     addresses=[ModbusAddressesSpec(models=[H3], holding=[31044])],
+    #     name="Inverter Fault 1 Code",
+    #     state_class=SensorStateClass.MEASUREMENT,
+    # ),
+    # ModbusSensorDescription(
+    #     key="fault2_code",
+    #     addresses=[ModbusAddressesSpec(models=[H3], holding=[31045])],
+    #     name="Inverter Fault 2 Code",
+    #     state_class=SensorStateClass.MEASUREMENT,
+    # ),
+    # ModbusSensorDescription(
+    #     key="fault3_code",
+    #     addresses=[ModbusAddressesSpec(models=[H3], holding=[31046])],
+    #     name="Inverter Fault 3 Code",
+    #     state_class=SensorStateClass.MEASUREMENT,
+    # ),
 ]
 
 _CONFIGURATION_ENTITIES: list[EntityFactory] = [
