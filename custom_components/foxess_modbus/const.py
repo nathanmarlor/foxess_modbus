@@ -18,6 +18,7 @@ LAN = "LAN"
 H1 = "H1"
 AC1 = "AC1"
 AIO_H1 = "AIO-H1"
+KH = "KH"
 H3 = "H3"
 
 # Platforms
