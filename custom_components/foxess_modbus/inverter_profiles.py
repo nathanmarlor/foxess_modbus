@@ -9,6 +9,7 @@ from .common.entity_controller import EntityController
 from .common.register_type import RegisterType
 from .const import AC1
 from .const import AIO_H1
+from .const import AIO_H3
 from .const import AUX
 from .const import H1
 from .const import H3
@@ -99,9 +100,12 @@ class InverterModelProfile:
         self,
         connection_type: str,
         register_type: RegisterType,
-        invalid_register_ranges: list[tuple[int, int]],
+        invalid_register_ranges: list[tuple[int, int]] | None = None,
     ) -> "InverterModelProfile":
         assert connection_type not in self.connection_types
+        if invalid_register_ranges is None:
+            invalid_register_ranges = []
+
         self.connection_types[connection_type] = InverterModelConnectionTypeProfile(
             self.model,
             connection_type,
@@ -123,7 +127,6 @@ INVERTER_PROFILES = {
         .add_connection_type(
             LAN,
             RegisterType.HOLDING,
-            invalid_register_ranges=[],
         ),
         InverterModelProfile(AC1)
         .add_connection_type(
@@ -134,7 +137,6 @@ INVERTER_PROFILES = {
         .add_connection_type(
             LAN,
             RegisterType.HOLDING,
-            invalid_register_ranges=[],
         ),
         InverterModelProfile(AIO_H1)
         .add_connection_type(
@@ -145,23 +147,27 @@ INVERTER_PROFILES = {
         .add_connection_type(
             LAN,
             RegisterType.HOLDING,
-            invalid_register_ranges=[],
         ),
         # The KH doesn't have a LAN port
-        InverterModelProfile(KH).add_connection_type(
-            AUX, RegisterType.HOLDING, invalid_register_ranges=[]
-        ),
+        InverterModelProfile(KH).add_connection_type(AUX, RegisterType.HOLDING),
         # The H3 seems to use holding registers for everything
         InverterModelProfile(H3)
         .add_connection_type(
             LAN,
             RegisterType.HOLDING,
-            invalid_register_ranges=[],
         )
         .add_connection_type(
             AUX,
             RegisterType.HOLDING,
-            invalid_register_ranges=[],
+        ),
+        InverterModelProfile(AIO_H3)
+        .add_connection_type(
+            AUX,
+            RegisterType.HOLDING,
+        )
+        .add_connection_type(
+            LAN,
+            RegisterType.HOLDING,
         ),
     ]
 }
