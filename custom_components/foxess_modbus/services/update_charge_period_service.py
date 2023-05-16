@@ -198,14 +198,19 @@ async def _update_charge_period(
     )
     charge_period_index = service_data.data["charge_period"] - 1
 
-    charge_periods = [
-        ChargePeriod(
-            enable_force_charge=service_data.data["enable_force_charge"],
-            enable_charge_from_grid=service_data.data["enable_charge_from_grid"],
-            start=service_data.data.get("start", time(hour=0, minute=0)),
-            end=service_data.data.get("end", time(hour=0, minute=0)),
+    if charge_period_index >= len(controller.charge_periods):
+        raise HomeAssistantError(
+            f"Inverter does not support setting charge period {charge_period_index + 1}"
         )
-    ]
+
+    charge_periods: list[ChargePeriod] = [None] * len(controller.charge_periods)
+
+    charge_periods[charge_period_index] = ChargePeriod(
+        enable_force_charge=service_data.data["enable_force_charge"],
+        enable_charge_from_grid=service_data.data["enable_charge_from_grid"],
+        start=service_data.data.get("start", time(hour=0, minute=0)),
+        end=service_data.data.get("end", time(hour=0, minute=0)),
+    )
 
     # Add the other charge periods, which aren't being set right now, to charge_periods
     for i, charge_period in enumerate(controller.charge_periods):
@@ -233,14 +238,12 @@ async def _update_charge_period(
                 f"Start time '{period_start_time_value}' or end time '{period_end_time_value}' for charge period {i + 1} is not valid"
             )
 
-        charge_periods.append(
-            ChargePeriod(
-                enable_force_charge=period_start_time_value > 0
-                or period_end_time_value > 0,
-                enable_charge_from_grid=period_enable_charge_from_grid_value > 0,
-                start=parse_time_value(period_start_time_value),
-                end=parse_time_value(period_end_time_value),
-            )
+        charge_periods[i] = ChargePeriod(
+            enable_force_charge=period_start_time_value > 0
+            or period_end_time_value > 0,
+            enable_charge_from_grid=period_enable_charge_from_grid_value > 0,
+            start=parse_time_value(period_start_time_value),
+            end=parse_time_value(period_end_time_value),
         )
 
     await _set_charge_periods(controller, charge_periods)
