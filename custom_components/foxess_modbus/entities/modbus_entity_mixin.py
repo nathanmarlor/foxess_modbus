@@ -84,11 +84,11 @@ class ModbusEntityMixin(ModbusControllerEntity):
             self._address_updated()
 
     def is_connected_changed_callback(self) -> None:
-        self.schedule_update_ha_state(True)
+        self.async_schedule_update_ha_state()
 
     def _address_updated(self) -> None:
         """Called when the controller reads an updated to any of the addresses in self.addresses"""
-        self.schedule_update_ha_state(True)
+        self.async_schedule_update_ha_state()
 
     def _get_unique_id(self):
         """Get unique ID"""

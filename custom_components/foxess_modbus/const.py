@@ -40,6 +40,9 @@ MODBUS_SERIAL_BAUD = "modbus_serial_baud"
 POLL_RATE = "poll_rate"
 MAX_READ = "max_read"
 ADAPTER_ID = "adapter_id"
+ROUND_SENSOR_VALUES = "round_sensor_values"
+# Used as a key in the inverter config to indicate that the adapter was migrated from config version 1
+ADAPTER_WAS_MIGRATED = "adapter_was_migrated"
 
 INVERTER_MODEL = "inverter_model"
 INVERTER_BASE = "inverter_base"
@@ -58,9 +61,6 @@ CONFIG = "config"
 INVERTER = "inverter"
 CONNECTION = "connection"
 MODBUS = "modbus"
-
-# Used as a key in the inverter config to indicate that the adapter was migrated from config version 1
-ADAPTER_WAS_MIGRATED = "adapter_was_migrated"
 
 # Defaults
 DEFAULT_NAME = DOMAIN

@@ -45,6 +45,7 @@ from .const import MAX_READ
 from .const import MODBUS_SLAVE
 from .const import MODBUS_TYPE
 from .const import POLL_RATE
+from .const import ROUND_SENSOR_VALUES
 from .const import SERIAL
 from .const import TCP
 from .const import UDP
@@ -732,6 +733,8 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
             poll_rate = user_input.get("poll_rate")
             if poll_rate is not None:
                 inverter_options[POLL_RATE] = poll_rate
+            if user_input.get("round_sensor_values", False):
+                inverter_options[ROUND_SENSOR_VALUES] = True
             max_read = user_input.get("max_read")
             if max_read is not None:
                 inverter_options[MAX_READ] = max_read
@@ -760,6 +763,11 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
                 }
             )
 
+        schema_parts[
+            vol.Required(
+                "round_sensor_values", default=options.get(ROUND_SENSOR_VALUES, False)
+            )
+        ] = selector({"boolean": {}})
         schema_parts[
             vol.Optional(
                 "poll_rate",

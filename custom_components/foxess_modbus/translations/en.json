@@ -95,10 +95,12 @@
         "description": "Options for \"{inverter}\".",
         "data": {
           "adapter_id": "Adapter",
+          "round_sensor_values": "Round sensor values",
           "poll_rate": "Poll rate",
           "max_read": "Max read"
         },
         "data_description": {
+          "round_sensor_values": "Reduces Home Assistant database size by rounding sensor values",
           "poll_rate": "The default for your adapter type is {default_poll_rate}. Leave empty to use the default",
           "max_read": "The default for your adapter type is {default_max_read}. Leave empty to use the default. Warning: Look at the debug log for problems if you increase this!"
         }
