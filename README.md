@@ -29,7 +29,8 @@ Features include:
 Supported models:
 
 - H1 (including AC1 and AIO)
-- H3
+- H3 (including AOI)
+- KH
 
 **[See the wiki](https://github.com/nathanmarlor/foxess_modbus/wiki) for how-to articles and FAQs**
 
