@@ -99,16 +99,21 @@ class ModbusController(EntityController, UnloadController):
             start_address,
             values,
         )
-        await self._client.write_registers(start_address, values, self._slave)
-        changed_addresses = set()
-        for i, value in enumerate(values):
-            address = start_address + i
-            value = int(value)  # Ensure that we've been given an int
-            # Only store the result of the write if it's a register we care about ourselves
-            if self._data.get(address, value) != value:
-                self._data[address] = value
-                changed_addresses.add(address)
-        self._notify_update(changed_addresses)
+        try:
+            await self._client.write_registers(start_address, values, self._slave)
+            changed_addresses = set()
+            for i, value in enumerate(values):
+                address = start_address + i
+                value = int(value)  # Ensure that we've been given an int
+                # Only store the result of the write if it's a register we care about ourselves
+                if self._data.get(address, value) != value:
+                    self._data[address] = value
+                    changed_addresses.add(address)
+            self._notify_update(changed_addresses)
+        except Exception as ex:
+            # Failed writes are always bad
+            _LOGGER.error("Failed to write registers", exc_info=True)
+            raise ex
 
     async def _refresh(self, _time: datetime) -> None:
         """Refresh modbus data"""

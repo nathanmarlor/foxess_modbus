@@ -7,6 +7,10 @@ from pymodbus.client import ModbusSerialClient
 from pymodbus.client import ModbusTcpClient
 from pymodbus.client import ModbusUdpClient
 from pymodbus.pdu import ModbusResponse
+from pymodbus.register_read_message import ReadHoldingRegistersResponse
+from pymodbus.register_read_message import ReadInputRegistersResponse
+from pymodbus.register_write_message import WriteMultipleRegistersResponse
+from pymodbus.register_write_message import WriteSingleRegisterRequest
 
 from .common.register_type import RegisterType
 from .const import MODBUS_TYPE
@@ -72,6 +76,7 @@ class ModbusClient:
                 num_registers,
                 slave,
             )
+            expected_response_type = ReadHoldingRegistersResponse
         elif register_type == RegisterType.INPUT:
             response = await self._async_pymodbus_call(
                 self._client.read_input_registers,
@@ -79,6 +84,7 @@ class ModbusClient:
                 num_registers,
                 slave,
             )
+            expected_response_type = ReadInputRegistersResponse
         else:
             assert False
 
@@ -87,6 +93,22 @@ class ModbusClient:
             if isinstance(response, BaseException):
                 raise ModbusClientFailedException(message, self, response) from response
             raise ModbusClientFailedException(message, self, response)
+
+        # We've seen cases where the remote device gets two requests at the same time and sends the wrong response to the wrong thing.
+        # pymodbus doesn't check whether the response type matches the request type
+        if not isinstance(response, expected_response_type):
+            message = (
+                f"Error reading registers. Type: {register_type}; start: {start_address}; count: {num_registers}; slave: {slave}. "
+                + f"Received incorrect response type {response}. Please ensure that your adapter is correctly configured to "
+                + "allow multiple connections, see the instructions at https://github.com/nathanmarlor/foxess_modbus/wiki"
+            )
+            # ModbusController only logs this as debug. Make this a bit clearer so people spot and fix this
+            _LOGGER.warning(message)
+            raise ModbusClientFailedException(
+                message,
+                self,
+                response,
+            )
 
         return response.registers
 
@@ -100,6 +122,7 @@ class ModbusClient:
                 register_values,
                 slave,
             )
+            expected_response_type = WriteMultipleRegistersResponse
         else:
             response = await self._async_pymodbus_call(
                 self._client.write_register,
@@ -107,11 +130,27 @@ class ModbusClient:
                 int(register_values[0]),
                 slave,
             )
+            expected_response_type = WriteSingleRegisterRequest
+
         if response.isError():
             message = f"Error writing registers. Start: {register_address}; values: {register_values}; slave: {slave}"
             if isinstance(response, BaseException):
                 raise ModbusClientFailedException(message, self, response) from response
             raise ModbusClientFailedException(message, self, response)
+
+        # We've seen cases where the remote device gets two requests at the same time and sends the wrong response to the wrong thing.
+        # pymodbus doesn't check whether the response type matches the request type
+        if not isinstance(response, expected_response_type):
+            message = (
+                f"Error writing registers. Start: {register_address}; values: {register_values}; slave: {slave}. "
+                + f"Received incorrect response type {response}. Please ensure that your adapter is correctly configured to "
+                + "allow multiple connections, see the instructions at https://github.com/nathanmarlor/foxess_modbus/wiki"
+            )
+            raise ModbusClientFailedException(
+                message,
+                self,
+                response,
+            )
 
         return True
 
