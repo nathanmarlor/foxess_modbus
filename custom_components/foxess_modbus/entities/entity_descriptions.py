@@ -16,6 +16,7 @@ from .entity_factory import EntityFactory
 from .inverter_model_spec import EntitySpec
 from .inverter_model_spec import ModbusAddressesSpec
 from .inverter_model_spec import ModbusAddressSpec
+from .modbus_battery_sensor import ModbusBatterySensorDescription
 from .modbus_integration_sensor import (
     ModbusIntegrationSensorDescription,
 )
@@ -25,6 +26,9 @@ from .modbus_select import ModbusSelectDescription
 from .modbus_sensor import ModbusSensorDescription
 from .validation import Min
 from .validation import Range
+
+# TODO: There should be equivalent registers for the H3 and KH somewhere
+BMS_CONNECT_STATE_ADDRESS = [ModbusAddressSpec(models=[H1, AIO_H1, AC1], input=11058)]
 
 
 _PV_ENTITIES: list[EntityFactory] = [
@@ -829,7 +833,7 @@ _INVERTER_ENTITIES = [
         scale=0.1,
         validate=[Range(-100, 100)],
     ),
-    ModbusSensorDescription(
+    ModbusBatterySensorDescription(
         key="battery_soc",
         addresses=[
             ModbusAddressesSpec(
@@ -838,6 +842,10 @@ _INVERTER_ENTITIES = [
             ModbusAddressesSpec(models=[KH], holding=[31024]),
             ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31038]),
         ],
+        # TODO: There might be an equivalent register for the H3/KH?
+        bms_connect_state_address=[
+            ModbusAddressSpec(models=[H1, AIO_H1, AC1], input=11058)
+        ],
         name="Battery SoC",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
@@ -845,9 +853,10 @@ _INVERTER_ENTITIES = [
         signed=False,
         validate=[Range(0, 100)],
     ),
-    ModbusSensorDescription(
+    ModbusBatterySensorDescription(
         key="bms_kwh_remaining",
         addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11037])],
+        bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS kWh Remaining",
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL,
@@ -856,7 +865,7 @@ _INVERTER_ENTITIES = [
         signed=False,
         validate=[Min(0)],
     ),
-    ModbusSensorDescription(
+    ModbusBatterySensorDescription(
         key="battery_temp",
         addresses=[
             ModbusAddressesSpec(
@@ -865,6 +874,10 @@ _INVERTER_ENTITIES = [
             ModbusAddressesSpec(models=[KH], holding=[31023]),
             ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31037]),
         ],
+        # TODO: There might be an equivalent register for the H3/KH?
+        bms_connect_state_address=[
+            ModbusAddressSpec(models=[H1, AIO_H1, AC1], input=11058)
+        ],
         name="Battery Temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -872,9 +885,10 @@ _INVERTER_ENTITIES = [
         scale=0.1,
         validate=[Range(0, 100)],
     ),
-    ModbusSensorDescription(
+    ModbusBatterySensorDescription(
         key="bms_charge_rate",
         addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11041])],
+        bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS Charge Rate",
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -883,9 +897,10 @@ _INVERTER_ENTITIES = [
         signed=False,
         validate=[Range(0, 100)],
     ),
-    ModbusSensorDescription(
+    ModbusBatterySensorDescription(
         key="bms_discharge_rate",
         addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11042])],
+        bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS Discharge Rate",
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -894,9 +909,10 @@ _INVERTER_ENTITIES = [
         signed=False,
         validate=[Range(0, 100)],
     ),
-    ModbusSensorDescription(
+    ModbusBatterySensorDescription(
         key="bms_cell_temp_high",
         addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11043])],
+        bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS Cell Temp High",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -904,9 +920,10 @@ _INVERTER_ENTITIES = [
         scale=0.1,
         validate=[Range(0, 100)],
     ),
-    ModbusSensorDescription(
+    ModbusBatterySensorDescription(
         key="bms_cell_temp_low",
         addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11044])],
+        bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS Cell Temp Low",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -914,9 +931,10 @@ _INVERTER_ENTITIES = [
         scale=0.1,
         validate=[Range(0, 100)],
     ),
-    ModbusSensorDescription(
+    ModbusBatterySensorDescription(
         key="bms_cell_mv_high",
         addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11045])],
+        bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS Cell mV High",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -924,9 +942,10 @@ _INVERTER_ENTITIES = [
         signed=False,
         validate=[Min(0)],
     ),
-    ModbusSensorDescription(
+    ModbusBatterySensorDescription(
         key="bms_cell_mv_low",
         addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11046])],
+        bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS Cell mV Low",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -934,17 +953,19 @@ _INVERTER_ENTITIES = [
         signed=False,
         validate=[Min(0)],
     ),
-    ModbusSensorDescription(
+    ModbusBatterySensorDescription(
         key="bms_cycle_count",
         addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11048])],
+        bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS Cycle Count",
         state_class=SensorStateClass.MEASUREMENT,
         signed=False,
         validate=[Min(0)],
     ),
-    ModbusSensorDescription(
+    ModbusBatterySensorDescription(
         key="bms_watthours_total",
         addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11049])],
+        bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         entity_registry_enabled_default=False,
         name="BMS Energy Throughput",
         device_class=SensorDeviceClass.ENERGY,
