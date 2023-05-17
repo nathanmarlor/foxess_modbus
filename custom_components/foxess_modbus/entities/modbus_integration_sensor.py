@@ -3,6 +3,7 @@ import logging
 from dataclasses import dataclass
 from typing import Any
 
+from homeassistant.components.integration.sensor import DEFAULT_ROUND
 from homeassistant.components.integration.sensor import IntegrationSensor
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
@@ -26,7 +27,7 @@ class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory)
 
     models: list[EntitySpec]
     integration_method: str
-    round_digits: int
+    round_digits: int | None = None
     source_entity: str
     unit_time: UnitOfTime
 
@@ -70,7 +71,7 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
         entry: ConfigEntry,
         inv_details: dict[str, Any],
         integration_method: str,
-        round_digits: int,
+        round_digits: int | None,
         source_entity: str,
         unit_time: UnitOfTime,
     ) -> None:
@@ -82,6 +83,9 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
         self.entity_description = entity_description
         self.entity_id = "sensor." + self._get_unique_id()
         source_entity = f"sensor.{self._add_entity_id_prefix(source_entity)}"
+
+        if round_digits is None:
+            round_digits = DEFAULT_ROUND
 
         IntegrationSensor.__init__(
             self=self,
