@@ -127,6 +127,11 @@ ADAPTERS = {
             "https://github.com/nathanmarlor/foxess_modbus/wiki/RUNCCI-YUN-USB-to-RS485-Converter",
         ),
         InverterAdapter.serial(
+            "waveshare_usb_to_rs485_b",
+            "https://github.com/nathanmarlor/foxess_modbus/wiki/Waveshare-USB-to-RS485-%28B%29",
+            max_read=100,
+        ),
+        InverterAdapter.serial(
             "serial_other",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/Other-Serial-Adapter",
         ),

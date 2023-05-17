@@ -117,6 +117,7 @@
       "options": {
         "dsd_tech_sh_u10": "DSD TECH SH-U10",
         "runcci_yun_usb_to_rs485_converter": "RUNCCI-YUN USB to RS485 Converter",
+        "waveshare_usb_to_rs485_b": "Waveshare USB to RS485 (B)",
         "serial_other": "Other",
         "elfin_ew11": "Elfin EW11/EW11A",
         "usr_tcp232_410s": "USR-TCP-410s",
