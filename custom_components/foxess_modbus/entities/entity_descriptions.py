@@ -19,6 +19,7 @@ from .inverter_model_spec import ModbusAddressSpec
 from .modbus_integration_sensor import (
     ModbusIntegrationSensorDescription,
 )
+from .modbus_lambda_sensor import ModbusLambdaSensorDescription
 from .modbus_number import ModbusNumberDescription
 from .modbus_select import ModbusSelectDescription
 from .modbus_sensor import ModbusSensorDescription
@@ -146,6 +147,25 @@ _PV_ENTITIES: list[EntityFactory] = [
         round_digits=2,
         source_entity="pv2_power",
         unit_time=UnitOfTime.HOURS,
+    ),
+    ModbusLambdaSensorDescription(
+        key="pv_power_now",
+        models=[
+            EntitySpec(
+                models=[H1, AIO_H1],
+                register_types=[RegisterType.INPUT, RegisterType.HOLDING],
+            ),
+            EntitySpec(
+                models=[KH, H3, AIO_H3],
+                register_types=[RegisterType.HOLDING],
+            ),
+        ],
+        sources=["pv1_power", "pv2_power"],
+        method=sum,
+        name="PV Power",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="kW",
     ),
 ]
 
