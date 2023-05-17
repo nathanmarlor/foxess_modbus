@@ -82,7 +82,7 @@ class ModbusBatterySensor(ModbusSensor):
             if bms_connect_state != 1:
                 return None
 
-        return super().native_value()
+        return super().native_value
 
     @property
     def addresses(self) -> list[int]:
