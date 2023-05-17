@@ -38,6 +38,7 @@ class InverterAdapter:
         str
     ] | None = None  # If type is NETWORK/DIRECT, whether we support TCP and/or UDP
     recommended_protocol: str | None = None
+    default_host: str | None = None
 
     @staticmethod
     def direct(
@@ -60,6 +61,7 @@ class InverterAdapter:
     def serial(
         adapter_id: str,
         setup_link: str,
+        default_host: str = "/dev/ttyUSB0",
         poll_rate: int = _DEFAULT_POLL_RATE,
         max_read: int = _DEFAULT_MAX_READ,
     ) -> "InverterAdapter":
@@ -68,6 +70,7 @@ class InverterAdapter:
             type=InverterAdapterType.SERIAL,
             connection_type=AUX,
             setup_link=setup_link,
+            default_host=default_host,
             poll_rate=poll_rate,
             max_read=max_read,
         )
@@ -125,6 +128,12 @@ ADAPTERS = {
         InverterAdapter.serial(
             "runcci_yun_usb_to_rs485_converter",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/RUNCCI-YUN-USB-to-RS485-Converter",
+        ),
+        InverterAdapter.serial(
+            "waveshare_usb_to_rs485_b",
+            "https://github.com/nathanmarlor/foxess_modbus/wiki/Waveshare-USB-to-RS485-%28B%29",
+            default_host="/dev/ttyACM0",
+            max_read=100,
         ),
         InverterAdapter.serial(
             "serial_other",
