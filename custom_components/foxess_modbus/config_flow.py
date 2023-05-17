@@ -300,12 +300,11 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             )
             return await self.async_step_friendly_name()
 
-        # TODO: Look at self._data.get(MODBUS_SERIAL_HOST etc)
         schema = vol.Schema(
             {
                 vol.Required(
                     "serial_device",
-                    default="/dev/ttyUSB0",
+                    default=adapter.default_host,
                 ): cv.string,
                 vol.Required("modbus_slave", default=_DEFAULT_SLAVE): int,
             }
