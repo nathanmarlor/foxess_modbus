@@ -43,6 +43,7 @@ _PV_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
+        round_to=1,
         # This can go negative if no panels are attached
     ),
     ModbusSensorDescription(
@@ -56,6 +57,7 @@ _PV_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        round_to=1,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -69,6 +71,7 @@ _PV_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         # This can go negative if no panels are attached
     ),
     ModbusIntegrationSensorDescription(
@@ -103,6 +106,7 @@ _PV_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
+        round_to=1,
         # This can go negative if no panels are attached
     ),
     ModbusSensorDescription(
@@ -116,6 +120,7 @@ _PV_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        round_to=1,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -129,6 +134,7 @@ _PV_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         # This can go negative if no panels are attached
     ),
     ModbusIntegrationSensorDescription(
@@ -187,6 +193,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
+        round_to=1,
         # This can go negative if no battery is attached
     ),
     ModbusSensorDescription(
@@ -202,6 +209,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        round_to=1,
         validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
@@ -217,6 +225,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
@@ -232,6 +241,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
+        round_to=1,
         signed=False,
         validate=[Range(0, 300)],
     ),
@@ -248,6 +258,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        round_to=1,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -263,6 +274,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(-10000, 10000)],
     ),
     ModbusSensorDescription(
@@ -277,6 +289,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kvar",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(-10000, 10000)],
     ),
     ModbusSensorDescription(
@@ -291,6 +304,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kVA",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(-10000, 10000)],
     ),
     ModbusSensorDescription(
@@ -307,6 +321,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
+        round_to=1,
         signed=False,
         validate=[Range(0, 300)],
     ),
@@ -324,6 +339,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        round_to=1,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -340,6 +356,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(-10000, 10000)],
     ),
     ModbusSensorDescription(
@@ -354,6 +371,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kvar",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(-10000, 10000)],
     ),
     ModbusSensorDescription(
@@ -368,6 +386,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kVA",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(-10000, 10000)],
     ),
     ModbusSensorDescription(
@@ -383,6 +402,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
@@ -398,6 +418,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         post_process=lambda v: v if v > 0 else 0,
         validate=[Range(0, 100)],
     ),
@@ -414,6 +435,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         post_process=lambda v: abs(v) if v < 0 else 0,
         validate=[Range(0, 100)],
     ),
@@ -430,6 +452,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(-100, 100)],
     ),
 ]
@@ -443,6 +466,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
+        round_to=1,
         signed=False,
         validate=[Range(0, 300)],
     ),
@@ -454,6 +478,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
+        round_to=1,
         signed=False,
         validate=[Range(0, 300)],
     ),
@@ -465,6 +490,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
+        round_to=1,
         signed=False,
         validate=[Range(0, 300)],
     ),
@@ -506,6 +532,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -516,6 +543,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -526,6 +554,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -537,6 +566,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -548,6 +578,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -559,6 +590,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -569,6 +601,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
@@ -579,6 +612,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         post_process=lambda v: v if v > 0 else 0,
         validate=[Range(0, 100)],
     ),
@@ -590,6 +624,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         post_process=lambda v: abs(v) if v < 0 else 0,
         validate=[Range(0, 100)],
     ),
@@ -601,6 +636,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
@@ -611,6 +647,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         post_process=lambda v: v if v > 0 else 0,
         validate=[Range(0, 100)],
     ),
@@ -622,6 +659,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         post_process=lambda v: abs(v) if v < 0 else 0,
         validate=[Range(0, 100)],
     ),
@@ -633,6 +671,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
@@ -643,6 +682,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         post_process=lambda v: v if v > 0 else 0,
         validate=[Range(0, 100)],
     ),
@@ -654,6 +694,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         post_process=lambda v: abs(v) if v < 0 else 0,
         validate=[Range(0, 100)],
     ),
@@ -665,6 +706,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -675,6 +717,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -685,6 +728,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(0, 100)],
     ),
 ]
@@ -704,6 +748,7 @@ _INVERTER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         validate=[Range(-10000, 10000)],
     ),
     ModbusSensorDescription(
@@ -720,6 +765,7 @@ _INVERTER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         post_process=lambda v: v if v > 0 else 0,
         validate=[Range(0, 100)],
     ),
@@ -737,6 +783,7 @@ _INVERTER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
+        round_to=0.01,
         post_process=lambda v: abs(v) if v < 0 else 0,
         validate=[Range(0, 100)],
     ),
@@ -754,6 +801,7 @@ _INVERTER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="Hz",
         scale=0.01,
+        round_to=0.1,
         signed=False,
         validate=[Range(0, 60)],
     ),
@@ -772,6 +820,7 @@ _INVERTER_ENTITIES = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="Hz",
         scale=0.01,
+        round_to=0.1,
         signed=False,
         validate=[Range(0, 60)],
     ),
