@@ -25,9 +25,10 @@ class ModbusEntityMixin(ModbusControllerEntity):
     This provides properties which are common to all FoxESS entities.
     It assumes that the following propties are defined on the class:
 
+        addresses: list[int]
         _controller: CallbackController
         entity_description: EntityDescription, EntityFactory
-        _inv_details
+        _inv_details: dict[str, Any]
     """
 
     @property
@@ -91,11 +92,16 @@ class ModbusEntityMixin(ModbusControllerEntity):
 
     def _get_unique_id(self):
         """Get unique ID"""
+        return self._add_entity_id_prefix(self.entity_description.key)
+
+    def _add_entity_id_prefix(self, value: str) -> str:
+        """Add the entity ID prefix to the beginning of the given input string"""
         entity_id_prefix = self._inv_details[ENTITY_ID_PREFIX]
+
         if entity_id_prefix:
-            return f"{entity_id_prefix}_{self.entity_description.key}"
-        else:
-            return f"{self.entity_description.key}"
+            value = f"{entity_id_prefix}_{value}"
+
+        return value
 
     def _validate(
         self,

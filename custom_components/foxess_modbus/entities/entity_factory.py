@@ -30,6 +30,23 @@ class EntityFactory(ABC):
     ) -> Entity:
         """Instantiate a new entity. The returned type must match self.entity_type"""
 
+    def _supports_inverter_model(
+        self,
+        address_specs: list[InverterModelSpec],
+        inverter_model: str,
+        register_type: RegisterType,
+    ) -> bool:
+        """Helper to determine whether this entity description supports the given inverter model and register type"""
+
+        result = False
+        for spec in address_specs:
+            addresses = spec.addresses_for_inverter_model(inverter_model, register_type)
+            if addresses is not None:
+                # We shouldn't get more than one spec which matches
+                assert not result
+                result = True
+        return result
+
     def _address_for_inverter_model(
         self,
         address_specs: list[InverterModelSpec],

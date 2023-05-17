@@ -1,6 +1,7 @@
 """Sensor"""
 import logging
 from dataclasses import dataclass
+from typing import Any
 
 from homeassistant.components.integration.sensor import IntegrationSensor
 from homeassistant.components.sensor import SensorEntity
@@ -12,7 +13,6 @@ from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
 from ..common.register_type import RegisterType
-from ..const import ENTITY_ID_PREFIX
 from .entity_factory import EntityFactory
 from .inverter_model_spec import EntitySpec
 from .modbus_entity_mixin import ModbusEntityMixin
@@ -26,7 +26,6 @@ class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory)
 
     models: list[EntitySpec]
     integration_method: str
-    name: str
     round_digits: int
     source_entity: str
     unit_time: UnitOfTime
@@ -43,11 +42,8 @@ class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory)
         entry: ConfigEntry,
         inv_details,
     ) -> Entity | None:
-        if (
-            self._addresses_for_inverter_model(
-                self.models, inverter_model, register_type
-            )
-            is None
+        if not self._supports_inverter_model(
+            self.models, inverter_model, register_type
         ):
             return None
 
@@ -58,7 +54,6 @@ class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory)
             entry=entry,
             inv_details=inv_details,
             integration_method=self.integration_method,
-            name=self.name,
             round_digits=self.round_digits,
             source_entity=self.source_entity,
             unit_time=self.unit_time,
@@ -70,12 +65,11 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
 
     def __init__(
         self,
-        controller,
-        entity_description,
-        entry,
-        inv_details,
+        controller: EntityController,
+        entity_description: ModbusIntegrationSensorDescription,
+        entry: ConfigEntry,
+        inv_details: dict[str, Any],
         integration_method: str,
-        name: str,
         round_digits: int,
         source_entity: str,
         unit_time: UnitOfTime,
@@ -87,17 +81,12 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
         self._inv_details = inv_details
         self.entity_description = entity_description
         self.entity_id = "sensor." + self._get_unique_id()
-
-        entity_id_prefix = self._inv_details[ENTITY_ID_PREFIX]
-        if entity_id_prefix:
-            source_entity = f"sensor.{entity_id_prefix}_{source_entity}"
-        else:
-            source_entity = f"sensor.{source_entity}"
+        source_entity = f"sensor.{self._add_entity_id_prefix(source_entity)}"
 
         IntegrationSensor.__init__(
             self=self,
             integration_method=integration_method,
-            name=name,
+            name=entity_description.name,
             round_digits=round_digits,
             source_entity=source_entity,
             unique_id=None,
