@@ -10,7 +10,7 @@ from pymodbus.pdu import ModbusResponse
 from pymodbus.register_read_message import ReadHoldingRegistersResponse
 from pymodbus.register_read_message import ReadInputRegistersResponse
 from pymodbus.register_write_message import WriteMultipleRegistersResponse
-from pymodbus.register_write_message import WriteSingleRegisterRequest
+from pymodbus.register_write_message import WriteSingleRegisterResponse
 
 from .common.register_type import RegisterType
 from .const import MODBUS_TYPE
@@ -130,7 +130,7 @@ class ModbusClient:
                 int(register_values[0]),
                 slave,
             )
-            expected_response_type = WriteSingleRegisterRequest
+            expected_response_type = WriteSingleRegisterResponse
 
         if response.isError():
             message = f"Error writing registers. Start: {register_address}; values: {register_values}; slave: {slave}"
