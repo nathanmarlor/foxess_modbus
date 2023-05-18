@@ -111,7 +111,7 @@ class ModbusLambdaSensor(ModbusEntityMixin, SensorEntity):
 
         if new_value != self._attr_native_value:
             self._attr_native_value = new_value
-            self.async_schedule_update_ha_state()
+            self.schedule_update_ha_state()
 
     @property
     def addresses(self) -> list[int]:
