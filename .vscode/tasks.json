@@ -6,6 +6,12 @@
       "type": "shell",
       "command": ".devcontainer/develop",
       "problemMatcher": []
+    },
+    {
+      "label": "Run pre-commit",
+      "type": "shell",
+      "command": "pre-commit run --all-files --show-diff-on-failure --color=always",
+      "problemMatcher": []
     }
   ]
 }

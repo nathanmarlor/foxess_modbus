@@ -2,8 +2,5 @@
   "files.associations": {
     "*.yaml": "home-assistant"
   },
-  "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter"
-  },
-  "python.formatting.provider": "none"
+  "python.analysis.typeCheckingMode": "basic",
 }

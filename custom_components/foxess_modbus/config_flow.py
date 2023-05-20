@@ -86,7 +86,7 @@ class FlowHandlerMixin:
         user_input: dict[str, Any] | None,
         step_id: str,
         data_schema: vol.Schema,
-        description_placeholders: Mapping[str, str | None] | None = None,
+        description_placeholders: dict[str, str | None] | None = None,
     ):
         """
         If user_input is not None, call body() and return the result.
@@ -141,7 +141,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             InverterAdapterType.NETWORK: self.async_step_tcp_adapter,
         }
 
-    async def async_step_user(self, _user_input: dict[str, Any] = None):
+    async def async_step_user(self, _user_input: dict[str, Any] | None = None):
         """Handle a flow initialized by the user."""
 
         await self.async_set_unique_id(DOMAIN)
@@ -150,7 +150,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         return await self.async_step_select_adapter_type()
 
     async def async_step_select_adapter_type(
-        self, user_input: dict[str, Any] = None
+        self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Let the user select their adapter type"""
 
@@ -185,7 +185,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         )
 
     async def async_step_select_adapter_model(
-        self, user_input: dict[str, Any] = None
+        self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Let the user select their adapter model"""
 
@@ -218,7 +218,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         )
 
     async def async_step_tcp_adapter(
-        self, user_input: dict[str, Any] = None
+        self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Let the user enter connection details for their TCP/UDP adapter"""
 
@@ -286,7 +286,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         )
 
     async def async_step_serial_adapter(
-        self, user_input: dict[str, Any] = None
+        self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Let the user enter connection details for their serial adapter"""
 
@@ -317,7 +317,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         )
 
     async def async_step_friendly_name(
-        self, user_input: dict[str, Any] = None
+        self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Let the user enter a friendly name for their inverter"""
 
@@ -410,7 +410,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         )
 
     async def async_step_add_another_inverter(
-        self, _user_input: dict[str, Any] = None
+        self, _user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Let the user choose whether to add another inverter"""
 
@@ -419,7 +419,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             step_id="add_another_inverter", menu_options=options
         )
 
-    async def async_step_energy(self, user_input: dict[str, Any] = None):
+    async def async_step_energy(self, user_input: dict[str, Any] | None = None):
         """Let the user choose whether to set up the energy dashboard"""
 
         async def body(user_input):
@@ -438,7 +438,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
     def _create_entry_data(self) -> dict[str, Any]:
         """Create the config entry for all inverters in self._all_inverters"""
 
-        entry = {INVERTERS: {}}
+        entry: dict[str, dict[str, dict[str, Any]]] = {INVERTERS: {}}
         for inverter in self._all_inverters:
             inverter = {
                 INVERTER_BASE: inverter.inverter_base_model,
@@ -679,7 +679,7 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
         return await self.async_step_select_inverter()
 
     async def async_step_select_inverter(
-        self, user_input: dict[str, Any] = None
+        self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Let the user select their inverter, if they have multiple inverters"""
 
@@ -712,7 +712,7 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
         )
 
     async def async_step_inverter_options(
-        self, user_input: dict[str, Any] = None
+        self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Let the user set the selected inverter's settings"""
 

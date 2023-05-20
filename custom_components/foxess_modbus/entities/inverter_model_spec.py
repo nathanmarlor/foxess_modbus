@@ -79,7 +79,7 @@ class EntitySpec(InverterModelSpec):
         self._register_types = register_types
 
     def addresses_for_inverter_model(
-        self, inverter_model: str, register_type: str
+        self, inverter_model: str, register_type: RegisterType
     ) -> list[int] | None:
         return (
             []

@@ -11,7 +11,9 @@
         "ms-python.python",
         "github.vscode-pull-request-github",
         "ryanluker.vscode-coverage-gutters",
-        "ms-python.vscode-pylance"
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "matangover.mypy"
       ],
       "settings": {
         "files.eol": "\n",
@@ -21,10 +23,14 @@
         "python.linting.pylintEnabled": true,
         "python.linting.enabled": true,
         "python.formatting.provider": "black",
+        "python.linting.mypyEnabled": true,
         "editor.formatOnPaste": false,
         "editor.formatOnSave": true,
         "editor.formatOnType": true,
-        "files.trimTrailingWhitespace": true
+        "files.trimTrailingWhitespace": true,
+        "mypy.targets": [
+          "custom_components/foxess_modbus"
+        ]
       }
     }
   }
