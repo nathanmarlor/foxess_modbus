@@ -7,6 +7,7 @@ https://github.com/nathanmarlor/foxess_modbus
 import asyncio
 import copy
 import logging
+from typing import Any
 import uuid
 
 from homeassistant.components.energy import data
@@ -43,7 +44,7 @@ from .services import write_registers_service
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
-async def async_setup(hass: HomeAssistant, config: Config):
+async def async_setup(_hass: HomeAssistant, _config: Config):
     """Set up this integration using YAML is not supported."""
     return True
 
@@ -80,7 +81,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         )
         inverter_controllers.append((inverter, controller))
 
-    inverter_controllers = []
+    inverter_controllers: list[tuple[dict[str, Any], ModbusController]] = []
 
     # {(modbus_type, host): client}
     clients: dict[tuple[str, str], ModbusClient] = {}
@@ -139,7 +140,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                 POLL_RATE: config_entry.options[POLL_RATE],
                 MAX_READ: config_entry.options[MAX_READ],
             }
-            options = {INVERTERS: {}}
+            options: dict[str, Any] = {INVERTERS: {}}
         else:
             inverter_options = {}
             options = UNDEFINED
@@ -161,6 +162,8 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                                 adapter = ADAPTERS["network_other"]
                         elif modbus_type == SERIAL:
                             adapter = ADAPTERS["serial_other"]
+                        else:
+                            assert False
                         inverter[ADAPTER_ID] = adapter.adapter_id
                         inverter[ADAPTER_WAS_MIGRATED] = True
 

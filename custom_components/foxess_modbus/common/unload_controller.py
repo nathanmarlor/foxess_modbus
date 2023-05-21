@@ -1,6 +1,8 @@
 """Unload controller"""
 import logging
 
+from typing import Callable
+
 _LOGGER = logging.getLogger(__name__)
 
 

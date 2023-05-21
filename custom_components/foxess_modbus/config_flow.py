@@ -5,7 +5,7 @@ import re
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from typing import Awaitable
 from typing import Callable
 from typing import Mapping
@@ -79,14 +79,20 @@ class InverterData:
     friendly_name: str | None = None
 
 
-class FlowHandlerMixin:
+if TYPE_CHECKING:
+    _FlowHandlerMixinBase = config_entries.ConfigFlow
+else:
+    _FlowHandlerMixinBase = object
+
+
+class FlowHandlerMixin(_FlowHandlerMixinBase):
     async def _with_default_form(
         self,
         body: Callable[[dict[str, Any]], Awaitable[FlowResult | None]],
         user_input: dict[str, Any] | None,
         step_id: str,
         data_schema: vol.Schema,
-        description_placeholders: dict[str, str | None] | None = None,
+        description_placeholders: dict[str, str] | None = None,
     ):
         """
         If user_input is not None, call body() and return the result.
@@ -105,7 +111,7 @@ class FlowHandlerMixin:
                 if ex.errors:
                     if description_placeholders is None:
                         description_placeholders = ex.error_placeholders
-                    else:
+                    elif ex.error_placeholders is not None:
                         description_placeholders.update(ex.error_placeholders)
 
         schema_with_input = self.add_suggested_values_to_schema(data_schema, user_input)
@@ -191,6 +197,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
 
         async def body(user_input):
             self._inverter_data.adapter = ADAPTERS[user_input["adapter_model"]]
+            assert self._inverter_data.adapter_type is not None
             return await self._adapter_type_to_step[self._inverter_data.adapter_type]()
 
         adapters = [
@@ -223,9 +230,10 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         """Let the user enter connection details for their TCP/UDP adapter"""
 
         adapter = self._inverter_data.adapter
-        assert adapter is not None
 
         async def body(user_input):
+            assert adapter is not None
+            assert adapter.network_protocols is not None
             protocol = user_input.get(
                 "protocol",
                 user_input.get(
@@ -242,23 +250,25 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             )
             return await self.async_step_friendly_name()
 
-        schema_parts = {}
+        assert adapter is not None
+        assert adapter.network_protocols is not None
+
+        schema_parts: dict[Any, Any] = {}
         description_placeholders = {"setup_link": adapter.setup_link}
 
         if len(adapter.network_protocols) > 1:
             # Prompt for TCP vs UDP if that's relevant
             # If we provide a recommendation, show that
-            key = (
-                "protocol_with_recommendation"
-                if adapter.recommended_protocol is not None
-                else "protocol"
-            )
+            if adapter.recommended_protocol is not None:
+                key = "protocol_with_recommendation"
+                description_placeholders[
+                    "recommended_protocol"
+                ] = adapter.recommended_protocol
+            else:
+                key = "protocol"
             schema_parts[vol.Required(key)] = selector(
                 {"select": {"options": adapter.network_protocols}}
             )
-            description_placeholders[
-                "recommended_protocol"
-            ] = adapter.recommended_protocol
 
         if adapter.connection_type == AUX:
             schema_parts[vol.Required("adapter_host")] = cv.string
@@ -339,6 +349,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         errors = {}
         if user_input:
             ready_to_submit = True
+            entity_id_prefix = None
 
             friendly_name = user_input.get("friendly_name", "")
             autogenerate_entity_id_prefix = user_input.get(
@@ -385,13 +396,14 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
 
             # If we got to here, then we're all good. Don't move on if they checked the "specify entity ID prefix" checkbox
             if ready_to_submit and not errors:
+                assert entity_id_prefix is not None
                 self._inverter_data.entity_id_prefix = entity_id_prefix
                 self._inverter_data.friendly_name = friendly_name
                 self._all_inverters.append(self._inverter_data)
                 self._inverter_data = InverterData()
                 return await self.async_step_add_another_inverter()
 
-        schema_parts = {}
+        schema_parts: dict[Any, Any] = {}
         schema_parts[vol.Optional("friendly_name")] = cv.string
         schema_parts[
             vol.Required("autogenerate_entity_id_prefix", default=True)
@@ -438,9 +450,10 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
     def _create_entry_data(self) -> dict[str, Any]:
         """Create the config entry for all inverters in self._all_inverters"""
 
-        entry: dict[str, dict[str, dict[str, Any]]] = {INVERTERS: {}}
+        entry: dict[str, Any] = {INVERTERS: {}}
         for inverter in self._all_inverters:
-            inverter = {
+            assert inverter.adapter is not None
+            inverter_config = {
                 INVERTER_BASE: inverter.inverter_base_model,
                 INVERTER_MODEL: inverter.inverter_model,
                 INVERTER_CONN: inverter.adapter.connection_type,
@@ -453,7 +466,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                 HOST: inverter.host,
                 ADAPTER_ID: inverter.adapter.adapter_id,
             }
-            entry[INVERTERS][str(uuid.uuid4())] = inverter
+            entry[INVERTERS][str(uuid.uuid4())] = inverter_config
         entry[CONFIG_SAVE_TIME] = datetime.now()
         return entry
 
@@ -463,7 +476,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         user_input: dict[str, Any] | None,
         adapter_type: InverterAdapterType,
         complete_callback: Callable[[InverterAdapter], Awaitable[FlowResult]],
-        description_placeholders: Mapping[str, str | None] | None = None,
+        description_placeholders: dict[str, str] | None = None,
     ) -> FlowResult:
         """Helper used in the steps which let the user select their adapter model"""
 
@@ -495,7 +508,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
 
     async def _autodetect_modbus_and_save_to_inverter_data(
         self, protocol: str, host: str, slave: int, adapter: InverterAdapter
-    ) -> tuple[str, str]:
+    ) -> None:
         """Check that connection details are unique, then connect to the inverter and add its details to self._inverter_data"""
         if any(
             x
@@ -507,7 +520,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             raise ValidationFailedException({"base": "duplicate_connection_details"})
 
         try:
-            params = {MODBUS_TYPE: protocol}
+            params: dict[str, Any] = {MODBUS_TYPE: protocol}
             if protocol in [TCP, UDP]:
                 params.update(
                     {"host": host.split(":")[0], "port": int(host.split(":")[1])}
@@ -533,7 +546,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             ) from ex
         except AutoconnectFailedException as ex:
 
-            def get_details(ex: Exception, use_exception: bool) -> str:
+            def get_details(ex: AutoconnectFailedException, use_exception: bool) -> str:
                 if ex.log_records:
                     parts = []
                     if use_exception:
@@ -607,7 +620,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             else:
                 return "sensor."
 
-        energy_prefs = EnergyPreferencesUpdate(energy_sources=[])
+        energy_prefs = EnergyPreferencesUpdate(energy_sources=[])  # type: ignore
         for entity_id_prefix in entity_id_prefixes:
             name_prefix = _prefix_name(entity_id_prefix)
             energy_prefs["energy_sources"].extend(
@@ -749,7 +762,7 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
 
         adapters = [x for x in ADAPTERS.values() if x.type == current_adapter.type]
 
-        schema_parts = {}
+        schema_parts: dict[Any, Any] = {}
         if len(adapters) > 1:
             schema_parts[
                 vol.Required("adapter_id", default=current_adapter.adapter_id)
@@ -785,8 +798,8 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
         description_placeholders = {
             # TODO: Will need changing if we let them set the friendly name / host / port
             "inverter": self._create_label_for_inverter(config),
-            "default_poll_rate": current_adapter.poll_rate,
-            "default_max_read": current_adapter.max_read,
+            "default_poll_rate": f"{current_adapter.poll_rate}",
+            "default_max_read": f"{current_adapter.max_read}",
         }
 
         return await self._with_default_form(
@@ -802,7 +815,9 @@ class ValidationFailedException(Exception):
     """Throw to cause a validation error to be shown"""
 
     def __init__(
-        self, errors: dict[str, str], error_placeholders: dict[str, str] | None = None
+        self,
+        errors: dict[str, str],
+        error_placeholders: dict[str, str] | None = None,
     ):
         self.errors = errors
         self.error_placeholders = error_placeholders

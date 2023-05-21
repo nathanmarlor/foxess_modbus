@@ -203,7 +203,7 @@ async def _update_charge_period(
             f"Inverter does not support setting charge period {charge_period_index + 1}"
         )
 
-    charge_periods: list[ChargePeriod] = [None] * len(controller.charge_periods)
+    charge_periods: list[ChargePeriod] = [None] * len(controller.charge_periods)  # type: ignore
 
     charge_periods[charge_period_index] = ChargePeriod(
         enable_force_charge=service_data.data["enable_force_charge"],
@@ -305,7 +305,7 @@ async def _set_charge_periods(
         )
 
     # We expect all of the writes to have a contiguous set of addresses
-    write_values = [None] * len(writes)
+    write_values: list[int | None] = [None] * len(writes)
     write_start_address = min(write[0] for write in writes)
 
     for address, value in writes:
@@ -319,5 +319,5 @@ async def _set_charge_periods(
     try:
         await controller.write_registers(write_start_address, write_values)
     except ModbusIOException as ex:
-        _LOGGER.warning(ex, exc_info=1)
+        _LOGGER.warning(ex, exc_info=True)
         raise HomeAssistantError() from ex

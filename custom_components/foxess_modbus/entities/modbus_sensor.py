@@ -3,7 +3,7 @@ import logging
 from collections import deque
 from dataclasses import dataclass
 from dataclasses import field
-from typing import Any
+from typing import Any, cast
 from typing import Callable
 
 from homeassistant.components.sensor import SensorEntity
@@ -30,7 +30,7 @@ class ModbusSensorDescription(SensorEntityDescription, EntityFactory):
     addresses: list[ModbusAddressesSpec]
     scale: float | None = None
     round_to: float | None = None
-    post_process: Callable[[int], int] | None = None
+    post_process: Callable[[float], float] | None = None
     validate: list[BaseValidator] = field(default_factory=list)
     signed: bool = True
 
@@ -78,7 +78,9 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
         self._addresses = addresses
         self._inv_details = inv_details
         self._round_to = round_to
-        self._moving_average_filter = deque(maxlen=6) if round_to is not None else None
+        self._moving_average_filter: deque[float] | None = (
+            deque(maxlen=6) if round_to is not None else None
+        )
         self.entity_id = "sensor." + self._get_unique_id()
 
     def _calculate_native_value(self) -> Any:
@@ -90,17 +92,19 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
                 return None
             original |= (register_value & 0xFFFF) << (i * 16)
 
-        if self.entity_description.signed:
+        entity_description = cast(ModbusSensorDescription, self.entity_description)
+
+        if entity_description.signed:
             sign_bit = 1 << (len(self._addresses) * 16 - 1)
             original = (original & (sign_bit - 1)) - (original & sign_bit)
 
-        value = original
+        value: float | int = original
 
-        if self.entity_description.scale is not None:
-            value = value * self.entity_description.scale
-        if self.entity_description.post_process is not None:
-            value = self.entity_description.post_process(value)
-        if not self._validate(self.entity_description.validate, value, original):
+        if entity_description.scale is not None:
+            value = value * entity_description.scale
+        if entity_description.post_process is not None:
+            value = entity_description.post_process(float(value))
+        if not self._validate(entity_description.validate, value, original):
             return None
 
         return value
@@ -127,6 +131,9 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
         # opposite of what we're trying to achieve!
 
         if self._round_to is not None:
+            assert self._moving_average_filter is not None
+            assert self._moving_average_filter.maxlen is not None
+
             if value is None:
                 self._moving_average_filter.clear()
             else:

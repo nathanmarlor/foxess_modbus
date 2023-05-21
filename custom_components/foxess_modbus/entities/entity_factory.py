@@ -1,7 +1,7 @@
 """Entity Factory"""
 from abc import ABC
 from abc import abstractmethod
-from typing import Any
+from typing import Any, Iterable
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
@@ -27,7 +27,7 @@ class EntityFactory(ABC):
         register_type: RegisterType,
         entry: ConfigEntry,
         inv_details: dict[str, Any],
-    ) -> Entity:
+    ) -> Entity | None:
         """Instantiate a new entity. The returned type must match self.entity_type"""
 
     def _supports_inverter_model(
@@ -73,7 +73,7 @@ class EntityFactory(ABC):
 
     def _addresses_for_inverter_model(
         self,
-        address_specs: list[InverterModelSpec],
+        address_specs: Iterable[InverterModelSpec],
         inverter_model: str,
         register_type: RegisterType,
     ) -> list[int] | None:
