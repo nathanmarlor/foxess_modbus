@@ -99,19 +99,5 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
         )
 
     @property
-    def native_unit_of_measurement(self) -> str:
-        """Return native unit of measurement"""
-        return self.entity_description.native_unit_of_measurement
-
-    @property
-    def state_class(self) -> SensorStateClass:
-        """Return the device class of the sensor."""
-        return self.entity_description.state_class
-
-    @property
-    def should_poll(self) -> bool:
-        return False
-
-    @property
     def addresses(self) -> list[int]:
         return []

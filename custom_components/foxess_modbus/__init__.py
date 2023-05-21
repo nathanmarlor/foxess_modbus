@@ -7,8 +7,8 @@ https://github.com/nathanmarlor/foxess_modbus
 import asyncio
 import copy
 import logging
-from typing import Any
 import uuid
+from typing import Any
 
 from homeassistant.components.energy import data
 from homeassistant.config_entries import ConfigEntry

@@ -5,10 +5,10 @@ import re
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from typing import Awaitable
 from typing import Callable
-from typing import Mapping
+from typing import TYPE_CHECKING
 
 import voluptuous as vol
 from homeassistant import config_entries

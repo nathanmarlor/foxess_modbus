@@ -3,6 +3,7 @@ import logging
 from dataclasses import dataclass
 from dataclasses import field
 from typing import Callable
+from typing import cast
 
 from homeassistant.components.number import NumberEntity
 from homeassistant.components.number import NumberEntityDescription
@@ -89,7 +90,7 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
 
     @property
     def mode(self) -> NumberMode:
-        return self.entity_description.mode
+        return cast(ModbusNumberDescription, self.entity_description).mode
 
     async def async_set_native_value(self, value: float) -> None:
         int_value = int(
@@ -100,10 +101,6 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
         )
 
         await self._controller.write_register(self._address, int_value)
-
-    @property
-    def should_poll(self) -> bool:
-        return False
 
     @property
     def addresses(self) -> list[int]:

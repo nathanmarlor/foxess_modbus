@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from dataclasses import field
 from datetime import time
 from typing import Any
+from typing import cast
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.binary_sensor import BinarySensorEntity
@@ -17,9 +18,10 @@ from homeassistant.helpers.restore_state import RestoredExtraData
 from homeassistant.helpers.restore_state import RestoreEntity
 
 from ..common.entity_controller import EntityController
+from ..common.register_type import RegisterType
 from .base_validator import BaseValidator
 from .entity_factory import EntityFactory
-from .inverter_model_spec import ModbusAddressSpecBase
+from .inverter_model_spec import InverterModelSpec
 from .modbus_entity_mixin import ModbusEntityMixin
 
 _LOGGER = logging.getLogger(__name__)
@@ -52,9 +54,9 @@ class ModbusChargePeriodStartEndSensorDescription(
 ):
     """Entity description for ModbusChargePeriodStartEndSensor"""
 
-    address: list[ModbusAddressSpecBase]
+    address: list[InverterModelSpec]
     # Address of period end if this is the start, and vice versa
-    other_address: list[ModbusAddressSpecBase]
+    other_address: list[InverterModelSpec]
     validate: list[BaseValidator] = field(default_factory=list)
 
     @property
@@ -65,20 +67,22 @@ class ModbusChargePeriodStartEndSensorDescription(
         self,
         controller: EntityController,
         inverter_model: str,
-        connection_type: str,
+        register_type: RegisterType,
         entry: ConfigEntry,
         inv_details: dict[str, Any],
-    ) -> Entity:
+    ) -> Entity | None:
         address = self._address_for_inverter_model(
-            self.address, inverter_model, connection_type
+            self.address, inverter_model, register_type
         )
         other_address = self._address_for_inverter_model(
-            self.other_address, inverter_model, connection_type
+            self.other_address, inverter_model, register_type
         )
-        assert (address is None) == (other_address is None)
+
         if address is None:
+            assert other_address is None
             return None
 
+        assert other_address is not None
         return ModbusChargePeriodStartEndSensor(
             controller, self, address, other_address, entry, inv_details
         )
@@ -156,7 +160,9 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
         value = self._controller.read(self._address)
         if value is not None:
             other_value = self._controller.read(self._other_address)
-            rules = self.entity_description.validate
+            rules = cast(
+                ModbusChargePeriodStartEndSensorDescription, self.entity_description
+            ).validate
             if (
                 self._validate(rules, value)
                 and other_value is not None
@@ -170,10 +176,6 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
         super()._address_updated()
 
     @property
-    def should_poll(self) -> bool:
-        return False
-
-    @property
     def addresses(self) -> list[int]:
         return [self._address, self._other_address]
 
@@ -184,8 +186,8 @@ class ModbusEnableForceChargeSensorDescription(
 ):
     """Entity description for ModbusEnableForceChargeSensor"""
 
-    period_start_address: list[ModbusAddressSpecBase]
-    period_end_address: list[ModbusAddressSpecBase]
+    period_start_address: list[InverterModelSpec]
+    period_end_address: list[InverterModelSpec]
     validate: list[BaseValidator] = field(default_factory=list)
 
     @property
@@ -196,20 +198,21 @@ class ModbusEnableForceChargeSensorDescription(
         self,
         controller: EntityController,
         inverter_model: str,
-        connection_type: str,
+        register_type: RegisterType,
         entry: ConfigEntry,
         inv_details: dict[str, Any],
-    ) -> Entity:
+    ) -> Entity | None:
         period_start_address = self._address_for_inverter_model(
-            self.period_start_address, inverter_model, connection_type
+            self.period_start_address, inverter_model, register_type
         )
         period_end_address = self._address_for_inverter_model(
-            self.period_end_address, inverter_model, connection_type
+            self.period_end_address, inverter_model, register_type
         )
-        assert (period_start_address is None) == (period_end_address is None)
         if period_start_address is None:
+            assert period_end_address is None
             return None
 
+        assert period_end_address is not None
         return ModbusEnableForceChargeSensor(
             controller,
             self,
@@ -245,7 +248,9 @@ class ModbusEnableForceChargeSensor(ModbusEntityMixin, BinarySensorEntity):
     def is_on(self) -> bool | None:
         start_time = self._controller.read(self._period_start_address)
         end_time = self._controller.read(self._period_end_address)
-        rules = self.entity_description.validate
+        rules = cast(
+            ModbusEnableForceChargeSensorDescription, self.entity_description
+        ).validate
 
         if (
             start_time is None
@@ -264,10 +269,6 @@ class ModbusEnableForceChargeSensor(ModbusEntityMixin, BinarySensorEntity):
             return None
 
         return _is_force_charge_enabled(start_time, end_time)
-
-    @property
-    def should_poll(self) -> bool:
-        return False
 
     @property
     def addresses(self) -> list[int]:

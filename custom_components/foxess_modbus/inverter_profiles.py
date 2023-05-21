@@ -53,7 +53,7 @@ class InverterModelConnectionTypeProfile:
         controller: EntityController,
         entry: ConfigEntry,
         inverter_details: dict[str, Any],
-    ) -> list[ModbusSensor]:
+    ) -> list[Entity]:
         """Create all of the entities of the given type which support this inverter/connection combination"""
 
         result = []
@@ -178,7 +178,7 @@ def create_entities(
     controller: EntityController,
     entry: ConfigEntry,
     inverter_config: dict[str, Any],
-) -> list[ModbusSensor]:
+) -> list[Entity]:
     """Create all of the entities which support the inverter described by the given configuration object"""
 
     return inverter_connection_type_profile_from_config(

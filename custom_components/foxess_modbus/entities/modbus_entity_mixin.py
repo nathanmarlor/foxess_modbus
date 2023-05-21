@@ -1,4 +1,5 @@
 import logging
+from typing import Any, Protocol, TYPE_CHECKING
 
 from custom_components.foxess_modbus.common.entity_controller import (
     ModbusControllerEntity,
@@ -7,6 +8,7 @@ from homeassistant.const import ATTR_IDENTIFIERS
 from homeassistant.const import ATTR_MANUFACTURER
 from homeassistant.const import ATTR_MODEL
 from homeassistant.const import ATTR_NAME
+from homeassistant.helpers.entity import Entity
 
 from ..const import DOMAIN
 from ..const import ENTITY_ID_PREFIX
@@ -14,21 +16,33 @@ from ..const import FRIENDLY_NAME
 from ..const import INVERTER_CONN
 from ..const import INVERTER_MODEL
 from .base_validator import BaseValidator
+from ..common.entity_controller import EntityController
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class ModbusEntityMixin(ModbusControllerEntity):
+class ModbusEntityProtocol(Protocol):
+    _controller: EntityController
+    _inv_details: dict[str, Any]
+
+    @property
+    def addresses(self) -> list[int]:
+        ...
+
+
+if TYPE_CHECKING:
+    _ModbusEntityMixinBase = Entity
+else:
+    _ModbusEntityMixinBase = object
+
+
+class ModbusEntityMixin(
+    _ModbusEntityMixinBase, ModbusControllerEntity, ModbusEntityProtocol
+):
     """
     Mixin for subclasses of Entity
 
     This provides properties which are common to all FoxESS entities.
-    It assumes that the following propties are defined on the class:
-
-        addresses: list[int]
-        _controller: CallbackController
-        entity_description: EntityDescription, EntityFactory
-        _inv_details: dict[str, Any]
     """
 
     @property
@@ -131,6 +145,10 @@ class ModbusEntityMixin(ModbusControllerEntity):
                 )
                 valid = False
         return valid
+
+    @property
+    def should_poll(self) -> bool:
+        return False
 
     # Implement reference equality
     def __eq__(self, other):

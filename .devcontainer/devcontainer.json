@@ -1,9 +1,7 @@
 {
   "image": "mcr.microsoft.com/vscode/devcontainers/python:0-3.10-bullseye",
-  "name": "Blueprint integration development",
-  "appPort": [
-    "9123:8123"
-  ],
+  "name": "Foxess Modbus Container",
+  "appPort": ["9123:8123"],
   "postCreateCommand": ".devcontainer/setup",
   "customizations": {
     "vscode": {
@@ -13,11 +11,13 @@
         "ryanluker.vscode-coverage-gutters",
         "ms-python.vscode-pylance",
         "ms-python.black-formatter",
-        "matangover.mypy"
+        "matangover.mypy",
+        "thebutlah.reorder-python-imports"
       ],
       "settings": {
         "files.eol": "\n",
         "editor.tabSize": 4,
+        "editor.defaultFormatter": "ms-python.black-formatter",
         "python.pythonPath": "/usr/bin/python3",
         "python.analysis.autoSearchPaths": false,
         "python.linting.pylintEnabled": true,
@@ -27,10 +27,15 @@
         "editor.formatOnPaste": false,
         "editor.formatOnSave": true,
         "editor.formatOnType": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": false,
+          "source.organizeImports.reorder-python-imports": true
+        },
+        "reorder-python-imports.args": [
+          "--application-directories=custom_components"
+        ],
         "files.trimTrailingWhitespace": true,
-        "mypy.targets": [
-          "custom_components/foxess_modbus"
-        ]
+        "mypy.targets": ["custom_components/foxess_modbus"]
       }
     }
   }

@@ -3,12 +3,12 @@ import logging
 from collections import deque
 from dataclasses import dataclass
 from dataclasses import field
-from typing import Any, cast
+from typing import Any
 from typing import Callable
+from typing import cast
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
-from homeassistant.components.sensor import SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
 
@@ -172,20 +172,6 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
         if new_value != self._attr_native_value:
             self._attr_native_value = new_value
             super()._address_updated()
-
-    @property
-    def native_unit_of_measurement(self) -> str:
-        """Return native unit of measurement"""
-        return self.entity_description.native_unit_of_measurement
-
-    @property
-    def state_class(self) -> SensorStateClass:
-        """Return the device class of the sensor."""
-        return self.entity_description.state_class
-
-    @property
-    def should_poll(self) -> bool:
-        return False
 
     @property
     def addresses(self) -> list[int]:

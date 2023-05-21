@@ -5,6 +5,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from datetime import timedelta
 from typing import Iterable
+from typing import Iterator
 
 from homeassistant.helpers.event import async_track_time_interval
 from pymodbus.exceptions import ConnectionException
@@ -31,7 +32,7 @@ _MODEL_LENGTH = 15
 
 
 @contextmanager
-def _acquire_nonblocking(lock: threading.Lock) -> bool:
+def _acquire_nonblocking(lock: threading.Lock) -> Iterator[bool]:
     locked = lock.acquire(False)
     try:
         yield locked
@@ -55,7 +56,7 @@ class ModbusController(EntityController, UnloadController):
         """Init"""
         self._hass = hass
         self._update_listeners: set[ModbusControllerEntity] = set()
-        self._data = {}
+        self._data: dict[int, int | None] = {}
         self._client = client
         self._connection_type_profile = connection_type_profile
         self.charge_periods = connection_type_profile.create_charge_periods()
@@ -83,7 +84,7 @@ class ModbusController(EntityController, UnloadController):
     def is_connected(self) -> bool:
         return self._is_connected
 
-    def read(self, address) -> bool:
+    def read(self, address) -> int | None:
         """Modbus status"""
         return self._data.get(address)
 
@@ -325,7 +326,7 @@ class ModbusController(EntityController, UnloadController):
             # after the model containing 32 (an ascii space) or 0. Input registers 10008 onwards
             # are for the serial number (and there doesn't seem to be enough space to hold all models!)
             # The H3 starts the model number with a space, annoyingly.
-            result = []
+            result: list[int] = []
             start_address = _MODEL_START_ADDRESS
             while len(result) < _MODEL_LENGTH:
                 result.extend(

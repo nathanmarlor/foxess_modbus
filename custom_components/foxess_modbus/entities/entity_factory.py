@@ -1,7 +1,8 @@
 """Entity Factory"""
 from abc import ABC
 from abc import abstractmethod
-from typing import Any, Iterable
+from typing import Any
+from typing import Sequence
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
@@ -32,7 +33,7 @@ class EntityFactory(ABC):
 
     def _supports_inverter_model(
         self,
-        address_specs: list[InverterModelSpec],
+        address_specs: Sequence[InverterModelSpec],
         inverter_model: str,
         register_type: RegisterType,
     ) -> bool:
@@ -49,7 +50,7 @@ class EntityFactory(ABC):
 
     def _address_for_inverter_model(
         self,
-        address_specs: list[InverterModelSpec],
+        address_specs: Sequence[InverterModelSpec],
         inverter_model: str,
         register_type: RegisterType,
     ) -> int | None:
@@ -73,7 +74,7 @@ class EntityFactory(ABC):
 
     def _addresses_for_inverter_model(
         self,
-        address_specs: Iterable[InverterModelSpec],
+        address_specs: Sequence[InverterModelSpec],
         inverter_model: str,
         register_type: RegisterType,
     ) -> list[int] | None:

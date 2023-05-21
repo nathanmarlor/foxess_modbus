@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 
 from ..common.register_type import RegisterType
-from .inverter_model_spec import ModbusAddressSpecBase
+from .inverter_model_spec import ModbusAddressSpecBase, InverterModelSpec
 from .modbus_binary_sensor import ModbusBinarySensorDescription
 from .modbus_charge_period_sensors import ModbusChargePeriodStartEndSensorDescription
 from .modbus_charge_period_sensors import ModbusEnableForceChargeSensorDescription
@@ -47,24 +47,24 @@ class ChargePeriodAddressSpec:
         if holding is not None:
             self.register_types[RegisterType.HOLDING] = holding
 
-    def get_start_address(self) -> ModbusAddressSpecBase:
-        """Gets a ModbusAddressSpecBase instance to describe the start address"""
+    def get_start_address(self) -> InverterModelSpec:
+        """Gets a InverterModelSpec instance to describe the start address"""
 
         addresses = {}
         for register_type, period_addresses in self.register_types.items():
             addresses[register_type] = [period_addresses.period_start_address]
         return ModbusAddressSpecBase(self.models, addresses)
 
-    def get_end_address(self) -> dict[str, list[int]]:
-        """Gets a ModbusAddressSpecBase instance to describe the end address"""
+    def get_end_address(self) -> InverterModelSpec:
+        """Gets a InverterModelSpec instance to describe the end address"""
 
         addresses = {}
         for register_type, period_addresses in self.register_types.items():
             addresses[register_type] = [period_addresses.period_end_address]
         return ModbusAddressSpecBase(self.models, addresses)
 
-    def get_enable_charge_from_grid_address(self) -> dict[str, list[int]]:
-        """Gets a ModbusAddressSpecBase instance to describe 'enable charge from grid' address"""
+    def get_enable_charge_from_grid_address(self) -> InverterModelSpec:
+        """Gets a InverterModelSpec instance to describe 'enable charge from grid' address"""
 
         addresses = {}
         for register_type, period_addresses in self.register_types.items():

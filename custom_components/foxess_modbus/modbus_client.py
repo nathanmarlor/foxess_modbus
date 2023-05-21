@@ -23,7 +23,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class CustomModbusTcpClient(ModbusTcpClient):
-    def __init__(self, **kwargs: any) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
     def connect(self) -> bool:
@@ -34,6 +34,7 @@ class CustomModbusTcpClient(ModbusTcpClient):
         # pymodbus doesn't disable Nagle's algorithm. This slows down reads quite substantially as the
         # TCP stack waits to see if we're going to send anything else. Disable it ourselves.
         if not was_connected and is_connected:
+            assert self.socket is not None
             self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
         return is_connected
 
@@ -90,7 +91,7 @@ class ModbusClient:
 
         if response.isError():
             message = f"Error reading registers. Type: {register_type}; start: {start_address}; count: {num_registers}; slave: {slave}"
-            if isinstance(response, BaseException):
+            if isinstance(response, Exception):
                 raise ModbusClientFailedException(message, self, response) from response
             raise ModbusClientFailedException(message, self, response)
 
@@ -134,7 +135,7 @@ class ModbusClient:
 
         if response.isError():
             message = f"Error writing registers. Start: {register_address}; values: {register_values}; slave: {slave}"
-            if isinstance(response, BaseException):
+            if isinstance(response, Exception):
                 raise ModbusClientFailedException(message, self, response) from response
             raise ModbusClientFailedException(message, self, response)
 

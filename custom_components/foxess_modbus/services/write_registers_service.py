@@ -72,5 +72,5 @@ async def _write_service(
         values = service_data.data["values"].split(",")
         await controller.write_registers(start_address, values)
     except ModbusIOException as ex:
-        _LOGGER.warning(ex, exc_info=1)
+        _LOGGER.warning(ex, exc_info=True)
         raise HomeAssistantError() from ex
