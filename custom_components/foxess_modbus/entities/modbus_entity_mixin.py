@@ -5,9 +5,7 @@ from typing import cast
 from typing import Protocol
 from typing import TYPE_CHECKING
 
-from custom_components.foxess_modbus.common.entity_controller import (
-    ModbusControllerEntity,
-)
+from custom_components.foxess_modbus.common.entity_controller import ModbusControllerEntity
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity import Entity
 

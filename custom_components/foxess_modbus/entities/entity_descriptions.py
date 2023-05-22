@@ -18,9 +18,7 @@ from .inverter_model_spec import EntitySpec
 from .inverter_model_spec import ModbusAddressesSpec
 from .inverter_model_spec import ModbusAddressSpec
 from .modbus_battery_sensor import ModbusBatterySensorDescription
-from .modbus_integration_sensor import (
-    ModbusIntegrationSensorDescription,
-)
+from .modbus_integration_sensor import ModbusIntegrationSensorDescription
 from .modbus_lambda_sensor import ModbusLambdaSensorDescription
 from .modbus_number import ModbusNumberDescription
 from .modbus_select import ModbusSelectDescription
