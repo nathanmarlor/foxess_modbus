@@ -5,11 +5,11 @@ from typing import cast
 from typing import Protocol
 from typing import TYPE_CHECKING
 
-from homeassistant.helpers.entity import DeviceInfo
-from homeassistant.helpers.entity import Entity
 from custom_components.foxess_modbus.common.entity_controller import (
     ModbusControllerEntity,
 )
+from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
 from ..const import DOMAIN
