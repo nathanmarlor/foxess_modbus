@@ -1,5 +1,5 @@
 pip>=21.0,<23.2
-homeassistant==2023.3.0
+homeassistant==2023.5.3
 colorlog==6.7.0
 pre-commit==3.3.1
 black==23.3.0
