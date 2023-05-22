@@ -11,8 +11,7 @@
         "ryanluker.vscode-coverage-gutters",
         "ms-python.vscode-pylance",
         "ms-python.black-formatter",
-        "matangover.mypy",
-        "thebutlah.reorder-python-imports"
+        "matangover.mypy"
       ],
       "settings": {
         "files.eol": "\n",
@@ -27,15 +26,8 @@
         "editor.formatOnPaste": false,
         "editor.formatOnSave": true,
         "editor.formatOnType": true,
-        "editor.codeActionsOnSave": {
-          "source.organizeImports": false,
-          "source.organizeImports.reorder-python-imports": true
-        },
         "editor.rulers": [
           120 // Matches pylint config
-        ],
-        "reorder-python-imports.args": [
-          "--application-directories=custom_components"
         ],
         "files.trimTrailingWhitespace": true,
         "mypy.targets": ["custom_components/foxess_modbus"]
