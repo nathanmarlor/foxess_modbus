@@ -7,7 +7,6 @@ from homeassistant.components.integration.sensor import DEFAULT_ROUND
 from homeassistant.components.integration.sensor import IntegrationSensor
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
-from homeassistant.components.sensor import SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTime
 from homeassistant.helpers.entity import Entity

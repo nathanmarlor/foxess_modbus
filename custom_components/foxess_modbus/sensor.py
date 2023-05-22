@@ -13,9 +13,7 @@ from .inverter_profiles import create_entities
 _LOGGER = logging.getLogger(__package__)
 
 
-async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_devices: AddEntitiesCallback
-) -> None:
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_devices: AddEntitiesCallback) -> None:
     """Setup sensor platform."""
 
     inverters = hass.data[DOMAIN][entry.entry_id][INVERTERS]

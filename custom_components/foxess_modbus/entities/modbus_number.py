@@ -2,7 +2,8 @@
 import logging
 from dataclasses import dataclass
 from dataclasses import field
-from typing import Any, Callable
+from typing import Any
+from typing import Callable
 from typing import cast
 
 from homeassistant.components.number import NumberEntity

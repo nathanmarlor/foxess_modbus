@@ -1,4 +1,7 @@
-"""Sensor which shows Unknown if the battery / BMS is offline, as indicated by the BatStatus / BMS connect state register"""
+"""
+Sensor which shows Unknown if the battery / BMS is offline, as indicated by the BatStatus / BMS connect state
+register
+"""
 from dataclasses import dataclass
 from typing import Any
 
@@ -14,6 +17,8 @@ from .modbus_sensor import ModbusSensorDescription
 
 @dataclass(kw_only=True)
 class ModbusBatterySensorDescription(ModbusSensorDescription):
+    """Description for ModbusBatterySensor"""
+
     bms_connect_state_address: list[ModbusAddressSpec]
 
     def create_entity_if_supported(
@@ -44,7 +49,7 @@ class ModbusBatterySensorDescription(ModbusSensorDescription):
 
 
 class ModbusBatterySensor(ModbusSensor):
-    """Sensor class."""
+    """A sensor which returns Unknown if the battery is not connected"""
 
     def __init__(
         self,

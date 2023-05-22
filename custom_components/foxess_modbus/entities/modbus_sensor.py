@@ -116,9 +116,9 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
         # we'll round to the nearest 20 (e.g. 120-129 will round to 120, 130-149 will round to 140).
         #
         # When we receive a new value, we add it to the moving average. If the output of the moving average is more than
-        # round_to from the last value, we flush the filter and set the current value to the new value, rounded to round_to.
-        # Flushing the filter means that we don't slowly ramp to a new value, which will create even more data points: the
-        # opposite of what we're trying to achieve!
+        # round_to from the last value, we flush the filter and set the current value to the new value, rounded to
+        # round_to. Flushing the filter means that we don't slowly ramp to a new value, which will create even more
+        # data points: the opposite of what we're trying to achieve!
 
         if self._round_to is not None:
             assert self._moving_average_filter is not None

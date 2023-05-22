@@ -28,16 +28,19 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def is_time_value_valid(value: int) -> bool:
+    """Determines whether the given time period start/end register holds a valid value"""
     hours, minutes = ((value & 0xFF00) >> 8, value & 0xFF)
     return 0 <= hours <= 23 and 0 <= minutes <= 59
 
 
 def parse_time_value(value: int) -> time:
+    """Parses a time period start/end register to a time"""
     hours, minutes = ((value & 0xFF00) >> 8, value & 0xFF)
     return time(hour=hours, minute=minutes)
 
 
 def serialize_time_to_value(time_value: time) -> int:
+    """Serializez a time to a time period start/end register"""
     return (time_value.hour << 8) | time_value.minute
 
 

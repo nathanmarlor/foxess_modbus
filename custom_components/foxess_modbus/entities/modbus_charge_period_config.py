@@ -5,13 +5,17 @@ from dataclasses import dataclass
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 
 from ..common.register_type import RegisterType
-from .inverter_model_spec import ModbusAddressSpecBase, InverterModelSpec
+from .inverter_model_spec import InverterModelSpec
+from .inverter_model_spec import ModbusAddressSpecBase
 from .modbus_binary_sensor import ModbusBinarySensorDescription
 from .modbus_charge_period_sensors import ModbusChargePeriodStartEndSensorDescription
 from .modbus_charge_period_sensors import ModbusEnableForceChargeSensorDescription
 from .validation import Time
 
 _LOGGER = logging.getLogger(__name__)
+
+# hass type hints are messed up, and mypy doesn't see inherited dataclass properties on the EntityDescriptions
+# mypy: disable-error-code="call-arg"
 
 
 @dataclass
@@ -37,7 +41,7 @@ class ChargePeriodAddressSpec:
     def __init__(
         self,
         models: list[str],
-        input: ModbusChargePeriodConfig | None = None,
+        input: ModbusChargePeriodConfig | None = None,  # pylint: disable=redefined-builtin
         holding: ModbusChargePeriodConfig | None = None,
     ) -> None:
         self.models = models

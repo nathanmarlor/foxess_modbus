@@ -2,7 +2,8 @@
 import logging
 from dataclasses import dataclass
 from dataclasses import field
-from typing import Any, cast
+from typing import Any
+from typing import cast
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.select import SelectEntityDescription

@@ -59,7 +59,8 @@ class EntityFactory(ABC):
         set of InverterModelSpec which was given to the entity description. Returns None if this entity is not supported
         on the model/connection type combination.
 
-        This will assert if the InverterModelSpec gives more than one address, or more than one member in address_specs matches.
+        This will assert if the InverterModelSpec gives more than one address, or more than one member in address_specs
+        matches.
         """
 
         result: int | None = None

@@ -86,6 +86,8 @@ else:
 
 
 class FlowHandlerMixin(_FlowHandlerMixinBase):
+    """Mixin for config flow / options flow classes, providing common functionality"""
+
     async def _with_default_form(
         self,
         body: Callable[[dict[str, Any]], Awaitable[FlowResult | None]],
@@ -327,7 +329,8 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             else:
                 # 1. If they unchecked "auto-generate entity ID prefix"...
                 if not autogenerate_entity_id_prefix:
-                    # a. If we haven't yet shown the input box, then show this and pre-populate with our guess. Don't check whether our value is valid at this point
+                    # a. If we haven't yet shown the input box, then show this and pre-populate with our guess. Don't
+                    #    check whether our value is valid at this point
                     if "entity_id_prefix" not in user_input:
                         show_entity_id_prefix_input = True
                         ready_to_submit = False
@@ -349,14 +352,16 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                 else:
                     # Try and generate one ourselves
                     entity_id_prefix = generate_entity_id_prefix(friendly_name)
-                    # a. If it's not unique, then show an error, show an input box, and check the "specify an entity ID" checkbox
+                    # a. If it's not unique, then show an error, show an input box, and check the "specify an entity
+                    #    ID" checkbox
                     if not is_unique_entity_id_prefix(entity_id_prefix):
                         show_entity_id_prefix_input = True
                         user_input["autogenerate_entity_id_prefix"] = False
                         user_input["entity_id_prefix"] = entity_id_prefix
                         errors["entity_id_prefix"] = "unable_to_generate_entity_id_prefix"
 
-            # If we got to here, then we're all good. Don't move on if they checked the "specify entity ID prefix" checkbox
+            # If we got to here, then we're all good. Don't move on if they checked the "specify entity ID prefix"
+            # checkbox
             if ready_to_submit and not errors:
                 assert entity_id_prefix is not None
                 self._inverter_data.entity_id_prefix = entity_id_prefix
@@ -461,7 +466,11 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
     async def _autodetect_modbus_and_save_to_inverter_data(
         self, protocol: str, host: str, slave: int, adapter: InverterAdapter
     ) -> None:
-        """Check that connection details are unique, then connect to the inverter and add its details to self._inverter_data"""
+        """
+        Check that connection details are unique, then connect to the inverter and add its details to
+        self._inverter_data
+        """
+
         if any(
             x
             for x in self._all_inverters
@@ -528,8 +537,9 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
 
             if isinstance(ex.__cause__, ModbusClientFailedException):
                 # This happens for things like UDP timeouts, inverter not connected to adapter, etc.
-                # Annoyingly everything *seems* to come through as a ModbusIOException, so we can't tell exactly what's going on.
-                # The error message here isn't useful to us. However, if it's got a __cause__ that can be interesting, and if it doesn't the .response is useful
+                # Annoyingly everything *seems* to come through as a ModbusIOException, so we can't tell exactly
+                # what's going on. The error message here isn't useful to us. However, if it's got a __cause__ that can
+                # be interesting, and if it doesn't the .response is useful
                 client_failed_ex = ex.__cause__
                 detail_parts = [str(client_failed_ex.response)]
                 detail_parts.extend(record.message for record in ex.log_records)

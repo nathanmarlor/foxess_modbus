@@ -66,9 +66,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     for platform in PLATFORMS:
         if entry_options.get(platform, True):
-            hass.async_add_job(
-                hass.config_entries.async_forward_entry_setup(entry, platform)
-            )
+            hass.async_add_job(hass.config_entries.async_forward_entry_setup(entry, platform))
 
     def create_controller(client: ModbusClient, inverter: dict[str, Any]) -> None:
         controller = ModbusController(
@@ -119,9 +117,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data[DOMAIN][entry.entry_id][INVERTERS] = inverter_controllers
 
-    hass.data[DOMAIN][entry.entry_id]["unload"] = entry.add_update_listener(
-        async_reload_entry
-    )
+    hass.data[DOMAIN][entry.entry_id]["unload"] = entry.add_update_listener(async_reload_entry)
 
     return True
 
@@ -172,9 +168,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                         if inverter_options:
                             options[INVERTERS][inverter_id] = inverter_options
 
-        hass.config_entries.async_update_entry(
-            config_entry, data=new_data, options=options
-        )
+        hass.config_entries.async_update_entry(config_entry, data=new_data, options=options)
         config_entry.version = 2
 
     if config_entry.version == 2:
@@ -222,10 +216,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Handle removal of an entry."""
     unloaded = all(
         await asyncio.gather(
-            *[
-                hass.config_entries.async_forward_entry_unload(entry, platform)
-                for platform in PLATFORMS
-            ]
+            *[hass.config_entries.async_forward_entry_unload(entry, platform) for platform in PLATFORMS]
         )
     )
 
@@ -246,8 +237,6 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     await async_setup_entry(hass, entry)
 
 
-async def options_update_listener(
-    hass: HomeAssistant, config_entry: ConfigEntry
-) -> None:
+async def options_update_listener(hass: HomeAssistant, config_entry: ConfigEntry) -> None:
     """Handle options update."""
     await hass.config_entries.async_reload(config_entry.entry_id)

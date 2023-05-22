@@ -7,8 +7,8 @@ from datetime import timedelta
 from typing import Iterable
 from typing import Iterator
 
-from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.event import async_track_time_interval
 from pymodbus.exceptions import ConnectionException
 
 from .common.entity_controller import EntityController

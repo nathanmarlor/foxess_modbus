@@ -1,34 +1,36 @@
+"""Mixin providing common functionality for all entity classes"""
 import logging
-from typing import Any, Protocol, TYPE_CHECKING
+from typing import Any
+from typing import cast
+from typing import Protocol
+from typing import TYPE_CHECKING
 
+from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.entity import Entity
 from custom_components.foxess_modbus.common.entity_controller import (
     ModbusControllerEntity,
 )
-from homeassistant.const import ATTR_IDENTIFIERS
-from homeassistant.const import ATTR_MANUFACTURER
-from homeassistant.const import ATTR_MODEL
-from homeassistant.const import ATTR_NAME
-from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.entity import DeviceInfo
 
+from ..common.entity_controller import EntityController
 from ..const import DOMAIN
 from ..const import ENTITY_ID_PREFIX
 from ..const import FRIENDLY_NAME
 from ..const import INVERTER_CONN
 from ..const import INVERTER_MODEL
 from .base_validator import BaseValidator
-from ..common.entity_controller import EntityController
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class ModbusEntityProtocol(Protocol):
+    """Protocol which types including ModbusEntityMixin must implement"""
+
     _controller: EntityController
     _inv_details: dict[str, Any]
 
     @property
     def addresses(self) -> list[int]:
-        ...
+        """Gets the register addresses which this entity reads"""
 
 
 if TYPE_CHECKING:
@@ -60,7 +62,7 @@ class ModbusEntityMixin(_ModbusEntityMixinBase, ModbusControllerEntity, ModbusEn
         else:
             attr_name = "FoxESS - Modbus"
 
-        return DeviceInfo(
+        return DeviceInfo(  # type: ignore
             # services/utils.py relies on the order of entries here. Update that if you update this!
             identifiers={(DOMAIN, inv_model, conn_type, friendly_name)},
             name=attr_name,
@@ -75,7 +77,7 @@ class ModbusEntityMixin(_ModbusEntityMixinBase, ModbusControllerEntity, ModbusEn
         if friendly_name:
             return f"{self.entity_description.name} ({friendly_name})"
         else:
-            return self.entity_description.name
+            return cast(str | None, self.entity_description.name)
 
     @property
     def available(self) -> bool:
@@ -119,7 +121,7 @@ class ModbusEntityMixin(_ModbusEntityMixinBase, ModbusControllerEntity, ModbusEn
     def _validate(
         self,
         rules: list[BaseValidator],
-        processed: float | int | None,
+        processed: float | int,
         original: float | int | None = None,
         address_override: int | None = None,
     ) -> bool:

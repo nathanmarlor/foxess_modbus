@@ -31,6 +31,9 @@
           "source.organizeImports": false,
           "source.organizeImports.reorder-python-imports": true
         },
+        "editor.rulers": [
+          120 // Matches pylint config
+        ],
         "reorder-python-imports.args": [
           "--application-directories=custom_components"
         ],

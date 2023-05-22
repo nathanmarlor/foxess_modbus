@@ -1,3 +1,4 @@
+"""Entity which gets its value by applying a lambda to a set of other entities"""
 import logging
 from dataclasses import dataclass
 from typing import Any

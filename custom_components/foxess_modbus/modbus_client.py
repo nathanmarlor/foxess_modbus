@@ -1,7 +1,10 @@
 import asyncio
 import logging
 import socket
-from typing import Any, Callable, TypeVar, cast
+from typing import Any
+from typing import Callable
+from typing import cast
+from typing import TypeVar
 
 from homeassistant.core import HomeAssistant
 from pymodbus.client import ModbusSerialClient

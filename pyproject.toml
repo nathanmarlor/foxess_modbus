@@ -5,6 +5,7 @@ disallow_untyped_defs = true
 disallow_incomplete_defs = true
 warn_return_any = true
 warn_unused_configs = true
+warn_unused_ignores = true
 namespace_packages = true
 explicit_package_bases = true
 
@@ -21,7 +22,8 @@ disable = [
     "too-many-instance-attributes",
     "duplicate-code",
     "too-many-statements",
-    "too-many-arguments"
+    "too-many-arguments",
+    "too-many-lines"
 ]
 
 [tool.black]
