@@ -44,12 +44,12 @@ from .services import write_registers_service
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
-async def async_setup(_hass: HomeAssistant, _config: Config):
+async def async_setup(_hass: HomeAssistant, _config: Config) -> bool:
     """Set up this integration using YAML is not supported."""
     return True
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up this integration using UI."""
 
     if DOMAIN not in hass.data:
@@ -70,7 +70,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
                 hass.config_entries.async_forward_entry_setup(entry, platform)
             )
 
-    def create_controller(hass, client, inverter):
+    def create_controller(client: ModbusClient, inverter: dict[str, Any]) -> None:
         controller = ModbusController(
             hass,
             client,
@@ -112,7 +112,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
                 params.update({"port": inverter[HOST], "baudrate": 9600})
             client = ModbusClient(hass, params)
             clients[client_key] = client
-        create_controller(hass, client, inverter)
+        create_controller(client, inverter)
 
     write_registers_service.register(hass, inverter_controllers)
     update_charge_period_service.register(hass, inverter_controllers)
@@ -246,6 +246,8 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     await async_setup_entry(hass, entry)
 
 
-async def options_update_listener(hass: HomeAssistant, config_entry: ConfigEntry):
+async def options_update_listener(
+    hass: HomeAssistant, config_entry: ConfigEntry
+) -> None:
     """Handle options update."""
     await hass.config_entries.async_reload(config_entry.entry_id)

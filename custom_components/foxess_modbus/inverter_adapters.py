@@ -34,9 +34,7 @@ class InverterAdapter:
     setup_link: str
     poll_rate: int
     max_read: int
-    network_protocols: list[
-        str
-    ] | None = None  # If type is NETWORK/DIRECT, whether we support TCP and/or UDP
+    network_protocols: list[str] | None = None  # If type is NETWORK/DIRECT, whether we support TCP and/or UDP
     recommended_protocol: str | None = None
     default_host: str | None = None
 

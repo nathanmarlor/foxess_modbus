@@ -93,7 +93,7 @@ class FlowHandlerMixin(_FlowHandlerMixinBase):
         step_id: str,
         data_schema: vol.Schema,
         description_placeholders: dict[str, str] | None = None,
-    ):
+    ) -> FlowResult:
         """
         If user_input is not None, call body() and return the result.
         If body throws a ValidationFailedException, or returns None, or user_input is None,
@@ -147,7 +147,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             InverterAdapterType.NETWORK: self.async_step_tcp_adapter,
         }
 
-    async def async_step_user(self, _user_input: dict[str, Any] | None = None):
+    async def async_step_user(self, _user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle a flow initialized by the user."""
 
         await self.async_set_unique_id(DOMAIN)
@@ -155,12 +155,10 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
 
         return await self.async_step_select_adapter_type()
 
-    async def async_step_select_adapter_type(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_select_adapter_type(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Let the user select their adapter type"""
 
-        async def body(user_input):
+        async def body(user_input: dict[str, Any]) -> FlowResult:
             adapter_type = InverterAdapterType(user_input["adapter_type"])
             self._inverter_data.adapter_type = adapter_type
 
@@ -186,23 +184,17 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             }
         )
 
-        return await self._with_default_form(
-            body, user_input, "select_adapter_type", schema
-        )
+        return await self._with_default_form(body, user_input, "select_adapter_type", schema)
 
-    async def async_step_select_adapter_model(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_select_adapter_model(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Let the user select their adapter model"""
 
-        async def body(user_input):
+        async def body(user_input: dict[str, Any]) -> FlowResult:
             self._inverter_data.adapter = ADAPTERS[user_input["adapter_model"]]
             assert self._inverter_data.adapter_type is not None
             return await self._adapter_type_to_step[self._inverter_data.adapter_type]()
 
-        adapters = [
-            x for x in ADAPTERS.values() if x.type == self._inverter_data.adapter_type
-        ]
+        adapters = [x for x in ADAPTERS.values() if x.type == self._inverter_data.adapter_type]
 
         schema = vol.Schema(
             {
@@ -224,30 +216,24 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             schema,
         )
 
-    async def async_step_tcp_adapter(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_tcp_adapter(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Let the user enter connection details for their TCP/UDP adapter"""
 
         adapter = self._inverter_data.adapter
 
-        async def body(user_input):
+        async def body(user_input: dict[str, Any]) -> FlowResult:
             assert adapter is not None
             assert adapter.network_protocols is not None
             protocol = user_input.get(
                 "protocol",
-                user_input.get(
-                    "protocol_with_recommendation", adapter.network_protocols[0]
-                ),
+                user_input.get("protocol_with_recommendation", adapter.network_protocols[0]),
             )
             host = user_input.get("adapter_host", user_input.get("lan_connection_host"))
             assert host is not None
             port = user_input.get("adapter_port", _DEFAULT_PORT)
             host_and_port = f"{host}:{port}"
             slave = user_input.get("modbus_slave", _DEFAULT_SLAVE)
-            await self._autodetect_modbus_and_save_to_inverter_data(
-                protocol, host_and_port, slave, adapter
-            )
+            await self._autodetect_modbus_and_save_to_inverter_data(protocol, host_and_port, slave, adapter)
             return await self.async_step_friendly_name()
 
         assert adapter is not None
@@ -261,14 +247,10 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             # If we provide a recommendation, show that
             if adapter.recommended_protocol is not None:
                 key = "protocol_with_recommendation"
-                description_placeholders[
-                    "recommended_protocol"
-                ] = adapter.recommended_protocol
+                description_placeholders["recommended_protocol"] = adapter.recommended_protocol
             else:
                 key = "protocol"
-            schema_parts[vol.Required(key)] = selector(
-                {"select": {"options": adapter.network_protocols}}
-            )
+            schema_parts[vol.Required(key)] = selector({"select": {"options": adapter.network_protocols}})
 
         if adapter.connection_type == AUX:
             schema_parts[vol.Required("adapter_host")] = cv.string
@@ -291,25 +273,21 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
 
         schema = vol.Schema(schema_parts)
 
-        return await self._with_default_form(
-            body, user_input, "tcp_adapter", schema, description_placeholders
-        )
+        return await self._with_default_form(body, user_input, "tcp_adapter", schema, description_placeholders)
 
-    async def async_step_serial_adapter(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_serial_adapter(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Let the user enter connection details for their serial adapter"""
 
         adapter = self._inverter_data.adapter
-        assert adapter is not None
 
-        async def body(user_input):
+        async def body(user_input: dict[str, Any]) -> FlowResult:
+            assert adapter is not None
             device = user_input["serial_device"]
             slave = user_input.get("modbus_slave", _DEFAULT_SLAVE)
-            await self._autodetect_modbus_and_save_to_inverter_data(
-                SERIAL, device, slave, adapter
-            )
+            await self._autodetect_modbus_and_save_to_inverter_data(SERIAL, device, slave, adapter)
             return await self.async_step_friendly_name()
+
+        assert adapter is not None
 
         schema = vol.Schema(
             {
@@ -322,28 +300,18 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         )
         description_placeholders = {"setup_link": adapter.setup_link}
 
-        return await self._with_default_form(
-            body, user_input, "serial_adapter", schema, description_placeholders
-        )
+        return await self._with_default_form(body, user_input, "serial_adapter", schema, description_placeholders)
 
-    async def async_step_friendly_name(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_friendly_name(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Let the user enter a friendly name for their inverter"""
 
         # This is a bit involved, so we'll avoid _with_default_form
 
         def generate_entity_id_prefix(friendly_name: str | None) -> str:
-            return (
-                slugify(friendly_name, separator="_", regex_pattern=r"\W").strip("_")
-                if friendly_name
-                else ""
-            )
+            return slugify(friendly_name, separator="_", regex_pattern=r"\W").strip("_") if friendly_name else ""
 
         def is_unique_entity_id_prefix(entity_id_prefix: str) -> bool:
-            return not any(
-                x for x in self._all_inverters if x.entity_id_prefix == entity_id_prefix
-            )
+            return not any(x for x in self._all_inverters if x.entity_id_prefix == entity_id_prefix)
 
         show_entity_id_prefix_input = False
         errors = {}
@@ -352,9 +320,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             entity_id_prefix = None
 
             friendly_name = user_input.get("friendly_name", "")
-            autogenerate_entity_id_prefix = user_input.get(
-                "autogenerate_entity_id_prefix", True
-            )
+            autogenerate_entity_id_prefix = user_input.get("autogenerate_entity_id_prefix", True)
 
             if any(x for x in self._all_inverters if x.friendly_name == friendly_name):
                 errors["friendly_name"] = "duplicate_friendly_name"
@@ -365,9 +331,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                     if "entity_id_prefix" not in user_input:
                         show_entity_id_prefix_input = True
                         ready_to_submit = False
-                        user_input["entity_id_prefix"] = generate_entity_id_prefix(
-                            friendly_name
-                        )
+                        user_input["entity_id_prefix"] = generate_entity_id_prefix(friendly_name)
                     # b. If they input a value (or submitted our auto-generated value), validate it
                     else:
                         entity_id_prefix = user_input["entity_id_prefix"]
@@ -390,9 +354,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                         show_entity_id_prefix_input = True
                         user_input["autogenerate_entity_id_prefix"] = False
                         user_input["entity_id_prefix"] = entity_id_prefix
-                        errors[
-                            "entity_id_prefix"
-                        ] = "unable_to_generate_entity_id_prefix"
+                        errors["entity_id_prefix"] = "unable_to_generate_entity_id_prefix"
 
             # If we got to here, then we're all good. Don't move on if they checked the "specify entity ID prefix" checkbox
             if ready_to_submit and not errors:
@@ -405,13 +367,9 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
 
         schema_parts: dict[Any, Any] = {}
         schema_parts[vol.Optional("friendly_name")] = cv.string
-        schema_parts[
-            vol.Required("autogenerate_entity_id_prefix", default=True)
-        ] = cv.boolean
+        schema_parts[vol.Required("autogenerate_entity_id_prefix", default=True)] = cv.boolean
         if show_entity_id_prefix_input:
-            schema_parts[vol.Optional("entity_id_prefix", default="")] = vol.Any(
-                None, str
-            )
+            schema_parts[vol.Optional("entity_id_prefix", default="")] = vol.Any(None, str)
         schema = vol.Schema(schema_parts)
 
         schema_with_input = self.add_suggested_values_to_schema(schema, user_input)
@@ -421,20 +379,16 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             errors=errors,
         )
 
-    async def async_step_add_another_inverter(
-        self, _user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_add_another_inverter(self, _user_input: dict[str, Any] | None = None) -> FlowResult:
         """Let the user choose whether to add another inverter"""
 
         options = ["select_adapter_type", "energy"]
-        return self.async_show_menu(
-            step_id="add_another_inverter", menu_options=options
-        )
+        return self.async_show_menu(step_id="add_another_inverter", menu_options=options)
 
-    async def async_step_energy(self, user_input: dict[str, Any] | None = None):
+    async def async_step_energy(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Let the user choose whether to set up the energy dashboard"""
 
-        async def body(user_input):
+        async def body(user_input: dict[str, Any]) -> FlowResult:
             if user_input["energy_dashboard"]:
                 await self._setup_energy_dashboard()
             return self.async_create_entry(title=_TITLE, data=self._create_entry_data())
@@ -458,9 +412,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                 INVERTER_MODEL: inverter.inverter_model,
                 INVERTER_CONN: inverter.adapter.connection_type,
                 MODBUS_SLAVE: inverter.modbus_slave,
-                ENTITY_ID_PREFIX: inverter.entity_id_prefix
-                if inverter.entity_id_prefix
-                else "",
+                ENTITY_ID_PREFIX: inverter.entity_id_prefix if inverter.entity_id_prefix else "",
                 FRIENDLY_NAME: inverter.friendly_name if inverter.friendly_name else "",
                 MODBUS_TYPE: inverter.inverter_protocol,
                 HOST: inverter.host,
@@ -480,7 +432,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
     ) -> FlowResult:
         """Helper used in the steps which let the user select their adapter model"""
 
-        async def body(user_input):
+        async def body(user_input: dict[str, Any]) -> FlowResult:
             return await complete_callback(ADAPTERS[user_input["adapter_id"]])
 
         adapters = [x for x in ADAPTERS.values() if x.type == adapter_type]
@@ -513,26 +465,20 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         if any(
             x
             for x in self._all_inverters
-            if x.inverter_protocol == protocol
-            and x.host == host
-            and x.modbus_slave == slave
+            if x.inverter_protocol == protocol and x.host == host and x.modbus_slave == slave
         ):
             raise ValidationFailedException({"base": "duplicate_connection_details"})
 
         try:
             params: dict[str, Any] = {MODBUS_TYPE: protocol}
             if protocol in [TCP, UDP]:
-                params.update(
-                    {"host": host.split(":")[0], "port": int(host.split(":")[1])}
-                )
+                params.update({"host": host.split(":")[0], "port": int(host.split(":")[1])})
             elif protocol == SERIAL:
                 params.update({"port": host, "baudrate": 9600})
             else:
                 assert False
             client = ModbusClient(self.hass, params)
-            base_model, full_model = await ModbusController.autodetect(
-                client, slave, adapter
-            )
+            base_model, full_model = await ModbusController.autodetect(client, slave, adapter)
 
             self._inverter_data.inverter_base_model = base_model
             self._inverter_data.inverter_model = full_model
@@ -590,31 +536,23 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                 details = "; ".join(detail_parts)
 
                 raise ValidationFailedException(
-                    {
-                        "base": "other_inverter_error"
-                        if adapter.connection_type == LAN
-                        else "other_adapter_error"
-                    },
+                    {"base": "other_inverter_error" if adapter.connection_type == LAN else "other_adapter_error"},
                     error_placeholders={"error_details": details},
                 ) from ex
 
             raise ValidationFailedException(
-                {
-                    "base": "other_inverter_error"
-                    if adapter.connection_type == LAN
-                    else "other_adapter_error"
-                },
+                {"base": "other_inverter_error" if adapter.connection_type == LAN else "other_adapter_error"},
                 error_placeholders={"error_details": get_details(ex, True)},
             ) from ex
 
-    async def _setup_energy_dashboard(self):
+    async def _setup_energy_dashboard(self) -> None:
         """Setup Energy Dashboard"""
 
         manager = await data.async_get_manager(self.hass)
 
         entity_id_prefixes = [x.entity_id_prefix for x in self._all_inverters]
 
-        def _prefix_name(name):
+        def _prefix_name(name: str | None) -> str:
             if name:
                 return f"sensor.{name}_"
             else:
@@ -643,9 +581,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                 ]
             )
 
-        grid_source = GridSourceType(
-            type="grid", flow_from=[], flow_to=[], cost_adjustment_day=0.0
-        )
+        grid_source = GridSourceType(type="grid", flow_from=[], flow_to=[], cost_adjustment_day=0.0)
         for entity_id_prefix in entity_id_prefixes:
             name_prefix = _prefix_name(entity_id_prefix)
             grid_source["flow_from"].append(
@@ -670,7 +606,9 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry):
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> config_entries.OptionsFlow:
         """Get the options flow for this handler."""
         return ModbusOptionsHandler(config_entry)
 
@@ -682,7 +620,7 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
         self._config = config
         self._selected_inverter_id: str | None = None
 
-    async def async_step_init(self, _user_input=None):
+    async def async_step_init(self, _user_input: dict[str, Any] | None = None) -> FlowResult:
         """Start the config flow"""
 
         if len(self._config.data[INVERTERS]) == 1:
@@ -691,12 +629,10 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
 
         return await self.async_step_select_inverter()
 
-    async def async_step_select_inverter(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_select_inverter(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Let the user select their inverter, if they have multiple inverters"""
 
-        async def body(user_input):
+        async def body(user_input: dict[str, Any]) -> FlowResult:
             self._selected_inverter_id = user_input["inverter"]
             return await self.async_step_inverter_options()
 
@@ -710,9 +646,7 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
                                     "label": self._create_label_for_inverter(inverter),
                                     "value": inverter_id,
                                 }
-                                for inverter_id, inverter in self._config.data[
-                                    INVERTERS
-                                ].items()
+                                for inverter_id, inverter in self._config.data[INVERTERS].items()
                             ]
                         }
                     }
@@ -720,23 +654,17 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
             }
         )
 
-        return await self._with_default_form(
-            body, user_input, "select_inverter", schema
-        )
+        return await self._with_default_form(body, user_input, "select_inverter", schema)
 
-    async def async_step_inverter_options(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_inverter_options(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Let the user set the selected inverter's settings"""
 
         config = self._config.data[INVERTERS][self._selected_inverter_id]
-        options = self._config.options.get(INVERTERS, {}).get(
-            self._selected_inverter_id, {}
-        )
+        options = self._config.options.get(INVERTERS, {}).get(self._selected_inverter_id, {})
 
         current_adapter = ADAPTERS[options.get(ADAPTER_ID, config[ADAPTER_ID])]
 
-        async def body(user_input):
+        async def body(user_input: dict[str, Any]) -> FlowResult:
             inverter_options = {}
 
             # This won't be set if there's only a single adapter of that type, e.g. direct LAN conniction
@@ -754,9 +682,7 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
 
             # We must not mutate any part of self._config.options, otherwise HA thinks we haven't changed the options
             options = copy.deepcopy(dict(self._config.options))
-            options.setdefault(INVERTERS, {})[
-                self._selected_inverter_id
-            ] = inverter_options
+            options.setdefault(INVERTERS, {})[self._selected_inverter_id] = inverter_options
 
             return self.async_create_entry(title=_TITLE, data=options)
 
@@ -764,9 +690,7 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
 
         schema_parts: dict[Any, Any] = {}
         if len(adapters) > 1:
-            schema_parts[
-                vol.Required("adapter_id", default=current_adapter.adapter_id)
-            ] = selector(
+            schema_parts[vol.Required("adapter_id", default=current_adapter.adapter_id)] = selector(
                 {
                     "select": {
                         "options": [x.adapter_id for x in adapters],
@@ -776,22 +700,18 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
                 }
             )
 
-        schema_parts[
-            vol.Required(
-                "round_sensor_values", default=options.get(ROUND_SENSOR_VALUES, False)
-            )
-        ] = selector({"boolean": {}})
+        schema_parts[vol.Required("round_sensor_values", default=options.get(ROUND_SENSOR_VALUES, False))] = selector(
+            {"boolean": {}}
+        )
         schema_parts[
             vol.Optional(
                 "poll_rate",
                 description={"suggested_value": options.get(POLL_RATE)},
             )
         ] = vol.Any(None, int)
-        schema_parts[
-            vol.Optional(
-                "max_read", description={"suggested_value": options.get(MAX_READ)}
-            )
-        ] = vol.Any(None, int)
+        schema_parts[vol.Optional("max_read", description={"suggested_value": options.get(MAX_READ)})] = vol.Any(
+            None, int
+        )
 
         schema = vol.Schema(schema_parts)
 

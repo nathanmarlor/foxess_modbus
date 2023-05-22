@@ -2,7 +2,7 @@
 import logging
 from dataclasses import dataclass
 from dataclasses import field
-from typing import cast
+from typing import Any, cast
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.select import SelectEntityDescription
@@ -37,16 +37,10 @@ class ModbusSelectDescription(SelectEntityDescription, EntityFactory):
         inverter_model: str,
         register_type: RegisterType,
         entry: ConfigEntry,
-        inv_details,
+        inv_details: dict[str, Any],
     ) -> Entity | None:
-        address = self._address_for_inverter_model(
-            self.address, inverter_model, register_type
-        )
-        return (
-            ModbusSelect(controller, self, address, entry, inv_details)
-            if address is not None
-            else None
-        )
+        address = self._address_for_inverter_model(self.address, inverter_model, register_type)
+        return ModbusSelect(controller, self, address, entry, inv_details) if address is not None else None
 
 
 class ModbusSelect(ModbusEntityMixin, SelectEntity):
@@ -58,7 +52,7 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
         entity_description: ModbusSelectDescription,
         address: int,
         entry: ConfigEntry,
-        inv_details,
+        inv_details: dict[str, Any],
     ) -> None:
         """Initialize the sensor."""
 

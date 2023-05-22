@@ -41,11 +41,9 @@ class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory)
         inverter_model: str,
         register_type: RegisterType,
         entry: ConfigEntry,
-        inv_details,
+        inv_details: dict[str, Any],
     ) -> Entity | None:
-        if not self._supports_inverter_model(
-            self.models, inverter_model, register_type
-        ):
+        if not self._supports_inverter_model(self.models, inverter_model, register_type):
             return None
 
         # this piggybacks on the existing factory to create IntegrationSensors

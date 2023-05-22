@@ -9,6 +9,7 @@ from homeassistant.const import ATTR_MANUFACTURER
 from homeassistant.const import ATTR_MODEL
 from homeassistant.const import ATTR_NAME
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.entity import DeviceInfo
 
 from ..const import DOMAIN
 from ..const import ENTITY_ID_PREFIX
@@ -36,9 +37,7 @@ else:
     _ModbusEntityMixinBase = object
 
 
-class ModbusEntityMixin(
-    _ModbusEntityMixinBase, ModbusControllerEntity, ModbusEntityProtocol
-):
+class ModbusEntityMixin(_ModbusEntityMixinBase, ModbusControllerEntity, ModbusEntityProtocol):
     """
     Mixin for subclasses of Entity
 
@@ -51,7 +50,7 @@ class ModbusEntityMixin(
         return "foxess_modbus_" + self._get_unique_id()
 
     @property
-    def device_info(self):
+    def device_info(self) -> DeviceInfo:
         """Return device specific attributes."""
         friendly_name = self._inv_details[FRIENDLY_NAME]
         inv_model = self._inv_details[INVERTER_MODEL]
@@ -61,16 +60,16 @@ class ModbusEntityMixin(
         else:
             attr_name = "FoxESS - Modbus"
 
-        return {
+        return DeviceInfo(
             # services/utils.py relies on the order of entries here. Update that if you update this!
-            ATTR_IDENTIFIERS: {(DOMAIN, inv_model, conn_type, friendly_name)},
-            ATTR_NAME: attr_name,
-            ATTR_MODEL: f"{inv_model} - {conn_type}",
-            ATTR_MANUFACTURER: "FoxESS",
-        }
+            identifiers={(DOMAIN, inv_model, conn_type, friendly_name)},
+            name=attr_name,
+            model=f"{inv_model} - {conn_type}",
+            manufacturer="FoxESS",
+        )
 
     @property
-    def name(self) -> str:
+    def name(self) -> str | None:
         """Return the name of the sensor."""
         friendly_name = self._inv_details[FRIENDLY_NAME]
         if friendly_name:
@@ -104,7 +103,7 @@ class ModbusEntityMixin(
         """Called when the controller reads an updated to any of the addresses in self.addresses"""
         self.schedule_update_ha_state()
 
-    def _get_unique_id(self):
+    def _get_unique_id(self) -> str:
         """Get unique ID"""
         return self._add_entity_id_prefix(self.entity_description.key)
 
@@ -120,8 +119,8 @@ class ModbusEntityMixin(
     def _validate(
         self,
         rules: list[BaseValidator],
-        processed,
-        original=None,
+        processed: float | int | None,
+        original: float | int | None = None,
         address_override: int | None = None,
     ) -> bool:
         """Validate against a set of rules"""
@@ -151,8 +150,8 @@ class ModbusEntityMixin(
         return False
 
     # Implement reference equality
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         return self is other
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return id(self)

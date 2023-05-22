@@ -8,9 +8,7 @@ class InverterModelSpec(ABC):
     """Base class for specifications which describe which inverter models an entity supports"""
 
     @abstractmethod
-    def addresses_for_inverter_model(
-        self, inverter_model: str, register_type: RegisterType
-    ) -> list[int] | None:
+    def addresses_for_inverter_model(self, inverter_model: str, register_type: RegisterType) -> list[int] | None:
         """
         If this spec supports the given inverter model (e.g. "H1") and register type (e.g. "holding"), return the list
         of addresses which it cares about (or an empty list if it dosen't rely on any addresses).
@@ -26,15 +24,11 @@ class ModbusAddressSpecBase(InverterModelSpec):
     Entities should normally use one of the other types, which are a bit neater to interface with.
     """
 
-    def __init__(
-        self, models: list[str], addresses: dict[RegisterType, list[int]]
-    ) -> None:
+    def __init__(self, models: list[str], addresses: dict[RegisterType, list[int]]) -> None:
         self._models = models
         self._addresses = addresses
 
-    def addresses_for_inverter_model(
-        self, inverter_model: str, register_type: RegisterType
-    ) -> list[int] | None:
+    def addresses_for_inverter_model(self, inverter_model: str, register_type: RegisterType) -> list[int] | None:
         if inverter_model not in self._models:
             return None
         return self._addresses.get(register_type)
@@ -43,9 +37,7 @@ class ModbusAddressSpecBase(InverterModelSpec):
 class ModbusAddressSpec(ModbusAddressSpecBase):
     """InverterModelSpec for entities which rely on a single modbus register"""
 
-    def __init__(
-        self, models: list[str], input: int | None = None, holding: int | None = None
-    ) -> None:
+    def __init__(self, models: list[str], input: int | None = None, holding: int | None = None) -> None:
         addresses = {}
         if input is not None:
             addresses[RegisterType.INPUT] = [input]
@@ -78,11 +70,5 @@ class EntitySpec(InverterModelSpec):
         self._models = models
         self._register_types = register_types
 
-    def addresses_for_inverter_model(
-        self, inverter_model: str, register_type: RegisterType
-    ) -> list[int] | None:
-        return (
-            []
-            if register_type in self._register_types and inverter_model in self._models
-            else None
-        )
+    def addresses_for_inverter_model(self, inverter_model: str, register_type: RegisterType) -> list[int] | None:
+        return [] if register_type in self._register_types and inverter_model in self._models else None

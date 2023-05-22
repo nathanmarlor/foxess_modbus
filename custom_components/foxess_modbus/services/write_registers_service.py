@@ -15,9 +15,7 @@ from .utils import get_controller_from_friendly_name_or_device_id
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
-def _must_specify_either_interver_or_friendly_name(
-    data: dict[str, Any]
-) -> dict[str, Any]:
+def _must_specify_either_interver_or_friendly_name(data: dict[str, Any]) -> dict[str, Any]:
     if "inverter" not in data and "friendly_name" not in data:
         raise vol.Invalid("required key not provided", path=["inverter"])
     return data
@@ -38,13 +36,9 @@ _WRITE_SCHEMA = vol.Schema(
 )
 
 
-def register(
-    hass: HomeAssistant, inverter_controllers: list[tuple[Any, ModbusController]]
-) -> None:
-    async def _callback(service_data: ServiceCall):
-        await hass.loop.create_task(
-            _write_service(inverter_controllers, service_data, hass)
-        )
+def register(hass: HomeAssistant, inverter_controllers: list[tuple[Any, ModbusController]]) -> None:
+    async def _callback(service_data: ServiceCall) -> None:
+        await hass.loop.create_task(_write_service(inverter_controllers, service_data, hass))
 
     hass.services.async_register(
         DOMAIN,
@@ -58,7 +52,7 @@ async def _write_service(
     mapping: list[tuple[Any, ModbusController]],
     service_data: ServiceCall,
     hass: HomeAssistant,
-):
+) -> None:
     """Write service"""
     # Support both for backwards compatibility
     inverter_id = service_data.data.get("inverter")

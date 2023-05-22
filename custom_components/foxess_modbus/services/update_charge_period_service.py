@@ -46,9 +46,7 @@ def _start_end_must_be_present_if_enabled(data: dict[str, Any]) -> dict[str, Any
                 path=["start"],
             )
         if "end" not in data:
-            raise vol.Invalid(
-                "'end' must be specified if 'enable_force_charge' is True", path=["end"]
-            )
+            raise vol.Invalid("'end' must be specified if 'enable_force_charge' is True", path=["end"])
     return data
 
 
@@ -56,12 +54,8 @@ def _end_must_be_after_start(data: dict[str, Any]) -> dict[str, Any]:
     if "start" in data and "end" in data:
         start = data["start"]
         end = data["end"]
-        if end.hour < start.hour or (
-            end.hour == start.hour and end.minute <= start.minute
-        ):
-            raise vol.Invalid(
-                "'end' must be at least 1 minute after 'start'", path=["end"]
-            )
+        if end.hour < start.hour or (end.hour == start.hour and end.minute <= start.minute):
+            raise vol.Invalid("'end' must be at least 1 minute after 'start'", path=["end"])
     return data
 
 
@@ -70,18 +64,10 @@ _UPDATE_CHARGE_PERIOD_SCHEMA = vol.Schema(
         {
             # Let the value to this be omitted, instead of forcing them to specify ''
             vol.Required("inverter", description="Inverter"): vol.Any(cv.string, None),
-            vol.Required("charge_period", description="Charge Period"): vol.All(
-                _integer, vol.Range(min=1, max=2)
-            ),
-            vol.Required(
-                "enable_force_charge", description="Enable force charge"
-            ): cv.boolean,
-            vol.Required(
-                "enable_charge_from_grid", description="Enable charge from grid"
-            ): cv.boolean,
-            vol.Optional("start", description="Period Start"): vol.All(
-                cv.time, _seconds_must_be_zero
-            ),
+            vol.Required("charge_period", description="Charge Period"): vol.All(_integer, vol.Range(min=1, max=2)),
+            vol.Required("enable_force_charge", description="Enable force charge"): cv.boolean,
+            vol.Required("enable_charge_from_grid", description="Enable charge from grid"): cv.boolean,
+            vol.Optional("start", description="Period Start"): vol.All(cv.time, _seconds_must_be_zero),
             vol.Optional("end", description="Period End"): vol.All(
                 cv.time, vol.Range(min=time(hour=0, minute=1)), _seconds_must_be_zero
             ),
@@ -99,16 +85,12 @@ _UPDATE_ALL_CHARGE_PERIODS_SCHEMA = vol.Schema(
             [
                 vol.All(
                     {
-                        vol.Required(
-                            "enable_force_charge", description="Enable force charge"
-                        ): cv.boolean,
+                        vol.Required("enable_force_charge", description="Enable force charge"): cv.boolean,
                         vol.Required(
                             "enable_charge_from_grid",
                             description="Enable charge from grid",
                         ): cv.boolean,
-                        vol.Optional("start", description="Period Start"): vol.All(
-                            cv.time, _seconds_must_be_zero
-                        ),
+                        vol.Optional("start", description="Period Start"): vol.All(cv.time, _seconds_must_be_zero),
                         vol.Optional("end", description="Period End"): vol.All(
                             cv.time,
                             vol.Range(min=time(hour=0, minute=1)),
@@ -125,15 +107,11 @@ _UPDATE_ALL_CHARGE_PERIODS_SCHEMA = vol.Schema(
 )
 
 
-def register(
-    hass: HomeAssistant, inverter_controllers: list[tuple[Any, ModbusController]]
-) -> None:
+def register(hass: HomeAssistant, inverter_controllers: list[tuple[Any, ModbusController]]) -> None:
     """Register the service with HA"""
 
-    async def _update_charge_period_callback(service_data: ServiceCall):
-        await hass.loop.create_task(
-            _update_charge_period(inverter_controllers, service_data, hass)
-        )
+    async def _update_charge_period_callback(service_data: ServiceCall) -> None:
+        await hass.loop.create_task(_update_charge_period(inverter_controllers, service_data, hass))
 
     hass.services.async_register(
         DOMAIN,
@@ -142,10 +120,8 @@ def register(
         _UPDATE_CHARGE_PERIOD_SCHEMA,
     )
 
-    async def _update_all_charge_periods_callback(service_data: ServiceCall):
-        await hass.loop.create_task(
-            _update_all_charge_periods(inverter_controllers, service_data, hass)
-        )
+    async def _update_all_charge_periods_callback(service_data: ServiceCall) -> None:
+        await hass.loop.create_task(_update_all_charge_periods(inverter_controllers, service_data, hass))
 
     hass.services.async_register(
         DOMAIN,
@@ -170,9 +146,7 @@ async def _update_all_charge_periods(
     service_data: ServiceCall,
     hass: HomeAssistant,
 ) -> None:
-    controller = get_controller_from_friendly_name_or_device_id(
-        service_data.data["inverter"], mapping, hass
-    )
+    controller = get_controller_from_friendly_name_or_device_id(service_data.data["inverter"], mapping, hass)
 
     charge_periods: list[ChargePeriod] = []
     for charge_period in service_data.data["charge_periods"]:
@@ -193,15 +167,11 @@ async def _update_charge_period(
     service_data: ServiceCall,
     hass: HomeAssistant,
 ) -> None:
-    controller = get_controller_from_friendly_name_or_device_id(
-        service_data.data["inverter"], mapping, hass
-    )
+    controller = get_controller_from_friendly_name_or_device_id(service_data.data["inverter"], mapping, hass)
     charge_period_index = service_data.data["charge_period"] - 1
 
     if charge_period_index >= len(controller.charge_periods):
-        raise HomeAssistantError(
-            f"Inverter does not support setting charge period {charge_period_index + 1}"
-        )
+        raise HomeAssistantError(f"Inverter does not support setting charge period {charge_period_index + 1}")
 
     charge_periods: list[ChargePeriod] = [None] * len(controller.charge_periods)  # type: ignore
 
@@ -219,9 +189,7 @@ async def _update_charge_period(
 
         period_start_time_value = controller.read(charge_period.period_start_address)
         period_end_time_value = controller.read(charge_period.period_end_address)
-        period_enable_charge_from_grid_value = controller.read(
-            charge_period.enable_charge_from_grid_address
-        )
+        period_enable_charge_from_grid_value = controller.read(charge_period.enable_charge_from_grid_address)
 
         if (
             period_start_time_value is None
@@ -231,16 +199,13 @@ async def _update_charge_period(
             raise HomeAssistantError(
                 f"Data for charge period {i + 1} is not available. Please try again in a few seconds"
             )
-        if not is_time_value_valid(period_start_time_value) or not is_time_value_valid(
-            period_end_time_value
-        ):
+        if not is_time_value_valid(period_start_time_value) or not is_time_value_valid(period_end_time_value):
             raise HomeAssistantError(
                 f"Start time '{period_start_time_value}' or end time '{period_end_time_value}' for charge period {i + 1} is not valid"
             )
 
         charge_periods[i] = ChargePeriod(
-            enable_force_charge=period_start_time_value > 0
-            or period_end_time_value > 0,
+            enable_force_charge=period_start_time_value > 0 or period_end_time_value > 0,
             enable_charge_from_grid=period_enable_charge_from_grid_value > 0,
             start=parse_time_value(period_start_time_value),
             end=parse_time_value(period_end_time_value),
@@ -249,15 +214,11 @@ async def _update_charge_period(
     await _set_charge_periods(controller, charge_periods)
 
 
-async def _set_charge_periods(
-    controller: ModbusController, charge_periods: list[ChargePeriod]
-) -> None:
+async def _set_charge_periods(controller: ModbusController, charge_periods: list[ChargePeriod]) -> None:
     if len(controller.charge_periods) == 0:
         raise HomeAssistantError("Inverter does not support setting charge periods")
     if len(charge_periods) > len(controller.charge_periods):
-        raise HomeAssistantError(
-            f"Inverter does not support setting charge period {len(controller.charge_periods)}"
-        )
+        raise HomeAssistantError(f"Inverter does not support setting charge period {len(controller.charge_periods)}")
     if len(charge_periods) < len(controller.charge_periods):
         raise HomeAssistantError(
             f"Entries must be provided for all charge periods. Expected {len(controller.charge_periods)} "
@@ -265,9 +226,7 @@ async def _set_charge_periods(
         )
 
     # Make sure that none of the charge periods overlap. Sort by start time, then ensure each doesn't overlap the next
-    sorted_enabled_periods = sorted(
-        (x for x in charge_periods if x.enable_force_charge), key=lambda x: x.start
-    )
+    sorted_enabled_periods = sorted((x for x in charge_periods if x.enable_force_charge), key=lambda x: x.start)
     for i, charge_period in enumerate(sorted_enabled_periods):
         if i == 0:
             continue
@@ -284,17 +243,13 @@ async def _set_charge_periods(
         writes.append(
             (
                 config.period_start_address,
-                serialize_time_to_value(charge_period.start)
-                if charge_period.enable_force_charge
-                else 0,
+                serialize_time_to_value(charge_period.start) if charge_period.enable_force_charge else 0,
             )
         )
         writes.append(
             (
                 config.period_end_address,
-                serialize_time_to_value(charge_period.end)
-                if charge_period.enable_force_charge
-                else 0,
+                serialize_time_to_value(charge_period.end) if charge_period.enable_force_charge else 0,
             )
         )
         writes.append(
@@ -305,7 +260,7 @@ async def _set_charge_periods(
         )
 
     # We expect all of the writes to have a contiguous set of addresses
-    write_values: list[int | None] = [None] * len(writes)
+    write_values: list[int] = [None] * len(writes)  # type: ignore
     write_start_address = min(write[0] for write in writes)
 
     for address, value in writes:

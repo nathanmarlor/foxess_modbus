@@ -68,9 +68,7 @@ class ChargePeriodAddressSpec:
 
         addresses = {}
         for register_type, period_addresses in self.register_types.items():
-            addresses[register_type] = [
-                period_addresses.enable_charge_from_grid_address
-            ]
+            addresses[register_type] = [period_addresses.enable_charge_from_grid_address]
         return ModbusAddressSpecBase(self.models, addresses)
 
 
@@ -100,9 +98,7 @@ class ModbusChargePeriodFactory:
 
         period_start_address = [x.get_start_address() for x in addresses]
         period_end_address = [x.get_end_address() for x in addresses]
-        enable_charge_from_grid_address = [
-            x.get_enable_charge_from_grid_address() for x in addresses
-        ]
+        enable_charge_from_grid_address = [x.get_enable_charge_from_grid_address() for x in addresses]
 
         self.period_start = ModbusChargePeriodStartEndSensorDescription(
             key=period_start_key,

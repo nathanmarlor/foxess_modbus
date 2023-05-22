@@ -1,5 +1,6 @@
 """Sensor which shows Unknown if the battery / BMS is offline, as indicated by the BatStatus / BMS connect state register"""
 from dataclasses import dataclass
+from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
@@ -21,15 +22,11 @@ class ModbusBatterySensorDescription(ModbusSensorDescription):
         inverter_model: str,
         register_type: RegisterType,
         entry: ConfigEntry,
-        inv_details,
+        inv_details: dict[str, Any],
     ) -> Entity | None:
-        addresses = self._addresses_for_inverter_model(
-            self.addresses, inverter_model, register_type
-        )
+        addresses = self._addresses_for_inverter_model(self.addresses, inverter_model, register_type)
         bms_connect_address = (
-            self._address_for_inverter_model(
-                self.bms_connect_state_address, inverter_model, register_type
-            )
+            self._address_for_inverter_model(self.bms_connect_state_address, inverter_model, register_type)
             if self.bms_connect_state_address is not None
             else None
         )
@@ -56,7 +53,7 @@ class ModbusBatterySensor(ModbusSensor):
         # Array of registers which this value is split over, from lower-order bits to higher-order bits
         addresses: list[int],
         bms_connect_state_address: int | None,
-        inv_details,
+        inv_details: dict[str, Any],
     ) -> None:
         super().__init__(
             controller=controller,
@@ -73,7 +70,7 @@ class ModbusBatterySensor(ModbusSensor):
         self._bms_connect_state_address = bms_connect_state_address
 
     @property
-    def native_value(self):
+    def native_value(self) -> Any:
         if self._bms_connect_state_address is not None:
             bms_connect_state = self._controller.read(self._bms_connect_state_address)
             # 0: Initial state, 1: OK, 2: NG
