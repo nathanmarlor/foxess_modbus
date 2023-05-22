@@ -5,11 +5,11 @@ from typing import cast
 from typing import Protocol
 from typing import TYPE_CHECKING
 
-from custom_components.foxess_modbus.common.entity_controller import ModbusControllerEntity
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
+from ..common.entity_controller import ModbusControllerEntity
 from ..const import DOMAIN
 from ..const import ENTITY_ID_PREFIX
 from ..const import FRIENDLY_NAME
@@ -26,10 +26,6 @@ class ModbusEntityProtocol(Protocol):
     _controller: EntityController
     _inv_details: dict[str, Any]
 
-    @property
-    def addresses(self) -> list[int]:
-        """Gets the register addresses which this entity reads"""
-
 
 if TYPE_CHECKING:
     _ModbusEntityMixinBase = Entity
@@ -37,7 +33,7 @@ else:
     _ModbusEntityMixinBase = object
 
 
-class ModbusEntityMixin(_ModbusEntityMixinBase, ModbusControllerEntity, ModbusEntityProtocol):
+class ModbusEntityMixin(ModbusControllerEntity, ModbusEntityProtocol, _ModbusEntityMixinBase):
     """
     Mixin for subclasses of Entity
 
