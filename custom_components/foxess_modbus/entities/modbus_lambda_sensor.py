@@ -1,3 +1,4 @@
+"""Entity which gets its value by applying a lambda to a set of other entities"""
 import logging
 from dataclasses import dataclass
 from typing import Any
@@ -37,11 +38,9 @@ class ModbusLambdaSensorDescription(SensorEntityDescription, EntityFactory):
         inverter_model: str,
         register_type: RegisterType,
         entry: ConfigEntry,
-        inv_details,
+        inv_details: dict[str, Any],
     ) -> Entity | None:
-        if not self._supports_inverter_model(
-            self.models, inverter_model, register_type
-        ):
+        if not self._supports_inverter_model(self.models, inverter_model, register_type):
             return None
 
         return ModbusLambdaSensor(
@@ -67,27 +66,21 @@ class ModbusLambdaSensor(ModbusEntityMixin, SensorEntity):
         self._controller = controller
         self.entity_description = entity_description
         self._inv_details = inv_details
-        self._source_entity_ids = [
-            f"sensor.{self._add_entity_id_prefix(x)}" for x in sources
-        ]
+        self._source_entity_ids = [f"sensor.{self._add_entity_id_prefix(x)}" for x in sources]
         self._method = method
 
     async def async_added_to_hass(self) -> None:
         """Add update callback after being added to hass."""
         await super().async_added_to_hass()
 
-        self.async_on_remove(
-            async_track_state_change_event(
-                self.hass, self._source_entity_ids, self._handle_event
-            )
-        )
+        self.async_on_remove(async_track_state_change_event(self.hass, self._source_entity_ids, self._handle_event))
 
         self._update_value()
 
-    def _handle_event(self, _event: Event):
+    def _handle_event(self, _event: Event) -> None:
         self._update_value()
 
-    def _update_value(self):
+    def _update_value(self) -> None:
         inputs = []
         new_value = None
         for source in self._source_entity_ids:
@@ -95,11 +88,7 @@ class ModbusLambdaSensor(ModbusEntityMixin, SensorEntity):
             if state is None:
                 break
             str_value = state.state
-            if (
-                str_value is None
-                or str_value == "unknown"
-                or str_value == "unavailable"
-            ):
+            if str_value is None or str_value == "unknown" or str_value == "unavailable":
                 break
             try:
                 float_value = float(str_value)

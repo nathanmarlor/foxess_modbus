@@ -41,11 +41,9 @@ class InverterModelConnectionTypeProfile:
         self.register_type = register_type
         self.invalid_register_ranges = invalid_register_ranges
 
-    def overlaps_invalid_range(self, start_address, end_address):
-        return any(
-            r[0] <= end_address and start_address <= r[1]
-            for r in self.invalid_register_ranges
-        )
+    def overlaps_invalid_range(self, start_address: int, end_address: int) -> bool:
+        """Determines whether the given inclusive address range overlaps any invalid address ranges"""
+        return any(r[0] <= end_address and start_address <= r[1] for r in self.invalid_register_ranges)
 
     def create_entities(
         self,
@@ -53,7 +51,7 @@ class InverterModelConnectionTypeProfile:
         controller: EntityController,
         entry: ConfigEntry,
         inverter_details: dict[str, Any],
-    ) -> list[ModbusSensor]:
+    ) -> list[Entity]:
         """Create all of the entities of the given type which support this inverter/connection combination"""
 
         result = []
@@ -78,10 +76,8 @@ class InverterModelConnectionTypeProfile:
         result = []
 
         for charge_period_factory in CHARGE_PERIODS:
-            charge_period = (
-                charge_period_factory.create_charge_period_config_if_supported(
-                    self.inverter_model, self.register_type
-                )
+            charge_period = charge_period_factory.create_charge_period_config_if_supported(
+                self.inverter_model, self.register_type
             )
             if charge_period is not None:
                 result.append(charge_period)
@@ -178,19 +174,15 @@ def create_entities(
     controller: EntityController,
     entry: ConfigEntry,
     inverter_config: dict[str, Any],
-) -> list[ModbusSensor]:
+) -> list[Entity]:
     """Create all of the entities which support the inverter described by the given configuration object"""
 
-    return inverter_connection_type_profile_from_config(
-        inverter_config
-    ).create_entities(entity_type, controller, entry, inverter_config)
+    return inverter_connection_type_profile_from_config(inverter_config).create_entities(
+        entity_type, controller, entry, inverter_config
+    )
 
 
-def inverter_connection_type_profile_from_config(
-    inverter_config: dict[str, Any]
-) -> InverterModelConnectionTypeProfile:
+def inverter_connection_type_profile_from_config(inverter_config: dict[str, Any]) -> InverterModelConnectionTypeProfile:
     """Fetches a InverterConnectionTypeProfile for a given configuration object"""
 
-    return INVERTER_PROFILES[inverter_config[INVERTER_BASE]].connection_types[
-        inverter_config[INVERTER_CONN]
-    ]
+    return INVERTER_PROFILES[inverter_config[INVERTER_BASE]].connection_types[inverter_config[INVERTER_CONN]]

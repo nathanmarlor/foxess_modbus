@@ -7,5 +7,5 @@ class BaseValidator(ABC):
     """Base validator"""
 
     @abstractmethod
-    def validate(self, data) -> bool:
+    def validate(self, data: int | float) -> bool:
         """Validate a value against a set of rules"""

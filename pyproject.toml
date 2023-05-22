@@ -1,0 +1,31 @@
+[tool.mypy]
+strict = true
+allow_subclassing_any = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+warn_return_any = true
+warn_unused_configs = true
+warn_unused_ignores = true
+namespace_packages = true
+explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+module = 'pymodbus.*'
+ignore_missing_imports = true
+
+[tool.pylint]
+max-line-length = 120
+disable = [
+    "fixme",
+    "broad-except",
+    "too-many-ancestors",
+    "too-many-instance-attributes",
+    "duplicate-code",
+    "too-many-statements",
+    "too-many-arguments",
+    "too-many-lines"
+]
+
+[tool.black]
+line-length = 120
+exclude = "scripts"

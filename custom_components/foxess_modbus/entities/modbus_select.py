@@ -2,6 +2,8 @@
 import logging
 from dataclasses import dataclass
 from dataclasses import field
+from typing import Any
+from typing import cast
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.select import SelectEntityDescription
@@ -36,16 +38,10 @@ class ModbusSelectDescription(SelectEntityDescription, EntityFactory):
         inverter_model: str,
         register_type: RegisterType,
         entry: ConfigEntry,
-        inv_details,
+        inv_details: dict[str, Any],
     ) -> Entity | None:
-        address = self._address_for_inverter_model(
-            self.address, inverter_model, register_type
-        )
-        return (
-            ModbusSelect(controller, self, address, entry, inv_details)
-            if address is not None
-            else None
-        )
+        address = self._address_for_inverter_model(self.address, inverter_model, register_type)
+        return ModbusSelect(controller, self, address, entry, inv_details) if address is not None else None
 
 
 class ModbusSelect(ModbusEntityMixin, SelectEntity):
@@ -57,7 +53,7 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
         entity_description: ModbusSelectDescription,
         address: int,
         entry: ConfigEntry,
-        inv_details,
+        inv_details: dict[str, Any],
     ) -> None:
         """Initialize the sensor."""
 
@@ -71,25 +67,27 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
 
     @property
     def current_option(self) -> str | None:
+        entity_description = cast(ModbusSelectDescription, self.entity_description)
         value = self._controller.read(self._address)
         if value is None:
             return None
-        if not self._validate(self.entity_description.validate, value):
+        if not self._validate(entity_description.validate, value):
             return None
 
-        selected = self.entity_description.options_map.get(value)
+        selected = entity_description.options_map.get(value)
         if selected is None:
             _LOGGER.warning(
                 "Select option (%s) for address (%s) is not valid. Valid values: (%s)",
                 value,
                 self._address,
-                self.entity_description.options_map,
+                entity_description.options_map,
             )
         return selected
 
     async def async_select_option(self, option: str) -> None:
+        entity_description = cast(ModbusSelectDescription, self.entity_description)
         value = next(
-            (k for k, v in self.entity_description.options_map.items() if v == option),
+            (k for k, v in entity_description.options_map.items() if v == option),
             None,
         )
         if value is None:
@@ -103,10 +101,6 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
             return
 
         await self._controller.write_register(self._address, value)
-
-    @property
-    def should_poll(self) -> bool:
-        return False
 
     @property
     def addresses(self) -> list[int]:

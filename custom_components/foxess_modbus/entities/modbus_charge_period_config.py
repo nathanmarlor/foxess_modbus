@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 
 from ..common.register_type import RegisterType
+from .inverter_model_spec import InverterModelSpec
 from .inverter_model_spec import ModbusAddressSpecBase
 from .modbus_binary_sensor import ModbusBinarySensorDescription
 from .modbus_charge_period_sensors import ModbusChargePeriodStartEndSensorDescription
@@ -12,6 +13,9 @@ from .modbus_charge_period_sensors import ModbusEnableForceChargeSensorDescripti
 from .validation import Time
 
 _LOGGER = logging.getLogger(__name__)
+
+# hass type hints are messed up, and mypy doesn't see inherited dataclass properties on the EntityDescriptions
+# mypy: disable-error-code="call-arg"
 
 
 @dataclass
@@ -37,7 +41,7 @@ class ChargePeriodAddressSpec:
     def __init__(
         self,
         models: list[str],
-        input: ModbusChargePeriodConfig | None = None,
+        input: ModbusChargePeriodConfig | None = None,  # pylint: disable=redefined-builtin
         holding: ModbusChargePeriodConfig | None = None,
     ) -> None:
         self.models = models
@@ -47,30 +51,28 @@ class ChargePeriodAddressSpec:
         if holding is not None:
             self.register_types[RegisterType.HOLDING] = holding
 
-    def get_start_address(self) -> ModbusAddressSpecBase:
-        """Gets a ModbusAddressSpecBase instance to describe the start address"""
+    def get_start_address(self) -> InverterModelSpec:
+        """Gets a InverterModelSpec instance to describe the start address"""
 
         addresses = {}
         for register_type, period_addresses in self.register_types.items():
             addresses[register_type] = [period_addresses.period_start_address]
         return ModbusAddressSpecBase(self.models, addresses)
 
-    def get_end_address(self) -> dict[str, list[int]]:
-        """Gets a ModbusAddressSpecBase instance to describe the end address"""
+    def get_end_address(self) -> InverterModelSpec:
+        """Gets a InverterModelSpec instance to describe the end address"""
 
         addresses = {}
         for register_type, period_addresses in self.register_types.items():
             addresses[register_type] = [period_addresses.period_end_address]
         return ModbusAddressSpecBase(self.models, addresses)
 
-    def get_enable_charge_from_grid_address(self) -> dict[str, list[int]]:
-        """Gets a ModbusAddressSpecBase instance to describe 'enable charge from grid' address"""
+    def get_enable_charge_from_grid_address(self) -> InverterModelSpec:
+        """Gets a InverterModelSpec instance to describe 'enable charge from grid' address"""
 
         addresses = {}
         for register_type, period_addresses in self.register_types.items():
-            addresses[register_type] = [
-                period_addresses.enable_charge_from_grid_address
-            ]
+            addresses[register_type] = [period_addresses.enable_charge_from_grid_address]
         return ModbusAddressSpecBase(self.models, addresses)
 
 
@@ -100,9 +102,7 @@ class ModbusChargePeriodFactory:
 
         period_start_address = [x.get_start_address() for x in addresses]
         period_end_address = [x.get_end_address() for x in addresses]
-        enable_charge_from_grid_address = [
-            x.get_enable_charge_from_grid_address() for x in addresses
-        ]
+        enable_charge_from_grid_address = [x.get_enable_charge_from_grid_address() for x in addresses]
 
         self.period_start = ModbusChargePeriodStartEndSensorDescription(
             key=period_start_key,

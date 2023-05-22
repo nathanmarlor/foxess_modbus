@@ -5,7 +5,9 @@ from contextlib import contextmanager
 from datetime import datetime
 from datetime import timedelta
 from typing import Iterable
+from typing import Iterator
 
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.event import async_track_time_interval
 from pymodbus.exceptions import ConnectionException
 
@@ -31,7 +33,7 @@ _MODEL_LENGTH = 15
 
 
 @contextmanager
-def _acquire_nonblocking(lock: threading.Lock) -> bool:
+def _acquire_nonblocking(lock: threading.Lock) -> Iterator[bool]:
     locked = lock.acquire(False)
     try:
         yield locked
@@ -45,7 +47,7 @@ class ModbusController(EntityController, UnloadController):
 
     def __init__(
         self,
-        hass,
+        hass: HomeAssistant,
         client: ModbusClient,
         connection_type_profile: InverterModelConnectionTypeProfile,
         slave: int,
@@ -55,7 +57,7 @@ class ModbusController(EntityController, UnloadController):
         """Init"""
         self._hass = hass
         self._update_listeners: set[ModbusControllerEntity] = set()
-        self._data = {}
+        self._data: dict[int, int | None] = {}
         self._client = client
         self._connection_type_profile = connection_type_profile
         self.charge_periods = connection_type_profile.create_charge_periods()
@@ -83,14 +85,14 @@ class ModbusController(EntityController, UnloadController):
     def is_connected(self) -> bool:
         return self._is_connected
 
-    def read(self, address) -> bool:
+    def read(self, address: int) -> int | None:
         """Modbus status"""
         return self._data.get(address)
 
-    async def write_register(self, address, value) -> None:
+    async def write_register(self, address: int, value: int) -> None:
         await self.write_registers(address, [value])
 
-    async def write_registers(self, start_address, values) -> None:
+    async def write_registers(self, start_address: int, values: list[int]) -> None:
         """Write multiple registers"""
         _LOGGER.debug(
             "Writing registers for %s %s: (%s, %s)",
@@ -210,10 +212,7 @@ class ModbusController(EntityController, UnloadController):
                     self._notify_is_connected_changed()
             elif self._is_connected:
                 self._num_failed_poll_attempts += 1
-                if (
-                    self._num_failed_poll_attempts
-                    >= _NUM_FAILED_POLLS_FOR_DISCONNECTION
-                ):
+                if self._num_failed_poll_attempts >= _NUM_FAILED_POLLS_FOR_DISCONNECTION:
                     _LOGGER.warning(
                         "%s %s - %s failed poll attempts: now not connected. Last error: %s",
                         self._client,
@@ -256,9 +255,7 @@ class ModbusController(EntityController, UnloadController):
             # inside invalid ranges, tested in __init__). This also assumes that read_size != max_read here.
             elif address == start_address + 1 or (
                 address <= start_address + max_read - 1
-                and not self._connection_type_profile.overlaps_invalid_range(
-                    start_address, address - 1
-                )
+                and not self._connection_type_profile.overlaps_invalid_range(start_address, address - 1)
             ):
                 # There's a previous read which we can extend
                 read_size = address - start_address + 1
@@ -277,18 +274,14 @@ class ModbusController(EntityController, UnloadController):
     def register_modbus_entity(self, listener: ModbusControllerEntity) -> None:
         self._update_listeners.add(listener)
         for address in listener.addresses:
-            assert not self._connection_type_profile.overlaps_invalid_range(
-                address, address
-            )
+            assert not self._connection_type_profile.overlaps_invalid_range(address, address)
             if address not in self._data:
                 self._data[address] = None
 
     def remove_modbus_entity(self, listener: ModbusControllerEntity) -> None:
         self._update_listeners.discard(listener)
         # If this was the only entity listening on this address, remove it from self._data
-        other_addresses = set(
-            address for entity in self._update_listeners for address in entity.addresses
-        )
+        other_addresses = set(address for entity in self._update_listeners for address in entity.addresses)
         for address in listener.addresses:
             if address not in other_addresses and address in self._data:
                 del self._data[address]
@@ -304,9 +297,7 @@ class ModbusController(EntityController, UnloadController):
             listener.is_connected_changed_callback()
 
     @staticmethod
-    async def autodetect(
-        client: ModbusClient, slave: int, adapter: InverterAdapter
-    ) -> tuple[str, str]:
+    async def autodetect(client: ModbusClient, slave: int, adapter: InverterAdapter) -> tuple[str, str]:
         """
         Attempts to auto-detect the inverter type at the other end of the given connection
 
@@ -325,7 +316,7 @@ class ModbusController(EntityController, UnloadController):
             # after the model containing 32 (an ascii space) or 0. Input registers 10008 onwards
             # are for the serial number (and there doesn't seem to be enough space to hold all models!)
             # The H3 starts the model number with a space, annoyingly.
-            result = []
+            result: list[int] = []
             start_address = _MODEL_START_ADDRESS
             while len(result) < _MODEL_LENGTH:
                 result.extend(
@@ -349,20 +340,14 @@ class ModbusController(EntityController, UnloadController):
             full_model = full_model.strip()
             for model in INVERTER_PROFILES.values():
                 if full_model.startswith(model.model):
-                    _LOGGER.info(
-                        "Autodetected inverter as '%s' (%s)", model.model, full_model
-                    )
+                    _LOGGER.info("Autodetected inverter as '%s' (%s)", model.model, full_model)
                     return model.model, full_model
 
             # We've read the model type, but been unable to match it against a supported model
-            _LOGGER.error(
-                "Did not recognise inverter model '%s' (%s)", full_model, result
-            )
+            _LOGGER.error("Did not recognise inverter model '%s' (%s)", full_model, result)
             raise UnsupportedInverterException(full_model)
         except Exception as ex:
-            _LOGGER.error(
-                "Autodetect: failed to connect to (%s)", client, exc_info=True
-            )
+            _LOGGER.error("Autodetect: failed to connect to (%s)", client, exc_info=True)
             raise AutoconnectFailedException(spy_handler.records) from ex
         finally:
             pymodbus_logger.removeHandler(spy_handler)

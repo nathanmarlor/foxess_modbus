@@ -2,7 +2,9 @@
 import logging
 from dataclasses import dataclass
 from dataclasses import field
+from typing import Any
 from typing import Callable
+from typing import cast
 
 from homeassistant.components.number import NumberEntity
 from homeassistant.components.number import NumberEntityDescription
@@ -27,7 +29,7 @@ class ModbusNumberDescription(NumberEntityDescription, EntityFactory):
     address: list[ModbusAddressSpec]
     mode: NumberMode = NumberMode.AUTO
     scale: float | None = None
-    post_process: Callable[[int], int] | None = None
+    post_process: Callable[[float], float] | None = None
     validate: list[BaseValidator] = field(default_factory=list)
 
     @property
@@ -40,16 +42,10 @@ class ModbusNumberDescription(NumberEntityDescription, EntityFactory):
         inverter_model: str,
         register_type: RegisterType,
         entry: ConfigEntry,
-        inv_details,
+        inv_details: dict[str, Any],
     ) -> Entity | None:
-        address = self._address_for_inverter_model(
-            self.address, inverter_model, register_type
-        )
-        return (
-            ModbusNumber(controller, self, address, entry, inv_details)
-            if address is not None
-            else None
-        )
+        address = self._address_for_inverter_model(self.address, inverter_model, register_type)
+        return ModbusNumber(controller, self, address, entry, inv_details) if address is not None else None
 
 
 class ModbusNumber(ModbusEntityMixin, NumberEntity):
@@ -61,7 +57,7 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
         entity_description: ModbusNumberDescription,
         address: int,
         entry: ConfigEntry,
-        inv_details,
+        inv_details: dict[str, Any],
     ) -> None:
         """Initialize the sensor."""
 
@@ -73,23 +69,25 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
         self.entity_id = "number." + self._get_unique_id()
 
     @property
-    def native_value(self):
+    def native_value(self) -> int | float | None:
         """Return the value reported by the sensor."""
-        value = original = self._controller.read(self._address)
+        entity_description = cast(ModbusNumberDescription, self.entity_description)
+        value: float | int | None = self._controller.read(self._address)
+        original = value
         if value is None:
             return None
-        if self.entity_description.scale is not None:
-            value = value * self.entity_description.scale
-        if self.entity_description.post_process is not None:
-            value = self.entity_description.post_process(value)
-        if not self._validate(self.entity_description.validate, value, original):
+        if entity_description.scale is not None:
+            value = value * entity_description.scale
+        if entity_description.post_process is not None:
+            value = entity_description.post_process(float(value))
+        if not self._validate(entity_description.validate, value, original):
             return None
 
         return value
 
     @property
     def mode(self) -> NumberMode:
-        return self.entity_description.mode
+        return cast(ModbusNumberDescription, self.entity_description).mode
 
     async def async_set_native_value(self, value: float) -> None:
         int_value = int(
@@ -100,10 +98,6 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
         )
 
         await self._controller.write_register(self._address, int_value)
-
-    @property
-    def should_poll(self) -> bool:
-        return False
 
     @property
     def addresses(self) -> list[int]:

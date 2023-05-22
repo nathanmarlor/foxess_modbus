@@ -2,27 +2,15 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Run Home Assistant on port 9123",
+      "label": "Run Home Assistant on port 8123",
       "type": "shell",
-      "command": "container start",
+      "command": ".devcontainer/develop",
       "problemMatcher": []
     },
     {
-      "label": "Run Home Assistant configuration against /config",
+      "label": "Run pre-commit",
       "type": "shell",
-      "command": "container check",
-      "problemMatcher": []
-    },
-    {
-      "label": "Upgrade Home Assistant to latest dev",
-      "type": "shell",
-      "command": "container install",
-      "problemMatcher": []
-    },
-    {
-      "label": "Install a specific version of Home Assistant",
-      "type": "shell",
-      "command": "container set-version",
+      "command": "pre-commit run --all-files --show-diff-on-failure --color=always",
       "problemMatcher": []
     }
   ]

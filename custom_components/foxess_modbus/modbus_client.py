@@ -2,7 +2,11 @@ import asyncio
 import logging
 import socket
 from typing import Any
+from typing import Callable
+from typing import cast
+from typing import TypeVar
 
+from homeassistant.core import HomeAssistant
 from pymodbus.client import ModbusSerialClient
 from pymodbus.client import ModbusTcpClient
 from pymodbus.client import ModbusUdpClient
@@ -21,19 +25,22 @@ from .const import UDP
 
 _LOGGER = logging.getLogger(__name__)
 
+T = TypeVar("T")
+
 
 class CustomModbusTcpClient(ModbusTcpClient):
-    def __init__(self, **kwargs: any) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
     def connect(self) -> bool:
         was_connected = self.socket is not None
         if not was_connected:
             _LOGGER.debug("Connecting to %s", self.params)
-        is_connected = super().connect()
+        is_connected = cast(bool, super().connect())
         # pymodbus doesn't disable Nagle's algorithm. This slows down reads quite substantially as the
         # TCP stack waits to see if we're going to send anything else. Disable it ourselves.
         if not was_connected and is_connected:
+            assert self.socket is not None
             self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
         return is_connected
 
@@ -41,7 +48,7 @@ class CustomModbusTcpClient(ModbusTcpClient):
 class ModbusClient:
     """Modbus"""
 
-    def __init__(self, hass, config: dict[str, Any]):
+    def __init__(self, hass: HomeAssistant, config: dict[str, Any]) -> None:
         """Init"""
         self._hass = hass
         self._config = config
@@ -56,7 +63,7 @@ class ModbusClient:
 
         self._client = self._class[self._config_type](**config)
 
-    async def close(self):
+    async def close(self) -> None:
         """Close connection"""
         _LOGGER.debug("Closing connection to modbus on %s", self)
         await self._async_pymodbus_call(self._client.close)
@@ -67,7 +74,7 @@ class ModbusClient:
         num_registers: int,
         register_type: RegisterType,
         slave: int,
-    ):
+    ) -> list[int]:
         """Read registers"""
         if register_type == RegisterType.HOLDING:
             response = await self._async_pymodbus_call(
@@ -90,7 +97,7 @@ class ModbusClient:
 
         if response.isError():
             message = f"Error reading registers. Type: {register_type}; start: {start_address}; count: {num_registers}; slave: {slave}"
-            if isinstance(response, BaseException):
+            if isinstance(response, Exception):
                 raise ModbusClientFailedException(message, self, response) from response
             raise ModbusClientFailedException(message, self, response)
 
@@ -110,9 +117,9 @@ class ModbusClient:
                 response,
             )
 
-        return response.registers
+        return cast(list[int], response.registers)
 
-    async def write_registers(self, register_address, register_values, slave):
+    async def write_registers(self, register_address: int, register_values: list[int], slave: int) -> None:
         """Write registers"""
         if len(register_values) > 1:
             register_values = [int(i) for i in register_values]
@@ -134,7 +141,7 @@ class ModbusClient:
 
         if response.isError():
             message = f"Error writing registers. Start: {register_address}; values: {register_values}; slave: {slave}"
-            if isinstance(response, BaseException):
+            if isinstance(response, Exception):
                 raise ModbusClientFailedException(message, self, response) from response
             raise ModbusClientFailedException(message, self, response)
 
@@ -152,9 +159,7 @@ class ModbusClient:
                 response,
             )
 
-        return True
-
-    async def _async_pymodbus_call(self, call, *args):
+    async def _async_pymodbus_call(self, call: Callable[..., T], *args: Any) -> T:
         """Convert async to sync pymodbus call."""
         async with self._lock:
             result = await self._hass.async_add_executor_job(call, *args)
@@ -175,9 +180,7 @@ class ModbusClient:
 class ModbusClientFailedException(Exception):
     """Raised when the ModbusClient fails to read/write"""
 
-    def __init__(
-        self, message: str, client: ModbusClient, response: ModbusResponse | Exception
-    ) -> None:
+    def __init__(self, message: str, client: ModbusClient, response: ModbusResponse | Exception) -> None:
         super().__init__(f"{message} from {client}: {response}")
         self.message = message
         self.client = client

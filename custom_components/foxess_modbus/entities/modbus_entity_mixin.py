@@ -1,13 +1,15 @@
+"""Mixin providing common functionality for all entity classes"""
 import logging
+from typing import Any
+from typing import cast
+from typing import Protocol
+from typing import TYPE_CHECKING
 
-from custom_components.foxess_modbus.common.entity_controller import (
-    ModbusControllerEntity,
-)
-from homeassistant.const import ATTR_IDENTIFIERS
-from homeassistant.const import ATTR_MANUFACTURER
-from homeassistant.const import ATTR_MODEL
-from homeassistant.const import ATTR_NAME
+from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.entity import Entity
 
+from ..common.entity_controller import EntityController
+from ..common.entity_controller import ModbusControllerEntity
 from ..const import DOMAIN
 from ..const import ENTITY_ID_PREFIX
 from ..const import FRIENDLY_NAME
@@ -18,17 +20,24 @@ from .base_validator import BaseValidator
 _LOGGER = logging.getLogger(__name__)
 
 
-class ModbusEntityMixin(ModbusControllerEntity):
+class ModbusEntityProtocol(Protocol):
+    """Protocol which types including ModbusEntityMixin must implement"""
+
+    _controller: EntityController
+    _inv_details: dict[str, Any]
+
+
+if TYPE_CHECKING:
+    _ModbusEntityMixinBase = Entity
+else:
+    _ModbusEntityMixinBase = object
+
+
+class ModbusEntityMixin(ModbusControllerEntity, ModbusEntityProtocol, _ModbusEntityMixinBase):
     """
     Mixin for subclasses of Entity
 
     This provides properties which are common to all FoxESS entities.
-    It assumes that the following propties are defined on the class:
-
-        addresses: list[int]
-        _controller: CallbackController
-        entity_description: EntityDescription, EntityFactory
-        _inv_details: dict[str, Any]
     """
 
     @property
@@ -37,7 +46,7 @@ class ModbusEntityMixin(ModbusControllerEntity):
         return "foxess_modbus_" + self._get_unique_id()
 
     @property
-    def device_info(self):
+    def device_info(self) -> DeviceInfo:
         """Return device specific attributes."""
         friendly_name = self._inv_details[FRIENDLY_NAME]
         inv_model = self._inv_details[INVERTER_MODEL]
@@ -47,22 +56,22 @@ class ModbusEntityMixin(ModbusControllerEntity):
         else:
             attr_name = "FoxESS - Modbus"
 
-        return {
+        return DeviceInfo(  # type: ignore
             # services/utils.py relies on the order of entries here. Update that if you update this!
-            ATTR_IDENTIFIERS: {(DOMAIN, inv_model, conn_type, friendly_name)},
-            ATTR_NAME: attr_name,
-            ATTR_MODEL: f"{inv_model} - {conn_type}",
-            ATTR_MANUFACTURER: "FoxESS",
-        }
+            identifiers={(DOMAIN, inv_model, conn_type, friendly_name)},
+            name=attr_name,
+            model=f"{inv_model} - {conn_type}",
+            manufacturer="FoxESS",
+        )
 
     @property
-    def name(self) -> str:
+    def name(self) -> str | None:
         """Return the name of the sensor."""
         friendly_name = self._inv_details[FRIENDLY_NAME]
         if friendly_name:
             return f"{self.entity_description.name} ({friendly_name})"
         else:
-            return self.entity_description.name
+            return cast(str | None, self.entity_description.name)
 
     @property
     def available(self) -> bool:
@@ -90,7 +99,7 @@ class ModbusEntityMixin(ModbusControllerEntity):
         """Called when the controller reads an updated to any of the addresses in self.addresses"""
         self.schedule_update_ha_state()
 
-    def _get_unique_id(self):
+    def _get_unique_id(self) -> str:
         """Get unique ID"""
         return self._add_entity_id_prefix(self.entity_description.key)
 
@@ -106,8 +115,8 @@ class ModbusEntityMixin(ModbusControllerEntity):
     def _validate(
         self,
         rules: list[BaseValidator],
-        processed,
-        original=None,
+        processed: float | int,
+        original: float | int | None = None,
         address_override: int | None = None,
     ) -> bool:
         """Validate against a set of rules"""
@@ -132,9 +141,13 @@ class ModbusEntityMixin(ModbusControllerEntity):
                 valid = False
         return valid
 
+    @property
+    def should_poll(self) -> bool:
+        return False
+
     # Implement reference equality
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         return self is other
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return id(self)

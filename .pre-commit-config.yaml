@@ -14,12 +14,6 @@ repos:
         language: system
         types: [python]
         require_serial: true
-      - id: flake8
-        name: flake8
-        entry: flake8
-        language: system
-        types: [python]
-        require_serial: true
       - id: reorder-python-imports
         name: Reorder python imports
         entry: reorder-python-imports
@@ -30,3 +24,14 @@ repos:
     rev: v2.2.1
     hooks:
       - id: prettier
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.3.0
+    hooks:
+      - id: mypy
+        # These are duplicated from requirements.txt
+        additional_dependencies:
+          [
+            homeassistant-stubs==2023.3.0,
+            types-python-slugify==8.0.0.2,
+            voluptuous-stubs==0.1.1,
+          ]

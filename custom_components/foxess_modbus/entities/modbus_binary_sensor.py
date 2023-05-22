@@ -2,10 +2,11 @@
 import logging
 from dataclasses import dataclass
 from dataclasses import field
+from typing import Any
+from typing import cast
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.binary_sensor import BinarySensorEntityDescription
-from homeassistant.components.sensor import SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
 
@@ -13,7 +14,7 @@ from ..common.entity_controller import EntityController
 from ..common.register_type import RegisterType
 from .base_validator import BaseValidator
 from .entity_factory import EntityFactory
-from .inverter_model_spec import ModbusAddressSpec
+from .inverter_model_spec import InverterModelSpec
 from .modbus_entity_mixin import ModbusEntityMixin
 
 _LOGGER = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ _LOGGER = logging.getLogger(__name__)
 class ModbusBinarySensorDescription(BinarySensorEntityDescription, EntityFactory):
     """Description for ModbusBinarySensor"""
 
-    address: list[ModbusAddressSpec]
+    address: list[InverterModelSpec]
     validate: list[BaseValidator] = field(default_factory=list)
 
     @property
@@ -36,16 +37,10 @@ class ModbusBinarySensorDescription(BinarySensorEntityDescription, EntityFactory
         inverter_model: str,
         register_type: RegisterType,
         entry: ConfigEntry,
-        inv_details,
+        inv_details: dict[str, Any],
     ) -> Entity | None:
-        address = self._address_for_inverter_model(
-            self.address, inverter_model, register_type
-        )
-        return (
-            ModbusBinarySensor(controller, self, address, entry, inv_details)
-            if address is not None
-            else None
-        )
+        address = self._address_for_inverter_model(self.address, inverter_model, register_type)
+        return ModbusBinarySensor(controller, self, address, entry, inv_details) if address is not None else None
 
 
 class ModbusBinarySensor(ModbusEntityMixin, BinarySensorEntity):
@@ -57,7 +52,7 @@ class ModbusBinarySensor(ModbusEntityMixin, BinarySensorEntity):
         entity_description: ModbusBinarySensorDescription,
         address: int,
         entry: ConfigEntry,
-        inv_details,
+        inv_details: dict[str, Any],
     ) -> None:
         """Initialize the sensor."""
 
@@ -74,19 +69,10 @@ class ModbusBinarySensor(ModbusEntityMixin, BinarySensorEntity):
         value = self._controller.read(self._address)
         if value is None:
             return value
-        rules = self.entity_description.validate
+        rules = cast(ModbusBinarySensorDescription, self.entity_description).validate
         if not self._validate(rules, value):
             return None
-        return value
-
-    @property
-    def state_class(self) -> SensorStateClass:
-        """Return the device class of the sensor."""
-        return self.entity_description.state_class
-
-    @property
-    def should_poll(self) -> bool:
-        return False
+        return value > 0
 
     @property
     def addresses(self) -> list[int]:

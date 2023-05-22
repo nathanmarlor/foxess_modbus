@@ -2,6 +2,7 @@
 from abc import ABC
 from abc import abstractmethod
 from typing import Any
+from typing import Sequence
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
@@ -27,12 +28,12 @@ class EntityFactory(ABC):
         register_type: RegisterType,
         entry: ConfigEntry,
         inv_details: dict[str, Any],
-    ) -> Entity:
+    ) -> Entity | None:
         """Instantiate a new entity. The returned type must match self.entity_type"""
 
     def _supports_inverter_model(
         self,
-        address_specs: list[InverterModelSpec],
+        address_specs: Sequence[InverterModelSpec],
         inverter_model: str,
         register_type: RegisterType,
     ) -> bool:
@@ -49,7 +50,7 @@ class EntityFactory(ABC):
 
     def _address_for_inverter_model(
         self,
-        address_specs: list[InverterModelSpec],
+        address_specs: Sequence[InverterModelSpec],
         inverter_model: str,
         register_type: RegisterType,
     ) -> int | None:
@@ -58,7 +59,8 @@ class EntityFactory(ABC):
         set of InverterModelSpec which was given to the entity description. Returns None if this entity is not supported
         on the model/connection type combination.
 
-        This will assert if the InverterModelSpec gives more than one address, or more than one member in address_specs matches.
+        This will assert if the InverterModelSpec gives more than one address, or more than one member in address_specs
+        matches.
         """
 
         result: int | None = None
@@ -73,7 +75,7 @@ class EntityFactory(ABC):
 
     def _addresses_for_inverter_model(
         self,
-        address_specs: list[InverterModelSpec],
+        address_specs: Sequence[InverterModelSpec],
         inverter_model: str,
         register_type: RegisterType,
     ) -> list[int] | None:

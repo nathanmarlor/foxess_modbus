@@ -30,24 +30,18 @@ def get_controller_from_friendly_name_or_device_id(
             raise HomeAssistantError(
                 f"Device with ID '{device_id}' is not an inverter from the foxess_modbus integration"
             )
-        friendly_name = parts[3]
+        friendly_name = parts[3]  # type: ignore
     else:
         # No? OK, they probably specified a friendly name
         friendly_name = device_id
 
     modbus_controller = next(
-        (
-            controller
-            for (inverter, controller) in inverter_controllers
-            if inverter[FRIENDLY_NAME] == friendly_name
-        ),
+        (controller for (inverter, controller) in inverter_controllers if inverter[FRIENDLY_NAME] == friendly_name),
         None,
     )
 
     if modbus_controller is None:
-        friendly_names = ", ".join(
-            f"'{inverter[FRIENDLY_NAME]}'" for (inverter, _) in inverter_controllers
-        )
+        friendly_names = ", ".join(f"'{inverter[FRIENDLY_NAME]}'" for (inverter, _) in inverter_controllers)
         raise HomeAssistantError(
             f"Unable to find an inverter with the device ID or friendly name '{friendly_name}'. Valid friendly names: {friendly_names}"
         )

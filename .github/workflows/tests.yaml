@@ -11,7 +11,7 @@ on:
     - cron: "0 0 * * *"
 
 env:
-  DEFAULT_PYTHON: 3.9
+  DEFAULT_PYTHON: "3.10"
 
 jobs:
   pre-commit:
@@ -26,14 +26,9 @@ jobs:
         with:
           python-version: ${{ env.DEFAULT_PYTHON }}
 
-      - name: Upgrade pip
-        run: |
-          pip install --constraint=.github/workflows/constraints.txt pip
-          pip --version
-
       - name: Install Python modules
         run: |
-          pip install --constraint=.github/workflows/constraints.txt pre-commit black flake8 reorder-python-imports
+          pip install -r requirements.txt
 
       - name: Run pre-commit on all files
         run: |

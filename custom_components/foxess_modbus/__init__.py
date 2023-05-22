@@ -8,6 +8,7 @@ import asyncio
 import copy
 import logging
 import uuid
+from typing import Any
 
 from homeassistant.components.energy import data
 from homeassistant.config_entries import ConfigEntry
@@ -43,12 +44,12 @@ from .services import write_registers_service
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
-async def async_setup(hass: HomeAssistant, config: Config):
+async def async_setup(_hass: HomeAssistant, _config: Config) -> bool:
     """Set up this integration using YAML is not supported."""
     return True
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up this integration using UI."""
 
     if DOMAIN not in hass.data:
@@ -65,11 +66,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     for platform in PLATFORMS:
         if entry_options.get(platform, True):
-            hass.async_add_job(
-                hass.config_entries.async_forward_entry_setup(entry, platform)
-            )
+            hass.async_add_job(hass.config_entries.async_forward_entry_setup(entry, platform))
 
-    def create_controller(hass, client, inverter):
+    def create_controller(client: ModbusClient, inverter: dict[str, Any]) -> None:
         controller = ModbusController(
             hass,
             client,
@@ -80,7 +79,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         )
         inverter_controllers.append((inverter, controller))
 
-    inverter_controllers = []
+    inverter_controllers: list[tuple[dict[str, Any], ModbusController]] = []
 
     # {(modbus_type, host): client}
     clients: dict[tuple[str, str], ModbusClient] = {}
@@ -111,16 +110,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
                 params.update({"port": inverter[HOST], "baudrate": 9600})
             client = ModbusClient(hass, params)
             clients[client_key] = client
-        create_controller(hass, client, inverter)
+        create_controller(client, inverter)
 
     write_registers_service.register(hass, inverter_controllers)
     update_charge_period_service.register(hass, inverter_controllers)
 
     hass.data[DOMAIN][entry.entry_id][INVERTERS] = inverter_controllers
 
-    hass.data[DOMAIN][entry.entry_id]["unload"] = entry.add_update_listener(
-        async_reload_entry
-    )
+    hass.data[DOMAIN][entry.entry_id]["unload"] = entry.add_update_listener(async_reload_entry)
 
     return True
 
@@ -139,7 +136,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                 POLL_RATE: config_entry.options[POLL_RATE],
                 MAX_READ: config_entry.options[MAX_READ],
             }
-            options = {INVERTERS: {}}
+            options: dict[str, Any] = {INVERTERS: {}}
         else:
             inverter_options = {}
             options = UNDEFINED
@@ -161,6 +158,8 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                                 adapter = ADAPTERS["network_other"]
                         elif modbus_type == SERIAL:
                             adapter = ADAPTERS["serial_other"]
+                        else:
+                            assert False
                         inverter[ADAPTER_ID] = adapter.adapter_id
                         inverter[ADAPTER_WAS_MIGRATED] = True
 
@@ -169,9 +168,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                         if inverter_options:
                             options[INVERTERS][inverter_id] = inverter_options
 
-        hass.config_entries.async_update_entry(
-            config_entry, data=new_data, options=options
-        )
+        hass.config_entries.async_update_entry(config_entry, data=new_data, options=options)
         config_entry.version = 2
 
     if config_entry.version == 2:
@@ -219,10 +216,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Handle removal of an entry."""
     unloaded = all(
         await asyncio.gather(
-            *[
-                hass.config_entries.async_forward_entry_unload(entry, platform)
-                for platform in PLATFORMS
-            ]
+            *[hass.config_entries.async_forward_entry_unload(entry, platform) for platform in PLATFORMS]
         )
     )
 
@@ -243,6 +237,6 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     await async_setup_entry(hass, entry)
 
 
-async def options_update_listener(hass: HomeAssistant, config_entry: ConfigEntry):
+async def options_update_listener(hass: HomeAssistant, config_entry: ConfigEntry) -> None:
     """Handle options update."""
     await hass.config_entries.async_reload(config_entry.entry_id)

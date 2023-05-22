@@ -5,10 +5,10 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
 from typing import Callable
+from typing import cast
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
-from homeassistant.components.sensor import SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
 
@@ -30,7 +30,7 @@ class ModbusSensorDescription(SensorEntityDescription, EntityFactory):
     addresses: list[ModbusAddressesSpec]
     scale: float | None = None
     round_to: float | None = None
-    post_process: Callable[[int], int] | None = None
+    post_process: Callable[[float], float] | None = None
     validate: list[BaseValidator] = field(default_factory=list)
     signed: bool = True
 
@@ -44,19 +44,11 @@ class ModbusSensorDescription(SensorEntityDescription, EntityFactory):
         inverter_model: str,
         register_type: RegisterType,
         entry: ConfigEntry,
-        inv_details,
+        inv_details: dict[str, Any],
     ) -> Entity | None:
-        addresses = self._addresses_for_inverter_model(
-            self.addresses, inverter_model, register_type
-        )
-        round_to = (
-            self.round_to if inv_details.get(ROUND_SENSOR_VALUES, False) else None
-        )
-        return (
-            ModbusSensor(controller, self, addresses, inv_details, round_to)
-            if addresses is not None
-            else None
-        )
+        addresses = self._addresses_for_inverter_model(self.addresses, inverter_model, register_type)
+        round_to = self.round_to if inv_details.get(ROUND_SENSOR_VALUES, False) else None
+        return ModbusSensor(controller, self, addresses, inv_details, round_to) if addresses is not None else None
 
 
 class ModbusSensor(ModbusEntityMixin, SensorEntity):
@@ -68,7 +60,7 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
         entity_description: ModbusSensorDescription,
         # Array of registers which this value is split over, from lower-order bits to higher-order bits
         addresses: list[int],
-        inv_details,
+        inv_details: dict[str, Any],
         round_to: float | None,
     ) -> None:
         """Initialize the sensor."""
@@ -78,10 +70,10 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
         self._addresses = addresses
         self._inv_details = inv_details
         self._round_to = round_to
-        self._moving_average_filter = deque(maxlen=6) if round_to is not None else None
+        self._moving_average_filter: deque[float] | None = deque(maxlen=6) if round_to is not None else None
         self.entity_id = "sensor." + self._get_unique_id()
 
-    def _calculate_native_value(self) -> Any:
+    def _calculate_native_value(self) -> int | float | None:
         """Return the value reported by the sensor."""
         original = 0
         for i, address in enumerate(self._addresses):
@@ -90,23 +82,25 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
                 return None
             original |= (register_value & 0xFFFF) << (i * 16)
 
-        if self.entity_description.signed:
+        entity_description = cast(ModbusSensorDescription, self.entity_description)
+
+        if entity_description.signed:
             sign_bit = 1 << (len(self._addresses) * 16 - 1)
             original = (original & (sign_bit - 1)) - (original & sign_bit)
 
-        value = original
+        value: float | int = original
 
-        if self.entity_description.scale is not None:
-            value = value * self.entity_description.scale
-        if self.entity_description.post_process is not None:
-            value = self.entity_description.post_process(value)
-        if not self._validate(self.entity_description.validate, value, original):
+        if entity_description.scale is not None:
+            value = value * entity_description.scale
+        if entity_description.post_process is not None:
+            value = entity_description.post_process(float(value))
+        if not self._validate(entity_description.validate, value, original):
             return None
 
         return value
 
-    def _round_native_value(self, value: Any) -> Any:
-        def nearest_multiple(value, round_to):
+    def _round_native_value(self, value: int | float | None) -> Any:
+        def nearest_multiple(value: float, round_to: float) -> float:
             return round_to * round(value / round_to)
 
         # The aim here is to reduce the amount of data send to HA's database:
@@ -122,24 +116,22 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
         # we'll round to the nearest 20 (e.g. 120-129 will round to 120, 130-149 will round to 140).
         #
         # When we receive a new value, we add it to the moving average. If the output of the moving average is more than
-        # round_to from the last value, we flush the filter and set the current value to the new value, rounded to round_to.
-        # Flushing the filter means that we don't slowly ramp to a new value, which will create even more data points: the
-        # opposite of what we're trying to achieve!
+        # round_to from the last value, we flush the filter and set the current value to the new value, rounded to
+        # round_to. Flushing the filter means that we don't slowly ramp to a new value, which will create even more
+        # data points: the opposite of what we're trying to achieve!
 
         if self._round_to is not None:
+            assert self._moving_average_filter is not None
+            assert self._moving_average_filter.maxlen is not None
+
             if value is None:
                 self._moving_average_filter.clear()
             else:
                 self._moving_average_filter.append(value)
                 # If it's empty, fill it
-                while (
-                    len(self._moving_average_filter)
-                    < self._moving_average_filter.maxlen
-                ):
+                while len(self._moving_average_filter) < self._moving_average_filter.maxlen:
                     self._moving_average_filter.append(value)
-                average_value = sum(self._moving_average_filter) / len(
-                    self._moving_average_filter
-                )
+                average_value = sum(self._moving_average_filter) / len(self._moving_average_filter)
 
                 if self._attr_native_value is None:
                     value = nearest_multiple(value, self._round_to)
@@ -165,20 +157,6 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
         if new_value != self._attr_native_value:
             self._attr_native_value = new_value
             super()._address_updated()
-
-    @property
-    def native_unit_of_measurement(self) -> str:
-        """Return native unit of measurement"""
-        return self.entity_description.native_unit_of_measurement
-
-    @property
-    def state_class(self) -> SensorStateClass:
-        """Return the device class of the sensor."""
-        return self.entity_description.state_class
-
-    @property
-    def should_poll(self) -> bool:
-        return False
 
     @property
     def addresses(self) -> list[int]:

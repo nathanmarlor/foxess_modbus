@@ -7,7 +7,6 @@ from homeassistant.components.integration.sensor import DEFAULT_ROUND
 from homeassistant.components.integration.sensor import IntegrationSensor
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
-from homeassistant.components.sensor import SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTime
 from homeassistant.helpers.entity import Entity
@@ -41,11 +40,9 @@ class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory)
         inverter_model: str,
         register_type: RegisterType,
         entry: ConfigEntry,
-        inv_details,
+        inv_details: dict[str, Any],
     ) -> Entity | None:
-        if not self._supports_inverter_model(
-            self.models, inverter_model, register_type
-        ):
+        if not self._supports_inverter_model(self.models, inverter_model, register_type):
             return None
 
         # this piggybacks on the existing factory to create IntegrationSensors
@@ -97,20 +94,6 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
             unit_prefix=None,
             unit_time=unit_time,
         )
-
-    @property
-    def native_unit_of_measurement(self) -> str:
-        """Return native unit of measurement"""
-        return self.entity_description.native_unit_of_measurement
-
-    @property
-    def state_class(self) -> SensorStateClass:
-        """Return the device class of the sensor."""
-        return self.entity_description.state_class
-
-    @property
-    def should_poll(self) -> bool:
-        return False
 
     @property
     def addresses(self) -> list[int]:

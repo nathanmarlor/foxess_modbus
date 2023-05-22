@@ -1,8 +1,5 @@
 __pycache__
-pythonenv*
-.python-version
-.coverage
-venv
 .venv
-home-assistant_v2.db
-custom_components/hacs
+
+config/*
+!config/configuration.yaml
