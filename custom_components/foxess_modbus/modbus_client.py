@@ -1,9 +1,11 @@
+"""The client used to talk Modbus"""
 import asyncio
 import logging
 import socket
 from typing import Any
 from typing import Callable
 from typing import cast
+from typing import Type
 from typing import TypeVar
 
 from homeassistant.core import HomeAssistant
@@ -29,6 +31,8 @@ T = TypeVar("T")
 
 
 class CustomModbusTcpClient(ModbusTcpClient):
+    """Custom ModbusTcpClient subclass with some hacks"""
+
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
@@ -76,6 +80,7 @@ class ModbusClient:
         slave: int,
     ) -> list[int]:
         """Read registers"""
+        expected_response_type: Type[Any]
         if register_type == RegisterType.HOLDING:
             response = await self._async_pymodbus_call(
                 self._client.read_holding_registers,
@@ -96,18 +101,22 @@ class ModbusClient:
             assert False
 
         if response.isError():
-            message = f"Error reading registers. Type: {register_type}; start: {start_address}; count: {num_registers}; slave: {slave}"
+            message = (
+                f"Error reading registers. Type: {register_type}; start: {start_address}; count: {num_registers}; "
+                + f"slave: {slave}"
+            )
             if isinstance(response, Exception):
                 raise ModbusClientFailedException(message, self, response) from response
             raise ModbusClientFailedException(message, self, response)
 
-        # We've seen cases where the remote device gets two requests at the same time and sends the wrong response to the wrong thing.
-        # pymodbus doesn't check whether the response type matches the request type
+        # We've seen cases where the remote device gets two requests at the same time and sends the wrong response to
+        # the wrong thing. pymodbus doesn't check whether the response type matches the request type
         if not isinstance(response, expected_response_type):
             message = (
-                f"Error reading registers. Type: {register_type}; start: {start_address}; count: {num_registers}; slave: {slave}. "
-                + f"Received incorrect response type {response}. Please ensure that your adapter is correctly configured to "
-                + "allow multiple connections, see the instructions at https://github.com/nathanmarlor/foxess_modbus/wiki"
+                f"Error reading registers. Type: {register_type}; start: {start_address}; count: {num_registers}; "
+                + f"slave: {slave}. Received incorrect response type {response}. Please ensure that your adapter is "
+                + "correctly configured to allow multiple connections, see the instructions at "
+                + "https://github.com/nathanmarlor/foxess_modbus/wiki"
             )
             # ModbusController only logs this as debug. Make this a bit clearer so people spot and fix this
             _LOGGER.warning(message)
@@ -121,6 +130,7 @@ class ModbusClient:
 
     async def write_registers(self, register_address: int, register_values: list[int], slave: int) -> None:
         """Write registers"""
+        expected_response_type: Type[Any]
         if len(register_values) > 1:
             register_values = [int(i) for i in register_values]
             response = await self._async_pymodbus_call(
@@ -145,13 +155,14 @@ class ModbusClient:
                 raise ModbusClientFailedException(message, self, response) from response
             raise ModbusClientFailedException(message, self, response)
 
-        # We've seen cases where the remote device gets two requests at the same time and sends the wrong response to the wrong thing.
-        # pymodbus doesn't check whether the response type matches the request type
+        # We've seen cases where the remote device gets two requests at the same time and sends the wrong response to
+        # the wrong thing. pymodbus doesn't check whether the response type matches the request type
         if not isinstance(response, expected_response_type):
             message = (
                 f"Error writing registers. Start: {register_address}; values: {register_values}; slave: {slave}. "
-                + f"Received incorrect response type {response}. Please ensure that your adapter is correctly configured to "
-                + "allow multiple connections, see the instructions at https://github.com/nathanmarlor/foxess_modbus/wiki"
+                + f"Received incorrect response type {response}. Please ensure that your adapter is correctly "
+                + "configured to allow multiple connections, see the instructions at "
+                + "https://github.com/nathanmarlor/foxess_modbus/wiki"
             )
             raise ModbusClientFailedException(
                 message,

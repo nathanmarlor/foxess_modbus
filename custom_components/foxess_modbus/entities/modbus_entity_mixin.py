@@ -70,8 +70,7 @@ class ModbusEntityMixin(ModbusControllerEntity, ModbusEntityProtocol, _ModbusEnt
         friendly_name = self._inv_details[FRIENDLY_NAME]
         if friendly_name:
             return f"{self.entity_description.name} ({friendly_name})"
-        else:
-            return cast(str | None, self.entity_description.name)
+        return cast(str | None, self.entity_description.name)
 
     @property
     def available(self) -> bool:

@@ -90,8 +90,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # Pick the adapter out of the user options if it's there
         adapter_id = options.get(ADAPTER_ID, inverter[ADAPTER_ID])
 
-        # Merge in adapter options. This lets us tweak the adapters later, and those settings are reflected back to users
-        # Handle an adapter in need of manual input to complete migration
+        # Merge in adapter options. This lets us tweak the adapters later, and those settings are reflected back to
+        # users.
         # Do this after the lines above, so we can respond to an adapter in the options
         inverter.update(ADAPTERS[adapter_id].inverter_config())
 
@@ -123,6 +123,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    """Perform any necessary migrations on the config entry"""
+
     _LOGGER.debug("Migrating from version %s", config_entry.version)
 
     if config_entry.version == 1:

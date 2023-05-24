@@ -45,6 +45,8 @@ class InverterAdapter:
         poll_rate: int = _DEFAULT_POLL_RATE,
         max_read: int = _DEFAULT_MAX_READ,
     ) -> "InverterAdapter":
+        """Add a direct connection to the inverter"""
+
         return InverterAdapter(
             adapter_id=adapter_id,
             type=InverterAdapterType.DIRECT,
@@ -63,6 +65,8 @@ class InverterAdapter:
         poll_rate: int = _DEFAULT_POLL_RATE,
         max_read: int = _DEFAULT_MAX_READ,
     ) -> "InverterAdapter":
+        """Add a serial connection to the inverter"""
+
         return InverterAdapter(
             adapter_id=adapter_id,
             type=InverterAdapterType.SERIAL,
@@ -82,6 +86,8 @@ class InverterAdapter:
         poll_rate: int = _DEFAULT_POLL_RATE,
         max_read: int = _DEFAULT_MAX_READ,
     ) -> "InverterAdapter":
+        """Add a network connection to the inverter"""
+
         return InverterAdapter(
             adapter_id=adapter_id,
             type=InverterAdapterType.NETWORK,

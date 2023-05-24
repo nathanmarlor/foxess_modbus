@@ -1,3 +1,4 @@
+"""Defines the service to write registers"""
 import logging
 from typing import Any
 
@@ -37,6 +38,8 @@ _WRITE_SCHEMA = vol.Schema(
 
 
 def register(hass: HomeAssistant, inverter_controllers: list[tuple[Any, ModbusController]]) -> None:
+    """Register the service with hass"""
+
     async def _callback(service_data: ServiceCall) -> None:
         await hass.loop.create_task(_write_service(inverter_controllers, service_data, hass))
 

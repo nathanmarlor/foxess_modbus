@@ -1,3 +1,4 @@
+"""Utilities used by services"""
 from typing import Any
 
 from homeassistant.core import HomeAssistant
@@ -43,7 +44,8 @@ def get_controller_from_friendly_name_or_device_id(
     if modbus_controller is None:
         friendly_names = ", ".join(f"'{inverter[FRIENDLY_NAME]}'" for (inverter, _) in inverter_controllers)
         raise HomeAssistantError(
-            f"Unable to find an inverter with the device ID or friendly name '{friendly_name}'. Valid friendly names: {friendly_names}"
+            f"Unable to find an inverter with the device ID or friendly name '{friendly_name}'. Valid friendly names: "
+            + f"{friendly_names}"
         )
 
     return modbus_controller
