@@ -3,6 +3,7 @@ strict = true
 allow_subclassing_any = true
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
+disallow_untyped_calls = false
 warn_return_any = true
 warn_unused_configs = true
 warn_unused_ignores = true
@@ -23,7 +24,11 @@ disable = [
     "duplicate-code",
     "too-many-statements",
     "too-many-arguments",
-    "too-many-lines"
+    "too-many-lines",
+    "too-many-locals",
+    "too-many-nested-blocks",
+    "too-many-branches",
+    "too-few-public-methods",
 ]
 
 [tool.black]

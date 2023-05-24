@@ -123,7 +123,8 @@ class ModbusController(EntityController, UnloadController):
         with _acquire_nonblocking(self._refresh_lock) as acquired:
             if not acquired:
                 _LOGGER.warning(
-                    "Aborting refresh of %s %s as a previous refresh is still in progress. Is your poll rate '%s' too high?",
+                    "Aborting refresh of %s %s as a previous refresh is still in progress. Is your poll rate '%s' too "
+                    + "high?",
                     self._client,
                     self._slave,
                     self._poll_rate,
@@ -132,7 +133,7 @@ class ModbusController(EntityController, UnloadController):
 
             # List of (start address, [read values starting at that address])
             read_values: list[tuple[int, list[int]]] = []
-            exception = None
+            exception: Exception | None = None
             try:
                 for (
                     start_address,
@@ -303,7 +304,8 @@ class ModbusController(EntityController, UnloadController):
 
         :returns: Tuple of (inverter type name e.g. "H1", inverter full name e.g. "H1-3.7-E")
         """
-        # Annoyingly pymodbus logs the important stuff to its logger, and doesn't add that info to the exceptions it throws
+        # Annoyingly pymodbus logs the important stuff to its logger, and doesn't add that info to the exceptions it
+        # throws
         spy_handler = _SpyHandler()
         pymodbus_logger = logging.getLogger("pymodbus")
 

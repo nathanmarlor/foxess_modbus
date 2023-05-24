@@ -1,3 +1,4 @@
+"""Defines the services to update charge periods"""
 import logging
 from dataclasses import dataclass
 from datetime import time
@@ -108,7 +109,7 @@ _UPDATE_ALL_CHARGE_PERIODS_SCHEMA = vol.Schema(
 
 
 def register(hass: HomeAssistant, inverter_controllers: list[tuple[Any, ModbusController]]) -> None:
-    """Register the service with HA"""
+    """Register the services with HA"""
 
     async def _update_charge_period_callback(service_data: ServiceCall) -> None:
         await hass.loop.create_task(_update_charge_period(inverter_controllers, service_data, hass))
@@ -201,7 +202,8 @@ async def _update_charge_period(
             )
         if not is_time_value_valid(period_start_time_value) or not is_time_value_valid(period_end_time_value):
             raise HomeAssistantError(
-                f"Start time '{period_start_time_value}' or end time '{period_end_time_value}' for charge period {i + 1} is not valid"
+                f"Start time '{period_start_time_value}' or end time '{period_end_time_value}' for charge period "
+                + f"{i + 1} is not valid"
             )
 
         charge_periods[i] = ChargePeriod(
@@ -234,7 +236,8 @@ async def _set_charge_periods(controller: ModbusController, charge_periods: list
         # It's permissible to have two periods which have the same start/end time (at least the foxcloud app allows it)
         if charge_period.start < previous.end and previous.start < charge_period.end:
             raise HomeAssistantError(
-                f"Charge period {i} {previous.start}-{previous.end} overlaps charge period {i + 1} {charge_period.start}-{charge_period.end}"
+                f"Charge period {i} {previous.start}-{previous.end} overlaps charge period {i + 1} "
+                + f"{charge_period.start}-{charge_period.end}"
             )
 
     # List of (address, value)

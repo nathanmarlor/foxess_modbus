@@ -7,22 +7,24 @@
     "vscode": {
       "extensions": [
         "ms-python.python",
+        "ms-python.pylint",
+        "ms-python.black-formatter",
+        "ms-python.vscode-pylance",
         "github.vscode-pull-request-github",
         "ryanluker.vscode-coverage-gutters",
-        "ms-python.vscode-pylance",
-        "ms-python.black-formatter",
         "matangover.mypy"
       ],
       "settings": {
         "files.eol": "\n",
         "editor.tabSize": 4,
-        "editor.defaultFormatter": "ms-python.black-formatter",
+        "files.insertFinalNewline": true,
         "python.pythonPath": "/usr/bin/python3",
         "python.analysis.autoSearchPaths": false,
         "python.linting.pylintEnabled": true,
         "python.linting.enabled": true,
-        "python.formatting.provider": "black",
+        "python.linting.pylintUseMinimalCheckers": false,
         "python.linting.mypyEnabled": true,
+        "python.analysis.typeCheckingMode": "off",
         "editor.formatOnPaste": false,
         "editor.formatOnSave": true,
         "editor.formatOnType": true,
@@ -30,7 +32,11 @@
           120 // Matches pylint config
         ],
         "files.trimTrailingWhitespace": true,
-        "mypy.targets": ["custom_components/foxess_modbus"]
+        "mypy.targets": ["custom_components/foxess_modbus"],
+        "python.formatting.provider": "none",
+        "[python]": {
+          "editor.defaultFormatter": "ms-python.black-formatter"
+        }
       }
     }
   }

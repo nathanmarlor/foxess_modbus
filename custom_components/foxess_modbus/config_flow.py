@@ -563,10 +563,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         entity_id_prefixes = [x.entity_id_prefix for x in self._all_inverters]
 
         def _prefix_name(name: str | None) -> str:
-            if name:
-                return f"sensor.{name}_"
-            else:
-                return "sensor."
+            return f"sensor.{name}_" if name else "sensor."
 
         energy_prefs = EnergyPreferencesUpdate(energy_sources=[])  # type: ignore
         for entity_id_prefix in entity_id_prefixes:

@@ -14,7 +14,7 @@ class Range(BaseValidator):
     def validate(self, data: int | float) -> bool:
         """Validate a value against a set of rules"""
 
-        return data >= self._min and data <= self._max
+        return self._min <= data <= self._max
 
 
 class Min(BaseValidator):

@@ -21,7 +21,6 @@ from .entities import invalid_ranges
 from .entities.charge_periods import CHARGE_PERIODS
 from .entities.entity_descriptions import ENTITIES
 from .entities.modbus_charge_period_config import ModbusChargePeriodConfig
-from .entities.modbus_sensor import ModbusSensor
 
 _LOGGER = logging.getLogger(__package__)
 
@@ -98,6 +97,8 @@ class InverterModelProfile:
         register_type: RegisterType,
         invalid_register_ranges: list[tuple[int, int]] | None = None,
     ) -> "InverterModelProfile":
+        """Add the given connection type to the profile"""
+
         assert connection_type not in self.connection_types
         if invalid_register_ranges is None:
             invalid_register_ranges = []
