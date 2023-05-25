@@ -30,132 +30,210 @@ from .validation import Range
 # mypy: disable-error-code="call-arg"
 
 # TODO: There should be equivalent registers for the H3 and KH somewhere
-BMS_CONNECT_STATE_ADDRESS = [ModbusAddressSpec(models=[H1, AIO_H1, AC1], input=11058)]
+BMS_CONNECT_STATE_ADDRESS = [
+    ModbusAddressSpec(models=[H1, AIO_H1, AC1], input=11058),
+    ModbusAddressSpec(models=[KH], input=11058, holding=31029),
+]
 
-_PV_ENTITIES: list[EntityFactory] = [
-    ModbusSensorDescription(
-        key="pv1_voltage",
-        addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1], input=[11000], holding=[31000]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[31000]),
-        ],
-        name="PV1 Voltage",
+
+def _pv_voltage(key: str, addresses: list[ModbusAddressesSpec], name: str) -> EntityFactory:
+    return ModbusSensorDescription(
+        key=key,
+        addresses=addresses,
+        name=name,
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
         round_to=1,
         # This can go negative if no panels are attached
-    ),
-    ModbusSensorDescription(
-        key="pv1_current",
-        addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1], input=[11001], holding=[31001]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[31001]),
-        ],
-        name="PV1 Current",
+    )
+
+
+def _pv_current(key: str, addresses: list[ModbusAddressesSpec], name: str) -> EntityFactory:
+    return ModbusSensorDescription(
+        key=key,
+        addresses=addresses,
+        name=name,
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
         round_to=1,
         validate=[Range(0, 100)],
-    ),
-    ModbusSensorDescription(
-        key="pv1_power",
-        addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1], input=[11002], holding=[31002]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[31002]),
-        ],
-        name="PV1 Power",
+    )
+
+
+def _pv_power(key: str, addresses: list[ModbusAddressesSpec], name: str) -> EntityFactory:
+    return ModbusSensorDescription(
+        key=key,
+        addresses=addresses,
+        name=name,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kW",
         scale=0.001,
         round_to=0.01,
         # This can go negative if no panels are attached
+    )
+
+
+def _pv_energy_total(key: str, models: list[EntitySpec], name: str, source_entity: str) -> EntityFactory:
+    return ModbusIntegrationSensorDescription(
+        key=key,
+        models=models,
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement="kWh",
+        integration_method="left",
+        name=name,
+        source_entity=source_entity,
+        unit_time=UnitOfTime.HOURS,
+    )
+
+
+_PV_ENTITIES: list[EntityFactory] = [
+    _pv_voltage(
+        key="pv1_voltage",
+        addresses=[
+            ModbusAddressesSpec(models=[H1, AIO_H1, KH], input=[11000], holding=[31000]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31000]),
+        ],
+        name="PV1 Voltage",
     ),
-    ModbusIntegrationSensorDescription(
+    _pv_current(
+        key="pv1_current",
+        addresses=[
+            ModbusAddressesSpec(models=[H1, AIO_H1, KH], input=[11001], holding=[31001]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31001]),
+        ],
+        name="PV1 Current",
+    ),
+    _pv_power(
+        key="pv1_power",
+        addresses=[
+            ModbusAddressesSpec(models=[H1, AIO_H1, KH], input=[11002], holding=[31002]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31002]),
+        ],
+        name="PV1 Power",
+    ),
+    _pv_energy_total(
         key="pv1_energy_total",
         models=[
             EntitySpec(
-                models=[H1, AIO_H1],
+                models=[H1, AIO_H1, KH],
                 register_types=[RegisterType.INPUT, RegisterType.HOLDING],
             ),
             EntitySpec(
-                models=[KH, H3, AIO_H3],
+                models=[H3, AIO_H3],
                 register_types=[RegisterType.HOLDING],
             ),
         ],
-        device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL,
-        native_unit_of_measurement="kWh",
-        integration_method="left",
         name="PV1 Power Total",
         source_entity="pv1_power",
-        unit_time=UnitOfTime.HOURS,
     ),
-    ModbusSensorDescription(
+    _pv_voltage(
         key="pv2_voltage",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1], input=[11003], holding=[31003]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[31003]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, KH], input=[11003], holding=[31003]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31003]),
         ],
         name="PV2 Voltage",
-        device_class=SensorDeviceClass.VOLTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="V",
-        scale=0.1,
-        round_to=1,
-        # This can go negative if no panels are attached
     ),
-    ModbusSensorDescription(
+    _pv_current(
         key="pv2_current",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1], input=[11004], holding=[31004]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[31004]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, KH], input=[11004], holding=[31004]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31004]),
         ],
         name="PV2 Current",
-        device_class=SensorDeviceClass.CURRENT,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="A",
-        scale=0.1,
-        round_to=1,
-        validate=[Range(0, 100)],
     ),
-    ModbusSensorDescription(
+    _pv_power(
         key="pv2_power",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1], input=[11005], holding=[31005]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[31005]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, KH], input=[11005], holding=[31005]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31005]),
         ],
         name="PV2 Power",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        scale=0.001,
-        round_to=0.01,
-        # This can go negative if no panels are attached
     ),
-    ModbusIntegrationSensorDescription(
+    _pv_energy_total(
         key="pv2_energy_total",
         models=[
             EntitySpec(
-                models=[H1, AIO_H1],
+                models=[H1, AIO_H1, KH],
                 register_types=[RegisterType.INPUT, RegisterType.HOLDING],
             ),
             EntitySpec(
-                models=[KH, H3, AIO_H3],
+                models=[H3, AIO_H3],
                 register_types=[RegisterType.HOLDING],
             ),
         ],
-        device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL,
-        native_unit_of_measurement="kWh",
-        integration_method="left",
         name="PV2 Power Total",
         source_entity="pv2_power",
-        unit_time=UnitOfTime.HOURS,
+    ),
+    _pv_voltage(
+        key="pv3_voltage",
+        addresses=[
+            ModbusAddressesSpec(models=[KH], input=[11096], holding=[31039]),
+        ],
+        name="PV3 Voltage",
+    ),
+    _pv_current(
+        key="pv3_current",
+        addresses=[
+            ModbusAddressesSpec(models=[KH], input=[11097], holding=[31040]),
+        ],
+        name="PV3 Current",
+    ),
+    _pv_power(
+        key="pv3_power",
+        addresses=[
+            ModbusAddressesSpec(models=[KH], input=[11098], holding=[31041]),
+        ],
+        name="PV3 Power",
+    ),
+    _pv_energy_total(
+        key="pv3_energy_total",
+        models=[
+            EntitySpec(
+                models=[KH],
+                register_types=[RegisterType.INPUT, RegisterType.HOLDING],
+            ),
+        ],
+        name="PV3 Power Total",
+        source_entity="pv3_power",
+    ),
+    _pv_voltage(
+        key="pv4_voltage",
+        addresses=[
+            ModbusAddressesSpec(models=[KH], input=[11099], holding=[31042]),
+        ],
+        name="PV4 Voltage",
+    ),
+    _pv_current(
+        key="pv4_current",
+        addresses=[
+            ModbusAddressesSpec(models=[KH], input=[11100], holding=[31043]),
+        ],
+        name="PV4 Current",
+    ),
+    _pv_power(
+        key="pv4_power",
+        addresses=[
+            ModbusAddressesSpec(models=[KH], input=[11101], holding=[31044]),
+        ],
+        name="PV4 Power",
+    ),
+    _pv_energy_total(
+        key="pv4_energy_total",
+        models=[
+            EntitySpec(
+                models=[KH],
+                register_types=[RegisterType.INPUT, RegisterType.HOLDING],
+            ),
+        ],
+        name="PV4 Power Total",
+        source_entity="pv4_power",
     ),
     ModbusLambdaSensorDescription(
         key="pv_power_now",
@@ -165,11 +243,26 @@ _PV_ENTITIES: list[EntityFactory] = [
                 register_types=[RegisterType.INPUT, RegisterType.HOLDING],
             ),
             EntitySpec(
-                models=[KH, H3, AIO_H3],
+                models=[H3, AIO_H3],
                 register_types=[RegisterType.HOLDING],
             ),
         ],
         sources=["pv1_power", "pv2_power"],
+        method=sum,
+        name="PV Power",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="kW",
+    ),
+    ModbusLambdaSensorDescription(
+        key="pv_power_now",
+        models=[
+            EntitySpec(
+                models=[KH],
+                register_types=[RegisterType.INPUT, RegisterType.HOLDING],
+            ),
+        ],
+        sources=["pv1_power", "pv2_power", "pv3_power", "pv4_power"],
         method=sum,
         name="PV Power",
         device_class=SensorDeviceClass.POWER,
@@ -182,8 +275,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="invbatvolt",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11006], holding=[31020]),
-            ModbusAddressesSpec(models=[KH], holding=[31020]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11006], holding=[31020]),
         ],
         name="Inverter Battery Voltage",
         device_class=SensorDeviceClass.VOLTAGE,
@@ -196,8 +288,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="invbatcurrent",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11007], holding=[31021]),
-            ModbusAddressesSpec(models=[KH], holding=[31021]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11007], holding=[31021]),
         ],
         name="Inverter Battery Current",
         device_class=SensorDeviceClass.CURRENT,
@@ -210,8 +301,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="load_power",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11023], holding=[31016]),
-            ModbusAddressesSpec(models=[KH], holding=[31016]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11023], holding=[31016]),
         ],
         name="Load Power",
         device_class=SensorDeviceClass.POWER,
@@ -224,8 +314,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="rvolt",  # Ideally rename to grid_voltage?
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11009], holding=[31006]),
-            ModbusAddressesSpec(models=[KH], holding=[31006]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11009], holding=[31006]),
         ],
         name="Grid Voltage",
         device_class=SensorDeviceClass.VOLTAGE,
@@ -239,8 +328,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="rcurrent",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11010], holding=[31007]),
-            ModbusAddressesSpec(models=[KH], holding=[31007]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11010], holding=[31007]),
         ],
         name="Inverter Current",
         device_class=SensorDeviceClass.CURRENT,
@@ -253,8 +341,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="rpower",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11011], holding=[31008]),
-            ModbusAddressesSpec(models=[KH], holding=[31008]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11011], holding=[31008]),
         ],
         name="Inverter Power",
         device_class=SensorDeviceClass.POWER,
@@ -267,7 +354,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="rpower_Q",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11012]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11012]),
         ],
         entity_registry_enabled_default=False,
         name="Inverter Power (Reactive)",
@@ -282,7 +369,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="rpower_S",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11013]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11013]),
         ],
         entity_registry_enabled_default=False,
         name="Inverter Power (Apparent)",
@@ -297,8 +384,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="eps_rvolt",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11015], holding=[31010]),
-            ModbusAddressesSpec(models=[KH], holding=[31010]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11015], holding=[31010]),
         ],
         entity_registry_enabled_default=False,
         name="EPS Voltage",
@@ -313,8 +399,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="eps_rcurrent",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11016], holding=[31011]),
-            ModbusAddressesSpec(models=[KH], holding=[31011]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11016], holding=[31011]),
         ],
         entity_registry_enabled_default=False,
         name="EPS Current",
@@ -328,8 +413,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="eps_rpower",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11017], holding=[31012]),
-            ModbusAddressesSpec(models=[KH], holding=[31012]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11017], holding=[31012]),
         ],
         entity_registry_enabled_default=False,
         name="EPS Power",
@@ -343,7 +427,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="eps_rpower_Q",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11018]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11018]),
         ],
         entity_registry_enabled_default=False,
         name="EPS Power (Reactive)",
@@ -358,7 +442,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="eps_rpower_S",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11019]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11019]),
         ],
         entity_registry_enabled_default=False,
         name="EPS Power (Apparent)",
@@ -373,8 +457,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="grid_ct",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11021], holding=[31014]),
-            ModbusAddressesSpec(models=[KH], holding=[31014]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11021], holding=[31014]),
         ],
         name="Grid CT",
         device_class=SensorDeviceClass.POWER,
@@ -387,8 +470,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="feed_in",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11021], holding=[31014]),
-            ModbusAddressesSpec(models=[KH], holding=[31014]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11021], holding=[31014]),
         ],
         name="Feed-in",
         device_class=SensorDeviceClass.POWER,
@@ -402,8 +484,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="grid_consumption",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11021], holding=[31014]),
-            ModbusAddressesSpec(models=[KH], holding=[31014]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11021], holding=[31014]),
         ],
         name="Grid Consumption",
         device_class=SensorDeviceClass.POWER,
@@ -417,8 +498,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="ct2_meter",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11022], holding=[31015]),
-            ModbusAddressesSpec(models=[KH], holding=[31015]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11022], holding=[31015]),
         ],
         name="CT2 Meter",
         device_class=SensorDeviceClass.POWER,
@@ -710,8 +790,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="invbatpower",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11008], holding=[31022]),
-            ModbusAddressesSpec(models=[KH], holding=[31022]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11008], holding=[31022]),
             ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31036]),
         ],
         name="Inverter Battery Power",
@@ -725,8 +804,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="battery_discharge",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11008], holding=[31022]),
-            ModbusAddressesSpec(models=[KH], holding=[31022]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11008], holding=[31022]),
             ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31036]),
         ],
         name="Battery Discharge",
@@ -741,8 +819,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="battery_charge",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11008], holding=[31022]),
-            ModbusAddressesSpec(models=[KH], holding=[31022]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11008], holding=[31022]),
             ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31036]),
         ],
         name="Battery Charge",
@@ -757,8 +834,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="rfreq",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11014], holding=[31009]),
-            ModbusAddressesSpec(models=[KH], holding=[31009]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11014], holding=[31009]),
             ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31015]),
         ],
         name="Grid Frequency",
@@ -773,8 +849,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="eps_frequency",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11020], holding=[31013]),
-            ModbusAddressesSpec(models=[KH], holding=[31013]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11020], holding=[31013]),
             ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31025]),
         ],
         entity_registry_enabled_default=False,
@@ -790,8 +865,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="invtemp",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11024], holding=[31018]),
-            ModbusAddressesSpec(models=[KH], holding=[31018]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11024], holding=[31018]),
             ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31032]),
         ],
         name="Inverter Temp",
@@ -804,8 +878,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="ambtemp",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11025], holding=[31019]),
-            ModbusAddressesSpec(models=[KH], holding=[31019]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11025], holding=[31019]),
             ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31033]),
         ],
         name="Ambient Temp",
@@ -818,7 +891,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="batvolt",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11034]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11034]),
             ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[31034]),
         ],
         name="Battery Voltage",
@@ -831,8 +904,8 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="bat_current",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11035]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[31035]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11035]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31035]),
         ],
         name="Battery Current",
         device_class=SensorDeviceClass.CURRENT,
@@ -844,8 +917,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusBatterySensorDescription(
         key="battery_soc",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11036], holding=[31024]),
-            ModbusAddressesSpec(models=[KH], holding=[31024]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11036], holding=[31024]),
             ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31038]),
         ],
         # TODO: There might be an equivalent register for the H3/KH?
@@ -859,7 +931,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ),
     ModbusBatterySensorDescription(
         key="bms_kwh_remaining",
-        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11037])],
+        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11037])],
         bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS kWh Remaining",
         device_class=SensorDeviceClass.ENERGY,
@@ -872,12 +944,11 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusBatterySensorDescription(
         key="battery_temp",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11038], holding=[31023]),
-            ModbusAddressesSpec(models=[KH], holding=[31023]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11038], holding=[31023]),
             ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31037]),
         ],
-        # TODO: There might be an equivalent register for the H3/KH?
-        bms_connect_state_address=[ModbusAddressSpec(models=[H1, AIO_H1, AC1], input=11058)],
+        # TODO: There might be an equivalent register for the H3
+        bms_connect_state_address=[ModbusAddressSpec(models=[H1, AIO_H1, AC1, KH], input=11058)],
         name="Battery Temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -887,7 +958,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ),
     ModbusBatterySensorDescription(
         key="bms_charge_rate",
-        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11041])],
+        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11041])],
         bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS Charge Rate",
         device_class=SensorDeviceClass.CURRENT,
@@ -899,7 +970,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ),
     ModbusBatterySensorDescription(
         key="bms_discharge_rate",
-        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11042])],
+        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11042])],
         bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS Discharge Rate",
         device_class=SensorDeviceClass.CURRENT,
@@ -911,7 +982,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ),
     ModbusBatterySensorDescription(
         key="bms_cell_temp_high",
-        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11043])],
+        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11043])],
         bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS Cell Temp High",
         device_class=SensorDeviceClass.TEMPERATURE,
@@ -922,7 +993,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ),
     ModbusBatterySensorDescription(
         key="bms_cell_temp_low",
-        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11044])],
+        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11044])],
         bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS Cell Temp Low",
         device_class=SensorDeviceClass.TEMPERATURE,
@@ -933,7 +1004,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ),
     ModbusBatterySensorDescription(
         key="bms_cell_mv_high",
-        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11045])],
+        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11045])],
         bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS Cell mV High",
         device_class=SensorDeviceClass.VOLTAGE,
@@ -944,7 +1015,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ),
     ModbusBatterySensorDescription(
         key="bms_cell_mv_low",
-        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11046])],
+        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11046])],
         bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS Cell mV Low",
         device_class=SensorDeviceClass.VOLTAGE,
@@ -955,7 +1026,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ),
     ModbusBatterySensorDescription(
         key="bms_cycle_count",
-        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11048])],
+        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11048])],
         bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS Cycle Count",
         state_class=SensorStateClass.MEASUREMENT,
@@ -964,7 +1035,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ),
     ModbusBatterySensorDescription(
         key="bms_watthours_total",
-        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11049])],
+        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11049])],
         bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         entity_registry_enabled_default=False,
         name="BMS Energy Throughput",
@@ -979,8 +1050,9 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="solar_energy_total",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11070, 11069]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[32001, 32000]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11070, 11069]),
+            ModbusAddressesSpec(models=[KH], input=[11070, 11069], holding=[32001, 32000]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[32001, 32000]),
         ],
         name="Solar Generation Total",
         device_class=SensorDeviceClass.ENERGY,
@@ -994,7 +1066,8 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         key="solar_energy_today",
         addresses=[
             ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11071]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[32002]),
+            ModbusAddressesSpec(models=[KH], input=[11071], holding=[32002]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[32002]),
         ],
         name="Solar Generation Today",
         device_class=SensorDeviceClass.ENERGY,
@@ -1007,7 +1080,8 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         key="battery_charge_total",
         addresses=[
             ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11073, 11072]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[32004, 32003]),
+            ModbusAddressesSpec(models=[KH], input=[11073, 11072], holding=[32004, 32004]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[32004, 32003]),
         ],
         name="Battery Charge Total",
         device_class=SensorDeviceClass.ENERGY,
@@ -1032,7 +1106,8 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         key="battery_charge_today",
         addresses=[
             ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11074]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[32005]),
+            ModbusAddressesSpec(models=[KH], input=[11074], holding=[32005]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[32005]),
         ],
         name="Battery Charge Today",
         device_class=SensorDeviceClass.ENERGY,
@@ -1045,7 +1120,8 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         key="battery_discharge_total",
         addresses=[
             ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11076, 11075]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[32007, 32006]),
+            ModbusAddressesSpec(models=[KH], input=[11076, 11075], holding=[32007, 32006]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[32007, 32006]),
         ],
         name="Battery Discharge Total",
         device_class=SensorDeviceClass.ENERGY,
@@ -1070,7 +1146,8 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         key="battery_discharge_today",
         addresses=[
             ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11077]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[32008]),
+            ModbusAddressesSpec(models=[KH], input=[11077], holding=[32008]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[32008]),
         ],
         name="Battery Discharge Today",
         device_class=SensorDeviceClass.ENERGY,
@@ -1082,8 +1159,9 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="feed_in_energy_total",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11079, 11078]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[32010, 32009]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11079, 11078]),
+            ModbusAddressesSpec(models=[KH], input=[11079, 11078], holding=[32010, 32009]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[32010, 32009]),
         ],
         name="Feed-in Total",
         device_class=SensorDeviceClass.ENERGY,
@@ -1110,7 +1188,8 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         key="feed_in_energy_today",
         addresses=[
             ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11080]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[32011]),
+            ModbusAddressesSpec(models=[KH], input=[11080], holding=[32011]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[32011]),
         ],
         name="Feed-in Today",
         device_class=SensorDeviceClass.ENERGY,
@@ -1123,7 +1202,8 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         key="grid_consumption_energy_total",
         addresses=[
             ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11082, 11081]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[32013, 32012]),
+            ModbusAddressesSpec(models=[KH], input=[11082, 11081], holding=[32013, 32012]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[32013, 32012]),
         ],
         name="Grid Consumption Total",
         device_class=SensorDeviceClass.ENERGY,
@@ -1148,7 +1228,8 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         key="grid_consumption_energy_today",
         addresses=[
             ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11083]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[32014]),
+            ModbusAddressesSpec(models=[KH], input=[11083], holding=[32014]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[32014]),
         ],
         name="Grid Consumption Today",
         device_class=SensorDeviceClass.ENERGY,
@@ -1161,7 +1242,8 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         key="total_yield_total",
         addresses=[
             ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11085, 11084]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[32016, 32015]),
+            ModbusAddressesSpec(models=[KH], input=[11085, 11084], holding=[32016, 32015]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[32016, 32015]),
         ],
         name="Yield Total",
         device_class=SensorDeviceClass.ENERGY,
@@ -1174,8 +1256,9 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="total_yield_today",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11086]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[32017]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11086]),
+            ModbusAddressesSpec(models=[KH], input=[11086], holding=[32017]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[32017]),
         ],
         name="Yield Today",
         device_class=SensorDeviceClass.ENERGY,
@@ -1188,8 +1271,9 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="input_energy_total",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11088, 11087]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[32019, 32018]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11088, 11087]),
+            ModbusAddressesSpec(models=[KH], input=[11088, 11087], holding=[32019, 32018]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[32019, 32018]),
         ],
         name="Input Energy Total",
         device_class=SensorDeviceClass.ENERGY,
@@ -1203,7 +1287,8 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         key="input_energy_today",
         addresses=[
             ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11089]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[32020]),
+            ModbusAddressesSpec(models=[KH], input=[11089], holding=[32020]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[32020]),
         ],
         name="Input Energy Today",
         device_class=SensorDeviceClass.ENERGY,
@@ -1220,7 +1305,8 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
             # ModbusAddressesSpec(
             #     models=[H1, AIO_H1, AC1], input=[11091, 11090]
             # ),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[32022, 32021]),
+            ModbusAddressesSpec(models=[KH], input=[11091, 11090], holding=[32022, 32021]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[32022, 32021]),
         ],
         name="Load Energy Total",
         device_class=SensorDeviceClass.ENERGY,
@@ -1250,7 +1336,8 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         key="load_energy_today",
         addresses=[
             ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11092]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[32023]),
+            ModbusAddressesSpec(models=[KH], input=[11092], holding=[32023]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[32023]),
         ],
         name="Load Energy Today",
         device_class=SensorDeviceClass.ENERGY,
@@ -1262,7 +1349,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="state_code",
-        addresses=[ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[31041])],
+        addresses=[ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31041])],
         name="Inverter State Code",
         state_class=SensorStateClass.MEASUREMENT,
     ),
@@ -1290,14 +1377,14 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
 _CONFIGURATION_ENTITIES: list[EntityFactory] = [
     ModbusSelectDescription(
         key="work_mode",
-        address=[ModbusAddressSpec(models=[H1, AIO_H1, AC1], input=41000)],
+        address=[ModbusAddressSpec(models=[H1, AIO_H1, AC1, KH], input=41000)],
         name="Work Mode",
         options_map={0: "Self Use", 1: "Feed-in First", 2: "Back-up"},
     ),
     # Sensor kept for back compat
     ModbusSensorDescription(
         key="min_soc",
-        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[41009])],
+        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[41009])],
         name="Min SoC",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
@@ -1306,7 +1393,7 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
     ),
     ModbusNumberDescription(
         key="min_soc",
-        address=[ModbusAddressSpec(models=[H1, AIO_H1, AC1], input=41009)],
+        address=[ModbusAddressSpec(models=[H1, AIO_H1, AC1, KH], input=41009)],
         name="Min SoC",
         mode=NumberMode.BOX,
         native_min_value=10,
@@ -1320,7 +1407,7 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
     # Sensor kept for back compat
     ModbusSensorDescription(
         key="max_soc",
-        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[41010])],
+        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[41010])],
         name="Max SoC",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
@@ -1329,7 +1416,7 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
     ),
     ModbusNumberDescription(
         key="max_soc",
-        address=[ModbusAddressSpec(models=[H1, AIO_H1, AC1], input=41010)],
+        address=[ModbusAddressSpec(models=[H1, AIO_H1, AC1, KH], input=41010)],
         name="Max SoC",
         mode=NumberMode.BOX,
         native_min_value=10,
@@ -1343,7 +1430,7 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
     # Sensor kept for back compat
     ModbusSensorDescription(
         key="min_soc_on_grid",
-        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[41011])],
+        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[41011])],
         name="Min SoC (On Grid)",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
@@ -1352,7 +1439,7 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
     ),
     ModbusNumberDescription(
         key="min_soc_on_grid",
-        address=[ModbusAddressSpec(models=[H1, AIO_H1, AC1], input=41011)],
+        address=[ModbusAddressSpec(models=[H1, AIO_H1, AC1, KH], input=41011)],
         name="Min SoC (On Grid)",
         mode=NumberMode.BOX,
         native_min_value=10,
