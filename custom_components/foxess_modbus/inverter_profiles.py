@@ -145,8 +145,8 @@ INVERTER_PROFILES = {
             LAN,
             RegisterType.HOLDING,
         ),
-        # The KH doesn't have a LAN port
-        InverterModelProfile(KH).add_connection_type(AUX, RegisterType.HOLDING),
+        # The KH doesn't have a LAN port. It supports both input and holding over RS485
+        InverterModelProfile(KH).add_connection_type(AUX, RegisterType.INPUT),
         # The H3 seems to use holding registers for everything
         InverterModelProfile(H3)
         .add_connection_type(
