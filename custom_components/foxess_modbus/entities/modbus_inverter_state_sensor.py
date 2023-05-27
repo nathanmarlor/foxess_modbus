@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from typing import Any
 from typing import cast
 
-from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorDeviceClass
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity

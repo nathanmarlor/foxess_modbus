@@ -148,9 +148,9 @@ _FAULTS: list[list[str | None]] = [
 _MASKS = {"Grid Lost Fault": ["Grid Voltage Fault", "Grid Frequency Fault"]}
 
 for assert_fault, assert_masks in _MASKS.items():
-    assert any(x for l in _FAULTS for x in l if x == assert_fault)
+    assert any(fault for fault_list in _FAULTS for fault in fault_list if fault == assert_fault)
     for assert_mask in assert_masks:
-        assert any(x for l in _FAULTS for x in l if x == assert_mask)
+        assert any(fault for fault_list in _FAULTS for fault in fault_list if fault == assert_mask)
 
 
 @dataclass(kw_only=True)
