@@ -974,6 +974,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusBatterySensorDescription(
         key="bms_charge_rate",
         addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11041], holding=[31025])],
+        entity_registry_enabled_default=False,
         bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS Charge Rate",
         device_class=SensorDeviceClass.CURRENT,
@@ -986,6 +987,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusBatterySensorDescription(
         key="bms_discharge_rate",
         addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11042], holding=[31026])],
+        entity_registry_enabled_default=False,
         bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS Discharge Rate",
         device_class=SensorDeviceClass.CURRENT,
