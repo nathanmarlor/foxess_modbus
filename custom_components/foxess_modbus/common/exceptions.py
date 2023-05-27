@@ -2,7 +2,7 @@
 import logging
 
 
-class UnsupportedInverterException(Exception):
+class UnsupportedInverterError(Exception):
     """Unsupported inverter exception"""
 
     def __init__(self, full_model: str) -> None:
@@ -13,7 +13,7 @@ class UnsupportedInverterException(Exception):
         return f"Inverter model not supported: '{self.full_model}'"
 
 
-class AutoconnectFailedException(Exception):
+class AutoconnectFailedError(Exception):
     """Raised when we fail to auto-connect to an inverter during setup"""
 
     def __init__(self, log_records: list[logging.LogRecord]) -> None:

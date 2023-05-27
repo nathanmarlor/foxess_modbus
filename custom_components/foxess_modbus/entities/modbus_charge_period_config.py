@@ -41,7 +41,7 @@ class ChargePeriodAddressSpec:
     def __init__(
         self,
         models: list[str],
-        input: ModbusChargePeriodConfig | None = None,  # pylint: disable=redefined-builtin
+        input: ModbusChargePeriodConfig | None = None,  # noqa: A002
         holding: ModbusChargePeriodConfig | None = None,
     ) -> None:
         self.models = models

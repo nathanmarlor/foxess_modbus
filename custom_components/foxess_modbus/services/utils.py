@@ -45,7 +45,7 @@ def get_controller_from_friendly_name_or_device_id(
         friendly_names = ", ".join(f"'{inverter[FRIENDLY_NAME]}'" for (inverter, _) in inverter_controllers)
         raise HomeAssistantError(
             f"Unable to find an inverter with the device ID or friendly name '{friendly_name}'. Valid friendly names: "
-            + f"{friendly_names}"
+            f"{friendly_names}"
         )
 
     return modbus_controller

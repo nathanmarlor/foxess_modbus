@@ -29,7 +29,7 @@ class InverterAdapter:
     """Describes an adapter used to connect to an inverter"""
 
     adapter_id: str  # Internal ID, also used as the translation key in the config flow
-    type: InverterAdapterType
+    type: InverterAdapterType  # noqa: A003
     connection_type: str  # AUX / LAN
     setup_link: str
     poll_rate: int
