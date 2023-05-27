@@ -884,7 +884,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="°C",
         scale=0.1,
-        round=0.5,
+        round_to=0.5,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -926,7 +926,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
-        round=1,
+        round_to=1,
         validate=[Range(-100, 100)],
     ),
     ModbusBatterySensorDescription(
