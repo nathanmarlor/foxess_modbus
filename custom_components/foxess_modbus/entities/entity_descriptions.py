@@ -31,8 +31,7 @@ from .validation import Range
 
 # TODO: There should be equivalent registers for the H3 and KH somewhere
 BMS_CONNECT_STATE_ADDRESS = [
-    ModbusAddressSpec(models=[H1, AIO_H1, AC1], input=11058),
-    ModbusAddressSpec(models=[KH], input=11058, holding=31029),
+    ModbusAddressSpec(models=[H1, AIO_H1, AC1, KH], input=11058, holding=31029),
 ]
 
 
@@ -920,8 +919,8 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
             ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11036], holding=[31024]),
             ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31038]),
         ],
-        # TODO: There might be an equivalent register for the H3/KH?
-        bms_connect_state_address=[ModbusAddressSpec(models=[H1, AIO_H1, AC1], input=11058)],
+        # TODO: There might be an equivalent register for the H3?
+        bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="Battery SoC",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
@@ -948,7 +947,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
             ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31037]),
         ],
         # TODO: There might be an equivalent register for the H3
-        bms_connect_state_address=[ModbusAddressSpec(models=[H1, AIO_H1, AC1, KH], input=11058)],
+        bms_connect_state_address=[ModbusAddressSpec(models=[H1, AIO_H1, AC1, KH], input=11058, holding=31029)],
         name="Battery Temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -958,7 +957,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ),
     ModbusBatterySensorDescription(
         key="bms_charge_rate",
-        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11041])],
+        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11041], holding=[31025])],
         bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS Charge Rate",
         device_class=SensorDeviceClass.CURRENT,
@@ -970,7 +969,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ),
     ModbusBatterySensorDescription(
         key="bms_discharge_rate",
-        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11042])],
+        addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11042], holding=[31026])],
         bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS Discharge Rate",
         device_class=SensorDeviceClass.CURRENT,
