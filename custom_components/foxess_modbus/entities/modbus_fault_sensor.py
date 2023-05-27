@@ -140,9 +140,17 @@ _FAULTS: list[list[str | None]] = [
         "BMS Precharge Fault",
         "BMS Self Check HVB Fault",
         "BMS Self Check Pack Current Fault",
-        "BMS Self Check Sys Mismatch Faulf",
+        "BMS Self Check Sys Mismatch Fault",
     ],
 ]
+
+# Processed in order. If key is active, any faults in value will be removed
+_MASKS = {"Grid Lost Fault": ["Grid Voltage Fault", "Grid Frequency Fault"]}
+
+for assert_fault, assert_masks in _MASKS.items():
+    assert any(x for l in _FAULTS for x in l if x == assert_fault)
+    for assert_mask in assert_masks:
+        assert any(x for l in _FAULTS for x in l if x == assert_mask)
 
 
 @dataclass(kw_only=True)
@@ -198,8 +206,19 @@ class ModbusFaultSensor(ModbusEntityMixin, SensorEntity):
                 for index, fault_code in enumerate(_FAULTS[i]):
                     if fault_code is not None and (value & (1 << index)) > 0:
                         faults.append(fault_code)
+
         if len(faults) == 0:
             return "None"
+
+        to_remove: set[str] = set()
+        for fault in faults:
+            masks = _MASKS.get(fault, [])
+            for mask in masks:
+                if mask in faults:
+                    to_remove.add(mask)
+        for fault_to_remove in to_remove:
+            faults.remove(fault_to_remove)
+
         return "; ".join(faults)
 
     @property
