@@ -5,10 +5,11 @@ import re
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
+from datetime import timezone
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Awaitable
 from typing import Callable
-from typing import TYPE_CHECKING
 
 import voluptuous as vol
 from homeassistant import config_entries
@@ -27,8 +28,8 @@ from pymodbus.exceptions import ConnectionException
 from pymodbus.exceptions import ModbusIOException
 from slugify import slugify
 
-from .common.exceptions import AutoconnectFailedException
-from .common.exceptions import UnsupportedInverterException
+from .common.exceptions import AutoconnectFailedError
+from .common.exceptions import UnsupportedInverterError
 from .const import ADAPTER_ID
 from .const import AUX
 from .const import CONFIG_SAVE_TIME
@@ -53,7 +54,7 @@ from .inverter_adapters import ADAPTERS
 from .inverter_adapters import InverterAdapter
 from .inverter_adapters import InverterAdapterType
 from .modbus_client import ModbusClient
-from .modbus_client import ModbusClientFailedException
+from .modbus_client import ModbusClientFailedError
 from .modbus_controller import ModbusController
 
 _TITLE = "FoxESS - Modbus"
@@ -108,7 +109,7 @@ class FlowHandlerMixin(_FlowHandlerMixinBase):
                 result = await body(user_input)
                 if result is not None:
                     return result
-            except ValidationFailedException as ex:
+            except ValidationFailedError as ex:
                 errors = ex.errors
                 if ex.errors:
                     if description_placeholders is None:
@@ -424,7 +425,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                 ADAPTER_ID: inverter.adapter.adapter_id,
             }
             entry[INVERTERS][str(uuid.uuid4())] = inverter_config
-        entry[CONFIG_SAVE_TIME] = datetime.now()
+        entry[CONFIG_SAVE_TIME] = datetime.now(timezone.utc)
         return entry
 
     async def _select_adapter_model_helper(
@@ -476,7 +477,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             for x in self._all_inverters
             if x.inverter_protocol == protocol and x.host == host and x.modbus_slave == slave
         ):
-            raise ValidationFailedException({"base": "duplicate_connection_details"})
+            raise ValidationFailedError({"base": "duplicate_connection_details"})
 
         try:
             params: dict[str, Any] = {MODBUS_TYPE: protocol}
@@ -485,7 +486,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             elif protocol == SERIAL:
                 params.update({"port": host, "baudrate": 9600})
             else:
-                assert False
+                raise AssertionError()
             client = ModbusClient(self.hass, params)
             base_model, full_model = await ModbusController.autodetect(client, slave, adapter)
 
@@ -494,14 +495,14 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             self._inverter_data.inverter_protocol = protocol
             self._inverter_data.modbus_slave = slave
             self._inverter_data.host = host
-        except UnsupportedInverterException as ex:
-            raise ValidationFailedException(
+        except UnsupportedInverterError as ex:
+            raise ValidationFailedError(
                 {"base": "inverter_model_not_supported"},
                 error_placeholders={"not_supported_model": ex.full_model},
             ) from ex
-        except AutoconnectFailedException as ex:
+        except AutoconnectFailedError as ex:
 
-            def get_details(ex: AutoconnectFailedException, use_exception: bool) -> str:
+            def get_details(ex: AutoconnectFailedError, use_exception: bool) -> str:
                 if ex.log_records:
                     parts = []
                     if use_exception:
@@ -515,7 +516,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
 
             if isinstance(ex.__cause__, ConnectionException):
                 # Mainly TCP timeouts. The actual exception message dosen't contain anything interesting here
-                raise ValidationFailedException(
+                raise ValidationFailedError(
                     {
                         "base": "unable_to_connect_to_inverter"
                         if adapter.connection_type == LAN
@@ -526,7 +527,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
 
             if isinstance(ex.__cause__, ModbusIOException):
                 # This is for things like invalid frames. The exception message here can be useful
-                raise ValidationFailedException(
+                raise ValidationFailedError(
                     {
                         "base": "unable_to_communicate_with_inverter"
                         if adapter.connection_type == LAN
@@ -535,7 +536,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                     error_placeholders={"error_details": get_details(ex, True)},
                 ) from ex
 
-            if isinstance(ex.__cause__, ModbusClientFailedException):
+            if isinstance(ex.__cause__, ModbusClientFailedError):
                 # This happens for things like UDP timeouts, inverter not connected to adapter, etc.
                 # Annoyingly everything *seems* to come through as a ModbusIOException, so we can't tell exactly
                 # what's going on. The error message here isn't useful to us. However, if it's got a __cause__ that can
@@ -545,12 +546,12 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                 detail_parts.extend(record.message for record in ex.log_records)
                 details = "; ".join(detail_parts)
 
-                raise ValidationFailedException(
+                raise ValidationFailedError(
                     {"base": "other_inverter_error" if adapter.connection_type == LAN else "other_adapter_error"},
                     error_placeholders={"error_details": details},
                 ) from ex
 
-            raise ValidationFailedException(
+            raise ValidationFailedError(
                 {"base": "other_inverter_error" if adapter.connection_type == LAN else "other_adapter_error"},
                 error_placeholders={"error_details": get_details(ex, True)},
             ) from ex
@@ -738,13 +739,13 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
         )
 
 
-class ValidationFailedException(Exception):
+class ValidationFailedError(Exception):
     """Throw to cause a validation error to be shown"""
 
     def __init__(
         self,
         errors: dict[str, str],
         error_placeholders: dict[str, str] | None = None,
-    ):
+    ) -> None:
         self.errors = errors
         self.error_placeholders = error_placeholders

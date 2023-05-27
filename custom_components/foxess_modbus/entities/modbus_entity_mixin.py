@@ -1,9 +1,9 @@
 """Mixin providing common functionality for all entity classes"""
 import logging
-from typing import Any
-from typing import cast
-from typing import Protocol
 from typing import TYPE_CHECKING
+from typing import Any
+from typing import Protocol
+from typing import cast
 
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity import Entity

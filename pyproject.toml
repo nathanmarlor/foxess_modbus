@@ -14,22 +14,22 @@ explicit_package_bases = true
 module = 'pymodbus.*'
 ignore_missing_imports = true
 
-[tool.pylint]
-max-line-length = 120
-disable = [
-    "fixme",
-    "broad-except",
-    "too-many-ancestors",
-    "too-many-instance-attributes",
-    "duplicate-code",
-    "too-many-statements",
-    "too-many-arguments",
-    "too-many-lines",
-    "too-many-locals",
-    "too-many-nested-blocks",
-    "too-many-branches",
-    "too-few-public-methods",
+[tool.ruff]
+select = ["E", "F", "I", "N", "ANN", "S", "B", "A", "COM", "C4", "DTZ", "ISC", "ICN", "G",
+    "PIE", "PYI", "RET", "SLF", "SIM", "ARG", "PTH", "PLE", "PLC", "PLW", "FLY", "RUF"]
+ignore = [
+    "ANN101", # missing-type-self
+    "ANN401", # any-type
+    "S101", # assert
+    "SIM108", # if-else-block-instead-of-if-exp
+    "COM812", # misisng-trailing-comma
+    "PLW2901", # redefiend-loop-name
+    "RET504", # unnecessary-assign
 ]
+line-length = 120
+
+[tool.ruff.isort]
+force-single-line = true
 
 [tool.black]
 line-length = 120

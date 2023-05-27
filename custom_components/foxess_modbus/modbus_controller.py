@@ -13,15 +13,15 @@ from pymodbus.exceptions import ConnectionException
 
 from .common.entity_controller import EntityController
 from .common.entity_controller import ModbusControllerEntity
-from .common.exceptions import AutoconnectFailedException
-from .common.exceptions import UnsupportedInverterException
+from .common.exceptions import AutoconnectFailedError
+from .common.exceptions import UnsupportedInverterError
 from .common.register_type import RegisterType
 from .common.unload_controller import UnloadController
 from .inverter_adapters import InverterAdapter
 from .inverter_profiles import INVERTER_PROFILES
 from .inverter_profiles import InverterModelConnectionTypeProfile
 from .modbus_client import ModbusClient
-from .modbus_client import ModbusClientFailedException
+from .modbus_client import ModbusClientFailedError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -124,7 +124,7 @@ class ModbusController(EntityController, UnloadController):
             if not acquired:
                 _LOGGER.warning(
                     "Aborting refresh of %s %s as a previous refresh is still in progress. Is your poll rate '%s' too "
-                    + "high?",
+                    "high?",
                     self._client,
                     self._slave,
                     self._poll_rate,
@@ -181,7 +181,7 @@ class ModbusController(EntityController, UnloadController):
                     self._slave,
                     ex,
                 )
-            except ModbusClientFailedException as ex:
+            except ModbusClientFailedError as ex:
                 exception = ex
                 _LOGGER.debug(
                     "Modbus error when polling %s %s: %s",
@@ -282,7 +282,7 @@ class ModbusController(EntityController, UnloadController):
     def remove_modbus_entity(self, listener: ModbusControllerEntity) -> None:
         self._update_listeners.discard(listener)
         # If this was the only entity listening on this address, remove it from self._data
-        other_addresses = set(address for entity in self._update_listeners for address in entity.addresses)
+        other_addresses = {address for entity in self._update_listeners for address in entity.addresses}
         for address in listener.addresses:
             if address not in other_addresses and address in self._data:
                 del self._data[address]
@@ -347,10 +347,10 @@ class ModbusController(EntityController, UnloadController):
 
             # We've read the model type, but been unable to match it against a supported model
             _LOGGER.error("Did not recognise inverter model '%s' (%s)", full_model, result)
-            raise UnsupportedInverterException(full_model)
+            raise UnsupportedInverterError(full_model)
         except Exception as ex:
             _LOGGER.error("Autodetect: failed to connect to (%s)", client, exc_info=True)
-            raise AutoconnectFailedException(spy_handler.records) from ex
+            raise AutoconnectFailedError(spy_handler.records) from ex
         finally:
             pymodbus_logger.removeHandler(spy_handler)
             await client.close()

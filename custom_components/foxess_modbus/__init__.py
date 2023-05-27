@@ -161,7 +161,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                         elif modbus_type == SERIAL:
                             adapter = ADAPTERS["serial_other"]
                         else:
-                            assert False
+                            raise AssertionError()
                         inverter[ADAPTER_ID] = adapter.adapter_id
                         inverter[ADAPTER_WAS_MIGRATED] = True
 

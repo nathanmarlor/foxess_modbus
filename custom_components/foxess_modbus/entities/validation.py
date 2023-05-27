@@ -6,7 +6,7 @@ from .modbus_charge_period_sensors import is_time_value_valid
 class Range(BaseValidator):
     """Range validator"""
 
-    def __init__(self, min_value: float, max_value: float):
+    def __init__(self, min_value: float, max_value: float) -> None:
         """Init"""
         self._min = min_value
         self._max = max_value
@@ -20,7 +20,7 @@ class Range(BaseValidator):
 class Min(BaseValidator):
     """Min validator"""
 
-    def __init__(self, min_value: float):
+    def __init__(self, min_value: float) -> None:
         """Init"""
         self._min = min_value
 
@@ -33,7 +33,7 @@ class Min(BaseValidator):
 class Max(BaseValidator):
     """Max validator"""
 
-    def __init__(self, max_value: float):
+    def __init__(self, max_value: float) -> None:
         """Init"""
         self._max = max_value
 

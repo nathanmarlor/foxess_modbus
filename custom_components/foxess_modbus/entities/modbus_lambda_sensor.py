@@ -37,7 +37,7 @@ class ModbusLambdaSensorDescription(SensorEntityDescription, EntityFactory):
         controller: EntityController,
         inverter_model: str,
         register_type: RegisterType,
-        entry: ConfigEntry,
+        _entry: ConfigEntry,
         inv_details: dict[str, Any],
     ) -> Entity | None:
         if not self._supports_inverter_model(self.models, inverter_model, register_type):

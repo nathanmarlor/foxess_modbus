@@ -6,9 +6,9 @@ import socket
 import time
 from typing import Any
 from typing import Callable
-from typing import cast
 from typing import Type
 from typing import TypeVar
+from typing import cast
 
 from homeassistant.core import HomeAssistant
 from pymodbus.client import ModbusSerialClient
@@ -26,7 +26,6 @@ from .const import MODBUS_TYPE
 from .const import SERIAL
 from .const import TCP
 from .const import UDP
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -177,29 +176,29 @@ class ModbusClient:
             )
             expected_response_type = ReadInputRegistersResponse
         else:
-            assert False
+            raise AssertionError()
 
         if response.isError():
             message = (
                 f"Error reading registers. Type: {register_type}; start: {start_address}; count: {num_registers}; "
-                + f"slave: {slave}"
+                f"slave: {slave}"
             )
             if isinstance(response, Exception):
-                raise ModbusClientFailedException(message, self, response) from response
-            raise ModbusClientFailedException(message, self, response)
+                raise ModbusClientFailedError(message, self, response) from response
+            raise ModbusClientFailedError(message, self, response)
 
         # We've seen cases where the remote device gets two requests at the same time and sends the wrong response to
         # the wrong thing. pymodbus doesn't check whether the response type matches the request type
         if not isinstance(response, expected_response_type):
             message = (
                 f"Error reading registers. Type: {register_type}; start: {start_address}; count: {num_registers}; "
-                + f"slave: {slave}. Received incorrect response type {response}. Please ensure that your adapter is "
-                + "correctly configured to allow multiple connections, see the instructions at "
-                + "https://github.com/nathanmarlor/foxess_modbus/wiki"
+                f"slave: {slave}. Received incorrect response type {response}. Please ensure that your adapter is "
+                "correctly configured to allow multiple connections, see the instructions at "
+                "https://github.com/nathanmarlor/foxess_modbus/wiki"
             )
             # ModbusController only logs this as debug. Make this a bit clearer so people spot and fix this
             _LOGGER.warning(message)
-            raise ModbusClientFailedException(
+            raise ModbusClientFailedError(
                 message,
                 self,
                 response,
@@ -231,19 +230,19 @@ class ModbusClient:
         if response.isError():
             message = f"Error writing registers. Start: {register_address}; values: {register_values}; slave: {slave}"
             if isinstance(response, Exception):
-                raise ModbusClientFailedException(message, self, response) from response
-            raise ModbusClientFailedException(message, self, response)
+                raise ModbusClientFailedError(message, self, response) from response
+            raise ModbusClientFailedError(message, self, response)
 
         # We've seen cases where the remote device gets two requests at the same time and sends the wrong response to
         # the wrong thing. pymodbus doesn't check whether the response type matches the request type
         if not isinstance(response, expected_response_type):
             message = (
                 f"Error writing registers. Start: {register_address}; values: {register_values}; slave: {slave}. "
-                + f"Received incorrect response type {response}. Please ensure that your adapter is correctly "
-                + "configured to allow multiple connections, see the instructions at "
-                + "https://github.com/nathanmarlor/foxess_modbus/wiki"
+                f"Received incorrect response type {response}. Please ensure that your adapter is correctly "
+                "configured to allow multiple connections, see the instructions at "
+                "https://github.com/nathanmarlor/foxess_modbus/wiki"
             )
-            raise ModbusClientFailedException(
+            raise ModbusClientFailedError(
                 message,
                 self,
                 response,
@@ -267,7 +266,7 @@ class ModbusClient:
         )
 
 
-class ModbusClientFailedException(Exception):
+class ModbusClientFailedError(Exception):
     """Raised when the ModbusClient fails to read/write"""
 
     def __init__(self, message: str, client: ModbusClient, response: ModbusResponse | Exception) -> None:

@@ -42,7 +42,7 @@ class ModbusAddressSpec(ModbusAddressSpecBase):
     def __init__(
         self,
         models: list[str],
-        input: int | None = None,  # pylint: disable=redefined-builtin
+        input: int | None = None,  # noqa: A002
         holding: int | None = None,
     ) -> None:
         addresses = {}
@@ -59,7 +59,7 @@ class ModbusAddressesSpec(ModbusAddressSpecBase):
     def __init__(
         self,
         models: list[str],
-        input: list[int] | None = None,  # pylint: disable=redefined-builtin
+        input: list[int] | None = None,  # noqa: A002
         holding: list[int] | None = None,
     ) -> None:
         addresses = {}

@@ -203,7 +203,7 @@ async def _update_charge_period(
         if not is_time_value_valid(period_start_time_value) or not is_time_value_valid(period_end_time_value):
             raise HomeAssistantError(
                 f"Start time '{period_start_time_value}' or end time '{period_end_time_value}' for charge period "
-                + f"{i + 1} is not valid"
+                f"{i + 1} is not valid"
             )
 
         charge_periods[i] = ChargePeriod(
@@ -224,7 +224,7 @@ async def _set_charge_periods(controller: ModbusController, charge_periods: list
     if len(charge_periods) < len(controller.charge_periods):
         raise HomeAssistantError(
             f"Entries must be provided for all charge periods. Expected {len(controller.charge_periods)} "
-            + f"charge periods, got {len(charge_periods)}"
+            f"charge periods, got {len(charge_periods)}"
         )
 
     # Make sure that none of the charge periods overlap. Sort by start time, then ensure each doesn't overlap the next
@@ -237,12 +237,12 @@ async def _set_charge_periods(controller: ModbusController, charge_periods: list
         if charge_period.start < previous.end and previous.start < charge_period.end:
             raise HomeAssistantError(
                 f"Charge period {i} {previous.start}-{previous.end} overlaps charge period {i + 1} "
-                + f"{charge_period.start}-{charge_period.end}"
+                f"{charge_period.start}-{charge_period.end}"
             )
 
     # List of (address, value)
     writes: list[tuple[int, int]] = []
-    for charge_period, config in zip(charge_periods, controller.charge_periods):
+    for charge_period, config in zip(charge_periods, controller.charge_periods, strict=True):
         writes.append(
             (
                 config.period_start_address,

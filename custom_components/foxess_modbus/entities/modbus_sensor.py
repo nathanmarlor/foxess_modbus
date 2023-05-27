@@ -43,7 +43,7 @@ class ModbusSensorDescription(SensorEntityDescription, EntityFactory):
         controller: EntityController,
         inverter_model: str,
         register_type: RegisterType,
-        entry: ConfigEntry,
+        _entry: ConfigEntry,
         inv_details: dict[str, Any],
     ) -> Entity | None:
         addresses = self._addresses_for_inverter_model(self.addresses, inverter_model, register_type)
