@@ -558,6 +558,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        round_to=1,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -568,6 +569,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        round_to=1,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -578,6 +580,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        round_to=1,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -876,6 +879,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="°C",
         scale=0.1,
+        round=0.5,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -889,6 +893,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="°C",
         scale=0.1,
+        round_to=0.5,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -902,6 +907,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
+        round_to=1,
         validate=[Min(0)],
     ),
     ModbusSensorDescription(
@@ -915,6 +921,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        round=1,
         validate=[Range(-100, 100)],
     ),
     ModbusBatterySensorDescription(
@@ -1014,6 +1021,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="mV",
         signed=False,
+        round_to=10,
         validate=[Min(0)],
     ),
     ModbusBatterySensorDescription(
@@ -1046,6 +1054,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
         scale=0.1,
+        round_to=1,
         signed=False,
         validate=[Min(0)],
     ),
