@@ -319,6 +319,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         addresses=[
             ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11009], holding=[31006]),
         ],
+        entity_registry_enabled_default=False,
         name="Grid Voltage",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -517,6 +518,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="grid_voltage_R",
         addresses=[ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31006])],
+        entity_registry_enabled_default=False,
         name="Grid Voltage R",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -529,6 +531,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="grid_voltage_S",
         addresses=[ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31007])],
+        entity_registry_enabled_default=False,
         name="Grid Voltage S",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -541,6 +544,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="grid_voltage_T",
         addresses=[ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31008])],
+        entity_registry_enabled_default=False,
         name="Grid Voltage T",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -558,6 +562,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        round_to=1,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -568,6 +573,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        round_to=1,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -578,6 +584,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        round_to=1,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -840,6 +847,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
             ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11014], holding=[31009]),
             ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31015]),
         ],
+        entity_registry_enabled_default=False,
         name="Grid Frequency",
         device_class=SensorDeviceClass.FREQUENCY,
         state_class=SensorStateClass.MEASUREMENT,
@@ -876,6 +884,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="°C",
         scale=0.1,
+        round=0.5,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -889,6 +898,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="°C",
         scale=0.1,
+        round_to=0.5,
         validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
@@ -902,6 +912,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="V",
         scale=0.1,
+        round_to=1,
         validate=[Min(0)],
     ),
     ModbusSensorDescription(
@@ -915,6 +926,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
         scale=0.1,
+        round=1,
         validate=[Range(-100, 100)],
     ),
     ModbusBatterySensorDescription(
@@ -962,6 +974,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusBatterySensorDescription(
         key="bms_charge_rate",
         addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11041], holding=[31025])],
+        entity_registry_enabled_default=False,
         bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS Charge Rate",
         device_class=SensorDeviceClass.CURRENT,
@@ -974,6 +987,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusBatterySensorDescription(
         key="bms_discharge_rate",
         addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11042], holding=[31026])],
+        entity_registry_enabled_default=False,
         bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="BMS Discharge Rate",
         device_class=SensorDeviceClass.CURRENT,
@@ -1014,6 +1028,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="mV",
         signed=False,
+        round_to=10,
         validate=[Min(0)],
     ),
     ModbusBatterySensorDescription(
@@ -1046,6 +1061,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         state_class=SensorStateClass.TOTAL,
         native_unit_of_measurement="kWh",
         scale=0.1,
+        round_to=1,
         signed=False,
         validate=[Min(0)],
     ),
