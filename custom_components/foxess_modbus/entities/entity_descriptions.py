@@ -23,6 +23,7 @@ from .modbus_lambda_sensor import ModbusLambdaSensorDescription
 from .modbus_number import ModbusNumberDescription
 from .modbus_select import ModbusSelectDescription
 from .modbus_sensor import ModbusSensorDescription
+from .modbus_fault_sensor import ModbusFaultSensorDescription
 from .validation import Min
 from .validation import Range
 
@@ -1046,11 +1047,24 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         signed=False,
         validate=[Min(0)],
     ),
+    ModbusFaultSensorDescription(
+        key="inverter_fault_code",
+        # We don't map Fault Code 3, as it's unused
+        addresses=[
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1, KH],
+                input=[11061, 11062, 11064, 11065, 11066, 11067, 11068],
+                holding=[31031, 31032, 31034, 31035, 31036, 31037, 31038],
+            ),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31044, 31045, 31047, 31048, 31049, 31050, 31051]),
+        ],
+        name="Inverter Fault Code",
+    ),
     # There are 32xxx holding registers on the H1, but they're only accessible over RS485
     ModbusSensorDescription(
         key="solar_energy_total",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11070, 11069]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11070, 11069]),
             ModbusAddressesSpec(models=[KH], input=[11070, 11069], holding=[32001, 32000]),
             ModbusAddressesSpec(models=[H3, AIO_H3], holding=[32001, 32000]),
         ],

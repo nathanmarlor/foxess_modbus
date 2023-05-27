@@ -1,18 +1,19 @@
+"""Decodes the fault registers"""
 from dataclasses import dataclass
 from typing import Any
+
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.entity import Entity
 
+from ..common.entity_controller import EntityController
 from ..common.register_type import RegisterType
 from .entity_factory import EntityFactory
 from .inverter_model_spec import ModbusAddressesSpec
 from .modbus_entity_mixin import ModbusEntityMixin
-from ..common.entity_controller import EntityController
-from homeassistant.helpers.entity import Entity
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.components.sensor import SensorStateClass
 
-_FAULTS = [
+_FAULTS: list[list[str | None]] = [
     [
         "Grid Lost Fault",
         "Grid Voltage Fault",
@@ -49,7 +50,8 @@ _FAULTS = [
         None,
         None,
     ],
-    [None] * 16,
+    # Fault Code 3 is empty, so we don't bother reading it
+    # [None] * 16,
     [
         "Master Sample Detection Fault",
         "Residual Current Detection Fault",
@@ -107,17 +109,49 @@ _FAULTS = [
     [
         "BMS External Fault",
         "BMS Internal Fault",
-        "BMS Voltage High",
-        "BMS Voltage Low",
-        "BMS Charge Current High",
-        "BMS Charge Current Low",
+        "Battery Over-voltage",
+        "Battery under-voltage",
+        "BMS Charge Over-current",
+        "BMS Discharge Over-current",
+        "BMS Over-temperature",
+        "BMS Under-temperature",
+        "BMS Cell Imbalance",
+        "BMS Hardware Protection Fault",
+        "BMS Circuit Fault",
+        "BMS Insulation Fault",
+        "BMS Voltage Sensor Fault",
+        "BMS Temperature Sensor Fault",
+        "BMS Current Sensor Fault",
+        "BMS Relay Fault",
+    ],
+    [
+        "BMS Type Mismatch",
+        "BMS Version Mismatch",
+        "BMS Manufacturer Mismatch",
+        "BMS Software/Hardware Mismatch",
+        "BMS Master/Slave Mismatch",
+        "BMS Charge Request Not Acknowledged",
+        "BMS Supply Fault",
+        None,
+        "BMS Self Check Fault",
+        "BMS Cell Temperature Difference Fault",
+        "BMS Cell Voltage Break Line Fault",
+        "BMS Self Check Voltage Mismatch Fault",
+        "BMS Precharge Fault",
+        "BMS Self Check HVB Fault",
+        "BMS Self Check Pack Current Fault",
+        "BMS Self Check Sys Mismatch Faulf",
     ],
 ]
 
 
 @dataclass(kw_only=True)
 class ModbusFaultSensorDescription(SensorEntityDescription, EntityFactory):
+    """Description for ModbusFaultSensor"""
+
     addresses: list[ModbusAddressesSpec]
+
+    # We can't quite be SensorDeviceClass.ENUM, as we can return multiple faults
 
     @property
     def entity_type(self) -> type[Entity]:
@@ -128,8 +162,8 @@ class ModbusFaultSensorDescription(SensorEntityDescription, EntityFactory):
         controller: EntityController,
         inverter_model: str,
         register_type: RegisterType,
-        entry: ConfigEntry,
-        inv_details,
+        _entry: ConfigEntry,
+        inv_details: dict[str, Any],
     ) -> Entity | None:
         addresses = self._addresses_for_inverter_model(self.addresses, inverter_model, register_type)
         return ModbusFaultSensor(controller, self, addresses, inv_details) if addresses is not None else None
@@ -143,9 +177,9 @@ class ModbusFaultSensor(ModbusEntityMixin, SensorEntity):
         controller: EntityController,
         entity_description: ModbusFaultSensorDescription,
         addresses: list[int],
-        inv_details,
+        inv_details: dict[str, Any],
     ) -> None:
-        assert len(addresses) == 8
+        assert len(addresses) == len(_FAULTS)
 
         self._controller = controller
         self.entity_description = entity_description
@@ -154,12 +188,19 @@ class ModbusFaultSensor(ModbusEntityMixin, SensorEntity):
         self.entity_id = "sensor." + self._get_unique_id()
 
     @property
-    def native_value(self) -> Any:
-        return None
-
-    @property
-    def should_poll(self) -> bool:
-        return False
+    def native_value(self) -> str | None:
+        faults = []
+        for i, address in enumerate(self._addresses):
+            value = self._controller.read(address)
+            if value is None:
+                return None
+            if value != 0:
+                for index, fault_code in enumerate(_FAULTS[i]):
+                    if fault_code is not None and (value & (1 << index)) > 0:
+                        faults.append(fault_code)
+        if len(faults) == 0:
+            return "None"
+        return "; ".join(faults)
 
     @property
     def addresses(self) -> list[int]:
