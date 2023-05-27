@@ -24,6 +24,7 @@ from .modbus_number import ModbusNumberDescription
 from .modbus_select import ModbusSelectDescription
 from .modbus_sensor import ModbusSensorDescription
 from .modbus_fault_sensor import ModbusFaultSensorDescription
+from .modbus_inverter_state_sensor import ModbusInverterStateSensorDescription, H1_INVERTER_STATES, KH_INVERTER_STATES
 from .validation import Min
 from .validation import Range
 
@@ -1060,6 +1061,24 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         ],
         name="Inverter Fault Code",
     ),
+    ModbusInverterStateSensorDescription(
+        key="inverter_state",
+        address=[ModbusAddressSpec(models=[H1, AIO_H1, AC1], input=11056, holding=31027)],
+        name="Inverter State",
+        states=H1_INVERTER_STATES,
+    ),
+    ModbusInverterStateSensorDescription(
+        key="inverter_state",
+        address=[ModbusAddressSpec(models=[KH], input=11056, holding=31027)],
+        name="Inverter State",
+        states=KH_INVERTER_STATES,
+    ),
+    ModbusSensorDescription(
+        key="state_code",
+        addresses=[ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31041])],
+        name="Inverter State Code",
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
     # There are 32xxx holding registers on the H1, but they're only accessible over RS485
     ModbusSensorDescription(
         key="solar_energy_total",
@@ -1360,12 +1379,6 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         scale=0.1,
         # unsure if this actually goes negative
         validate=[Range(-100, 100)],
-    ),
-    ModbusSensorDescription(
-        key="state_code",
-        addresses=[ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31041])],
-        name="Inverter State Code",
-        state_class=SensorStateClass.MEASUREMENT,
     ),
 ]
 
