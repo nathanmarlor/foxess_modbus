@@ -18,7 +18,11 @@ from .inverter_model_spec import EntitySpec
 from .inverter_model_spec import ModbusAddressesSpec
 from .inverter_model_spec import ModbusAddressSpec
 from .modbus_battery_sensor import ModbusBatterySensorDescription
+from .modbus_fault_sensor import ModbusFaultSensorDescription
 from .modbus_integration_sensor import ModbusIntegrationSensorDescription
+from .modbus_inverter_state_sensor import H1_INVERTER_STATES
+from .modbus_inverter_state_sensor import KH_INVERTER_STATES
+from .modbus_inverter_state_sensor import ModbusInverterStateSensorDescription
 from .modbus_lambda_sensor import ModbusLambdaSensorDescription
 from .modbus_number import ModbusNumberDescription
 from .modbus_select import ModbusSelectDescription
@@ -1045,11 +1049,42 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         signed=False,
         validate=[Min(0)],
     ),
+    ModbusFaultSensorDescription(
+        key="inverter_fault_code",
+        # We don't map Fault Code 3, as it's unused
+        addresses=[
+            ModbusAddressesSpec(
+                models=[H1, AIO_H1, AC1, KH],
+                input=[11061, 11062, 11064, 11065, 11066, 11067, 11068],
+                holding=[31031, 31032, 31034, 31035, 31036, 31037, 31038],
+            ),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31044, 31045, 31047, 31048, 31049, 31050, 31051]),
+        ],
+        name="Inverter Fault Code",
+    ),
+    ModbusInverterStateSensorDescription(
+        key="inverter_state",
+        address=[ModbusAddressSpec(models=[H1, AIO_H1, AC1], input=11056, holding=31027)],
+        name="Inverter State",
+        states=H1_INVERTER_STATES,
+    ),
+    ModbusInverterStateSensorDescription(
+        key="inverter_state",
+        address=[ModbusAddressSpec(models=[KH], input=11056, holding=31027)],
+        name="Inverter State",
+        states=KH_INVERTER_STATES,
+    ),
+    ModbusSensorDescription(
+        key="state_code",
+        addresses=[ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31041])],
+        name="Inverter State Code",
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
     # There are 32xxx holding registers on the H1, but they're only accessible over RS485
     ModbusSensorDescription(
         key="solar_energy_total",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11070, 11069]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11070, 11069]),
             ModbusAddressesSpec(models=[KH], input=[11070, 11069], holding=[32001, 32000]),
             ModbusAddressesSpec(models=[H3, AIO_H3], holding=[32001, 32000]),
         ],
@@ -1346,31 +1381,6 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         # unsure if this actually goes negative
         validate=[Range(-100, 100)],
     ),
-    ModbusSensorDescription(
-        key="state_code",
-        addresses=[ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31041])],
-        name="Inverter State Code",
-        state_class=SensorStateClass.MEASUREMENT,
-    ),
-    # We'll re-introduce these as a single sensor showing the current fault code(s)
-    # ModbusSensorDescription(
-    #     key="fault1_code",
-    #     addresses=[ModbusAddressesSpec(models=[H3], holding=[31044])],
-    #     name="Inverter Fault 1 Code",
-    #     state_class=SensorStateClass.MEASUREMENT,
-    # ),
-    # ModbusSensorDescription(
-    #     key="fault2_code",
-    #     addresses=[ModbusAddressesSpec(models=[H3], holding=[31045])],
-    #     name="Inverter Fault 2 Code",
-    #     state_class=SensorStateClass.MEASUREMENT,
-    # ),
-    # ModbusSensorDescription(
-    #     key="fault3_code",
-    #     addresses=[ModbusAddressesSpec(models=[H3], holding=[31046])],
-    #     name="Inverter Fault 3 Code",
-    #     state_class=SensorStateClass.MEASUREMENT,
-    # ),
 ]
 
 _CONFIGURATION_ENTITIES: list[EntityFactory] = [
