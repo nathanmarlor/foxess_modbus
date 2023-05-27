@@ -319,6 +319,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         addresses=[
             ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11009], holding=[31006]),
         ],
+        entity_registry_enabled_default=False,
         name="Grid Voltage",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -517,6 +518,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="grid_voltage_R",
         addresses=[ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31006])],
+        entity_registry_enabled_default=False,
         name="Grid Voltage R",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -529,6 +531,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="grid_voltage_S",
         addresses=[ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31007])],
+        entity_registry_enabled_default=False,
         name="Grid Voltage S",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -541,6 +544,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="grid_voltage_T",
         addresses=[ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31008])],
+        entity_registry_enabled_default=False,
         name="Grid Voltage T",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -843,6 +847,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
             ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11014], holding=[31009]),
             ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31015]),
         ],
+        entity_registry_enabled_default=False,
         name="Grid Frequency",
         device_class=SensorDeviceClass.FREQUENCY,
         state_class=SensorStateClass.MEASUREMENT,
