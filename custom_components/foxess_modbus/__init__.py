@@ -26,6 +26,7 @@ from .const import HOST
 from .const import INVERTER_CONN
 from .const import INVERTERS
 from .const import MAX_READ
+from .const import MODBUS_CLIENTS
 from .const import MODBUS_SLAVE
 from .const import MODBUS_TYPE
 from .const import PLATFORMS
@@ -116,7 +117,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     update_charge_period_service.register(hass, inverter_controllers)
 
     hass.data[DOMAIN][entry.entry_id][INVERTERS] = inverter_controllers
-
+    hass.data[DOMAIN][entry.entry_id][MODBUS_CLIENTS] = clients.values()
     hass.data[DOMAIN][entry.entry_id]["unload"] = entry.add_update_listener(async_reload_entry)
 
     return True
@@ -226,6 +227,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         controllers = hass.data[DOMAIN][entry.entry_id][INVERTERS]
         for _, controller in controllers:
             controller.unload()
+        clients = hass.data[DOMAIN][entry.entry_id][MODBUS_CLIENTS]
+        await asyncio.gather(*[client.close() for client in clients])
 
         hass.data[DOMAIN][entry.entry_id]["unload"]()
         hass.data[DOMAIN].pop(entry.entry_id)
