@@ -26,6 +26,7 @@ class ModbusLambdaSensorDescription(SensorEntityDescription, EntityFactory):
 
     models: list[EntitySpec]
     sources: list[str]
+    # This might have fewer inputs than there are elements in sources, if some inputs are disabled
     method: Callable[[list[float]], Any]
 
     @property
@@ -83,19 +84,29 @@ class ModbusLambdaSensor(ModbusEntityMixin, SensorEntity):
     def _update_value(self) -> None:
         inputs = []
         new_value = None
+        success = True
+        # If all source sensors are unknown/unavailable, return unknown.
+        # However we might be operating on a number of inputs and the user might have disabled some
+        # (e.g. we sum PV1-PV4 and the user disabled PV4), so if any input is disabled (provided we have
+        # at least one enabled input), we'll keep going.
+        # However, if any input isn't a float, or is unknown/unavailable, we'll abort.
         for source in self._source_entity_ids:
             state = self.hass.states.get(source)
             if state is None:
-                break
+                # Disabled
+                continue
             str_value = state.state
             if str_value is None or str_value == "unknown" or str_value == "unavailable":
+                success = False
                 break
             try:
                 float_value = float(str_value)
                 inputs.append(float_value)
             except ValueError:
+                success = False
                 break
-        else:
+
+        if success and len(inputs) > 0:
             new_value = self._method(inputs)
 
         if new_value != self._attr_native_value:
