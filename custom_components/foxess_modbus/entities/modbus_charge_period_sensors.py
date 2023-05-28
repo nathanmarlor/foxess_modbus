@@ -76,10 +76,14 @@ class ModbusChargePeriodStartEndSensorDescription(SensorEntityDescription, Entit
         other_address = self._address_for_inverter_model(self.other_address, inverter_model, register_type)
 
         if address is None:
-            assert other_address is None
+            assert (
+                other_address is None
+            ), f"{self}: address is None but other_address is {other_address} for ({inverter_model}, {register_type})"
             return None
 
-        assert other_address is not None
+        assert (
+            other_address is not None
+        ), f"{self}: address is {address} but other_address is None for ({inverter_model}, {register_type})"
         return ModbusChargePeriodStartEndSensor(controller, self, address, other_address, entry, inv_details)
 
 
@@ -197,10 +201,16 @@ class ModbusEnableForceChargeSensorDescription(BinarySensorEntityDescription, En
         )
         period_end_address = self._address_for_inverter_model(self.period_end_address, inverter_model, register_type)
         if period_start_address is None:
-            assert period_end_address is None
+            assert period_end_address is None, (
+                f"{self}: period_start_address is None but period_end_address is {period_end_address} for "
+                f"({inverter_model}, {register_type})"
+            )
             return None
 
-        assert period_end_address is not None
+        assert period_end_address is not None, (
+            f"{self}: period_start_address is {period_start_address} but period_end_address is None for "
+            f"({inverter_model}, {register_type})"
+        )
         return ModbusEnableForceChargeSensor(
             controller,
             self,

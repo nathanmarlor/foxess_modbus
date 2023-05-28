@@ -275,7 +275,10 @@ class ModbusController(EntityController, UnloadController):
     def register_modbus_entity(self, listener: ModbusControllerEntity) -> None:
         self._update_listeners.add(listener)
         for address in listener.addresses:
-            assert not self._connection_type_profile.overlaps_invalid_range(address, address)
+            assert not self._connection_type_profile.overlaps_invalid_range(address, address), (
+                f"Entity {listener} address {address} overlaps an invalid range in "
+                f"{self._connection_type_profile.invalid_register_ranges}"
+            )
             if address not in self._data:
                 self._data[address] = None
 
