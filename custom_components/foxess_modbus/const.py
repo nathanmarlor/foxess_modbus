@@ -48,6 +48,7 @@ INVERTER_MODEL = "inverter_model"
 INVERTER_BASE = "inverter_base"
 INVERTER_CONN = "inverter_conn"
 INVERTERS = "inverters"
+MODBUS_CLIENTS = "modbus_clients"
 
 CONFIG_SAVE_TIME = "save_time"
 
