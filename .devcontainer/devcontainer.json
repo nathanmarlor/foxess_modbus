@@ -12,7 +12,8 @@
         "ms-python.vscode-pylance",
         "github.vscode-pull-request-github",
         "ryanluker.vscode-coverage-gutters",
-        "matangover.mypy"
+        "matangover.mypy",
+        "esbenp.prettier-vscode"
       ],
       "settings": {
         "files.eol": "\n",
@@ -21,8 +22,7 @@
         "python.pythonPath": "/usr/bin/python3",
         "python.analysis.autoSearchPaths": false,
         "python.linting.enabled": true,
-        "python.linting.mypyEnabled": true,
-        "python.analysis.typeCheckingMode": "off",
+        "python.analysis.typeCheckingMode": "off", // Using mypy
         "editor.formatOnPaste": false,
         "editor.formatOnSave": true,
         "editor.formatOnType": true,
@@ -32,6 +32,7 @@
         "files.trimTrailingWhitespace": true,
         "mypy.targets": ["custom_components/foxess_modbus"],
         "python.formatting.provider": "none",
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
         "[python]": {
           "editor.codeActionsOnSave": {
             "source.fixAll": true
