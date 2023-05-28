@@ -154,6 +154,8 @@ class ModbusChargePeriodFactory:
             if inverter_model in address_spec.models:
                 config = address_spec.register_types.get(register_type)
                 if config is not None:
-                    assert result is None
+                    assert (
+                        result is None
+                    ), f"{self}: multiple charge periods defined for ({inverter_model}, {register_type})"
                     result = config
         return result
