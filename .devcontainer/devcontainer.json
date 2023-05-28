@@ -1,9 +1,7 @@
 {
   "image": "mcr.microsoft.com/vscode/devcontainers/python:0-3.10-bullseye",
   "name": "Foxess Modbus Container",
-  "appPort": [
-    "9123:8123"
-  ],
+  "appPort": ["9123:8123"],
   "postCreateCommand": ".devcontainer/setup",
   "customizations": {
     "vscode": {
@@ -14,7 +12,8 @@
         "ms-python.vscode-pylance",
         "github.vscode-pull-request-github",
         "ryanluker.vscode-coverage-gutters",
-        "matangover.mypy"
+        "matangover.mypy",
+        "esbenp.prettier-vscode"
       ],
       "settings": {
         "files.eol": "\n",
@@ -31,10 +30,9 @@
           120 // Matches ruff config
         ],
         "files.trimTrailingWhitespace": true,
-        "mypy.targets": [
-          "custom_components/foxess_modbus"
-        ],
+        "mypy.targets": ["custom_components/foxess_modbus"],
         "python.formatting.provider": "none",
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
         "[python]": {
           "editor.codeActionsOnSave": {
             "source.fixAll": true
