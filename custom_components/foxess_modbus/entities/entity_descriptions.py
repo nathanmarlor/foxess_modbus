@@ -905,7 +905,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         key="batvolt",
         addresses=[
             ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11034]),
-            ModbusAddressesSpec(models=[KH, H3, AIO_H3], holding=[31034]),
+            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31034]),
         ],
         name="Battery Voltage",
         device_class=SensorDeviceClass.VOLTAGE,
@@ -963,7 +963,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
             ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31037]),
         ],
         # TODO: There might be an equivalent register for the H3
-        bms_connect_state_address=[ModbusAddressSpec(models=[H1, AIO_H1, AC1, KH], input=11058, holding=31029)],
+        bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         name="Battery Temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -1209,7 +1209,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="feed_in_energy_total",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11079, 11078]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11079, 11078]),
             ModbusAddressesSpec(models=[KH], input=[11079, 11078], holding=[32010, 32009]),
             ModbusAddressesSpec(models=[H3, AIO_H3], holding=[32010, 32009]),
         ],
@@ -1306,7 +1306,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="total_yield_today",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11086]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11086]),
             ModbusAddressesSpec(models=[KH], input=[11086], holding=[32017]),
             ModbusAddressesSpec(models=[H3, AIO_H3], holding=[32017]),
         ],
@@ -1321,7 +1321,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="input_energy_total",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[11088, 11087]),
+            ModbusAddressesSpec(models=[H1, AIO_H1, AC1], input=[11088, 11087]),
             ModbusAddressesSpec(models=[KH], input=[11088, 11087], holding=[32019, 32018]),
             ModbusAddressesSpec(models=[H3, AIO_H3], holding=[32019, 32018]),
         ],
