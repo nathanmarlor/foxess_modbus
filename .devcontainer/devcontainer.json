@@ -3,6 +3,9 @@
   "name": "Foxess Modbus Container",
   "appPort": ["9123:8123"],
   "postCreateCommand": ".devcontainer/setup",
+  "containerEnv": {
+    "PYTHONPATH": "." // For VS Code's test pane discovery
+  },
   "customizations": {
     "vscode": {
       "extensions": [
@@ -14,32 +17,7 @@
         "ryanluker.vscode-coverage-gutters",
         "matangover.mypy",
         "esbenp.prettier-vscode"
-      ],
-      "settings": {
-        "files.eol": "\n",
-        "editor.tabSize": 4,
-        "files.insertFinalNewline": true,
-        "python.pythonPath": "/usr/bin/python3",
-        "python.analysis.autoSearchPaths": false,
-        "python.linting.enabled": true,
-        "python.analysis.typeCheckingMode": "off", // Using mypy
-        "editor.formatOnPaste": false,
-        "editor.formatOnSave": true,
-        "editor.formatOnType": true,
-        "editor.rulers": [
-          120 // Matches ruff config
-        ],
-        "files.trimTrailingWhitespace": true,
-        "mypy.targets": ["custom_components/foxess_modbus"],
-        "python.formatting.provider": "none",
-        "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "[python]": {
-          "editor.codeActionsOnSave": {
-            "source.fixAll": true
-          },
-          "editor.defaultFormatter": "ms-python.black-formatter"
-        }
-      }
+      ]
     }
   }
 }

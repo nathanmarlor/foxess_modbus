@@ -16,7 +16,7 @@ env:
 jobs:
   pre-commit:
     runs-on: "ubuntu-latest"
-    name: Pre-commit
+    name: Pre-commit and pytest
     steps:
       - name: Check out the repository
         uses: actions/checkout@v3.5.2
@@ -33,6 +33,10 @@ jobs:
       - name: Run pre-commit on all files
         run: |
           pre-commit run --all-files --show-diff-on-failure --color=always
+
+      - name: Run pytest
+        run: |
+          python -m pytest
 
   hacs:
     runs-on: "ubuntu-latest"
