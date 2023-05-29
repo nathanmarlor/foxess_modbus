@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Need support?
+    url: https://github.com/nathanmarlor/foxess_modbus/discussions/new?category=support
+    about: If you're having trouble making something work
+  - name: Got a question?
+    url: https://github.com/nathanmarlor/foxess_modbus/discussions/new?category=q-a
+    about: If you've got a question, need more information, or not sure about something
+  - name: Feature request
+    url: https://github.com/nathanmarlor/foxess_modbus/discussions/new?category=ideas
+    about: Got a suggestion for a new feature?
+  - name: Something else?
+    url: https://github.com/nathanmarlor/foxess_modbus/discussions/new
+    about: If it's something else or you're not sure, open a discussion
