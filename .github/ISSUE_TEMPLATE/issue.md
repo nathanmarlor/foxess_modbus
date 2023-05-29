@@ -1,6 +1,6 @@
 ---
-name: Issue
-about: Create a report to help us improve
+name: Bug Report
+about: If you can see an error message, or there's something clearly broken with this integration, open a bug report. If in doubt, use one of the other options below.
 ---
 
 <!-- Before you open a new issue, search through the existing issues to see if others have had the same problem.
