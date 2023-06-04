@@ -90,11 +90,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         # Pick the adapter out of the user options if it's there
         adapter_id = options.get(ADAPTER_ID, inverter[ADAPTER_ID])
+        adapter = ADAPTERS[adapter_id]
 
         # Merge in adapter options. This lets us tweak the adapters later, and those settings are reflected back to
         # users.
         # Do this after the lines above, so we can respond to an adapter in the options
-        inverter.update(ADAPTERS[adapter_id].inverter_config())
+        inverter.update(adapter.inverter_config())
 
         # Merge in the user's options, if any. These can override the adapter options set above
         if options:
@@ -103,13 +104,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         client_key = (inverter[MODBUS_TYPE], inverter[HOST])
         client = clients.get(client_key)
         if client is None:
-            params = {MODBUS_TYPE: inverter[MODBUS_TYPE]}
             if inverter[MODBUS_TYPE] in [TCP, UDP]:
                 host_parts = inverter[HOST].split(":")
-                params.update({"host": host_parts[0], "port": int(host_parts[1])})
+                params = {"host": host_parts[0], "port": int(host_parts[1])}
             else:
-                params.update({"port": inverter[HOST], "baudrate": 9600})
-            client = ModbusClient(hass, params)
+                params = {"port": inverter[HOST], "baudrate": 9600}
+            client = ModbusClient(hass, inverter[MODBUS_TYPE], adapter.connection_type, params)
             clients[client_key] = client
         create_controller(client, inverter)
 

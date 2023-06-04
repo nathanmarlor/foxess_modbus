@@ -22,7 +22,7 @@ from pymodbus.register_write_message import WriteMultipleRegistersResponse
 from pymodbus.register_write_message import WriteSingleRegisterResponse
 
 from .common.register_type import RegisterType
-from .const import MODBUS_TYPE
+from .const import LAN
 from .const import SERIAL
 from .const import TCP
 from .const import UDP
@@ -35,8 +35,9 @@ T = TypeVar("T")
 class CustomModbusTcpClient(ModbusTcpClient):
     """Custom ModbusTcpClient subclass with some hacks"""
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, delay_on_connect: int | None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
+        self._delay_on_connect = delay_on_connect
 
     def connect(self) -> bool:
         was_connected = self.socket is not None
@@ -48,6 +49,8 @@ class CustomModbusTcpClient(ModbusTcpClient):
         if not was_connected and is_connected:
             assert self.socket is not None
             self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
+            if self._delay_on_connect is not None:
+                time.sleep(self._delay_on_connect)
         return is_connected
 
     # Replacement of ModbusTcpClient to use poll rather than select, see
@@ -130,20 +133,26 @@ class CustomModbusTcpClient(ModbusTcpClient):
 class ModbusClient:
     """Modbus"""
 
-    def __init__(self, hass: HomeAssistant, config: dict[str, Any]) -> None:
+    def __init__(self, hass: HomeAssistant, protocol: str, connection_type: str, config: dict[str, Any]) -> None:
         """Init"""
         self._hass = hass
         self._config = config
         self._lock = asyncio.Lock()
-        self._config_type = config[MODBUS_TYPE]
+        self._protocol = protocol
         self._class = {
             SERIAL: ModbusSerialClient,
             TCP: CustomModbusTcpClient,
             UDP: ModbusUdpClient,
         }
-        self._poll_delay = 30 / 1000 if self._config_type == SERIAL else 0
+        # Delaying for a second after establishing a connection seems to help the inverter stability,
+        # see https://github.com/nathanmarlor/foxess_modbus/discussions/132
+        config = {**config, "delay_on_connect": 1 if connection_type == LAN else None}
 
-        self._client = self._class[self._config_type](**config)
+        # Some serial devices need a short delay after polling. Also do this for the inverter, just
+        # in case it helps.
+        self._poll_delay = 30 / 1000 if protocol == SERIAL or connection_type == LAN else 0
+
+        self._client = self._class[self._protocol](**config)
 
     async def close(self) -> None:
         """Close connection"""
@@ -261,8 +270,8 @@ class ModbusClient:
     def __str__(self) -> str:
         return (
             f"{self._config['port']}"
-            if self._config_type == SERIAL
-            else f"{self._config_type.lower()}://{self._config['host']}:{self._config['port']}"
+            if self._protocol == SERIAL
+            else f"{self._protocol.lower()}://{self._config['host']}:{self._config['port']}"
         )
 
 

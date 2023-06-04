@@ -480,14 +480,13 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             raise ValidationFailedError({"base": "duplicate_connection_details"})
 
         try:
-            params: dict[str, Any] = {MODBUS_TYPE: protocol}
             if protocol in [TCP, UDP]:
-                params.update({"host": host.split(":")[0], "port": int(host.split(":")[1])})
+                params = {"host": host.split(":")[0], "port": int(host.split(":")[1])}
             elif protocol == SERIAL:
-                params.update({"port": host, "baudrate": 9600})
+                params = {"port": host, "baudrate": 9600}
             else:
                 raise AssertionError()
-            client = ModbusClient(self.hass, params)
+            client = ModbusClient(self.hass, protocol, adapter.connection_type, params)
             base_model, full_model = await ModbusController.autodetect(client, slave, adapter)
 
             self._inverter_data.inverter_base_model = base_model

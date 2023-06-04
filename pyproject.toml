@@ -26,6 +26,9 @@ ignore = [
     "PLW2901", # redefiend-loop-name
     "RET504", # unnecessary-assign
 ]
+unfixable = [
+    "F841", # unused-variable
+]
 line-length = 120
 
 [tool.ruff.isort]
