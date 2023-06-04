@@ -109,6 +109,7 @@ class ModbusChargePeriodFactory:
             name=period_start_name,
             address=period_start_address,
             other_address=period_end_address,
+            icon="mdi:timer-play-outline",
             validate=[Time()],
         )
         self.period_end = ModbusChargePeriodStartEndSensorDescription(
@@ -116,6 +117,7 @@ class ModbusChargePeriodFactory:
             name=period_end_name,
             address=period_end_address,
             other_address=period_start_address,
+            icon="mdi:timer-stop-outline",
             validate=[Time()],
         )
         self.enable_force_charge = ModbusEnableForceChargeSensorDescription(
