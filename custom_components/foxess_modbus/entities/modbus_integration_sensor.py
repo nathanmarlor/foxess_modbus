@@ -74,13 +74,6 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
     ) -> None:
         """Initialize the sensor."""
 
-        self._controller = controller
-        self._entry = entry
-        self._inv_details = inv_details
-        self.entity_description = entity_description
-        self.entity_id = "sensor." + self._get_unique_id()
-        source_entity = f"sensor.{self._add_entity_id_prefix(source_entity)}"
-
         if round_digits is None:
             round_digits = DEFAULT_ROUND
 
@@ -94,6 +87,16 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
             unit_prefix=None,
             unit_time=unit_time,
         )
+
+        # Use the icon from entity_description
+        delattr(self, "_attr_icon")
+
+        self._controller = controller
+        self._entry = entry
+        self._inv_details = inv_details
+        self.entity_description = entity_description
+        self.entity_id = "sensor." + self._get_unique_id()
+        source_entity = f"sensor.{self._add_entity_id_prefix(source_entity)}"
 
     @property
     def addresses(self) -> list[int]:

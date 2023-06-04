@@ -267,5 +267,9 @@ class ModbusEnableForceChargeSensor(ModbusEntityMixin, BinarySensorEntity):
         return _is_force_charge_enabled(start_time, end_time)
 
     @property
+    def icon(self) -> str | None:
+        return "mdi:battery-lock" if self.is_on else "mdi:battery-lock-open"
+
+    @property
     def addresses(self) -> list[int]:
         return [self._period_start_address, self._period_end_address]

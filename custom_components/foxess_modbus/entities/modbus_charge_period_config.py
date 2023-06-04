@@ -134,6 +134,8 @@ class ModbusChargePeriodFactory:
             # The 'Update Charge Period' service only accepts devices with this device_class,
             # so ensure that only inverters which support this provide a sensor with this device_class
             device_class=BinarySensorDeviceClass.POWER,
+            # mdi:power-plug-battery is perfect, but not yet in HA
+            icon_func=lambda x: "mdi:battery-charging" if x else "mdi:battery",
         )
 
         self.entity_descriptions = [
