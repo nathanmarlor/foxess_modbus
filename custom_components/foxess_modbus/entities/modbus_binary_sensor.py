@@ -3,6 +3,7 @@ import logging
 from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
+from typing import Callable
 from typing import cast
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
@@ -26,6 +27,7 @@ class ModbusBinarySensorDescription(BinarySensorEntityDescription, EntityFactory
 
     address: list[InverterModelSpec]
     validate: list[BaseValidator] = field(default_factory=list)
+    icon_func: Callable[[bool | None], str | None] | None
 
     @property
     def entity_type(self) -> type[Entity]:
@@ -73,6 +75,13 @@ class ModbusBinarySensor(ModbusEntityMixin, BinarySensorEntity):
         if not self._validate(rules, value):
             return None
         return value > 0
+
+    @property
+    def icon(self) -> str | None:
+        entity_description = cast(ModbusBinarySensorDescription, self.entity_description)
+        if entity_description.icon_func is not None:
+            return entity_description.icon_func(self.is_on)
+        return cast(str | None, super().icon)
 
     @property
     def addresses(self) -> list[int]:

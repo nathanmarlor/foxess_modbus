@@ -109,6 +109,7 @@ class ModbusChargePeriodFactory:
             name=period_start_name,
             address=period_start_address,
             other_address=period_end_address,
+            icon="mdi:timer-play-outline",
             validate=[Time()],
         )
         self.period_end = ModbusChargePeriodStartEndSensorDescription(
@@ -116,6 +117,7 @@ class ModbusChargePeriodFactory:
             name=period_end_name,
             address=period_end_address,
             other_address=period_start_address,
+            icon="mdi:timer-stop-outline",
             validate=[Time()],
         )
         self.enable_force_charge = ModbusEnableForceChargeSensorDescription(
@@ -132,6 +134,8 @@ class ModbusChargePeriodFactory:
             # The 'Update Charge Period' service only accepts devices with this device_class,
             # so ensure that only inverters which support this provide a sensor with this device_class
             device_class=BinarySensorDeviceClass.POWER,
+            # mdi:power-plug-battery is perfect, but not yet in HA
+            icon_func=lambda x: "mdi:battery-charging" if x else "mdi:battery",
         )
 
         self.entity_descriptions = [
