@@ -39,7 +39,7 @@ class CustomModbusTcpClient(ModbusTcpClient):
         super().__init__(**kwargs)
         self._delay_on_connect = delay_on_connect
 
-    def connect(self) -> bool:  # type: ignore
+    def connect(self) -> bool:
         was_connected = self.socket is not None
         if not was_connected:
             _LOGGER.debug("Connecting to %s", self.params)
