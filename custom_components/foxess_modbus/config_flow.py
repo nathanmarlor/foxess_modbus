@@ -47,6 +47,7 @@ from .const import MODBUS_SLAVE
 from .const import MODBUS_TYPE
 from .const import POLL_RATE
 from .const import ROUND_SENSOR_VALUES
+from .const import RTU_OVER_TCP
 from .const import SERIAL
 from .const import TCP
 from .const import UDP
@@ -74,7 +75,7 @@ class InverterData:
     inverter_base_model: str | None = None
     inverter_model: str | None = None
     modbus_slave: int | None = None
-    inverter_protocol: str | None = None  # TCP, UDP, SERIAL
+    inverter_protocol: str | None = None  # TCP, UDP, SERIAL, RTU_OVER_TCP
     host: str | None = None  # host:port or /dev/serial
     entity_id_prefix: str | None = None
     friendly_name: str | None = None
@@ -165,7 +166,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             adapter_type = InverterAdapterType(user_input["adapter_type"])
             self._inverter_data.adapter_type = adapter_type
 
-            adapters = [x for x in ADAPTERS.values() if x.type == adapter_type]
+            adapters = [x for x in ADAPTERS.values() if x.adapter_type == adapter_type]
 
             assert len(adapters) > 0
             if len(adapters) == 1:
@@ -197,7 +198,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             assert self._inverter_data.adapter_type is not None
             return await self._adapter_type_to_step[self._inverter_data.adapter_type]()
 
-        adapters = [x for x in ADAPTERS.values() if x.type == self._inverter_data.adapter_type]
+        adapters = [x for x in ADAPTERS.values() if x.adapter_type == self._inverter_data.adapter_type]
 
         schema = vol.Schema(
             {
@@ -205,6 +206,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                     {
                         "select": {
                             "options": [x.adapter_id for x in adapters],
+                            "mode": "list",
                             "translation_key": "inverter_adapter_models",
                         }
                     }
@@ -220,7 +222,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         )
 
     async def async_step_tcp_adapter(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """Let the user enter connection details for their TCP/UDP adapter"""
+        """Let the user enter connection details for their TCP/UDP/RTU_OVER_TCP adapter"""
 
         adapter = self._inverter_data.adapter
 
@@ -441,7 +443,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         async def body(user_input: dict[str, Any]) -> FlowResult:
             return await complete_callback(ADAPTERS[user_input["adapter_id"]])
 
-        adapters = [x for x in ADAPTERS.values() if x.type == adapter_type]
+        adapters = [x for x in ADAPTERS.values() if x.adapter_type == adapter_type]
 
         schema = vol.Schema(
             {
@@ -480,13 +482,13 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             raise ValidationFailedError({"base": "duplicate_connection_details"})
 
         try:
-            if protocol in [TCP, UDP]:
+            if protocol in [TCP, UDP, RTU_OVER_TCP]:
                 params = {"host": host.split(":")[0], "port": int(host.split(":")[1])}
             elif protocol == SERIAL:
                 params = {"port": host, "baudrate": 9600}
             else:
                 raise AssertionError()
-            client = ModbusClient(self.hass, protocol, adapter.connection_type, params)
+            client = ModbusClient(self.hass, protocol, adapter, params)
             base_model, full_model = await ModbusController.autodetect(client, slave, adapter)
 
             self._inverter_data.inverter_base_model = base_model
@@ -693,7 +695,7 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
 
             return self.async_create_entry(title=_TITLE, data=options)
 
-        adapters = [x for x in ADAPTERS.values() if x.type == current_adapter.type]
+        adapters = [x for x in ADAPTERS.values() if x.adapter_type == current_adapter.adapter_type]
 
         schema_parts: dict[Any, Any] = {}
         if len(adapters) > 1:

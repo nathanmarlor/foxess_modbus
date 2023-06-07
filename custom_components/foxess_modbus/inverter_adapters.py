@@ -7,6 +7,7 @@ from .const import AUX
 from .const import LAN
 from .const import MAX_READ
 from .const import POLL_RATE
+from .const import RTU_OVER_TCP
 from .const import TCP
 from .const import UDP
 
@@ -29,7 +30,7 @@ class InverterAdapter:
     """Describes an adapter used to connect to an inverter"""
 
     adapter_id: str  # Internal ID, also used as the translation key in the config flow
-    type: InverterAdapterType  # noqa: A003
+    adapter_type: InverterAdapterType
     connection_type: str  # AUX / LAN
     setup_link: str
     poll_rate: int
@@ -49,7 +50,7 @@ class InverterAdapter:
 
         return InverterAdapter(
             adapter_id=adapter_id,
-            type=InverterAdapterType.DIRECT,
+            adapter_type=InverterAdapterType.DIRECT,
             connection_type=LAN,
             setup_link=setup_link,
             network_protocols=[TCP],
@@ -69,7 +70,7 @@ class InverterAdapter:
 
         return InverterAdapter(
             adapter_id=adapter_id,
-            type=InverterAdapterType.SERIAL,
+            adapter_type=InverterAdapterType.SERIAL,
             connection_type=AUX,
             setup_link=setup_link,
             default_host=default_host,
@@ -90,7 +91,7 @@ class InverterAdapter:
 
         return InverterAdapter(
             adapter_id=adapter_id,
-            type=InverterAdapterType.NETWORK,
+            adapter_type=InverterAdapterType.NETWORK,
             connection_type=AUX,
             setup_link=setup_link,
             network_protocols=network_protocols,
@@ -148,6 +149,12 @@ ADAPTERS = {
             "elfin_ew11",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/Elfin-EW11",
             network_protocols=[TCP, UDP],
+            max_read=100,
+        ),
+        InverterAdapter.network(
+            "usr_tcp232_304",
+            "https://github.com/nathanmarlor/foxess_modbus/wiki/USR-TCP232-304",
+            network_protocols=[RTU_OVER_TCP],
             max_read=100,
         ),
         InverterAdapter.network(

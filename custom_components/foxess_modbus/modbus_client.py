@@ -20,12 +20,16 @@ from pymodbus.register_read_message import ReadHoldingRegistersResponse
 from pymodbus.register_read_message import ReadInputRegistersResponse
 from pymodbus.register_write_message import WriteMultipleRegistersResponse
 from pymodbus.register_write_message import WriteSingleRegisterResponse
+from pymodbus.transaction import ModbusRtuFramer
+from pymodbus.transaction import ModbusSocketFramer
 
 from .common.register_type import RegisterType
 from .const import LAN
+from .const import RTU_OVER_TCP
 from .const import SERIAL
 from .const import TCP
 from .const import UDP
+from .inverter_adapters import InverterAdapter
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -130,29 +134,51 @@ class CustomModbusTcpClient(ModbusTcpClient):
         return data
 
 
+_CLIENTS = {
+    SERIAL: {
+        "client": ModbusSerialClient,
+        "framer": ModbusRtuFramer,
+    },
+    TCP: {
+        "client": CustomModbusTcpClient,
+        "framer": ModbusSocketFramer,
+    },
+    UDP: {
+        "client": ModbusUdpClient,
+        "framer": ModbusSocketFramer,
+    },
+    RTU_OVER_TCP: {
+        "client": CustomModbusTcpClient,
+        "framer": ModbusRtuFramer,
+    },
+}
+
+
 class ModbusClient:
     """Modbus"""
 
-    def __init__(self, hass: HomeAssistant, protocol: str, connection_type: str, config: dict[str, Any]) -> None:
+    def __init__(self, hass: HomeAssistant, protocol: str, adapter: InverterAdapter, config: dict[str, Any]) -> None:
         """Init"""
         self._hass = hass
         self._config = config
         self._lock = asyncio.Lock()
         self._protocol = protocol
-        self._class = {
-            SERIAL: ModbusSerialClient,
-            TCP: CustomModbusTcpClient,
-            UDP: ModbusUdpClient,
-        }
+
+        client = _CLIENTS[protocol]
+
         # Delaying for a second after establishing a connection seems to help the inverter stability,
         # see https://github.com/nathanmarlor/foxess_modbus/discussions/132
-        config = {**config, "delay_on_connect": 1 if connection_type == LAN else None}
+        config = {
+            **config,
+            "framer": client["framer"],
+            "delay_on_connect": 1 if adapter.connection_type == LAN else None,
+        }
 
         # Some serial devices need a short delay after polling. Also do this for the inverter, just
         # in case it helps.
-        self._poll_delay = 30 / 1000 if protocol == SERIAL or connection_type == LAN else 0
+        self._poll_delay = 30 / 1000 if protocol == SERIAL or adapter.connection_type == LAN else 0
 
-        self._client = self._class[self._protocol](**config)
+        self._client = client["client"](**config)
 
     async def close(self) -> None:
         """Close connection"""
@@ -268,11 +294,9 @@ class ModbusClient:
             return result
 
     def __str__(self) -> str:
-        return (
-            f"{self._config['port']}"
-            if self._protocol == SERIAL
-            else f"{self._protocol.lower()}://{self._config['host']}:{self._config['port']}"
-        )
+        if self._protocol == SERIAL:
+            return f"{self._config['port']}"
+        return f"{self._protocol.lower()}://{self._config['host']}:{self._config['port']}"
 
 
 class ModbusClientFailedError(Exception):

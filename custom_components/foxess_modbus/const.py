@@ -56,6 +56,7 @@ HOST = "host"
 TCP = "TCP"
 UDP = "UDP"
 SERIAL = "SERIAL"
+RTU_OVER_TCP = "TCP+RTU"
 
 CONTROLLER = "controllers"
 CONFIG = "config"
