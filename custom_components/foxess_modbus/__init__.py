@@ -212,6 +212,16 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                 inverter[ENTITY_ID_PREFIX] = ""
         config_entry.version = 5
 
+    if config_entry.version == 5:
+        # Having "TCP" / "UDP" / "SERIAL" in all-caps is annoying for translations in the config flow
+        # Also change "TCP+RTU" to "rtu_over_tcp" (to remove "+", which makes translations annoying)
+        for inverter in config_entry.data.get(INVERTERS, {}).values():
+            if inverter[MODBUS_TYPE] == "TCP+RTU":
+                inverter[MODBUS_TYPE] = "rtu_over_tcp"
+            else:
+                inverter[MODBUS_TYPE] = inverter[MODBUS_TYPE].lower()
+        config_entry.version = 6
+
     _LOGGER.info("Migration to version %s successful", config_entry.version)
     return True
 

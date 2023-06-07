@@ -296,7 +296,7 @@ class ModbusClient:
     def __str__(self) -> str:
         if self._protocol == SERIAL:
             return f"{self._config['port']}"
-        return f"{self._protocol.lower()}://{self._config['host']}:{self._config['port']}"
+        return f"{self._protocol}://{self._config['host']}:{self._config['port']}"
 
 
 class ModbusClientFailedError(Exception):
