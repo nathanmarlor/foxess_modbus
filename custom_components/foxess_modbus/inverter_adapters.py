@@ -179,7 +179,7 @@ ADAPTERS = {
         InverterAdapter.network(
             "network_other",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/Other-Ethernet-Adapter",
-            network_protocols=[TCP, UDP],
+            network_protocols=[TCP, UDP, RTU_OVER_TCP],
             # This might be a W610 and they've been migrated
             max_read=8,
         ),

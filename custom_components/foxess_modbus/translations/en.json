@@ -115,6 +115,13 @@
         "network": "Ethernet to Modbus/Serial Adapter"
       }
     },
+    "network_protocols": {
+      "options": {
+        "tcp": "Modbus TCP",
+        "udp": "Modbus UDP",
+        "rtu_over_tcp": "Modbus RTU over TCP"
+      }
+    },
     "inverter_adapter_models": {
       "options": {
         "dsd_tech_sh_u10": "DSD TECH SH-U10",
