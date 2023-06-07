@@ -39,14 +39,14 @@
         }
       },
       "friendly_name": {
-        "description": "If you have more than one inverter, give this one a name to tell them apart.",
+        "description": "If you have more than one inverter, you can give this one a name to tell them apart. If you only have one inverter, you can leave this empty!",
         "data": {
           "friendly_name": "Friendly Name",
           "autogenerate_entity_id_prefix": "Use the Friendly Name to auto-generate a prefix for all entity IDs",
           "entity_id_prefix": "Entity ID Prefix"
         },
         "data_description": {
-          "friendly_name": "Added to the end of all entity names",
+          "friendly_name": "This is added to the end of all entity names, e.g. 'PV1 Power (Your Friendly Name)'",
           "entity_id_prefix": "Added as a prefix to all of this inverter's entity IDs"
         }
       },
