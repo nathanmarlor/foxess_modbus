@@ -117,9 +117,9 @@
     },
     "network_protocols": {
       "options": {
-        "TCP": "Modbus TCP",
-        "UDP": "Modbus UDP",
-        "TCP+RTU": "Modbus RTU over TCP"
+        "tcp": "Modbus TCP",
+        "udp": "Modbus UDP",
+        "rtu_over_tcp": "Modbus RTU over TCP"
       }
     },
     "inverter_adapter_models": {
