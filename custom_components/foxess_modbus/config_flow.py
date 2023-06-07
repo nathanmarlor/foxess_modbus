@@ -137,7 +137,7 @@ class FlowHandlerMixin(_FlowHandlerMixinBase):
 class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for foxess_modbus."""
 
-    VERSION = 5
+    VERSION = 6
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     def __init__(self) -> None:
@@ -255,16 +255,10 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                 description_placeholders["recommended_protocol"] = adapter.recommended_protocol
             else:
                 key = "protocol"
-            # Annoyingly, translation keys need to be a-z0-9_, and our network protocols are caps and contain '+'
-            network_protocol_mapping = {
-                TCP: "tcp",
-                UDP: "udp",
-                RTU_OVER_TCP: "rtu_over_tcp",
-            }
             schema_parts[vol.Required(key)] = selector(
                 {
                     "select": {
-                        "options": [network_protocol_mapping[x] for x in adapter.network_protocols],
+                        "options": adapter.network_protocols,
                         "translation_key": "network_protocols",
                     }
                 }
