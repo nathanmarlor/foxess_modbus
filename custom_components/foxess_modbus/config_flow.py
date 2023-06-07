@@ -47,6 +47,7 @@ from .const import MODBUS_SLAVE
 from .const import MODBUS_TYPE
 from .const import POLL_RATE
 from .const import ROUND_SENSOR_VALUES
+from .const import RTU_OVER_TCP
 from .const import SERIAL
 from .const import TCP
 from .const import UDP
@@ -74,7 +75,7 @@ class InverterData:
     inverter_base_model: str | None = None
     inverter_model: str | None = None
     modbus_slave: int | None = None
-    inverter_protocol: str | None = None  # TCP, UDP, SERIAL
+    inverter_protocol: str | None = None  # TCP, UDP, SERIAL, RTU_OVER_TCP
     host: str | None = None  # host:port or /dev/serial
     entity_id_prefix: str | None = None
     friendly_name: str | None = None
@@ -221,7 +222,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         )
 
     async def async_step_tcp_adapter(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """Let the user enter connection details for their TCP/UDP adapter"""
+        """Let the user enter connection details for their TCP/UDP/RTU_OVER_TCP adapter"""
 
         adapter = self._inverter_data.adapter
 
@@ -481,7 +482,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             raise ValidationFailedError({"base": "duplicate_connection_details"})
 
         try:
-            if protocol in [TCP, UDP]:
+            if protocol in [TCP, UDP, RTU_OVER_TCP]:
                 params = {"host": host.split(":")[0], "port": int(host.split(":")[1])}
             elif protocol == SERIAL:
                 params = {"port": host, "baudrate": 9600}

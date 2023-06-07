@@ -25,11 +25,11 @@ from pymodbus.transaction import ModbusSocketFramer
 
 from .common.register_type import RegisterType
 from .const import LAN
+from .const import RTU_OVER_TCP
 from .const import SERIAL
 from .const import TCP
 from .const import UDP
 from .inverter_adapters import InverterAdapter
-from .inverter_adapters import InverterAdapterFramer
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -135,14 +135,22 @@ class CustomModbusTcpClient(ModbusTcpClient):
 
 
 _CLIENTS = {
-    SERIAL: ModbusSerialClient,
-    TCP: CustomModbusTcpClient,
-    UDP: ModbusUdpClient,
-}
-
-_FRAMERS = {
-    InverterAdapterFramer.RTU: ModbusRtuFramer,
-    InverterAdapterFramer.SOCKET: ModbusSocketFramer,
+    SERIAL: {
+        "client": ModbusSerialClient,
+        "framer": ModbusRtuFramer,
+    },
+    TCP: {
+        "client": CustomModbusTcpClient,
+        "framer": ModbusSocketFramer,
+    },
+    UDP: {
+        "client": ModbusUdpClient,
+        "framer": ModbusSocketFramer,
+    },
+    RTU_OVER_TCP: {
+        "client": CustomModbusTcpClient,
+        "framer": ModbusRtuFramer,
+    },
 }
 
 
@@ -156,11 +164,13 @@ class ModbusClient:
         self._lock = asyncio.Lock()
         self._protocol = protocol
 
+        client = _CLIENTS[protocol]
+
         # Delaying for a second after establishing a connection seems to help the inverter stability,
         # see https://github.com/nathanmarlor/foxess_modbus/discussions/132
         config = {
             **config,
-            "framer": _FRAMERS[adapter.framer],
+            "framer": client["framer"],
             "delay_on_connect": 1 if adapter.connection_type == LAN else None,
         }
 
@@ -168,7 +178,7 @@ class ModbusClient:
         # in case it helps.
         self._poll_delay = 30 / 1000 if protocol == SERIAL or adapter.connection_type == LAN else 0
 
-        self._client = _CLIENTS[self._protocol](**config)
+        self._client = client["client"](**config)
 
     async def close(self) -> None:
         """Close connection"""
@@ -284,11 +294,9 @@ class ModbusClient:
             return result
 
     def __str__(self) -> str:
-        return (
-            f"{self._config['port']}"
-            if self._protocol == SERIAL
-            else f"{self._protocol.lower()}://{self._config['host']}:{self._config['port']}"
-        )
+        if self._protocol == SERIAL:
+            return f"{self._config['port']}"
+        return f"{self._protocol.lower()}://{self._config['host']}:{self._config['port']}"
 
 
 class ModbusClientFailedError(Exception):

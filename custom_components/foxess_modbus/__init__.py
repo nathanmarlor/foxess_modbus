@@ -31,6 +31,7 @@ from .const import MODBUS_SLAVE
 from .const import MODBUS_TYPE
 from .const import PLATFORMS
 from .const import POLL_RATE
+from .const import RTU_OVER_TCP
 from .const import SERIAL
 from .const import STARTUP_MESSAGE
 from .const import TCP
@@ -104,7 +105,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         client_key = (inverter[MODBUS_TYPE], inverter[HOST])
         client = clients.get(client_key)
         if client is None:
-            if inverter[MODBUS_TYPE] in [TCP, UDP]:
+            if inverter[MODBUS_TYPE] in [TCP, UDP, RTU_OVER_TCP]:
                 host_parts = inverter[HOST].split(":")
                 params = {"host": host_parts[0], "port": int(host_parts[1])}
             else:
@@ -145,7 +146,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             options = UNDEFINED
 
         for modbus_type, modbus_type_inverters in config_entry.data.items():
-            if modbus_type in [TCP, UDP, SERIAL]:
+            if modbus_type in [TCP, UDP, SERIAL]:  # Didn't have RTU_OVER_TCP then
                 for host, host_inverters in modbus_type_inverters.items():
                     for friendly_name, inverter in host_inverters.items():
                         if friendly_name == "null":
