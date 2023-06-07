@@ -20,6 +20,11 @@ class InverterAdapterType(str, Enum):
     NETWORK = "network"
 
 
+class InverterAdapterFramer(Enum):
+    RTU = 0
+    SOCKET = 1
+
+
 _DEFAULT_POLL_RATE = 10
 _DEFAULT_MAX_READ = 20  # Be safe by default
 
@@ -29,8 +34,9 @@ class InverterAdapter:
     """Describes an adapter used to connect to an inverter"""
 
     adapter_id: str  # Internal ID, also used as the translation key in the config flow
-    type: InverterAdapterType  # noqa: A003
+    adapter_type: InverterAdapterType
     connection_type: str  # AUX / LAN
+    framer: InverterAdapterFramer
     setup_link: str
     poll_rate: int
     max_read: int
@@ -49,8 +55,9 @@ class InverterAdapter:
 
         return InverterAdapter(
             adapter_id=adapter_id,
-            type=InverterAdapterType.DIRECT,
+            adapter_type=InverterAdapterType.DIRECT,
             connection_type=LAN,
+            framer=InverterAdapterFramer.SOCKET,
             setup_link=setup_link,
             network_protocols=[TCP],
             poll_rate=poll_rate,
@@ -69,8 +76,9 @@ class InverterAdapter:
 
         return InverterAdapter(
             adapter_id=adapter_id,
-            type=InverterAdapterType.SERIAL,
+            adapter_type=InverterAdapterType.SERIAL,
             connection_type=AUX,
+            framer=InverterAdapterFramer.RTU,
             setup_link=setup_link,
             default_host=default_host,
             poll_rate=poll_rate,
@@ -83,6 +91,7 @@ class InverterAdapter:
         setup_link: str,
         network_protocols: list[str],
         recommended_protocol: str | None = None,
+        framer: InverterAdapterFramer = InverterAdapterFramer.SOCKET,
         poll_rate: int = _DEFAULT_POLL_RATE,
         max_read: int = _DEFAULT_MAX_READ,
     ) -> "InverterAdapter":
@@ -90,8 +99,9 @@ class InverterAdapter:
 
         return InverterAdapter(
             adapter_id=adapter_id,
-            type=InverterAdapterType.NETWORK,
+            adapter_type=InverterAdapterType.NETWORK,
             connection_type=AUX,
+            framer=framer,
             setup_link=setup_link,
             network_protocols=network_protocols,
             recommended_protocol=recommended_protocol,
@@ -148,6 +158,13 @@ ADAPTERS = {
             "elfin_ew11",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/Elfin-EW11",
             network_protocols=[TCP, UDP],
+            max_read=100,
+        ),
+        InverterAdapter.network(
+            "usr_tcp232_304",
+            "https://github.com/nathanmarlor/foxess_modbus/wiki/USR-TCP232-304",
+            network_protocols=[TCP],
+            framer=InverterAdapterFramer.RTU,
             max_read=100,
         ),
         InverterAdapter.network(

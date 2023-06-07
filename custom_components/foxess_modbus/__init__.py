@@ -109,7 +109,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 params = {"host": host_parts[0], "port": int(host_parts[1])}
             else:
                 params = {"port": inverter[HOST], "baudrate": 9600}
-            client = ModbusClient(hass, inverter[MODBUS_TYPE], adapter.connection_type, params)
+            client = ModbusClient(hass, inverter[MODBUS_TYPE], adapter, params)
             clients[client_key] = client
         create_controller(client, inverter)
 

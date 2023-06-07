@@ -165,7 +165,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             adapter_type = InverterAdapterType(user_input["adapter_type"])
             self._inverter_data.adapter_type = adapter_type
 
-            adapters = [x for x in ADAPTERS.values() if x.type == adapter_type]
+            adapters = [x for x in ADAPTERS.values() if x.adapter_type == adapter_type]
 
             assert len(adapters) > 0
             if len(adapters) == 1:
@@ -197,7 +197,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             assert self._inverter_data.adapter_type is not None
             return await self._adapter_type_to_step[self._inverter_data.adapter_type]()
 
-        adapters = [x for x in ADAPTERS.values() if x.type == self._inverter_data.adapter_type]
+        adapters = [x for x in ADAPTERS.values() if x.adapter_type == self._inverter_data.adapter_type]
 
         schema = vol.Schema(
             {
@@ -205,6 +205,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                     {
                         "select": {
                             "options": [x.adapter_id for x in adapters],
+                            "mode": "list",
                             "translation_key": "inverter_adapter_models",
                         }
                     }
@@ -441,7 +442,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
         async def body(user_input: dict[str, Any]) -> FlowResult:
             return await complete_callback(ADAPTERS[user_input["adapter_id"]])
 
-        adapters = [x for x in ADAPTERS.values() if x.type == adapter_type]
+        adapters = [x for x in ADAPTERS.values() if x.adapter_type == adapter_type]
 
         schema = vol.Schema(
             {
@@ -486,7 +487,7 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                 params = {"port": host, "baudrate": 9600}
             else:
                 raise AssertionError()
-            client = ModbusClient(self.hass, protocol, adapter.connection_type, params)
+            client = ModbusClient(self.hass, protocol, adapter, params)
             base_model, full_model = await ModbusController.autodetect(client, slave, adapter)
 
             self._inverter_data.inverter_base_model = base_model
@@ -693,7 +694,7 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
 
             return self.async_create_entry(title=_TITLE, data=options)
 
-        adapters = [x for x in ADAPTERS.values() if x.type == current_adapter.type]
+        adapters = [x for x in ADAPTERS.values() if x.adapter_type == current_adapter.adapter_type]
 
         schema_parts: dict[Any, Any] = {}
         if len(adapters) > 1:
