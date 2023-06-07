@@ -255,7 +255,14 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
                 description_placeholders["recommended_protocol"] = adapter.recommended_protocol
             else:
                 key = "protocol"
-            schema_parts[vol.Required(key)] = selector({"select": {"options": adapter.network_protocols}})
+            schema_parts[vol.Required(key)] = selector(
+                {
+                    "select": {
+                        "options": adapter.network_protocols,
+                        "translation_key": "network_protocols",
+                    }
+                }
+            )
 
         if adapter.connection_type == AUX:
             schema_parts[vol.Required("adapter_host")] = cv.string
