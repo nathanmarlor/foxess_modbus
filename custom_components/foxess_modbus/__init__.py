@@ -42,6 +42,7 @@ from .modbus_client import ModbusClient
 from .modbus_controller import ModbusController
 from .services import update_charge_period_service
 from .services import write_registers_service
+from .services import websocket_api
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
@@ -116,6 +117,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     write_registers_service.register(hass, inverter_controllers)
     update_charge_period_service.register(hass, inverter_controllers)
+    websocket_api.register(hass, inverter_controllers)
 
     hass.data[DOMAIN][entry.entry_id][INVERTERS] = inverter_controllers
     hass.data[DOMAIN][entry.entry_id][MODBUS_CLIENTS] = clients.values()
