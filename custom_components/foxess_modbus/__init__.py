@@ -117,7 +117,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     write_registers_service.register(hass, inverter_controllers)
     update_charge_period_service.register(hass, inverter_controllers)
-    websocket_api.register(hass, inverter_controllers)
+    websocket_api.register(hass)
 
     hass.data[DOMAIN][entry.entry_id][INVERTERS] = inverter_controllers
     hass.data[DOMAIN][entry.entry_id][MODBUS_CLIENTS] = clients.values()
