@@ -20,6 +20,16 @@ from .base_validator import BaseValidator
 _LOGGER = logging.getLogger(__name__)
 
 
+def add_entity_id_prefix(entity_id: str, inv_details: dict[str, Any]) -> str:
+    """Add the entity ID prefix to the beginning of the given input string"""
+    entity_id_prefix = inv_details[ENTITY_ID_PREFIX]
+
+    if entity_id_prefix:
+        entity_id = f"{entity_id_prefix}_{entity_id}"
+
+    return entity_id
+
+
 class ModbusEntityProtocol(Protocol):
     """Protocol which types including ModbusEntityMixin must implement"""
 
@@ -102,14 +112,9 @@ class ModbusEntityMixin(ModbusControllerEntity, ModbusEntityProtocol, _ModbusEnt
         """Get unique ID"""
         return self._add_entity_id_prefix(self.entity_description.key)
 
-    def _add_entity_id_prefix(self, value: str) -> str:
+    def _add_entity_id_prefix(self, entity_id: str) -> str:
         """Add the entity ID prefix to the beginning of the given input string"""
-        entity_id_prefix = self._inv_details[ENTITY_ID_PREFIX]
-
-        if entity_id_prefix:
-            value = f"{entity_id_prefix}_{value}"
-
-        return value
+        return add_entity_id_prefix(entity_id, self._inv_details)
 
     def _validate(
         self,

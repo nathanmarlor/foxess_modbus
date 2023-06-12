@@ -188,9 +188,9 @@ async def _update_charge_period(
         if i == charge_period_index:
             continue
 
-        period_start_time_value = controller.read(charge_period.period_start_address)
-        period_end_time_value = controller.read(charge_period.period_end_address)
-        period_enable_charge_from_grid_value = controller.read(charge_period.enable_charge_from_grid_address)
+        period_start_time_value = controller.read(charge_period.addresses.period_start_address)
+        period_end_time_value = controller.read(charge_period.addresses.period_end_address)
+        period_enable_charge_from_grid_value = controller.read(charge_period.addresses.enable_charge_from_grid_address)
 
         if (
             period_start_time_value is None
@@ -245,19 +245,19 @@ async def _set_charge_periods(controller: ModbusController, charge_periods: list
     for charge_period, config in zip(charge_periods, controller.charge_periods, strict=True):
         writes.append(
             (
-                config.period_start_address,
+                config.addresses.period_start_address,
                 serialize_time_to_value(charge_period.start) if charge_period.enable_force_charge else 0,
             )
         )
         writes.append(
             (
-                config.period_end_address,
+                config.addresses.period_end_address,
                 serialize_time_to_value(charge_period.end) if charge_period.enable_force_charge else 0,
             )
         )
         writes.append(
             (
-                config.enable_charge_from_grid_address,
+                config.addresses.enable_charge_from_grid_address,
                 1 if charge_period.enable_charge_from_grid else 0,
             )
         )

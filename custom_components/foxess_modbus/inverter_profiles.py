@@ -20,7 +20,7 @@ from .const import LAN
 from .entities import invalid_ranges
 from .entities.charge_periods import CHARGE_PERIODS
 from .entities.entity_descriptions import ENTITIES
-from .entities.modbus_charge_period_config import ModbusChargePeriodConfig
+from .entities.modbus_charge_period_config import ModbusChargePeriodInfo
 
 _LOGGER = logging.getLogger(__package__)
 
@@ -69,14 +69,14 @@ class InverterModelConnectionTypeProfile:
 
         return result
 
-    def create_charge_periods(self) -> list[ModbusChargePeriodConfig]:
+    def create_charge_periods(self, inverter_details: dict[str, Any]) -> list[ModbusChargePeriodInfo]:
         """Create all of the charge periods which support this inverter/connection combination"""
 
         result = []
 
         for charge_period_factory in CHARGE_PERIODS:
             charge_period = charge_period_factory.create_charge_period_config_if_supported(
-                self.inverter_model, self.register_type
+                self.inverter_model, self.register_type, inverter_details
             )
             if charge_period is not None:
                 result.append(charge_period)
