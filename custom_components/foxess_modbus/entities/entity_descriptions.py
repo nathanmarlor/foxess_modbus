@@ -798,7 +798,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         icon="mdi:home-lightning-bolt-outline",
         scale=0.001,
         round_to=0.01,
-        validate=[Range(0, 100)],
+        validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
         key="load_power_S",
@@ -810,7 +810,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         icon="mdi:home-lightning-bolt-outline",
         scale=0.001,
         round_to=0.01,
-        validate=[Range(0, 100)],
+        validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
         key="load_power_T",
@@ -822,7 +822,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         icon="mdi:home-lightning-bolt-outline",
         scale=0.001,
         round_to=0.01,
-        validate=[Range(0, 100)],
+        validate=[Range(-100, 100)],
     ),
 ]
 
