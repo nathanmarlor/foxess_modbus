@@ -611,7 +611,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         native_unit_of_measurement="kW",
         scale=0.001,
         round_to=0.01,
-        validate=[Range(0, 100)],
+        validate=[Range(-10000, 10000)],
     ),
     ModbusSensorDescription(
         key="inv_power_S",
@@ -622,7 +622,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         native_unit_of_measurement="kW",
         scale=0.001,
         round_to=0.01,
-        validate=[Range(0, 100)],
+        validate=[Range(-10000, 10000)],
     ),
     ModbusSensorDescription(
         key="inv_power_T",
@@ -633,7 +633,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         native_unit_of_measurement="kW",
         scale=0.001,
         round_to=0.01,
-        validate=[Range(0, 100)],
+        validate=[Range(-10000, 10000)],
     ),
     ModbusSensorDescription(
         key="eps_power_R",
@@ -646,7 +646,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         icon="mdi:power-socket",
         scale=0.001,
         round_to=0.01,
-        validate=[Range(0, 100)],
+        validate=[Range(-10000, 10000)],
     ),
     ModbusSensorDescription(
         key="eps_power_S",
@@ -659,7 +659,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         icon="mdi:power-socket",
         scale=0.001,
         round_to=0.01,
-        validate=[Range(0, 100)],
+        validate=[Range(-10000, 10000)],
     ),
     ModbusSensorDescription(
         key="eps_power_T",
@@ -672,7 +672,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         icon="mdi:power-socket",
         scale=0.001,
         round_to=0.01,
-        validate=[Range(0, 100)],
+        validate=[Range(-10000, 10000)],
     ),
     ModbusSensorDescription(
         key="grid_ct_R",
