@@ -1,4 +1,6 @@
 """Contains information on the various adapters to connect to an inverter"""
+from abc import ABC
+from abc import abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any
@@ -25,6 +27,30 @@ _DEFAULT_POLL_RATE = 10
 _DEFAULT_MAX_READ = 20  # Be safe by default
 
 
+class InverterAdapterConfigProvider(ABC):
+    @abstractmethod
+    def inverter_config(self, network_protocol: str) -> dict[str, Any]:
+        """
+        Generate a dict which is merged into the user's inverter config.
+        User preferences are then merged in on top of this"""
+
+
+class _DefaultConfig(InverterAdapterConfigProvider):
+    def __init__(self, max_read: int = _DEFAULT_MAX_READ, poll_rate: int = _DEFAULT_POLL_RATE) -> None:
+        self._config = {POLL_RATE: poll_rate, MAX_READ: max_read}
+
+    def inverter_config(self, _network_protocol: str) -> dict[str, Any]:
+        return self._config
+
+
+class _W610Config(InverterAdapterConfigProvider):
+    def inverter_config(self, network_protocol: str) -> dict[str, Any]:
+        return {
+            POLL_RATE: 15 if network_protocol == TCP else 10,
+            MAX_READ: 8,
+        }
+
+
 @dataclass
 class InverterAdapter:
     """Describes an adapter used to connect to an inverter"""
@@ -33,8 +59,7 @@ class InverterAdapter:
     adapter_type: InverterAdapterType
     connection_type: str  # AUX / LAN
     setup_link: str
-    poll_rate: int
-    max_read: int
+    config: InverterAdapterConfigProvider
     network_protocols: list[str] | None = None  # If type is NETWORK/DIRECT, whether we support TCP and/or UDP
     recommended_protocol: str | None = None
     default_host: str | None = None
@@ -43,8 +68,7 @@ class InverterAdapter:
     def direct(
         adapter_id: str,
         setup_link: str,
-        poll_rate: int = _DEFAULT_POLL_RATE,
-        max_read: int = _DEFAULT_MAX_READ,
+        config: InverterAdapterConfigProvider,
     ) -> "InverterAdapter":
         """Add a direct connection to the inverter"""
 
@@ -54,17 +78,15 @@ class InverterAdapter:
             connection_type=LAN,
             setup_link=setup_link,
             network_protocols=[TCP],
-            poll_rate=poll_rate,
-            max_read=max_read,
+            config=config,
         )
 
     @staticmethod
     def serial(
         adapter_id: str,
         setup_link: str,
+        config: InverterAdapterConfigProvider,
         default_host: str = "/dev/ttyUSB0",
-        poll_rate: int = _DEFAULT_POLL_RATE,
-        max_read: int = _DEFAULT_MAX_READ,
     ) -> "InverterAdapter":
         """Add a serial connection to the inverter"""
 
@@ -74,8 +96,7 @@ class InverterAdapter:
             connection_type=AUX,
             setup_link=setup_link,
             default_host=default_host,
-            poll_rate=poll_rate,
-            max_read=max_read,
+            config=config,
         )
 
     @staticmethod
@@ -83,9 +104,8 @@ class InverterAdapter:
         adapter_id: str,
         setup_link: str,
         network_protocols: list[str],
+        config: InverterAdapterConfigProvider,
         recommended_protocol: str | None = None,
-        poll_rate: int = _DEFAULT_POLL_RATE,
-        max_read: int = _DEFAULT_MAX_READ,
     ) -> "InverterAdapter":
         """Add a network connection to the inverter"""
 
@@ -96,18 +116,8 @@ class InverterAdapter:
             setup_link=setup_link,
             network_protocols=network_protocols,
             recommended_protocol=recommended_protocol,
-            poll_rate=poll_rate,
-            max_read=max_read,
+            config=config,
         )
-
-    def inverter_config(self) -> dict[str, Any]:
-        """
-        Generate a dict which is merged into the user's inverter config.
-        User preferences are then merged in on top of this"""
-        return {
-            POLL_RATE: self.poll_rate,
-            MAX_READ: self.max_read,
-        }
 
 
 # IMPORTANT!! READ!
@@ -122,66 +132,68 @@ ADAPTERS = {
         InverterAdapter.direct(
             "direct",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/Direct-Ethernet-Connection-to-Inverter",
-            max_read=100,
+            config=_DefaultConfig(max_read=100),
         ),
         # Serial Adapters
         InverterAdapter.serial(
             "dsd_tech_sh_u10",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/DSD-TECH-SH-U10",
-            max_read=100,
+            config=_DefaultConfig(max_read=100),
         ),
         InverterAdapter.serial(
             "runcci_yun_usb_to_rs485_converter",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/RUNCCI-YUN-USB-to-RS485-Converter",
+            config=_DefaultConfig(),
         ),
         InverterAdapter.serial(
             "waveshare_usb_to_rs485_b",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/Waveshare-USB-to-RS485-%28B%29",
             default_host="/dev/ttyACM0",
-            max_read=100,
+            config=_DefaultConfig(max_read=100),
         ),
         InverterAdapter.serial(
             "serial_other",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/Other-Serial-Adapter",
+            config=_DefaultConfig(),
         ),
         # Network adapters
         InverterAdapter.network(
             "elfin_ew11",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/Elfin-EW11",
             network_protocols=[TCP, UDP],
-            max_read=100,
+            config=_DefaultConfig(max_read=100),
         ),
         InverterAdapter.network(
             "usr_tcp232_304",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/USR-TCP232-304",
             network_protocols=[RTU_OVER_TCP],
-            max_read=100,
+            config=_DefaultConfig(max_read=100),
         ),
         InverterAdapter.network(
             "usr_tcp232_410s",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/USR-TCP232-410s",
             network_protocols=[TCP, UDP],
-            max_read=100,
+            config=_DefaultConfig(max_read=100),
         ),
         InverterAdapter.network(
             "usr_w610",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/USR-W610",
             network_protocols=[TCP, UDP],
             recommended_protocol=UDP,
-            max_read=8,
+            config=_W610Config(),
         ),
         InverterAdapter.network(
             "waveshare_rs485_to_eth_b",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/Waveshare-RS485-to-ETH-%28B%29",
             network_protocols=[TCP, UDP],
-            max_read=100,
+            config=_DefaultConfig(max_read=100),
         ),
         InverterAdapter.network(
             "network_other",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/Other-Ethernet-Adapter",
             network_protocols=[TCP, UDP, RTU_OVER_TCP],
             # This might be a W610 and they've been migrated
-            max_read=8,
+            config=_W610Config(),
         ),
     ]
 }

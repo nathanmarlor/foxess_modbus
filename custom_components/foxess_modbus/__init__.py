@@ -96,7 +96,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # Merge in adapter options. This lets us tweak the adapters later, and those settings are reflected back to
         # users.
         # Do this after the lines above, so we can respond to an adapter in the options
-        inverter.update(adapter.inverter_config())
+        inverter.update(adapter.config.inverter_config(inverter[MODBUS_TYPE]))
 
         # Merge in the user's options, if any. These can override the adapter options set above
         if options:

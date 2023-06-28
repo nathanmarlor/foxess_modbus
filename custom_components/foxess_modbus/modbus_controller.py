@@ -4,6 +4,7 @@ import threading
 from contextlib import contextmanager
 from datetime import datetime
 from datetime import timedelta
+from typing import Any
 from typing import Iterable
 from typing import Iterator
 
@@ -17,7 +18,7 @@ from .common.exceptions import AutoconnectFailedError
 from .common.exceptions import UnsupportedInverterError
 from .common.register_type import RegisterType
 from .common.unload_controller import UnloadController
-from .inverter_adapters import InverterAdapter
+from .const import MAX_READ
 from .inverter_profiles import INVERTER_PROFILES
 from .inverter_profiles import InverterModelConnectionTypeProfile
 from .modbus_client import ModbusClient
@@ -301,7 +302,7 @@ class ModbusController(EntityController, UnloadController):
             listener.is_connected_changed_callback()
 
     @staticmethod
-    async def autodetect(client: ModbusClient, slave: int, adapter: InverterAdapter) -> tuple[str, str]:
+    async def autodetect(client: ModbusClient, slave: int, adapter_config: dict[str, Any]) -> tuple[str, str]:
         """
         Attempts to auto-detect the inverter type at the other end of the given connection
 
@@ -327,12 +328,12 @@ class ModbusController(EntityController, UnloadController):
                 result.extend(
                     await client.read_registers(
                         start_address,
-                        min(adapter.max_read, _MODEL_LENGTH - len(result)),
+                        min(adapter_config[MAX_READ], _MODEL_LENGTH - len(result)),
                         RegisterType.HOLDING,
                         slave,
                     )
                 )
-                start_address += adapter.max_read
+                start_address += adapter_config[MAX_READ]
 
             # Stop as soon as we find something non-printable-ASCII
             full_model = ""

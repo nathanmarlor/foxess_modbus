@@ -496,7 +496,9 @@ class ModbusFlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMA
             else:
                 raise AssertionError()
             client = ModbusClient(self.hass, protocol, adapter, params)
-            base_model, full_model = await ModbusController.autodetect(client, slave, adapter)
+            base_model, full_model = await ModbusController.autodetect(
+                client, slave, adapter.config.inverter_config(protocol)
+            )
 
             self._inverter_data.inverter_base_model = base_model
             self._inverter_data.inverter_model = full_model
@@ -675,6 +677,8 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
     async def async_step_inverter_options(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Let the user set the selected inverter's settings"""
 
+        # Important: If we ever allow changing connection type here, make sure to update the
+        # current_adapter.config.inverter_config(config[MODBUS_TYPE]) line below
         config = self._config.data[INVERTERS][self._selected_inverter_id]
         options = self._config.options.get(INVERTERS, {}).get(self._selected_inverter_id, {})
 
@@ -731,11 +735,12 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
 
         schema = vol.Schema(schema_parts)
 
+        inverter_config = current_adapter.config.inverter_config(config[MODBUS_TYPE])
         description_placeholders = {
             # TODO: Will need changing if we let them set the friendly name / host / port
             "inverter": self._create_label_for_inverter(config),
-            "default_poll_rate": f"{current_adapter.poll_rate}",
-            "default_max_read": f"{current_adapter.max_read}",
+            "default_poll_rate": f"{inverter_config[POLL_RATE]}",
+            "default_max_read": f"{inverter_config[MAX_READ]}",
         }
 
         return await self._with_default_form(
