@@ -724,9 +724,9 @@ class ModbusOptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
                 "poll_rate",
                 description={"suggested_value": options.get(POLL_RATE)},
             )
-        ] = vol.Any(None, int)
+        ] = vol.Any(None, vol.All(int, vol.Range(min=1)))
         schema_parts[vol.Optional("max_read", description={"suggested_value": options.get(MAX_READ)})] = vol.Any(
-            None, int
+            None, vol.All(int, vol.Range(min=1))
         )
 
         schema = vol.Schema(schema_parts)
