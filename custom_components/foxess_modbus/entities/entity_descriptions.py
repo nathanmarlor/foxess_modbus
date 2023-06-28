@@ -79,7 +79,7 @@ def _pv_power(key: str, addresses: list[ModbusAddressesSpec], name: str) -> Enti
         scale=0.001,
         round_to=0.01,
         # This can go negative if no panels are attached
-        post_process=lambda x: max(x, 0)
+        post_process=lambda x: max(x, 0),
     )
 
 
@@ -361,7 +361,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         scale=0.001,
         round_to=0.01,
         post_process=lambda x: max(x, 0),
-        validate=[Range(0, 10000)],
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="rpower_Q",
@@ -378,7 +378,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         scale=0.001,
         round_to=0.01,
         post_process=lambda x: max(x, 0),
-        validate=[Range(0, 10000)],
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="rpower_S",
@@ -395,7 +395,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         scale=0.001,
         round_to=0.01,
         post_process=lambda x: max(x, 0),
-        validate=[Range(0, 10000)],
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="eps_rvolt",
@@ -440,7 +440,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         scale=0.001,
         round_to=0.01,
         post_process=lambda x: max(x, 0),
-        validate=[Range(0, 10000)],
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="eps_rpower_Q",
@@ -457,7 +457,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         scale=0.001,
         round_to=0.01,
         post_process=lambda x: max(x, 0),
-        validate=[Range(0, 10000)],
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="eps_rpower_S",
@@ -474,7 +474,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         scale=0.001,
         round_to=0.01,
         post_process=lambda x: max(x, 0),
-        validate=[Range(0, 10000)],
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="grid_ct",
@@ -619,7 +619,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         scale=0.001,
         round_to=0.01,
         post_process=lambda x: max(x, 0),
-        validate=[Range(0, 10000)],
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="inv_power_S",
@@ -631,7 +631,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         scale=0.001,
         round_to=0.01,
         post_process=lambda x: max(x, 0),
-        validate=[Range(0, 10000)],
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="inv_power_T",
@@ -643,7 +643,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         scale=0.001,
         round_to=0.01,
         post_process=lambda x: max(x, 0),
-        validate=[Range(0, 10000)],
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="eps_power_R",
@@ -657,7 +657,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         scale=0.001,
         round_to=0.01,
         post_process=lambda x: max(x, 0),
-        validate=[Range(0, 10000)],
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="eps_power_S",
@@ -671,7 +671,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         scale=0.001,
         round_to=0.01,
         post_process=lambda x: max(x, 0),
-        validate=[Range(0, 10000)],
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="eps_power_T",
@@ -685,7 +685,7 @@ _H3_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         scale=0.001,
         round_to=0.01,
         post_process=lambda x: max(x, 0),
-        validate=[Range(0, 10000)],
+        validate=[Range(0, 100)],
     ),
     ModbusSensorDescription(
         key="grid_ct_R",
@@ -852,7 +852,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         native_unit_of_measurement="kW",
         scale=0.001,
         round_to=0.01,
-        validate=[Range(-10000, 10000)],
+        validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
         key="battery_discharge",
