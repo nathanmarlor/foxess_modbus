@@ -79,8 +79,7 @@
       "other_inverter_error": "Error connecting to your inverter. Details: {error_details}"
     },
     "abort": {
-      "already_configured": "You can only set up this integration once. If you need to reconfigure, click \"CONFIGURE\" or delete and then add again.",
-      "reconfigure_successful": "Successful. We can now use settings specific to your adapter."
+      "already_configured": "You can only set up this integration once. If you need to reconfigure, click \"CONFIGURE\" or delete and then add again."
     }
   },
   "options": {
@@ -91,10 +90,52 @@
           "inverter": ""
         }
       },
-      "inverter_options": {
+      "inverter_options_category": {
+        "menu_options": {
+          "select_adapter_type": "Network settings",
+          "inverter_advanced_options": "Advanced settings"
+        }
+      },
+      "select_adapter_type": {
+        "description": "How do you connect to your inverter?",
+        "data": {
+          "adapter_type": ""
+        }
+      },
+      "select_adapter_model": {
+        "description": "Choose your adapter model. This lets us use settings tailored to your adapter. If you don't see your model, choose \"Other\" and let us know: https://github.com/nathanmarlor/foxess_modbus/discussions/new.",
+        "data": {
+          "adapter_id": ""
+        }
+      },
+      "tcp_adapter": {
+        "description": "Set up your adapter by following the instructions at {setup_link}.",
+        "data": {
+          "protocol": "Protocol",
+          "protocol_with_recommendation": "Protocol",
+          "lan_connection_host": "Inverter hostname / IP address",
+          "adapter_host": "Adapter hostname / IP address",
+          "adapter_port": "Adapter port",
+          "modbus_slave": "Inverter slave ID"
+        },
+        "data_description": {
+          "protocol_with_recommendation": "We recommend using {recommended_protocol} with this adapter, see the link above",
+          "modbus_slave": "This can be set from Settings -> Communication in the inverter menu"
+        }
+      },
+      "serial_adapter": {
+        "description": "Set up your adapter by following the instructions at {setup_link}.",
+        "data": {
+          "serial_device": "USB serial device",
+          "modbus_slave": "Inverter slave ID"
+        },
+        "data_description": {
+          "modbus_slave": "This can be set from Settings -> Communication in the inverter menu"
+        }
+      },
+      "inverter_advanced_options": {
         "description": "Options for \"{inverter}\".",
         "data": {
-          "adapter_id": "Adapter",
           "round_sensor_values": "Round sensor values",
           "poll_rate": "Poll rate (seconds)",
           "max_read": "Max read"
@@ -105,14 +146,24 @@
           "max_read": "The default for your adapter type is {default_max_read}. Leave empty to use the default. Warning: Look at the debug log for problems if you increase this!"
         }
       }
+    },
+    "error": {
+      "duplicate_connection_details": "You have already set up an inverter with this address",
+      "inverter_model_not_supported": "Inverter model '{not_supported_model}' is not supported",
+      "unable_to_connect_to_adapter": "Unable to connect to your adapter. Ensure that the adapter is properly configured (see the setup link above) and the connection details are correct, then try again. Details: {error_details}",
+      "unable_to_connect_to_inverter": "Unable to connect to your inverter. Make sure the connection details are correct and try again. Details: {error_details}",
+      "adapter_unable_to_communicate_with_inverter": "The adapter was unable to connect to the inverter. Ensure the adapter is properly configured and is correctly wired to your inverter (see the setup link above), then try again. Details: {error_details}",
+      "unable_to_communicate_with_inverter": "Error communicating with your inverter. Ensure that it has a compatible firmware version. Details: {error_details}",
+      "other_adapter_error": "Error connecting to your adapter or inverter. Ensure the adapter is properly configured and is correctly wired to your inverter (see the setup link above), then try again. Details: {error_details}",
+      "other_inverter_error": "Error connecting to your inverter. Details: {error_details}"
     }
   },
   "selector": {
     "inverter_adapter_types": {
       "options": {
         "direct": "Direct LAN Connection",
-        "serial": "USB to Modbus Adapter",
-        "network": "Ethernet to Modbus/Serial Adapter"
+        "serial": "USB to RS485 Adapter",
+        "network": "Ethernet to Modbus/RS485 Adapter"
       }
     },
     "network_protocols": {
