@@ -64,6 +64,8 @@ INVERTER = "inverter"
 CONNECTION = "connection"
 MODBUS = "modbus"
 
+CONFIG_ENTRY_TITLE = "FoxESS - Modbus"
+
 # Defaults
 DEFAULT_NAME = DOMAIN
 
