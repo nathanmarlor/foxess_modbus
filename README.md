@@ -66,7 +66,8 @@ Recommend installation through [HACS][hacs]
 
 <b>Write Service</b></p>
 
-A service to write any modbus address is available, similar to the native Home Assistant service.
+A service to write any modbus address is available, similar to the native Home Assistant service. To use a service,
+navigate to Developer Tools -> Services and select it from the drop-down.
 
 ![Service](images/svc-write.png)
 
