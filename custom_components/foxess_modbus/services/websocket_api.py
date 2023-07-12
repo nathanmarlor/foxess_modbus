@@ -36,7 +36,10 @@ def get_charge_periods(hass: HomeAssistant, connection: websocket_api.ActiveConn
                 "enable_charge_from_grid_entity_id": charge_period.enable_charge_from_grid_entity_id,
             }
         )
-    connection.send_result(msg["id"], {
-        "friendly_name": controller.inverter_details[FRIENDLY_NAME],
-        "charge_periods": charge_periods,
-    })
+    connection.send_result(
+        msg["id"],
+        {
+            "friendly_name": controller.inverter_details[FRIENDLY_NAME],
+            "charge_periods": charge_periods,
+        },
+    )
