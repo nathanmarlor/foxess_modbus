@@ -1,6 +1,7 @@
 """Time period config"""
 import logging
 from dataclasses import dataclass
+from typing import Any
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 
@@ -10,6 +11,7 @@ from .inverter_model_spec import ModbusAddressSpecBase
 from .modbus_binary_sensor import ModbusBinarySensorDescription
 from .modbus_charge_period_sensors import ModbusChargePeriodStartEndSensorDescription
 from .modbus_charge_period_sensors import ModbusEnableForceChargeSensorDescription
+from .modbus_entity_mixin import add_entity_id_prefix
 from .validation import Time
 
 _LOGGER = logging.getLogger(__name__)
@@ -19,12 +21,21 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
-class ModbusChargePeriodConfig:
+class ModbusChargePeriodAddressConfig:
     """Defines the set of registers which are used to define a charge period"""
 
     period_start_address: int
     period_end_address: int
     enable_charge_from_grid_address: int
+
+
+@dataclass
+class ModbusChargePeriodInfo:
+    addresses: ModbusChargePeriodAddressConfig
+    period_start_entity_id: str
+    period_end_entity_id: str
+    enable_force_charge_entity_id: str
+    enable_charge_from_grid_entity_id: str
 
 
 class ChargePeriodAddressSpec:
@@ -33,19 +44,19 @@ class ChargePeriodAddressSpec:
 
     For example:
     addrseses=[
-        ChargePeriodAddressSpec([H1, AC1], aux=ModbusChargePeriodConfig(period_start_address=...))
-        ChargePeriodAddressSpec([H3], aux=ModbusChargePeriodConfig(period_start_address=...))
+        ChargePeriodAddressSpec([H1, AC1], aux=ModbusChargePeriodAddressConfig(period_start_address=...))
+        ChargePeriodAddressSpec([H3], aux=ModbusChargePeriodAddressConfig(period_start_address=...))
     ]
     """
 
     def __init__(
         self,
         models: list[str],
-        input: ModbusChargePeriodConfig | None = None,  # noqa: A002
-        holding: ModbusChargePeriodConfig | None = None,
+        input: ModbusChargePeriodAddressConfig | None = None,  # noqa
+        holding: ModbusChargePeriodAddressConfig | None = None,
     ) -> None:
         self.models = models
-        self.register_types: dict[RegisterType, ModbusChargePeriodConfig] = {}
+        self.register_types: dict[RegisterType, ModbusChargePeriodAddressConfig] = {}
         if input is not None:
             self.register_types[RegisterType.INPUT] = input
         if holding is not None:
@@ -82,7 +93,7 @@ class ModbusChargePeriodFactory:
     Factory which creates various things required to define and specify a charge period
 
     This is used to create the entities which visualise the various bits of charge period start
-    (start time, etc), and also the ModbusChargePeriodConfig which is used internally when
+    (start time, etc), and also the ModbusChargePeriodAddressConfig which is used internally when
     interacting with charge periods
     """
 
@@ -99,6 +110,11 @@ class ModbusChargePeriodFactory:
         enable_charge_from_grid_name: str,
     ) -> None:
         self.address_specs = addresses
+
+        self._period_start_key = period_start_key
+        self._period_end_key = period_end_key
+        self._enable_force_charge_key = enable_force_charge_key
+        self._enable_charge_from_grid_key = enable_charge_from_grid_key
 
         period_start_address = [x.get_start_address() for x in addresses]
         period_end_address = [x.get_end_address() for x in addresses]
@@ -146,20 +162,36 @@ class ModbusChargePeriodFactory:
         ]
 
     def create_charge_period_config_if_supported(
-        self, inverter_model: str, register_type: RegisterType
-    ) -> ModbusChargePeriodConfig | None:
+        self, inverter_model: str, register_type: RegisterType, inv_details: dict[str, Any]
+    ) -> ModbusChargePeriodInfo | None:
         """
-        If the inverter model / connection type supports a charge period, fetches a ModbusChargePeriodConfig containing
-        the register addresses involved. If not supported, returns None.
+        If the inverter model / connection type supports a charge period, fetches a ModbusChargePeriodAddressConfig
+        containing the register addresses involved. If not supported, returns None.
         """
 
-        result: ModbusChargePeriodConfig | None = None
+        result: ModbusChargePeriodInfo | None = None
         for address_spec in self.address_specs:
             if inverter_model in address_spec.models:
-                config = address_spec.register_types.get(register_type)
-                if config is not None:
+                address_config = address_spec.register_types.get(register_type)
+                if address_config is not None:
                     assert (
                         result is None
                     ), f"{self}: multiple charge periods defined for ({inverter_model}, {register_type})"
-                    result = config
+
+                    # TODO: It isn't great that this logic is duplicated between this and the entities
+                    start_id = f"sensor.{add_entity_id_prefix(self._period_start_key, inv_details)}"
+                    end_id = f"sensor.{add_entity_id_prefix(self._period_end_key, inv_details)}"
+                    enable_force_charge_id = (
+                        f"binary_sensor.{add_entity_id_prefix(self._enable_force_charge_key, inv_details)}"
+                    )
+                    enable_charge_from_grid_id = (
+                        f"binary_sensor.{add_entity_id_prefix(self._enable_charge_from_grid_key, inv_details)}"
+                    )
+                    result = ModbusChargePeriodInfo(
+                        addresses=address_config,
+                        period_start_entity_id=start_id,
+                        period_end_entity_id=end_id,
+                        enable_force_charge_entity_id=enable_force_charge_id,
+                        enable_charge_from_grid_entity_id=enable_charge_from_grid_id,
+                    )
         return result

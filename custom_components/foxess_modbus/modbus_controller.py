@@ -51,6 +51,7 @@ class ModbusController(EntityController, UnloadController):
         hass: HomeAssistant,
         client: ModbusClient,
         connection_type_profile: InverterModelConnectionTypeProfile,
+        inverter_details: dict[str, Any],
         slave: int,
         poll_rate: int,
         max_read: int,
@@ -61,7 +62,8 @@ class ModbusController(EntityController, UnloadController):
         self._data: dict[int, int | None] = {}
         self._client = client
         self._connection_type_profile = connection_type_profile
-        self.charge_periods = connection_type_profile.create_charge_periods()
+        self.inverter_details = inverter_details
+        self.charge_periods = connection_type_profile.create_charge_periods(inverter_details)
         self._slave = slave
         self._poll_rate = poll_rate
         self._max_read = max_read
