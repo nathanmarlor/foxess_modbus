@@ -7,6 +7,7 @@ from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv
 
 from ..const import DOMAIN
+from ..const import FRIENDLY_NAME
 from ..const import INVERTERS
 from .utils import get_controller_from_friendly_name_or_device_id
 
@@ -35,4 +36,7 @@ def get_charge_periods(hass: HomeAssistant, connection: websocket_api.ActiveConn
                 "enable_charge_from_grid_entity_id": charge_period.enable_charge_from_grid_entity_id,
             }
         )
-    connection.send_result(msg["id"], {"charge_periods": charge_periods})
+    connection.send_result(msg["id"], {
+        "friendly_name": controller.inverter_details[FRIENDLY_NAME],
+        "charge_periods": charge_periods,
+    })
