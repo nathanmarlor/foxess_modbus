@@ -51,8 +51,8 @@ def _start_end_must_be_present_if_enabled(data: dict[str, Any]) -> dict[str, Any
     return data
 
 
-def _end_must_be_after_start(data: dict[str, Any]) -> dict[str, Any]:
-    if "start" in data and "end" in data:
+def _end_must_be_after_start_if_enabled(data: dict[str, Any]) -> dict[str, Any]:
+    if data["enable_force_charge"] and "start" in data and "end" in data:
         start = data["start"]
         end = data["end"]
         if end.hour < start.hour or (end.hour == start.hour and end.minute <= start.minute):
@@ -69,12 +69,10 @@ _UPDATE_CHARGE_PERIOD_SCHEMA = vol.Schema(
             vol.Required("enable_force_charge", description="Enable force charge"): cv.boolean,
             vol.Required("enable_charge_from_grid", description="Enable charge from grid"): cv.boolean,
             vol.Optional("start", description="Period Start"): vol.All(cv.time, _seconds_must_be_zero),
-            vol.Optional("end", description="Period End"): vol.All(
-                cv.time, vol.Range(min=time(hour=0, minute=1)), _seconds_must_be_zero
-            ),
+            vol.Optional("end", description="Period End"): vol.All(cv.time, _seconds_must_be_zero),
         },
         _start_end_must_be_present_if_enabled,
-        _end_must_be_after_start,
+        _end_must_be_after_start_if_enabled,
     )
 )
 
@@ -94,12 +92,11 @@ _UPDATE_ALL_CHARGE_PERIODS_SCHEMA = vol.Schema(
                         vol.Optional("start", description="Period Start"): vol.All(cv.time, _seconds_must_be_zero),
                         vol.Optional("end", description="Period End"): vol.All(
                             cv.time,
-                            vol.Range(min=time(hour=0, minute=1)),
                             _seconds_must_be_zero,
                         ),
                     },
                     _start_end_must_be_present_if_enabled,
-                    _end_must_be_after_start,
+                    _end_must_be_after_start_if_enabled,
                 )
             ],
             vol.Length(min=2, max=2),
