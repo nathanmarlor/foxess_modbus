@@ -99,7 +99,7 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
         if entity_description.scale is not None:
             value = value / entity_description.scale
 
-        int_value = int(value)
+        int_value = int(round(value))
 
         await self._controller.write_register(self._address, int_value)
 
