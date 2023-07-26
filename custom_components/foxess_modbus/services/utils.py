@@ -15,6 +15,11 @@ def get_controller_from_friendly_name_or_device_id(
     inverter_controllers: list[tuple[Any, ModbusController]],
     hass: HomeAssistant,
 ) -> ModbusController:
+    # HomeAssisantErrors here are shown to the user when they call a service or use the charge period card
+
+    if len(inverter_controllers) == 0:
+        raise HomeAssistantError("No inverters configured in FoxESS - Modbus")
+
     """Fetch a ModbusController from a string containing either its device ID or friendly name"""
     if device_id is None:
         device_id = ""
@@ -43,6 +48,7 @@ def get_controller_from_friendly_name_or_device_id(
 
     if modbus_controller is None:
         friendly_names = ", ".join(f"'{inverter[FRIENDLY_NAME]}'" for (inverter, _) in inverter_controllers)
+
         raise HomeAssistantError(
             f"Unable to find an inverter with the device ID or friendly name '{friendly_name}'. Valid friendly names: "
             f"{friendly_names}"
