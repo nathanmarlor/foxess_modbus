@@ -54,29 +54,35 @@ Recommend installation through [HACS][hacs]
 
 ## Usage
 
-<b>Modbus Service</b></p>
-
-1. Navigate to Settings -> Devices & Services to find...
+1. Navigate to Settings -> Devices & Services to find:
 
 ![Usage](images/usage.png)
 
-2. Select '1 service' to find all Modbus readings...
+2. Select '1 device' to find all Modbus readings:
 
 ![Example](images/example.png)
 
-<b>Write Service</b></p>
+## Charge Periods
+
+If your inverter supports setting charge periods, you can use install the [Charge Periods lovelace card](https://github.com/nathanmarlor/foxess_modbus_charge_period_card):
+
+![Charge Periods](images/charge-periods.png)
+
+## Services
+
+### Write Service
 
 A service to write any modbus address is available, similar to the native Home Assistant service. To use a service, navigate to Developer Tools -> Services and select it from the drop-down.
 
 ![Service](images/svc-write.png)
 
-<b>Update Charge Periods</b></p>
+### Update Charge Periods
 
 Updates one of the two charge periods (if supported by your inverter).
 
 ![Service](images/svc-charge-1.png)
 
-<b>Update All Charge Periods</b></p>
+### Update All Charge Periods
 
 Sets all charge periods in one service call. The service "Update Charge Period" is easier for end-users to use.
 
