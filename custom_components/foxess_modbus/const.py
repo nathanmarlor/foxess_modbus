@@ -31,7 +31,19 @@ PLATFORMS = [SENSOR, BINARY_SENSOR, SELECT, NUMBER]
 ATTR_ENTRY_TYPE = "entry_type"
 
 # Modbus Options
+# Once upon a time, we just had the friendly name, and we allowed any string. We added this to the start of all entity
+# IDs and unique IDs. HA converted the resulting entity IDs to be valid (replacing spaces with _, etc), but this caused
+# problems with e.g. the energy dashboard.
+# Then we moved to a separate friendly name (shown in the entity name) and entity ID prefix (added to the start of
+# entity and unique IDs). This was always a valid entity ID for new configs, but could still be invalid for old migrated
+# configs. This fixed the problem with the energy dashboard. However, the charge period card still got tripped up by
+# entity ID prefixes which were invalid entity IDs.
+# We then migrated all entity ID prefix to be valid entity IDs. However, this broke the fact that we were also using the
+# entity ID prefix as the unique ID prefix. Therefore we added the UNIQUE_ID_PREFIX. For old configs with an old invalid
+# entity ID prefix, the unique ID prefix retains the old invalid value while the entity ID prefix is fixed. For new
+# configs, it should be the same as the entity ID prefix.
 ENTITY_ID_PREFIX = "entity_id_prefix"
+UNIQUE_ID_PREFIX = "unique_id_prefix"
 FRIENDLY_NAME = "friendly_name"
 MODBUS_SLAVE = "modbus_slave"
 MODBUS_DEVICE = "modbus_device"

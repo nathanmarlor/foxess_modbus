@@ -37,7 +37,7 @@ from .options_handler import OptionsHandler
 class FlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for foxess_modbus."""
 
-    VERSION = 6
+    VERSION = 7
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     def __init__(self) -> None:
@@ -84,7 +84,7 @@ class FlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMAIN):
         # This is a bit involved, so we'll avoid _with_default_form
 
         def generate_entity_id_prefix(friendly_name: str | None) -> str:
-            return slugify(friendly_name, separator="_", regex_pattern=r"\W").strip("_") if friendly_name else ""
+            return slugify(friendly_name, separator="_").strip("_") if friendly_name else ""
 
         def is_unique_entity_id_prefix(entity_id_prefix: str) -> bool:
             return not any(x for x in self._all_inverters if x.entity_id_prefix == entity_id_prefix)

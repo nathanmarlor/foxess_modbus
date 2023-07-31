@@ -16,4 +16,5 @@ class InverterData:
     inverter_protocol: str | None = None  # TCP, UDP, SERIAL, RTU_OVER_TCP
     host: str | None = None  # host:port or /dev/serial
     entity_id_prefix: str | None = None
+    unique_id_prefix: str | None = None
     friendly_name: str | None = None

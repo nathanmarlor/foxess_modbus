@@ -15,6 +15,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import UNDEFINED
+from slugify import slugify
 
 from .const import ADAPTER_ID
 from .const import ADAPTER_WAS_MIGRATED
@@ -36,6 +37,7 @@ from .const import SERIAL
 from .const import STARTUP_MESSAGE
 from .const import TCP
 from .const import UDP
+from .const import UNIQUE_ID_PREFIX
 from .inverter_adapters import ADAPTERS
 from .inverter_profiles import inverter_connection_type_profile_from_config
 from .modbus_client import ModbusClient
@@ -226,6 +228,15 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             else:
                 inverter[MODBUS_TYPE] = inverter[MODBUS_TYPE].lower()
         config_entry.version = 6
+
+    if config_entry.version == 6:
+        # We still have users with entity ID prefixes which aren't valid in entity IDs. HA will automatically convert
+        # them, but this causes the charge period card to complain. Fix them once and for all.
+        for inverter in config_entry.data.get(INVERTERS, {}).values():
+            inverter[UNIQUE_ID_PREFIX] = inverter[ENTITY_ID_PREFIX]
+            if inverter[ENTITY_ID_PREFIX]:
+                inverter[ENTITY_ID_PREFIX] = slugify(inverter[ENTITY_ID_PREFIX], separator="_").rstrip("_")
+        config_entry.version = 7
 
     _LOGGER.info("Migration to version %s successful", config_entry.version)
     return True
