@@ -75,7 +75,11 @@ class CustomModbusTcpClient(ModbusTcpClient):
         # less than the expected size.
         self.socket.setblocking(0)
 
-        timeout = self.params.timeout
+        # In the base method this is 'timeout = self.comm_params.timeout', but that changed from 'self.params.timeout'
+        # in 3.4.1. So we don't have a consistent way to access the timeout.
+        # However, this just mirrors what we set, which is the default of 3s. So use that.
+        # Annoyingly 3.4.1
+        timeout = 3
 
         # If size isn't specified read up to 4096 bytes at a time.
         if size is None:
