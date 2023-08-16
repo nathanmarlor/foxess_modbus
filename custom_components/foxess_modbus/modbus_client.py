@@ -183,7 +183,7 @@ class ModbusClient:
     async def close(self) -> None:
         """Close connection"""
         _LOGGER.debug("Closing connection to modbus on %s", self)
-        await self._async_pymodbus_call(self._client.close)
+        await self._async_pymodbus_call(self._client.close, auto_connect=False)
 
     async def read_registers(
         self,
@@ -283,9 +283,13 @@ class ModbusClient:
                 response,
             )
 
-    async def _async_pymodbus_call(self, call: Callable[..., T], *args: Any) -> T:
+    async def _async_pymodbus_call(self, call: Callable[..., T], *args: Any, auto_connect: bool = True) -> T:
         """Convert async to sync pymodbus call."""
         async with self._lock:
+            # pymodbus 3.4.1 removes automatic reconnections for the sync modbus client
+            if auto_connect and not self._client.connected:
+                await self._hass.async_add_executor_job(self._client.connect)
+            # If the connection failed, this call will throw an appropriate error
             result = await self._hass.async_add_executor_job(call, *args)
             # This seems to be required for serial devices, otherwise subsequent reads fail
             # The HA modbus integration does the same
