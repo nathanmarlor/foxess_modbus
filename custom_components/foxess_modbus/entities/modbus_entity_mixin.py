@@ -15,6 +15,7 @@ from ..const import ENTITY_ID_PREFIX
 from ..const import FRIENDLY_NAME
 from ..const import INVERTER_CONN
 from ..const import INVERTER_MODEL
+from ..const import UNIQUE_ID_PREFIX
 from .base_validator import BaseValidator
 
 _LOGGER = logging.getLogger(__name__)
@@ -110,7 +111,14 @@ class ModbusEntityMixin(ModbusControllerEntity, ModbusEntityProtocol, _ModbusEnt
 
     def _get_unique_id(self) -> str:
         """Get unique ID"""
-        return self._add_entity_id_prefix(self.entity_description.key)
+
+        unique_id = self.entity_description.key
+
+        unique_id_prefix = self._inv_details[UNIQUE_ID_PREFIX]
+        if unique_id_prefix:
+            unique_id = f"{unique_id_prefix}_{unique_id}"
+
+        return unique_id
 
     def _add_entity_id_prefix(self, entity_id: str) -> str:
         """Add the entity ID prefix to the beginning of the given input string"""

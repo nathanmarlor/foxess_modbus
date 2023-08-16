@@ -16,6 +16,7 @@ from ..const import INVERTER_CONN
 from ..const import INVERTER_MODEL
 from ..const import MODBUS_SLAVE
 from ..const import MODBUS_TYPE
+from ..const import UNIQUE_ID_PREFIX
 from ..inverter_adapters import ADAPTERS
 from .inverter_data import InverterData
 
@@ -86,6 +87,7 @@ class FlowHandlerMixin(_FlowHandlerMixinBase):
             MODBUS_TYPE: inverter.inverter_protocol,
             HOST: inverter.host,
             ENTITY_ID_PREFIX: inverter.entity_id_prefix if inverter.entity_id_prefix else "",
+            UNIQUE_ID_PREFIX: inverter.unique_id_prefix if inverter.unique_id_prefix else "",
             FRIENDLY_NAME: inverter.friendly_name if inverter.friendly_name else "",
         }
         return inverter_config
@@ -101,6 +103,7 @@ class FlowHandlerMixin(_FlowHandlerMixinBase):
             inverter_protocol=config[MODBUS_TYPE],
             host=config[HOST],
             entity_id_prefix=config[ENTITY_ID_PREFIX] if config[ENTITY_ID_PREFIX] else None,
+            unique_id_prefix=config[UNIQUE_ID_PREFIX] if config[UNIQUE_ID_PREFIX] else None,
             friendly_name=config[FRIENDLY_NAME] if config[ENTITY_ID_PREFIX] else None,
         )
         return inverter_data
