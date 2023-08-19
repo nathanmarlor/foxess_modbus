@@ -290,8 +290,9 @@ class ModbusClient:
     async def _async_pymodbus_call(self, call: Callable[..., T], *args: Any, auto_connect: bool = True) -> T:
         """Convert async to sync pymodbus call."""
         async with self._lock:
-            # pymodbus 3.4.1 removes automatic reconnections for the sync modbus client
-            if auto_connect and not self._client.connected:
+            # pymodbus 3.4.1 removes automatic reconnections for the sync modbus client.
+            # However, in versions prior to 4.3.0, the ModbusUdpClient didn't have a connected property.
+            if auto_connect and hasattr(self._client, "connected") and not self._client.connected:
                 await self._hass.async_add_executor_job(self._client.connect)
             # If the connection failed, this call will throw an appropriate error
             result = await self._hass.async_add_executor_job(call, *args)
