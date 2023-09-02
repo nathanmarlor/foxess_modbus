@@ -139,6 +139,11 @@ class FlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMAIN):
             if ready_to_submit and not errors:
                 assert entity_id_prefix is not None
                 self._inverter_data.entity_id_prefix = entity_id_prefix
+                # It would probably make more sense to use the entity_id_prefix here, but for a long time the
+                # friendly_name and entity_id_prefix were the same (i.e. not slugified). We keep this behaviour
+                # (allowing spaces, special chars, etc in the friendly name) so that if someone removes and
+                # re-adds the integration using the same friendly_name, their unique IDs stay the same.
+                self._inverter_data.unique_id_prefix = friendly_name
                 self._inverter_data.friendly_name = friendly_name
                 self._all_inverters.append(self._inverter_data)
                 self._inverter_data = InverterData()
