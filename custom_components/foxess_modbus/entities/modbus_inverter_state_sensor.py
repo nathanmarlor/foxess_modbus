@@ -75,7 +75,7 @@ class ModbusInverterStateSensor(ModbusEntityMixin, SensorEntity):
         self.entity_description = entity_description
         self._address = address
         self._inv_details = inv_details
-        self.entity_id = "sensor." + self._get_unique_id()
+        self.entity_id = "sensor." + self._get_entity_id()
 
     @property
     def native_value(self) -> str | None:

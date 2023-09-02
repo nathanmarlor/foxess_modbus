@@ -63,7 +63,7 @@ class ModbusBinarySensor(ModbusEntityMixin, BinarySensorEntity):
         self._address = address
         self._entry = entry
         self._inv_details = inv_details
-        self.entity_id = "binary_sensor." + self._get_unique_id()
+        self.entity_id = "binary_sensor." + self._get_entity_id()
 
     @property
     def is_on(self) -> bool | None:

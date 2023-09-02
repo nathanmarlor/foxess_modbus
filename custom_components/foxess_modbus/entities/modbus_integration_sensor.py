@@ -81,7 +81,7 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
         self._entry = entry
         self._inv_details = inv_details
         self.entity_description = entity_description
-        self.entity_id = "sensor." + self._get_unique_id()
+        self.entity_id = "sensor." + self._get_entity_id()
 
         source_entity = f"sensor.{self._add_entity_id_prefix(source_entity)}"
 

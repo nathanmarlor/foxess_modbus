@@ -120,6 +120,10 @@ class ModbusEntityMixin(ModbusControllerEntity, ModbusEntityProtocol, _ModbusEnt
 
         return unique_id
 
+    def _get_entity_id(self) -> str:
+        """Gets the entity ID"""
+        return self._add_entity_id_prefix(self.entity_description.key)
+
     def _add_entity_id_prefix(self, entity_id: str) -> str:
         """Add the entity ID prefix to the beginning of the given input string"""
         return add_entity_id_prefix(entity_id, self._inv_details)

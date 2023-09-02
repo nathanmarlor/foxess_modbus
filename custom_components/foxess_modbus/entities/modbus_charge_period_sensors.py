@@ -105,7 +105,7 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
         self._other_address = other_address
         self._entry = entry
         self._inv_details = inv_details
-        self.entity_id = "sensor." + self._get_unique_id()
+        self.entity_id = "sensor." + self._get_entity_id()
         # The last value this sensor had when force-charge was enabled
         self._last_enabled_value: int | None = None
 
@@ -239,7 +239,7 @@ class ModbusEnableForceChargeSensor(ModbusEntityMixin, BinarySensorEntity):
         self._period_end_address = period_end_address
         self._entry = entry
         self._inv_details = inv_details
-        self.entity_id = "binary_sensor." + self._get_unique_id()
+        self.entity_id = "binary_sensor." + self._get_entity_id()
         self._attr_device_class = BinarySensorDeviceClass.POWER
 
     @property

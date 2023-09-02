@@ -62,7 +62,7 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
         self._address = address
         self._entry = entry
         self._inv_details = inv_details
-        self.entity_id = "select." + self._get_unique_id()
+        self.entity_id = "select." + self._get_entity_id()
         self._attr_options = list(self.entity_description.options_map.values())
 
     @property

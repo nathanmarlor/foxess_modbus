@@ -66,7 +66,7 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
         self._address = address
         self._entry = entry
         self._inv_details = inv_details
-        self.entity_id = "number." + self._get_unique_id()
+        self.entity_id = "number." + self._get_entity_id()
 
     @property
     def native_value(self) -> int | float | None:

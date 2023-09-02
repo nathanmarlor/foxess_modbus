@@ -71,7 +71,7 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
         self._inv_details = inv_details
         self._round_to = round_to
         self._moving_average_filter: deque[float] | None = deque(maxlen=6) if round_to is not None else None
-        self.entity_id = "sensor." + self._get_unique_id()
+        self.entity_id = "sensor." + self._get_entity_id()
 
     def _calculate_native_value(self) -> int | float | None:
         """Return the value reported by the sensor."""
