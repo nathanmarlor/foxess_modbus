@@ -5,6 +5,8 @@ from typing import Any
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import Platform
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
@@ -167,6 +169,7 @@ class ModbusFaultSensorDescription(SensorEntityDescription, EntityFactory):
 
     def create_entity_if_supported(
         self,
+        _hass: HomeAssistant,
         controller: EntityController,
         inverter_model: str,
         register_type: RegisterType,
@@ -193,7 +196,7 @@ class ModbusFaultSensor(ModbusEntityMixin, SensorEntity):
         self.entity_description = entity_description
         self._addresses = addresses
         self._inv_details = inv_details
-        self.entity_id = "sensor." + self._get_unique_id()
+        self.entity_id = self._get_entity_id(Platform.SENSOR)
 
     @property
     def native_value(self) -> str | None:

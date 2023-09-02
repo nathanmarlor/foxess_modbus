@@ -7,7 +7,9 @@ from typing import Callable
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import Platform
 from homeassistant.core import Event
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.event import async_track_state_change_event
 
@@ -16,6 +18,7 @@ from ..common.register_type import RegisterType
 from .entity_factory import EntityFactory
 from .inverter_model_spec import EntitySpec
 from .modbus_entity_mixin import ModbusEntityMixin
+from .modbus_entity_mixin import get_entity_id
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,6 +38,7 @@ class ModbusLambdaSensorDescription(SensorEntityDescription, EntityFactory):
 
     def create_entity_if_supported(
         self,
+        hass: HomeAssistant,
         controller: EntityController,
         inverter_model: str,
         register_type: RegisterType,
@@ -44,11 +48,13 @@ class ModbusLambdaSensorDescription(SensorEntityDescription, EntityFactory):
         if not self._supports_inverter_model(self.models, inverter_model, register_type):
             return None
 
+        source_entity_ids = [get_entity_id(hass, Platform.SENSOR, x, inv_details) for x in self.sources]
+
         return ModbusLambdaSensor(
             controller=controller,
             entity_description=self,
             inv_details=inv_details,
-            sources=self.sources,
+            source_entity_ids=source_entity_ids,
             method=self.method,
         )
 
@@ -61,13 +67,13 @@ class ModbusLambdaSensor(ModbusEntityMixin, SensorEntity):
         controller: EntityController,
         entity_description: ModbusLambdaSensorDescription,
         inv_details: dict[str, Any],
-        sources: list[str],
+        source_entity_ids: list[str],
         method: Callable[[list[float]], Any],
     ) -> None:
         self._controller = controller
         self.entity_description = entity_description
         self._inv_details = inv_details
-        self._source_entity_ids = [f"sensor.{self._add_entity_id_prefix(x)}" for x in sources]
+        self._source_entity_ids = source_entity_ids
         self._method = method
 
     async def async_added_to_hass(self) -> None:

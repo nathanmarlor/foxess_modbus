@@ -4,6 +4,7 @@ from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.number import NumberEntity
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.sensor import SensorEntity
+from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.foxess_modbus.const import ENTITY_ID_PREFIX
@@ -14,7 +15,7 @@ from custom_components.foxess_modbus.inverter_profiles import INVERTER_PROFILES
 from custom_components.foxess_modbus.inverter_profiles import create_entities
 
 
-def test_creates_all_entities() -> None:
+def test_creates_all_entities(hass: HomeAssistant) -> None:
     controller = MagicMock()
     config_entry = MockConfigEntry()
 
@@ -28,4 +29,4 @@ def test_creates_all_entities() -> None:
                     UNIQUE_ID_PREFIX: "",
                 }
                 # Asserts if e.g. the ModbusAddressSpecs match
-                create_entities(entity_type, controller, config_entry, inverter_config)
+                create_entities(entity_type, hass, controller, config_entry, inverter_config)

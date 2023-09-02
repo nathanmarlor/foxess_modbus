@@ -10,6 +10,8 @@ from typing import cast
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import Platform
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
@@ -40,6 +42,7 @@ class ModbusSensorDescription(SensorEntityDescription, EntityFactory):
 
     def create_entity_if_supported(
         self,
+        _hass: HomeAssistant,
         controller: EntityController,
         inverter_model: str,
         register_type: RegisterType,
@@ -71,7 +74,7 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
         self._inv_details = inv_details
         self._round_to = round_to
         self._moving_average_filter: deque[float] | None = deque(maxlen=6) if round_to is not None else None
-        self.entity_id = "sensor." + self._get_unique_id()
+        self.entity_id = self._get_entity_id(Platform.SENSOR)
 
     def _calculate_native_value(self) -> int | float | None:
         """Return the value reported by the sensor."""

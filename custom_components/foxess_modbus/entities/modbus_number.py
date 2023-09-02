@@ -10,6 +10,8 @@ from homeassistant.components.number import NumberEntity
 from homeassistant.components.number import NumberEntityDescription
 from homeassistant.components.number import NumberMode
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import Platform
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
@@ -38,6 +40,7 @@ class ModbusNumberDescription(NumberEntityDescription, EntityFactory):
 
     def create_entity_if_supported(
         self,
+        _hass: HomeAssistant,
         controller: EntityController,
         inverter_model: str,
         register_type: RegisterType,
@@ -66,7 +69,7 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
         self._address = address
         self._entry = entry
         self._inv_details = inv_details
-        self.entity_id = "number." + self._get_unique_id()
+        self.entity_id = self._get_entity_id(Platform.NUMBER)
 
     @property
     def native_value(self) -> int | float | None:

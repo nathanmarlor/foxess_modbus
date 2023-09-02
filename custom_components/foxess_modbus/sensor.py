@@ -19,4 +19,4 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_d
     inverters = hass.data[DOMAIN][entry.entry_id][INVERTERS]
 
     for inverter, controller in inverters:
-        async_add_devices(create_entities(SensorEntity, controller, entry, inverter))
+        async_add_devices(create_entities(SensorEntity, hass, controller, entry, inverter))
