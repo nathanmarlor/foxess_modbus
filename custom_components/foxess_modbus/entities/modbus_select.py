@@ -8,6 +8,8 @@ from typing import cast
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.select import SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import Platform
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
@@ -34,6 +36,7 @@ class ModbusSelectDescription(SelectEntityDescription, EntityFactory):
 
     def create_entity_if_supported(
         self,
+        _hass: HomeAssistant,
         controller: EntityController,
         inverter_model: str,
         register_type: RegisterType,
@@ -62,7 +65,7 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
         self._address = address
         self._entry = entry
         self._inv_details = inv_details
-        self.entity_id = "select." + self._get_entity_id()
+        self.entity_id = self._get_entity_id(Platform.SELECT)
         self._attr_options = list(self.entity_description.options_map.values())
 
     @property

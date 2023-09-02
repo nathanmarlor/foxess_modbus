@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
@@ -23,6 +24,7 @@ class ModbusBatterySensorDescription(ModbusSensorDescription):
 
     def create_entity_if_supported(
         self,
+        _hass: HomeAssistant,
         controller: EntityController,
         inverter_model: str,
         register_type: RegisterType,

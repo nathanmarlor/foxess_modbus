@@ -3,6 +3,7 @@ import logging
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
 from .common.entity_controller import EntityController
@@ -47,6 +48,7 @@ class InverterModelConnectionTypeProfile:
     def create_entities(
         self,
         entity_type: type[Entity],
+        hass: HomeAssistant,
         controller: EntityController,
         entry: ConfigEntry,
         inverter_details: dict[str, Any],
@@ -58,6 +60,7 @@ class InverterModelConnectionTypeProfile:
         for entity_factory in ENTITIES:
             if entity_factory.entity_type == entity_type:
                 entity = entity_factory.create_entity_if_supported(
+                    hass,
                     controller,
                     self.inverter_model,
                     self.register_type,
@@ -69,14 +72,16 @@ class InverterModelConnectionTypeProfile:
 
         return result
 
-    def create_charge_periods(self, inverter_details: dict[str, Any]) -> list[ModbusChargePeriodInfo]:
+    def create_charge_periods(
+        self, hass: HomeAssistant, inverter_details: dict[str, Any]
+    ) -> list[ModbusChargePeriodInfo]:
         """Create all of the charge periods which support this inverter/connection combination"""
 
         result = []
 
         for charge_period_factory in CHARGE_PERIODS:
             charge_period = charge_period_factory.create_charge_period_config_if_supported(
-                self.inverter_model, self.register_type, inverter_details
+                hass, self.inverter_model, self.register_type, inverter_details
             )
             if charge_period is not None:
                 result.append(charge_period)
@@ -172,6 +177,7 @@ INVERTER_PROFILES = {
 
 def create_entities(
     entity_type: type[Entity],
+    hass: HomeAssistant,
     controller: EntityController,
     entry: ConfigEntry,
     inverter_config: dict[str, Any],
@@ -179,7 +185,7 @@ def create_entities(
     """Create all of the entities which support the inverter described by the given configuration object"""
 
     return inverter_connection_type_profile_from_config(inverter_config).create_entities(
-        entity_type, controller, entry, inverter_config
+        entity_type, hass, controller, entry, inverter_config
     )
 
 

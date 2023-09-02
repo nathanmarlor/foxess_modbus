@@ -5,6 +5,9 @@ from typing import Any
 from typing import Protocol
 from typing import cast
 
+from homeassistant.const import Platform
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity import Entity
 
@@ -21,14 +24,41 @@ from .base_validator import BaseValidator
 _LOGGER = logging.getLogger(__name__)
 
 
-def add_entity_id_prefix(entity_id: str, inv_details: dict[str, Any]) -> str:
+def get_entity_id(hass: HomeAssistant, platform: Platform, key: str, inv_details: dict[str, Any]) -> str:
+    """Gets the entity ID for the entity with the given platform and key"""
+
+    unique_id = _create_unique_id(key, inv_details)
+
+    er = entity_registry.async_get(hass)
+
+    # Type annotation missing in the annotations package maybe?
+    entity_id = cast(str | None, er.async_get_entity_id(platform, DOMAIN, unique_id))
+
+    if entity_id is None:
+        # This can happen when first setting up, as the target entity hasn't been created yet.
+        # In this case, assume that it's going to be correctly named
+        entity_id = _add_entity_id_prefix(key, inv_details)
+
+    return entity_id
+
+
+def _add_entity_id_prefix(key: str, inv_details: dict[str, Any]) -> str:
     """Add the entity ID prefix to the beginning of the given input string"""
     entity_id_prefix = inv_details[ENTITY_ID_PREFIX]
 
     if entity_id_prefix:
-        entity_id = f"{entity_id_prefix}_{entity_id}"
+        key = f"{entity_id_prefix}_{key}"
 
-    return entity_id
+    return key
+
+
+def _create_unique_id(key: str, inv_details: dict[str, Any]) -> str:
+    unique_id_prefix = inv_details[UNIQUE_ID_PREFIX]
+    if unique_id_prefix:
+        key = f"{unique_id_prefix}_{key}"
+
+    # We don't need to prefix unique ids with foxess_modbus, but we do for some reason.
+    return "foxess_modbus_" + key
 
 
 class ModbusEntityProtocol(Protocol):
@@ -54,7 +84,7 @@ class ModbusEntityMixin(ModbusControllerEntity, ModbusEntityProtocol, _ModbusEnt
     @property
     def unique_id(self) -> str:
         """Return a unique ID."""
-        return "foxess_modbus_" + self._get_unique_id()
+        return _create_unique_id(self.entity_description.key, self._inv_details)
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -109,24 +139,9 @@ class ModbusEntityMixin(ModbusControllerEntity, ModbusEntityProtocol, _ModbusEnt
         """Called when the controller reads an updated to any of the addresses in self.addresses"""
         self.schedule_update_ha_state()
 
-    def _get_unique_id(self) -> str:
-        """Get unique ID"""
-
-        unique_id = self.entity_description.key
-
-        unique_id_prefix = self._inv_details[UNIQUE_ID_PREFIX]
-        if unique_id_prefix:
-            unique_id = f"{unique_id_prefix}_{unique_id}"
-
-        return unique_id
-
-    def _get_entity_id(self) -> str:
+    def _get_entity_id(self, platform: Platform) -> str:
         """Gets the entity ID"""
-        return self._add_entity_id_prefix(self.entity_description.key)
-
-    def _add_entity_id_prefix(self, entity_id: str) -> str:
-        """Add the entity ID prefix to the beginning of the given input string"""
-        return add_entity_id_prefix(entity_id, self._inv_details)
+        return f"{platform}.{_add_entity_id_prefix(self.entity_description.key, self._inv_details)}"
 
     def _validate(
         self,

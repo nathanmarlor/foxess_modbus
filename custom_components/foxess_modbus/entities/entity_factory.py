@@ -5,6 +5,7 @@ from typing import Any
 from typing import Sequence
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
@@ -23,6 +24,7 @@ class EntityFactory(ABC):
     @abstractmethod
     def create_entity_if_supported(
         self,
+        hass: HomeAssistant,
         controller: EntityController,
         inverter_model: str,
         register_type: RegisterType,

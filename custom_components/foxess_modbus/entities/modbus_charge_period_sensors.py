@@ -12,6 +12,8 @@ from homeassistant.components.binary_sensor import BinarySensorEntityDescription
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import Platform
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.restore_state import ExtraStoredData
 from homeassistant.helpers.restore_state import RestoredExtraData
@@ -66,6 +68,7 @@ class ModbusChargePeriodStartEndSensorDescription(SensorEntityDescription, Entit
 
     def create_entity_if_supported(
         self,
+        _hass: HomeAssistant,
         controller: EntityController,
         inverter_model: str,
         register_type: RegisterType,
@@ -105,7 +108,7 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
         self._other_address = other_address
         self._entry = entry
         self._inv_details = inv_details
-        self.entity_id = "sensor." + self._get_entity_id()
+        self.entity_id = self._get_entity_id(Platform.SENSOR)
         # The last value this sensor had when force-charge was enabled
         self._last_enabled_value: int | None = None
 
@@ -190,6 +193,7 @@ class ModbusEnableForceChargeSensorDescription(BinarySensorEntityDescription, En
 
     def create_entity_if_supported(
         self,
+        _hass: HomeAssistant,
         controller: EntityController,
         inverter_model: str,
         register_type: RegisterType,
@@ -239,7 +243,7 @@ class ModbusEnableForceChargeSensor(ModbusEntityMixin, BinarySensorEntity):
         self._period_end_address = period_end_address
         self._entry = entry
         self._inv_details = inv_details
-        self.entity_id = "binary_sensor." + self._get_entity_id()
+        self.entity_id = self._get_entity_id(Platform.BINARY_SENSOR)
         self._attr_device_class = BinarySensorDeviceClass.POWER
 
     @property

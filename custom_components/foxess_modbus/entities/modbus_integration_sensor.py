@@ -8,7 +8,9 @@ from homeassistant.components.integration.sensor import IntegrationSensor
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import Platform
 from homeassistant.const import UnitOfTime
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
@@ -16,6 +18,7 @@ from ..common.register_type import RegisterType
 from .entity_factory import EntityFactory
 from .inverter_model_spec import EntitySpec
 from .modbus_entity_mixin import ModbusEntityMixin
+from .modbus_entity_mixin import get_entity_id
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,6 +39,7 @@ class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory)
 
     def create_entity_if_supported(
         self,
+        hass: HomeAssistant,
         controller: EntityController,
         inverter_model: str,
         register_type: RegisterType,
@@ -45,6 +49,8 @@ class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory)
         if not self._supports_inverter_model(self.models, inverter_model, register_type):
             return None
 
+        source_entity = get_entity_id(hass, Platform.SENSOR, self.source_entity, inv_details)
+
         # this piggybacks on the existing factory to create IntegrationSensors
         return ModbusIntegrationSensor(
             controller=controller,
@@ -53,7 +59,7 @@ class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory)
             inv_details=inv_details,
             integration_method=self.integration_method,
             round_digits=self.round_digits,
-            source_entity=self.source_entity,
+            source_entity=source_entity,
             unit_time=self.unit_time,
         )
 
@@ -81,9 +87,7 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
         self._entry = entry
         self._inv_details = inv_details
         self.entity_description = entity_description
-        self.entity_id = "sensor." + self._get_entity_id()
-
-        source_entity = f"sensor.{self._add_entity_id_prefix(source_entity)}"
+        self.entity_id = self._get_entity_id(Platform.SENSOR)
 
         IntegrationSensor.__init__(
             self=self,

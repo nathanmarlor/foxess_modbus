@@ -138,7 +138,7 @@ class CustomModbusTcpClient(ModbusTcpClient):
         return data
 
 
-_CLIENTS = {
+_CLIENTS: dict[str, dict[str, Any]] = {
     SERIAL: {
         "client": ModbusSerialClient,
         "framer": ModbusRtuFramer,
