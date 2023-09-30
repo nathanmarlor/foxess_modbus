@@ -36,21 +36,20 @@ Supported models:
 
 ## Installation
 
+[![Quick installation link](https://my.home-assistant.io/badges/hacs_repository.svg)][my-hacs]
+
 Migrating from StealthChesnut's HA-FoxESS-Modbus? [Read this](https://github.com/nathanmarlor/foxess_modbus/wiki/Migrating-from-HA-FoxESS-Modbus).
 
-Recommend installation through [HACS][hacs]
+Recommended installation through [HACS][hacs]:
 
-1. Navigate to HACS integrations
-2. Hit the menu button (top right) and select 'Custom repositories'
-3. Paste this GitHub [link][foxess_modbus] and select 'Integration'
-4. Install as usual through HACS
+1. Either [use this link][my-hacs], or navigate to HACS integration and:
    - 'Explore & Download Repositories'
    - Search for 'FoxESS - Modbus'
    - Download
-5. Restart Home Assistant
-6. Go to Settings > Devices and Services > Add Integration
-7. Search for and select 'FoxESS - Modbus' (If the integration is not found, empty your browser cache and reload the page)
-8. Proceed with the configuration
+2. Restart Home Assistant
+3. Go to Settings > Devices and Services > Add Integration
+4. Search for and select 'FoxESS - Modbus' (If the integration is not found, empty your browser cache and reload the page)
+5. Proceed with the configuration
 
 ## Usage
 
@@ -98,6 +97,7 @@ Sets all charge periods in one service call. The service "Update Charge Period" 
 [commits]: https://github.com/nathanmarlor/foxess_modbus/commits/main
 [hacs]: https://hacs.xyz
 [hacsbadge]: https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge
+[my-hacs]: https://my.home-assistant.io/redirect/hacs_repository/?owner=nathanmarlor&repository=foxess_modbus&category=integration
 [discord]: https://discord.gg/Qa5fW2R
 [discord-shield]: https://img.shields.io/discord/330944238910963714.svg?style=for-the-badge
 [foxessimg]: https://github.com/home-assistant/brands/raw/master/custom_integrations/foxess/logo.png
