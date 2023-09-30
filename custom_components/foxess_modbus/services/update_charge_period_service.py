@@ -51,12 +51,12 @@ def _start_end_must_be_present_if_enabled(data: dict[str, Any]) -> dict[str, Any
     return data
 
 
-def _end_must_be_after_start_if_enabled(data: dict[str, Any]) -> dict[str, Any]:
+def _end_must_not_be_start_if_enabled(data: dict[str, Any]) -> dict[str, Any]:
     if data["enable_force_charge"] and "start" in data and "end" in data:
         start = data["start"]
         end = data["end"]
-        if end.hour < start.hour or (end.hour == start.hour and end.minute <= start.minute):
-            raise vol.Invalid("'end' must be at least 1 minute after 'start'", path=["end"])
+        if start.hour == end.hour and start.minute == end.minute:
+            raise vol.Invalid("'end' must not be the same as 'start'", path=["end"])
     return data
 
 
@@ -72,7 +72,7 @@ _UPDATE_CHARGE_PERIOD_SCHEMA = vol.Schema(
             vol.Optional("end", description="Period End"): vol.All(cv.time, _seconds_must_be_zero),
         },
         _start_end_must_be_present_if_enabled,
-        _end_must_be_after_start_if_enabled,
+        _end_must_not_be_start_if_enabled,
     )
 )
 
@@ -96,7 +96,7 @@ _UPDATE_ALL_CHARGE_PERIODS_SCHEMA = vol.Schema(
                         ),
                     },
                     _start_end_must_be_present_if_enabled,
-                    _end_must_be_after_start_if_enabled,
+                    _end_must_not_be_start_if_enabled,
                 )
             ],
             vol.Length(min=2, max=2),
@@ -224,18 +224,9 @@ async def _set_charge_periods(controller: ModbusController, charge_periods: list
             f"charge periods, got {len(charge_periods)}"
         )
 
-    # Make sure that none of the charge periods overlap. Sort by start time, then ensure each doesn't overlap the next
-    sorted_enabled_periods = sorted((x for x in charge_periods if x.enable_force_charge), key=lambda x: x.start)
-    for i, charge_period in enumerate(sorted_enabled_periods):
-        if i == 0:
-            continue
-        previous = sorted_enabled_periods[i - 1]
-        # It's permissible to have two periods which have the same start/end time (at least the foxcloud app allows it)
-        if charge_period.start < previous.end and previous.start < charge_period.end:
-            raise HomeAssistantError(
-                f"Charge period {i} {previous.start}-{previous.end} overlaps charge period {i + 1} "
-                f"{charge_period.start}-{charge_period.end}"
-            )
+    # The current foxcloud version doesn't seem to impose any restrictions on charge periods overlapping.
+    # (One charge period can contain another, or starts/ends can overlap).
+    # Mirror this for consistancy, even though it is a little odd.
 
     # List of (address, value)
     writes: list[tuple[int, int]] = []
