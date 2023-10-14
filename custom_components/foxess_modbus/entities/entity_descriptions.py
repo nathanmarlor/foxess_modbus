@@ -1489,7 +1489,7 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="max_discharge_current",
         addresses=[ModbusAddressesSpec(models=[H1, AIO_H1, AC1, KH], input=[41008])],
-        name="Max Disharge Current",
+        name="Max Discharge Current",
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="A",
