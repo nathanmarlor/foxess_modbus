@@ -4,6 +4,7 @@ import logging
 from ..const import AC1
 from ..const import AIO_H1
 from ..const import H1
+from ..const import KH
 from .modbus_charge_period_config import ChargePeriodAddressSpec
 from .modbus_charge_period_config import ModbusChargePeriodAddressConfig
 from .modbus_charge_period_config import ModbusChargePeriodFactory
@@ -14,7 +15,7 @@ CHARGE_PERIODS = [
     ModbusChargePeriodFactory(
         addresses=[
             ChargePeriodAddressSpec(
-                models=[H1, AIO_H1, AC1],
+                models=[H1, AIO_H1, AC1, KH],
                 input=ModbusChargePeriodAddressConfig(
                     period_start_address=41002,
                     period_end_address=41003,
@@ -34,7 +35,7 @@ CHARGE_PERIODS = [
     ModbusChargePeriodFactory(
         addresses=[
             ChargePeriodAddressSpec(
-                models=[H1, AIO_H1, AC1],
+                models=[H1, AIO_H1, AC1, KH],
                 input=ModbusChargePeriodAddressConfig(
                     period_start_address=41005,
                     period_end_address=41006,
