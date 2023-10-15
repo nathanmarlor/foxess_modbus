@@ -359,8 +359,8 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         icon="mdi:export",
         scale=0.001,
         round_to=0.01,
-        post_process=lambda x: max(x, 0),
-        validate=[Range(0, 100)],
+        # Negative = charging batteries
+        validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
         key="rpower_Q",
@@ -376,8 +376,8 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         icon="mdi:export",
         scale=0.001,
         round_to=0.01,
-        post_process=lambda x: max(x, 0),
-        validate=[Range(0, 100)],
+        # Negative = charging batteries
+        validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
         key="rpower_S",
@@ -386,15 +386,15 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         ],
         entity_registry_enabled_default=False,
         name="Inverter Power (Apparent)",
-        # APPARENT_POWER only  supports VA, not kVA
+        # APPARENT_POWER only supports VA, not kVA
         # device_class=SensorDeviceClass.APPARENT_POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="kVA",
         icon="mdi:export",
         scale=0.001,
         round_to=0.01,
-        post_process=lambda x: max(x, 0),
-        validate=[Range(0, 100)],
+        # Negative = charging batteries
+        validate=[Range(-100, 100)],
     ),
     ModbusSensorDescription(
         key="eps_rvolt",
