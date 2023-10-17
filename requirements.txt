@@ -1,4 +1,4 @@
-pip>=21.0,<23.2
+pip>=21.0,<23.3
 homeassistant==2023.3.0
 pytest-homeassistant-custom-component==0.13.4 # Matching version for 2023.3.0
 colorlog==6.7.0
