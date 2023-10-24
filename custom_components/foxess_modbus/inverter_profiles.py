@@ -9,6 +9,7 @@ from homeassistant.helpers.entity import Entity
 from .common.entity_controller import EntityController
 from .common.register_type import RegisterType
 from .const import AC1
+from .const import AC3
 from .const import AIO_H1
 from .const import AIO_H3
 from .const import AUX
@@ -154,6 +155,15 @@ INVERTER_PROFILES = {
         InverterModelProfile(KH).add_connection_type(AUX, RegisterType.INPUT),
         # The H3 seems to use holding registers for everything
         InverterModelProfile(H3)
+        .add_connection_type(
+            LAN,
+            RegisterType.HOLDING,
+        )
+        .add_connection_type(
+            AUX,
+            RegisterType.HOLDING,
+        ),
+        InverterModelProfile(AC3)
         .add_connection_type(
             LAN,
             RegisterType.HOLDING,
