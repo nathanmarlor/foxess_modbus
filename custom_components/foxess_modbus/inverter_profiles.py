@@ -18,6 +18,7 @@ from .const import H3
 from .const import INVERTER_BASE
 from .const import INVERTER_CONN
 from .const import KH
+from .const import KUARA_H3
 from .const import LAN
 from .entities import invalid_ranges
 from .entities.charge_periods import CHARGE_PERIODS
@@ -93,8 +94,9 @@ class InverterModelConnectionTypeProfile:
 class InverterModelProfile:
     """Describes the capabilities of an inverter model"""
 
-    def __init__(self, model: str) -> None:
+    def __init__(self, model: str, model_pattern: str) -> None:
         self.model = model
+        self.model_pattern = model_pattern
         self.connection_types: dict[str, InverterModelConnectionTypeProfile] = {}
 
     def add_connection_type(
@@ -121,7 +123,7 @@ class InverterModelProfile:
 INVERTER_PROFILES = {
     x.model: x
     for x in [
-        InverterModelProfile(H1)
+        InverterModelProfile(H1, r"^H1-")
         .add_connection_type(
             AUX,
             RegisterType.INPUT,
@@ -131,7 +133,7 @@ INVERTER_PROFILES = {
             LAN,
             RegisterType.HOLDING,
         ),
-        InverterModelProfile(AC1)
+        InverterModelProfile(AC1, r"^AC1-")
         .add_connection_type(
             AUX,
             RegisterType.INPUT,
@@ -141,7 +143,7 @@ INVERTER_PROFILES = {
             LAN,
             RegisterType.HOLDING,
         ),
-        InverterModelProfile(AIO_H1)
+        InverterModelProfile(AIO_H1, r"^AIO-H1-")
         .add_connection_type(
             AUX,
             RegisterType.INPUT,
@@ -152,9 +154,9 @@ INVERTER_PROFILES = {
             RegisterType.HOLDING,
         ),
         # The KH doesn't have a LAN port. It supports both input and holding over RS485
-        InverterModelProfile(KH).add_connection_type(AUX, RegisterType.INPUT),
+        InverterModelProfile(KH, r"^KH-").add_connection_type(AUX, RegisterType.INPUT),
         # The H3 seems to use holding registers for everything
-        InverterModelProfile(H3)
+        InverterModelProfile(H3, r"^H3-")
         .add_connection_type(
             LAN,
             RegisterType.HOLDING,
@@ -163,7 +165,7 @@ INVERTER_PROFILES = {
             AUX,
             RegisterType.HOLDING,
         ),
-        InverterModelProfile(AC3)
+        InverterModelProfile(AC3, r"^AC3-")
         .add_connection_type(
             LAN,
             RegisterType.HOLDING,
@@ -172,13 +174,22 @@ INVERTER_PROFILES = {
             AUX,
             RegisterType.HOLDING,
         ),
-        InverterModelProfile(AIO_H3)
+        InverterModelProfile(AIO_H3, r"^AIO-H3-")
         .add_connection_type(
             AUX,
             RegisterType.HOLDING,
         )
         .add_connection_type(
             LAN,
+            RegisterType.HOLDING,
+        ),
+        # Kuara 6.0-3-H: H3-6.0-E
+        # Kuara 8.0-3-H: H3-8.0-E
+        # Kuara 10.0-3-H: H3-10.0-E
+        # Kuara 12.0-3-H: H3-12.0-E
+        # I haven't seen any indication that these support a direct LAN connection
+        InverterModelProfile(KUARA_H3, r"^Kuara [^-]+-3-H$").add_connection_type(
+            AUX,
             RegisterType.HOLDING,
         ),
     ]
