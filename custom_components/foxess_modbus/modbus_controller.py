@@ -1,5 +1,6 @@
 """Modbus controller"""
 import logging
+import re
 import threading
 from contextlib import contextmanager
 from datetime import datetime
@@ -347,7 +348,7 @@ class ModbusController(EntityController, UnloadController):
             # Take off tailing spaces and H3's leading space
             full_model = full_model.strip()
             for model in INVERTER_PROFILES.values():
-                if full_model.startswith(model.model):
+                if re.match(model.model_pattern, full_model):
                     _LOGGER.info("Autodetected inverter as '%s' (%s)", model.model, full_model)
                     return model.model, full_model
 

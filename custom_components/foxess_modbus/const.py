@@ -13,8 +13,7 @@ ICON = "mdi:format-quote-close"
 AUX = "AUX"
 LAN = "LAN"
 
-# Inverter models. These need to match the string returned from the inverter
-# Also matches config[INVERTER_BASE]
+# Inverter models. These need to match config[INVERTER_BASE]
 H1 = "H1"
 AC1 = "AC1"
 AIO_H1 = "AIO-H1"
@@ -22,6 +21,7 @@ KH = "KH"
 H3 = "H3"
 AC3 = "AC3"
 AIO_H3 = "AIO-H3"
+KUARA_H3 = "KUARA-H3"
 
 # Platforms
 SENSOR = "sensor"
