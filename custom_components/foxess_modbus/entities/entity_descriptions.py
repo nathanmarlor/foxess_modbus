@@ -42,6 +42,7 @@ H3_SET = [H3, AIO_H3, AC3, KUARA_H3]
 # TODO: There should be equivalent registers for the H3 somewhere
 BMS_CONNECT_STATE_ADDRESS = [
     ModbusAddressSpec(models=[*H1_SET, KH], input=11058, holding=31029),
+    ModbusAddressSpec(models=H3_SET, holding=31042),
 ]
 
 
