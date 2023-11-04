@@ -20,6 +20,7 @@ from .const import INVERTER_CONN
 from .const import KH
 from .const import KUARA_H3
 from .const import LAN
+from .const import SK_HWR
 from .entities import invalid_ranges
 from .entities.charge_periods import CHARGE_PERIODS
 from .entities.entity_descriptions import ENTITIES
@@ -189,6 +190,13 @@ INVERTER_PROFILES = {
         # Kuara 12.0-3-H: H3-12.0-E
         # I haven't seen any indication that these support a direct LAN connection
         InverterModelProfile(KUARA_H3, r"^Kuara [^-]+-3-H$").add_connection_type(
+            AUX,
+            RegisterType.HOLDING,
+        ),
+        # Sonnenkraft:
+        # SK-HWR-8: H3-8.0-E
+        # (presumably there are other sizes also)
+        InverterModelProfile(SK_HWR, r"^SK-HWR-").add_connection_type(
             AUX,
             RegisterType.HOLDING,
         ),
