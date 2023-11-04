@@ -22,6 +22,7 @@ H3 = "H3"
 AC3 = "AC3"
 AIO_H3 = "AIO-H3"
 KUARA_H3 = "KUARA-H3"
+SK_HWR = "SK-HWR"
 
 # Platforms
 SENSOR = "sensor"
