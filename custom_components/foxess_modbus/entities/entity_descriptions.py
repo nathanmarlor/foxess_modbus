@@ -43,6 +43,7 @@ H3_SET = [H3, AIO_H3, AC3, KUARA_H3, SK_HWR]
 # TODO: There should be equivalent registers for the H3 somewhere
 BMS_CONNECT_STATE_ADDRESS = [
     ModbusAddressSpec(models=[*H1_SET, KH], input=11058, holding=31029),
+    ModbusAddressSpec(models=H3_SET, holding=31042),
 ]
 
 
@@ -108,24 +109,24 @@ _PV_ENTITIES: list[EntityFactory] = [
     _pv_voltage(
         key="pv1_voltage",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, KH], input=[11000], holding=[31000]),
-            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31000]),
+            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11000], holding=[31000]),
+            ModbusAddressesSpec(models=H3_SET, holding=[31000]),
         ],
         name="PV1 Voltage",
     ),
     _pv_current(
         key="pv1_current",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, KH], input=[11001], holding=[31001]),
-            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31001]),
+            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11001], holding=[31001]),
+            ModbusAddressesSpec(models=H3_SET, holding=[31001]),
         ],
         name="PV1 Current",
     ),
     _pv_power(
         key="pv1_power",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, KH], input=[11002], holding=[31002]),
-            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31002]),
+            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11002], holding=[31002]),
+            ModbusAddressesSpec(models=H3_SET, holding=[31002]),
         ],
         name="PV1 Power",
     ),
@@ -133,11 +134,11 @@ _PV_ENTITIES: list[EntityFactory] = [
         key="pv1_energy_total",
         models=[
             EntitySpec(
-                models=[H1, AIO_H1, KH],
+                models=[*H1_SET, KH],
                 register_types=[RegisterType.INPUT, RegisterType.HOLDING],
             ),
             EntitySpec(
-                models=[H3, AIO_H3],
+                models=H3_SET,
                 register_types=[RegisterType.HOLDING],
             ),
         ],
@@ -147,24 +148,24 @@ _PV_ENTITIES: list[EntityFactory] = [
     _pv_voltage(
         key="pv2_voltage",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, KH], input=[11003], holding=[31003]),
-            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31003]),
+            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11003], holding=[31003]),
+            ModbusAddressesSpec(models=H3_SET, holding=[31003]),
         ],
         name="PV2 Voltage",
     ),
     _pv_current(
         key="pv2_current",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, KH], input=[11004], holding=[31004]),
-            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31004]),
+            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11004], holding=[31004]),
+            ModbusAddressesSpec(models=H3_SET, holding=[31004]),
         ],
         name="PV2 Current",
     ),
     _pv_power(
         key="pv2_power",
         addresses=[
-            ModbusAddressesSpec(models=[H1, AIO_H1, KH], input=[11005], holding=[31005]),
-            ModbusAddressesSpec(models=[H3, AIO_H3], holding=[31005]),
+            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11005], holding=[31005]),
+            ModbusAddressesSpec(models=H3_SET, holding=[31005]),
         ],
         name="PV2 Power",
     ),
@@ -172,11 +173,11 @@ _PV_ENTITIES: list[EntityFactory] = [
         key="pv2_energy_total",
         models=[
             EntitySpec(
-                models=[H1, AIO_H1, KH],
+                models=[*H1_SET, KH],
                 register_types=[RegisterType.INPUT, RegisterType.HOLDING],
             ),
             EntitySpec(
-                models=[H3, AIO_H3],
+                models=H3_SET,
                 register_types=[RegisterType.HOLDING],
             ),
         ],
@@ -251,11 +252,11 @@ _PV_ENTITIES: list[EntityFactory] = [
         key="pv_power_now",
         models=[
             EntitySpec(
-                models=[H1, AIO_H1],
+                models=H1_SET,
                 register_types=[RegisterType.INPUT, RegisterType.HOLDING],
             ),
             EntitySpec(
-                models=[H3, AIO_H3],
+                models=H3_SET,
                 register_types=[RegisterType.HOLDING],
             ),
         ],
