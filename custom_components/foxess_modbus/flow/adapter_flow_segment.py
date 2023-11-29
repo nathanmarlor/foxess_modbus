@@ -9,6 +9,8 @@ from homeassistant.helpers.selector import selector
 from pymodbus.exceptions import ConnectionException
 from pymodbus.exceptions import ModbusIOException
 
+from ..client.modbus_client import ModbusClient
+from ..client.modbus_client import ModbusClientFailedError
 from ..common.exceptions import AutoconnectFailedError
 from ..common.exceptions import UnsupportedInverterError
 from ..const import AUX
@@ -20,8 +22,6 @@ from ..const import UDP
 from ..inverter_adapters import ADAPTERS
 from ..inverter_adapters import InverterAdapter
 from ..inverter_adapters import InverterAdapterType
-from ..modbus_client import ModbusClient
-from ..modbus_client import ModbusClientFailedError
 from ..modbus_controller import ModbusController
 from .flow_handler_mixin import FlowHandlerMixin
 from .flow_handler_mixin import ValidationFailedError
@@ -297,7 +297,7 @@ class AdapterFlowSegment:
                     parts = []
                     if use_exception:
                         parts.append(str(ex.__cause__))
-                    parts.extend(record.message for record in ex.log_records)
+                    parts.extend({record.message for record in ex.log_records})
                     result = "; ".join(parts)
                 else:
                     # Oh. Fall back
