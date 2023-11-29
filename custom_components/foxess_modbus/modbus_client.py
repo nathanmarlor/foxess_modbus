@@ -1,7 +1,6 @@
 """The client used to talk Modbus"""
 import asyncio
 import logging
-import os
 import select
 import socket
 import time
@@ -178,13 +177,6 @@ class ModbusClient:
             "framer": client["framer"],
             "delay_on_connect": 1 if adapter.connection_type == LAN else None,
         }
-
-        # If PosixPollSerial is supported, use that. This uses poll rather than select, which means we don't break when
-        # there are more than 1024 fds. See #457.
-        # Only supported on posix, see https://github.com/pyserial/pyserial/blob/7aeea35429d15f3eefed10bbb659674638903e3a/serial/__init__.py#L31
-        if protocol == SERIAL and os.name == "posix":
-            # https://pyserial.readthedocs.io/en/latest/url_handlers.html#alt
-            config["port"] = f"alt://{config['port']}?class=PosixPollSerial"
 
         # Some serial devices need a short delay after polling. Also do this for the inverter, just
         # in case it helps.
