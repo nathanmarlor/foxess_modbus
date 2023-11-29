@@ -17,6 +17,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import UNDEFINED
 from slugify import slugify
 
+from .client.modbus_client import ModbusClient
 from .const import ADAPTER_ID
 from .const import ADAPTER_WAS_MIGRATED
 from .const import CONFIG_SAVE_TIME
@@ -40,7 +41,6 @@ from .const import UDP
 from .const import UNIQUE_ID_PREFIX
 from .inverter_adapters import ADAPTERS
 from .inverter_profiles import inverter_connection_type_profile_from_config
-from .modbus_client import ModbusClient
 from .modbus_controller import ModbusController
 from .services import update_charge_period_service
 from .services import websocket_api
