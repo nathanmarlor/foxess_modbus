@@ -99,11 +99,13 @@ class Serial(serialposix.Serial):
                     raise SerialTimeoutException("Write timeout")
 
                 result = _PollResult.TIMEOUT  # In case poll returns an empty list
-                for fd, _event in poll.poll(None if timeout.is_infinite else (timeout.time_left() * 1000)):
+                for fd, event in poll.poll(None if timeout.is_infinite else (timeout.time_left() * 1000)):
                     if fd == self.pipe_abort_write_r:
                         os.read(self.pipe_abort_read_r, 1000)
                         result = _PollResult.ABORT
                         break
+                    if event & (select.POLLERR | select.POLLHUP | select.POLLNVAL):
+                        raise SerialException("device reports error (poll)")
                     result = _PollResult.READY
 
                 if result == _PollResult.TIMEOUT:
