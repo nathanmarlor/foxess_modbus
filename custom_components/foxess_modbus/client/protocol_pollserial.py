@@ -3,21 +3,25 @@ Custom protocol handler for pyserial, which uses poll but doesn't have
 https://github.com/pyserial/pyserial/issues/617
 """
 
+import errno
 import os
 import select
 from enum import Enum
+from typing import Any
 
 import serial
 from serial import serialposix
 from serial.serialutil import PortNotOpenError
 from serial.serialutil import SerialException
+from serial.serialutil import SerialTimeoutException
 from serial.serialutil import Timeout
+from serial.serialutil import to_bytes
 
 
 class _PollResult(Enum):
     TIMEOUT = 0
     ABORT = 1
-    DATA = 2
+    READY = 2
 
 
 class Serial(serialposix.Serial):
@@ -55,9 +59,9 @@ class Serial(serialposix.Serial):
                         break
                     if event & (select.POLLERR | select.POLLHUP | select.POLLNVAL):
                         raise SerialException("device reports error (poll)")
-                    result = _PollResult.DATA
+                    result = _PollResult.READY
 
-                if result == _PollResult.DATA:
+                if result == _PollResult.READY:
                     buf = os.read(self.fd, size - len(read))
                     read.extend(buf)
                 if (
@@ -69,6 +73,56 @@ class Serial(serialposix.Serial):
                 ):
                     break  # early abort on timeout
         return bytes(read)
+
+    def write(self, data: Any) -> int:
+        """Output the given byte string over the serial port."""
+        if not self.is_open:
+            raise PortNotOpenError()
+        d = to_bytes(data)
+        tx_len = length = len(d)
+        timeout = Timeout(self._write_timeout)
+
+        poll = select.poll()
+        poll.register(self.fd, select.POLLOUT | select.POLLERR | select.POLLHUP | select.POLLNVAL)
+        poll.register(self.pipe_abort_write_r, select.POLLIN | select.POLLERR | select.POLLHUP | select.POLLNVAL)
+
+        while tx_len > 0:
+            try:
+                n = os.write(self.fd, d)
+
+                if timeout.is_non_blocking:
+                    # Zero timeout indicates non-blocking - simply return the
+                    # number of bytes of data actually written
+                    return n
+
+                if timeout.expired():
+                    raise SerialTimeoutException("Write timeout")
+
+                result = _PollResult.TIMEOUT  # In case poll returns an empty list
+                for fd, _event in poll.poll(None if timeout.is_infinite else (timeout.time_left() * 1000)):
+                    if fd == self.pipe_abort_write_r:
+                        os.read(self.pipe_abort_read_r, 1000)
+                        result = _PollResult.ABORT
+                        break
+                    result = _PollResult.READY
+
+                if result == _PollResult.TIMEOUT:
+                    raise SerialTimeoutException("Write timeout")
+                if result == _PollResult.ABORT:
+                    break
+
+                d = d[n:]
+                tx_len -= n
+            except SerialException:
+                raise
+            except OSError as e:
+                # OSError ignore BlockingIOErrors and EINTR. other errors are shown
+                # https://www.python.org/dev/peps/pep-0475.
+                if e.errno not in (errno.EAGAIN, errno.EALREADY, errno.EWOULDBLOCK, errno.EINPROGRESS, errno.EINTR):
+                    raise SerialException("write failed: {}".format(e))  # noqa: B904
+            if not timeout.is_non_blocking and timeout.expired():
+                raise SerialTimeoutException("Write timeout")
+        return length - len(d)
 
 
 # This needs to have a very particular name, as it's registered by string in modbus_client
