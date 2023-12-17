@@ -1,3 +1,4 @@
+import re
 from typing import Any
 from typing import Awaitable
 from typing import Callable
@@ -135,6 +136,7 @@ class AdapterFlowSegment:
                 user_input.get("protocol_with_recommendation", adapter.network_protocols[0]),
             )
             host = user_input.get("adapter_host", user_input.get("lan_connection_host"))
+            self._validate_hostname(host)
             assert host is not None
             port = user_input.get("adapter_port", _DEFAULT_PORT)
             host_and_port = f"{host}:{port}"
@@ -345,3 +347,7 @@ class AdapterFlowSegment:
                 {"base": "other_inverter_error" if adapter.connection_type == LAN else "other_adapter_error"},
                 error_placeholders={"error_details": get_details(ex, True)},
             ) from ex
+
+    def _validate_hostname(self, host: str) -> None:
+        if not re.fullmatch(r"[a-zA-Z0-9\.\-]+", host):
+            raise ValidationFailedError({"base": "invalid_hostname"}, error_placeholders={"hostname": host})
