@@ -65,6 +65,7 @@
       }
     },
     "error": {
+      "invalid_hostname": "Hostname / IP address '{hostname}' is not valid. Use an IP address (e.g. '192.168.0.10') or a hostname (e.g. 'mydevice' / 'mydevice.local')",
       "duplicate_connection_details": "You have already set up an inverter with this address",
       "duplicate_friendly_name": "One of your other inverters has this friendly name. Please specify another",
       "duplicate_entity_id_prefix": "Please enter a unique entity ID prefix",
@@ -148,6 +149,7 @@
       }
     },
     "error": {
+      "invalid_hostname": "Hostname / IP address '{hostname}' is not valid. Use an IP address (e.g. '192.168.0.10') or a hostname (e.g. 'mydevice' / 'mydevice.local')",
       "duplicate_connection_details": "You have already set up an inverter with this address",
       "inverter_model_not_supported": "Inverter model '{not_supported_model}' is not supported",
       "unable_to_connect_to_adapter": "Unable to connect to your adapter. Ensure that the adapter is properly configured (see the setup link above) and the connection details are correct, then try again. Details: {error_details}",
