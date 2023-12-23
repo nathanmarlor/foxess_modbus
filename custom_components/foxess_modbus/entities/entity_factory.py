@@ -7,13 +7,31 @@ from typing import Sequence
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.entity import EntityDescription
 
 from ..common.entity_controller import EntityController
 from ..common.register_type import RegisterType
 from .inverter_model_spec import InverterModelSpec
 
+# If EntityDescription has a metaclass (FrozenOrThawed), we need to combine that with
+# ABC's metaclass.
+if type(EntityDescription) == type(type):  # type: ignore
+    METACLASS = type(ABC)
+else:
 
-class EntityFactory(ABC):
+    class EntityFactoryMetaclass(type(EntityDescription), type(ABC)):  # type: ignore
+        """
+        Metaclass to use for EntityFactory.
+
+        HA introduced a FrozenOrThawed metaclass which is used by EntityDescription.
+        This conflicts with ABC's metaclass.
+        See https://github.com/nathanmarlor/foxess_modbus/issues/480
+        """
+
+    METACLASS = EntityFactoryMetaclass
+
+
+class EntityFactory(ABC, metaclass=METACLASS):  # type: ignore
     """Factory which can create entities"""
 
     @property
