@@ -37,7 +37,7 @@ KH_INVERTER_STATES = [
 ]
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, frozen=True)
 class ModbusInverterStateSensorDescription(SensorEntityDescription, EntityFactory):
     """Description for ModbusInverterStateSensor"""
 

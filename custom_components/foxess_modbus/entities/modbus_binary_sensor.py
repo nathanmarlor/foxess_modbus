@@ -23,7 +23,7 @@ from .modbus_entity_mixin import ModbusEntityMixin
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, frozen=True)
 class ModbusBinarySensorDescription(BinarySensorEntityDescription, EntityFactory):
     """Description for ModbusBinarySensor"""
 

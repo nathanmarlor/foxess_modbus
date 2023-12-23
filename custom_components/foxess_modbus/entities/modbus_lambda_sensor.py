@@ -23,7 +23,7 @@ from .modbus_entity_mixin import get_entity_id
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, frozen=True)
 class ModbusLambdaSensorDescription(SensorEntityDescription, EntityFactory):
     """Entity description for ModbusLambdaSensors"""
 

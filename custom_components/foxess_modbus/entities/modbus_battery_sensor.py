@@ -16,7 +16,7 @@ from .modbus_sensor import ModbusSensor
 from .modbus_sensor import ModbusSensorDescription
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, frozen=True)
 class ModbusBatterySensorDescription(ModbusSensorDescription):
     """Description for ModbusBatterySensor"""
 

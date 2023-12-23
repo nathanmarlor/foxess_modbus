@@ -155,7 +155,7 @@ for assert_fault, assert_masks in _MASKS.items():
         assert any(fault for fault_list in _FAULTS for fault in fault_list if fault == assert_mask)
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, frozen=True)
 class ModbusFaultSensorDescription(SensorEntityDescription, EntityFactory):
     """Description for ModbusFaultSensor"""
 

@@ -53,7 +53,7 @@ def _is_force_charge_enabled(
     return start_or_end_1 > 0 or start_or_end_2 > 0
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, frozen=True)
 class ModbusChargePeriodStartEndSensorDescription(SensorEntityDescription, EntityFactory):
     """Entity description for ModbusChargePeriodStartEndSensor"""
 
@@ -179,7 +179,7 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
         return [self._address, self._other_address]
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, frozen=True)
 class ModbusEnableForceChargeSensorDescription(BinarySensorEntityDescription, EntityFactory):
     """Entity description for ModbusEnableForceChargeSensor"""
 

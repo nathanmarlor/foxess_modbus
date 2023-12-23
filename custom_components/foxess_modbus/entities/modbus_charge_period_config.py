@@ -22,7 +22,7 @@ _LOGGER = logging.getLogger(__name__)
 # mypy: disable-error-code="call-arg"
 
 
-@dataclass
+@dataclass(frozen=True)
 class ModbusChargePeriodAddressConfig:
     """Defines the set of registers which are used to define a charge period"""
 
@@ -31,7 +31,7 @@ class ModbusChargePeriodAddressConfig:
     enable_charge_from_grid_address: int
 
 
-@dataclass
+@dataclass(frozen=True)
 class ModbusChargePeriodInfo:
     addresses: ModbusChargePeriodAddressConfig
     period_start_entity_id: str
@@ -89,7 +89,7 @@ class ChargePeriodAddressSpec:
         return ModbusAddressSpecBase(self.models, addresses)
 
 
-@dataclass
+@dataclass(frozen=True)
 class ModbusChargePeriodFactory:
     """
     Factory which creates various things required to define and specify a charge period

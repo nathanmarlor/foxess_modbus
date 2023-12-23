@@ -24,7 +24,7 @@ from .modbus_entity_mixin import ModbusEntityMixin
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, frozen=True)
 class ModbusNumberDescription(NumberEntityDescription, EntityFactory):
     """Custom number entity description"""
 
