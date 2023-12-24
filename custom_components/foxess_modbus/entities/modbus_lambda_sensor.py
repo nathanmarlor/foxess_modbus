@@ -15,6 +15,7 @@ from homeassistant.helpers.event import async_track_state_change_event
 
 from ..common.entity_controller import EntityController
 from ..common.register_type import RegisterType
+from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .entity_factory import EntityFactory
 from .inverter_model_spec import EntitySpec
 from .modbus_entity_mixin import ModbusEntityMixin
@@ -23,7 +24,7 @@ from .modbus_entity_mixin import get_entity_id
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
 class ModbusLambdaSensorDescription(SensorEntityDescription, EntityFactory):
     """Entity description for ModbusLambdaSensors"""
 

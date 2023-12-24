@@ -11,12 +11,13 @@ from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
 from ..common.register_type import RegisterType
+from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .inverter_model_spec import ModbusAddressSpec
 from .modbus_sensor import ModbusSensor
 from .modbus_sensor import ModbusSensorDescription
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
 class ModbusBatterySensorDescription(ModbusSensorDescription):
     """Description for ModbusBatterySensor"""
 

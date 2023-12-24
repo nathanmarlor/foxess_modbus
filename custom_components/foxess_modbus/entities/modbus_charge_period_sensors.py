@@ -22,6 +22,7 @@ from homeassistant.helpers.restore_state import RestoreEntity
 from ..common.entity_controller import EntityController
 from ..common.register_type import RegisterType
 from .base_validator import BaseValidator
+from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .entity_factory import EntityFactory
 from .inverter_model_spec import InverterModelSpec
 from .modbus_entity_mixin import ModbusEntityMixin
@@ -53,7 +54,7 @@ def _is_force_charge_enabled(
     return start_or_end_1 > 0 or start_or_end_2 > 0
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
 class ModbusChargePeriodStartEndSensorDescription(SensorEntityDescription, EntityFactory):
     """Entity description for ModbusChargePeriodStartEndSensor"""
 
@@ -179,7 +180,7 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
         return [self._address, self._other_address]
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
 class ModbusEnableForceChargeSensorDescription(BinarySensorEntityDescription, EntityFactory):
     """Entity description for ModbusEnableForceChargeSensor"""
 
