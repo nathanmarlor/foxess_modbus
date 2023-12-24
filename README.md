@@ -18,19 +18,25 @@
 
 ## Introduction
 
-A Home Assistant custom component designed to ease integrating modbus data from Fox H1 inverters.
+A Home Assistant custom component which communicates with FoxESS H-series inverters and derivatives without using FoxESS's cloud.
 
-Features include:
+This means that you're not reliant on FoxESS's cloud infrastructure, so HA keeps working when the cloud goes down.
+You can also read solar production etc in real-time, rather than once every 5 minutes.
 
-- Read registers in bulk to improve Home Assistant performance
-- Direct decoding of values (i.e. force charge periods)
-- Set charge periods, work mode, min/max SoC (when connected over RS485 only)
+Depending on your inverter model, you can also set charge periods, work mode, min/max SoC.
+See [Supported Features](https://github.com/nathanmarlor/foxess_modbus/wiki/Supported-Features).
 
 Supported models:
 
-- H1 (including AC1 and AIO)
-- H3 (including AOI)
-- KH
+- FoxESS H1 (including AC1 and AIO-H1)
+- FoxESS H3 (including AC3 and AOI-H3)
+- FoxESS KH
+- Sonnenkraft SK-HWR
+- Kuara H3
+
+You will need a direct connection to your inverter.
+In most cases, this means buying a modbus to ethernet/USB adapter and wiring this to a port on your inverter.
+See the documentation for details.
 
 **[See the wiki](https://github.com/nathanmarlor/foxess_modbus/wiki) for how-to articles and FAQs**
 
