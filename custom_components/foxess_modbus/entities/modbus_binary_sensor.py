@@ -16,6 +16,7 @@ from homeassistant.helpers.entity import Entity
 from ..common.entity_controller import EntityController
 from ..common.register_type import RegisterType
 from .base_validator import BaseValidator
+from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .entity_factory import EntityFactory
 from .inverter_model_spec import InverterModelSpec
 from .modbus_entity_mixin import ModbusEntityMixin
@@ -23,7 +24,7 @@ from .modbus_entity_mixin import ModbusEntityMixin
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
 class ModbusBinarySensorDescription(BinarySensorEntityDescription, EntityFactory):
     """Description for ModbusBinarySensor"""
 

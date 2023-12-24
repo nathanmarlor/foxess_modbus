@@ -11,6 +11,7 @@ from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
 from ..common.register_type import RegisterType
+from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .entity_factory import EntityFactory
 from .inverter_model_spec import ModbusAddressesSpec
 from .modbus_entity_mixin import ModbusEntityMixin
@@ -155,7 +156,7 @@ for assert_fault, assert_masks in _MASKS.items():
         assert any(fault for fault_list in _FAULTS for fault in fault_list if fault == assert_mask)
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
 class ModbusFaultSensorDescription(SensorEntityDescription, EntityFactory):
     """Description for ModbusFaultSensor"""
 
