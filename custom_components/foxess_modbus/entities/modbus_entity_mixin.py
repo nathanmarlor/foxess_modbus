@@ -73,8 +73,22 @@ if TYPE_CHECKING:
 else:
     _ModbusEntityMixinBase = object
 
+# HA introduced a ABCCachedProperties metaclass which is used by Entity, and which derives from ABCMeta.
+# This conflicts with Protocol's metaclass (from ModbusEntityProtocol).
+if type(Entity) == type(type):  # type: ignore
+    _METACLASS = type(Protocol)  # Inherits from ABCMeta
 
-class ModbusEntityMixin(ModbusControllerEntity, ModbusEntityProtocol, _ModbusEntityMixinBase):
+else:
+
+    class ModbusEntityMixinMetaclass(type(Entity), type(Protocol)):  # type: ignore
+        pass
+
+    _METACLASS = ModbusEntityMixinMetaclass
+
+
+class ModbusEntityMixin(
+    ModbusControllerEntity, ModbusEntityProtocol, _ModbusEntityMixinBase, metaclass=_METACLASS  # type: ignore
+):
     """
     Mixin for subclasses of Entity
 
