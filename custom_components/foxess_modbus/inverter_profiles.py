@@ -21,6 +21,7 @@ from .const import KH
 from .const import KUARA_H3
 from .const import LAN
 from .const import SK_HWR
+from .const import STAR_H3
 from .entities import invalid_ranges
 from .entities.charge_periods import CHARGE_PERIODS
 from .entities.entity_descriptions import ENTITIES
@@ -200,6 +201,10 @@ INVERTER_PROFILES = {
             AUX,
             RegisterType.HOLDING,
         ),
+        # STAR
+        # STAR-H3-12.0-E: H3-12.0-E
+        # (presumably there are other sizes also)
+        InverterModelProfile(STAR_H3, r"^STAR-H3-").add_connection_type(AUX, RegisterType.HOLDING),
     ]
 }
 
