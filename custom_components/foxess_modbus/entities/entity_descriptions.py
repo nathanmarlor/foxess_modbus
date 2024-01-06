@@ -15,6 +15,7 @@ from ..const import H3
 from ..const import KH
 from ..const import KUARA_H3
 from ..const import SK_HWR
+from ..const import STAR_H3
 from .charge_periods import CHARGE_PERIODS
 from .entity_factory import EntityFactory
 from .inverter_model_spec import EntitySpec
@@ -38,7 +39,7 @@ from .validation import Range
 
 H1_SET = [H1, AIO_H1, AC1]
 
-H3_SET = [H3, AIO_H3, AC3, KUARA_H3, SK_HWR]
+H3_SET = [H3, AIO_H3, AC3, KUARA_H3, SK_HWR, STAR_H3]
 
 # TODO: There should be equivalent registers for the H3 somewhere
 BMS_CONNECT_STATE_ADDRESS = [
