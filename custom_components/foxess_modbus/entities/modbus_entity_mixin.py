@@ -1,5 +1,6 @@
 """Mixin providing common functionality for all entity classes"""
 import logging
+from abc import ABC
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Protocol
@@ -73,8 +74,22 @@ if TYPE_CHECKING:
 else:
     _ModbusEntityMixinBase = object
 
+# HA introduced a ABCCachedProperties metaclass which is used by Entity, and which derives from ABCMeta.
+# This conflicts with Protocol's metaclass (from ModbusEntityProtocol).
+if type(Entity) == type(ABC):
+    _METACLASS = type(Entity)
 
-class ModbusEntityMixin(ModbusControllerEntity, ModbusEntityProtocol, _ModbusEntityMixinBase):
+else:
+
+    class ModbusEntityMixinMetaclass(type(Entity), type(Protocol)):  # type: ignore
+        pass
+
+    _METACLASS = ModbusEntityMixinMetaclass
+
+
+class ModbusEntityMixin(
+    ModbusControllerEntity, ModbusEntityProtocol, _ModbusEntityMixinBase, metaclass=_METACLASS  # type: ignore
+):
     """
     Mixin for subclasses of Entity
 
