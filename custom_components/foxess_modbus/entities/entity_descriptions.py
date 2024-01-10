@@ -6,16 +6,9 @@ from homeassistant.components.sensor import SensorStateClass
 from homeassistant.const import UnitOfTime
 
 from ..common.register_type import RegisterType
-from ..const import AC1
-from ..const import AC3
-from ..const import AIO_H1
-from ..const import AIO_H3
-from ..const import H1
-from ..const import H3
+from ..const import H1_SET
+from ..const import H3_SET
 from ..const import KH
-from ..const import KUARA_H3
-from ..const import SK_HWR
-from ..const import STAR_H3
 from .charge_periods import CHARGE_PERIODS
 from .entity_factory import EntityFactory
 from .inverter_model_spec import EntitySpec
@@ -37,9 +30,6 @@ from .validation import Range
 # hass type hints are messed up, and mypy doesn't see inherited dataclass properties on the EntityDescriptions
 # mypy: disable-error-code="call-arg"
 
-H1_SET = [H1, AIO_H1, AC1]
-
-H3_SET = [H3, AIO_H3, AC3, KUARA_H3, SK_HWR, STAR_H3]
 
 # TODO: There should be equivalent registers for the H3 somewhere
 BMS_CONNECT_STATE_ADDRESS = [
@@ -1467,14 +1457,20 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
 _CONFIGURATION_ENTITIES: list[EntityFactory] = [
     ModbusSelectDescription(
         key="work_mode",
-        address=[ModbusAddressSpec(models=[*H1_SET, KH], input=41000)],
+        address=[
+            ModbusAddressSpec(models=[*H1_SET, KH], input=41000),
+            ModbusAddressSpec(models=H3_SET, holding=41000),
+        ],
         name="Work Mode",
         options_map={0: "Self Use", 1: "Feed-in First", 2: "Back-up"},
     ),
     # Sensors are a bit nicer to look at: keep for consistency with other numbers
     ModbusSensorDescription(
         key="max_charge_current",
-        addresses=[ModbusAddressesSpec(models=[*H1_SET, KH], input=[41007])],
+        addresses=[
+            ModbusAddressesSpec(models=[*H1_SET, KH], input=[41007]),
+            ModbusAddressesSpec(models=H3_SET, holding=[41007]),
+        ],
         name="Max Charge Current",
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -1484,7 +1480,10 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
     ),
     ModbusNumberDescription(
         key="max_charge_current",
-        address=[ModbusAddressSpec(models=[*H1_SET, KH], input=41007)],
+        address=[
+            ModbusAddressSpec(models=[*H1_SET, KH], input=41007),
+            ModbusAddressSpec(models=H3_SET, holding=41007),
+        ],
         name="Max Charge Current",
         mode=NumberMode.BOX,
         device_class=NumberDeviceClass.CURRENT,
@@ -1497,7 +1496,10 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
     ),
     ModbusSensorDescription(
         key="max_discharge_current",
-        addresses=[ModbusAddressesSpec(models=[*H1_SET, KH], input=[41008])],
+        addresses=[
+            ModbusAddressesSpec(models=[*H1_SET, KH], input=[41008]),
+            ModbusAddressesSpec(models=H3_SET, holding=[41008]),
+        ],
         name="Max Discharge Current",
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -1507,7 +1509,10 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
     ),
     ModbusNumberDescription(
         key="max_discharge_current",
-        address=[ModbusAddressSpec(models=[*H1_SET, KH], input=41008)],
+        address=[
+            ModbusAddressSpec(models=[*H1_SET, KH], input=41008),
+            ModbusAddressSpec(models=H3_SET, holding=41008),
+        ],
         name="Max Discharge Current",
         mode=NumberMode.BOX,
         device_class=NumberDeviceClass.CURRENT,
@@ -1521,7 +1526,10 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
     # Sensor kept for back compat
     ModbusSensorDescription(
         key="min_soc",
-        addresses=[ModbusAddressesSpec(models=[*H1_SET, KH], input=[41009])],
+        addresses=[
+            ModbusAddressesSpec(models=[*H1_SET, KH], input=[41009]),
+            ModbusAddressesSpec(models=H3_SET, holding=[41009]),
+        ],
         name="Min SoC",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
@@ -1531,7 +1539,10 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
     ),
     ModbusNumberDescription(
         key="min_soc",
-        address=[ModbusAddressSpec(models=[*H1_SET, KH], input=41009)],
+        address=[
+            ModbusAddressSpec(models=[*H1_SET, KH], input=41009),
+            ModbusAddressSpec(models=H3_SET, holding=41009),
+        ],
         name="Min SoC",
         mode=NumberMode.BOX,
         native_min_value=10,
@@ -1545,7 +1556,10 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
     # Sensor kept for back compat
     ModbusSensorDescription(
         key="max_soc",
-        addresses=[ModbusAddressesSpec(models=[*H1_SET, KH], input=[41010])],
+        addresses=[
+            ModbusAddressesSpec(models=[*H1_SET, KH], input=[41010]),
+            ModbusAddressesSpec(models=H3_SET, holding=[41010]),
+        ],
         name="Max SoC",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
@@ -1555,7 +1569,10 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
     ),
     ModbusNumberDescription(
         key="max_soc",
-        address=[ModbusAddressSpec(models=[*H1_SET, KH], input=41010)],
+        address=[
+            ModbusAddressSpec(models=[*H1_SET, KH], input=41010),
+            ModbusAddressSpec(models=H3_SET, holding=41010),
+        ],
         name="Max SoC",
         mode=NumberMode.BOX,
         native_min_value=10,
@@ -1569,7 +1586,10 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
     # Sensor kept for back compat
     ModbusSensorDescription(
         key="min_soc_on_grid",
-        addresses=[ModbusAddressesSpec(models=[*H1_SET, KH], input=[41011])],
+        addresses=[
+            ModbusAddressesSpec(models=[*H1_SET, KH], input=[41011]),
+            ModbusAddressesSpec(models=H3_SET, holding=[41011]),
+        ],
         name="Min SoC (On Grid)",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
@@ -1579,7 +1599,10 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
     ),
     ModbusNumberDescription(
         key="min_soc_on_grid",
-        address=[ModbusAddressSpec(models=[*H1_SET, KH], input=41011)],
+        address=[
+            ModbusAddressSpec(models=[*H1_SET, KH], input=41011),
+            ModbusAddressSpec(models=H3_SET, holding=41011),
+        ],
         name="Min SoC (On Grid)",
         mode=NumberMode.BOX,
         native_min_value=10,
