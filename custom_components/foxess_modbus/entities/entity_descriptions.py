@@ -1460,7 +1460,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         icon="mdi:home-lightning-bolt-outline",
         scale=0.1,
         # unsure if this actually goes negative
-        validate=[Range(-100, 100)],
+        validate=[Range(-500, 500)],
     ),
 ]
 
