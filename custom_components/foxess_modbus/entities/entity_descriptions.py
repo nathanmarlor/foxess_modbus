@@ -1345,7 +1345,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         native_unit_of_measurement="kWh",
         icon="mdi:transmission-tower-export",
         scale=0.1,
-        validate=[Range(0, 100)],
+        validate=[Range(0, 500)],
     ),
     ModbusSensorDescription(
         key="total_yield_total",
