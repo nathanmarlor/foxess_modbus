@@ -1167,7 +1167,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         native_unit_of_measurement="kWh",
         icon="mdi:solar-power",
         scale=0.1,
-        validate=[Range(0, 100)],
+        validate=[Range(0, 1000)],
     ),
     ModbusSensorDescription(
         key="battery_charge_total",
@@ -1295,7 +1295,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         native_unit_of_measurement="kWh",
         icon="mdi:transmission-tower-import",
         scale=0.1,
-        validate=[Range(0, 100)],
+        validate=[Range(0, 1000)],
     ),
     ModbusSensorDescription(
         key="grid_consumption_energy_total",
@@ -1337,7 +1337,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         native_unit_of_measurement="kWh",
         icon="mdi:transmission-tower-export",
         scale=0.1,
-        validate=[Range(0, 100)],
+        validate=[Range(0, 1000)],
     ),
     ModbusSensorDescription(
         key="total_yield_total",
@@ -1401,7 +1401,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         icon="mdi:import",
         scale=0.1,
         # unsure if this actually goes negative
-        validate=[Range(-100, 100)],
+        validate=[Range(-1000, 1000)],
     ),
     ModbusSensorDescription(
         key="load_power_total",
@@ -1452,7 +1452,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         icon="mdi:home-lightning-bolt-outline",
         scale=0.1,
         # unsure if this actually goes negative
-        validate=[Range(-100, 100)],
+        validate=[Range(-1000, 1000)],
     ),
 ]
 
