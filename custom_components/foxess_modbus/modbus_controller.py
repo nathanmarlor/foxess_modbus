@@ -253,7 +253,14 @@ class ModbusController(EntityController, UnloadController):
         read_size = 0
         # TODO: Do we want to cache the result of this?
         for address in sorted(self._data.keys()):
-            if start_address is None:
+            # This register must be read in a single individual read. Yield any ranges we've found so far,
+            # and yield just this register on its own
+            if self._connection_type_profile.is_individual_read(address):
+                if start_address is not None:
+                    yield (start_address, read_size)
+                    start_address, read_size = None, 0
+                yield (address, 1)
+            elif start_address is None:
                 start_address, read_size = address, 1
             # If we're just increasing the previous read size by 1, then don't test whether we're extending
             # the read over an invalid range (as we assume that registers we're reading to read won't be
@@ -270,7 +277,8 @@ class ModbusController(EntityController, UnloadController):
                 start_address, read_size = address, 1
 
             if read_size == max_read:
-                yield (start_address, read_size)
+                # (can't get here if start_address is None, as read_size would be 0
+                yield (start_address, read_size)  # type: ignore
                 start_address, read_size = None, 0
 
         if start_address is not None:
@@ -281,7 +289,7 @@ class ModbusController(EntityController, UnloadController):
         for address in listener.addresses:
             assert not self._connection_type_profile.overlaps_invalid_range(address, address), (
                 f"Entity {listener} address {address} overlaps an invalid range in "
-                f"{self._connection_type_profile.invalid_register_ranges}"
+                f"{self._connection_type_profile.special_registers.invalid_register_ranges}"
             )
             if address not in self._data:
                 self._data[address] = None
