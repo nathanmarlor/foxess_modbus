@@ -22,12 +22,35 @@ from .const import KUARA_H3
 from .const import LAN
 from .const import SK_HWR
 from .const import STAR_H3
-from .entities import invalid_ranges
 from .entities.charge_periods import CHARGE_PERIODS
 from .entities.entity_descriptions import ENTITIES
 from .entities.modbus_charge_period_config import ModbusChargePeriodInfo
 
 _LOGGER = logging.getLogger(__package__)
+
+
+class SpecialRegisterConfig:
+    def __init__(
+        self,
+        *,
+        invalid_register_ranges: list[tuple[int, int]] | None = None,
+        individual_read_register_ranges: list[tuple[int, int]] | None = None
+    ) -> None:
+        if invalid_register_ranges is None:
+            invalid_register_ranges = []
+        self.invalid_register_ranges = invalid_register_ranges
+
+        if individual_read_register_ranges is None:
+            individual_read_register_ranges = []
+        self.individual_read_register_ranges = individual_read_register_ranges
+
+
+H1_AC1_REGISTERS = SpecialRegisterConfig(invalid_register_ranges=[(11096, 39999)])
+# See https://github.com/nathanmarlor/foxess_modbus/discussions/503
+H3_REGISTERS = SpecialRegisterConfig(
+    invalid_register_ranges=[(41001, 41006), (41012, 41013), (41015, 41015)],
+    individual_read_register_ranges=[(41007, 41011)],
+)
 
 
 class InverterModelConnectionTypeProfile:
@@ -38,16 +61,21 @@ class InverterModelConnectionTypeProfile:
         inverter_model: str,
         connection_type: str,
         register_type: RegisterType,
-        invalid_register_ranges: list[tuple[int, int]],
+        special_registers: SpecialRegisterConfig,
     ) -> None:
         self.inverter_model = inverter_model
         self.connection_type = connection_type
         self.register_type = register_type
-        self.invalid_register_ranges = invalid_register_ranges
+        self.special_registers = special_registers
 
     def overlaps_invalid_range(self, start_address: int, end_address: int) -> bool:
         """Determines whether the given inclusive address range overlaps any invalid address ranges"""
-        return any(r[0] <= end_address and start_address <= r[1] for r in self.invalid_register_ranges)
+        return any(
+            r[0] <= end_address and start_address <= r[1] for r in self.special_registers.invalid_register_ranges
+        )
+
+    def is_individual_read(self, address: int) -> bool:
+        return any(r[0] <= address <= r[1] for r in self.special_registers.individual_read_register_ranges)
 
     def create_entities(
         self,
@@ -105,19 +133,19 @@ class InverterModelProfile:
         self,
         connection_type: str,
         register_type: RegisterType,
-        invalid_register_ranges: list[tuple[int, int]] | None = None,
+        special_registers: SpecialRegisterConfig | None = None,
     ) -> "InverterModelProfile":
         """Add the given connection type to the profile"""
 
         assert connection_type not in self.connection_types
-        if invalid_register_ranges is None:
-            invalid_register_ranges = []
+        if special_registers is None:
+            special_registers = SpecialRegisterConfig()
 
         self.connection_types[connection_type] = InverterModelConnectionTypeProfile(
             self.model,
             connection_type,
             register_type,
-            invalid_register_ranges,
+            special_registers,
         )
         return self
 
@@ -129,7 +157,7 @@ INVERTER_PROFILES = {
         .add_connection_type(
             AUX,
             RegisterType.INPUT,
-            invalid_register_ranges=invalid_ranges.H1_AC1,
+            special_registers=H1_AC1_REGISTERS,
         )
         .add_connection_type(
             LAN,
@@ -139,7 +167,7 @@ INVERTER_PROFILES = {
         .add_connection_type(
             AUX,
             RegisterType.INPUT,
-            invalid_register_ranges=invalid_ranges.H1_AC1,
+            special_registers=H1_AC1_REGISTERS,
         )
         .add_connection_type(
             LAN,
@@ -149,7 +177,7 @@ INVERTER_PROFILES = {
         .add_connection_type(
             AUX,
             RegisterType.INPUT,
-            invalid_register_ranges=invalid_ranges.H1_AC1,
+            special_registers=H1_AC1_REGISTERS,
         )
         .add_connection_type(
             LAN,
@@ -162,34 +190,34 @@ INVERTER_PROFILES = {
         .add_connection_type(
             LAN,
             RegisterType.HOLDING,
-            invalid_register_ranges=invalid_ranges.H3,
+            special_registers=H3_REGISTERS,
         )
         .add_connection_type(
             AUX,
             RegisterType.HOLDING,
-            invalid_register_ranges=invalid_ranges.H3,
+            special_registers=H3_REGISTERS,
         ),
         InverterModelProfile(AC3, r"^AC3-")
         .add_connection_type(
             LAN,
             RegisterType.HOLDING,
-            invalid_register_ranges=invalid_ranges.H3,
+            special_registers=H3_REGISTERS,
         )
         .add_connection_type(
             AUX,
             RegisterType.HOLDING,
-            invalid_register_ranges=invalid_ranges.H3,
+            special_registers=H3_REGISTERS,
         ),
         InverterModelProfile(AIO_H3, r"^AIO-H3-")
         .add_connection_type(
             AUX,
             RegisterType.HOLDING,
-            invalid_register_ranges=invalid_ranges.H3,
+            special_registers=H3_REGISTERS,
         )
         .add_connection_type(
             LAN,
             RegisterType.HOLDING,
-            invalid_register_ranges=invalid_ranges.H3,
+            special_registers=H3_REGISTERS,
         ),
         # Kuara 6.0-3-H: H3-6.0-E
         # Kuara 8.0-3-H: H3-8.0-E
@@ -199,7 +227,7 @@ INVERTER_PROFILES = {
         InverterModelProfile(KUARA_H3, r"^Kuara [^-]+-3-H$").add_connection_type(
             AUX,
             RegisterType.HOLDING,
-            invalid_register_ranges=invalid_ranges.H3,
+            special_registers=H3_REGISTERS,
         ),
         # Sonnenkraft:
         # SK-HWR-8: H3-8.0-E
@@ -207,7 +235,7 @@ INVERTER_PROFILES = {
         InverterModelProfile(SK_HWR, r"^SK-HWR-").add_connection_type(
             AUX,
             RegisterType.HOLDING,
-            invalid_register_ranges=invalid_ranges.H3,
+            special_registers=H3_REGISTERS,
         ),
         # STAR
         # STAR-H3-12.0-E: H3-12.0-E
@@ -215,7 +243,7 @@ INVERTER_PROFILES = {
         InverterModelProfile(STAR_H3, r"^STAR-H3-").add_connection_type(
             AUX,
             RegisterType.HOLDING,
-            invalid_register_ranges=invalid_ranges.H3,
+            special_registers=H3_REGISTERS,
         ),
     ]
 }
