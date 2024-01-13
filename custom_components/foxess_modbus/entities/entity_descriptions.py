@@ -62,6 +62,8 @@ def _pv_current(key: str, addresses: list[ModbusAddressesSpec], name: str) -> En
         native_unit_of_measurement="A",
         scale=0.1,
         round_to=1,
+        # This can a small amount negative
+        post_process=lambda x: max(x, 0),
         validate=[Range(0, 100)],
     )
 
