@@ -162,28 +162,34 @@ INVERTER_PROFILES = {
         .add_connection_type(
             LAN,
             RegisterType.HOLDING,
+            invalid_register_ranges=invalid_ranges.H3,
         )
         .add_connection_type(
             AUX,
             RegisterType.HOLDING,
+            invalid_register_ranges=invalid_ranges.H3,
         ),
         InverterModelProfile(AC3, r"^AC3-")
         .add_connection_type(
             LAN,
             RegisterType.HOLDING,
+            invalid_register_ranges=invalid_ranges.H3,
         )
         .add_connection_type(
             AUX,
             RegisterType.HOLDING,
+            invalid_register_ranges=invalid_ranges.H3,
         ),
         InverterModelProfile(AIO_H3, r"^AIO-H3-")
         .add_connection_type(
             AUX,
             RegisterType.HOLDING,
+            invalid_register_ranges=invalid_ranges.H3,
         )
         .add_connection_type(
             LAN,
             RegisterType.HOLDING,
+            invalid_register_ranges=invalid_ranges.H3,
         ),
         # Kuara 6.0-3-H: H3-6.0-E
         # Kuara 8.0-3-H: H3-8.0-E
@@ -193,6 +199,7 @@ INVERTER_PROFILES = {
         InverterModelProfile(KUARA_H3, r"^Kuara [^-]+-3-H$").add_connection_type(
             AUX,
             RegisterType.HOLDING,
+            invalid_register_ranges=invalid_ranges.H3,
         ),
         # Sonnenkraft:
         # SK-HWR-8: H3-8.0-E
@@ -200,11 +207,16 @@ INVERTER_PROFILES = {
         InverterModelProfile(SK_HWR, r"^SK-HWR-").add_connection_type(
             AUX,
             RegisterType.HOLDING,
+            invalid_register_ranges=invalid_ranges.H3,
         ),
         # STAR
         # STAR-H3-12.0-E: H3-12.0-E
         # (presumably there are other sizes also)
-        InverterModelProfile(STAR_H3, r"^STAR-H3-").add_connection_type(AUX, RegisterType.HOLDING),
+        InverterModelProfile(STAR_H3, r"^STAR-H3-").add_connection_type(
+            AUX,
+            RegisterType.HOLDING,
+            invalid_register_ranges=invalid_ranges.H3,
+        ),
     ]
 }
 
