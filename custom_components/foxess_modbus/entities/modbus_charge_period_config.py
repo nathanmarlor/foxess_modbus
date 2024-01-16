@@ -2,6 +2,7 @@
 import logging
 from dataclasses import dataclass
 from typing import Any
+from typing import Callable
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.const import Platform
@@ -46,8 +47,8 @@ class ChargePeriodAddressSpec:
 
     For example:
     addrseses=[
-        ChargePeriodAddressSpec([H1, AC1], aux=ModbusChargePeriodAddressConfig(period_start_address=...))
-        ChargePeriodAddressSpec([H3], aux=ModbusChargePeriodAddressConfig(period_start_address=...))
+        ChargePeriodAddressSpec([H1, AC1], input=ModbusChargePeriodAddressConfig(period_start_address=...))
+        ChargePeriodAddressSpec([H3], holding=ModbusChargePeriodAddressConfig(period_start_address=...))
     ]
     """
 
@@ -67,25 +68,22 @@ class ChargePeriodAddressSpec:
     def get_start_address(self) -> InverterModelSpec:
         """Gets a InverterModelSpec instance to describe the start address"""
 
-        addresses = {}
-        for register_type, period_addresses in self.register_types.items():
-            addresses[register_type] = [period_addresses.period_start_address]
-        return ModbusAddressSpecBase(self.models, addresses)
+        return self._get_address(lambda x: x.period_start_address)
 
     def get_end_address(self) -> InverterModelSpec:
         """Gets a InverterModelSpec instance to describe the end address"""
 
-        addresses = {}
-        for register_type, period_addresses in self.register_types.items():
-            addresses[register_type] = [period_addresses.period_end_address]
-        return ModbusAddressSpecBase(self.models, addresses)
+        return self._get_address(lambda x: x.period_end_address)
 
     def get_enable_charge_from_grid_address(self) -> InverterModelSpec:
         """Gets a InverterModelSpec instance to describe 'enable charge from grid' address"""
 
+        return self._get_address(lambda x: x.enable_charge_from_grid_address)
+
+    def _get_address(self, accessor: Callable[[ModbusChargePeriodAddressConfig], int]) -> InverterModelSpec:
         addresses = {}
-        for register_type, period_addresses in self.register_types.items():
-            addresses[register_type] = [period_addresses.enable_charge_from_grid_address]
+        for register_type, address_config in self.register_types.items():
+            addresses[register_type] = [accessor(address_config)]
         return ModbusAddressSpecBase(self.models, addresses)
 
 
