@@ -8,6 +8,8 @@ class RemoteControlManager(ModbusControllerEntity):
         self._controller = controller
         self._addresses = addresses
 
+        self._controller.register_modbus_entity(self)
+
     @property
     def addresses(self) -> list[int]:
         return self._addresses.addresses

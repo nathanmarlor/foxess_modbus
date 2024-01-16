@@ -24,6 +24,7 @@ from .common.unload_controller import UnloadController
 from .const import MAX_READ
 from .inverter_profiles import INVERTER_PROFILES
 from .inverter_profiles import InverterModelConnectionTypeProfile
+from .remote_control_manager import RemoteControlManager
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -75,6 +76,11 @@ class ModbusController(EntityController, UnloadController):
         # Setup mixins
         EntityController.__init__(self)
         UnloadController.__init__(self)
+
+        # This will call back into us to register its addresses
+        remote_control_config = connection_type_profile.create_remote_control_config(hass, inverter_details)
+        if remote_control_config is not None:
+            self._remote_control_manager = RemoteControlManager(self, remote_control_config)
 
         if self._hass is not None:
             refresh = async_track_time_interval(
