@@ -58,9 +58,11 @@ class ModbusWorkModeSelect(ModbusSelect):
     async def async_select_option(self, option: str) -> None:
         if option == _FORCE_CHARGE:
             assert self._controller.remote_control_manager is not None
-            self._controller.remote_control_manager.mode = RemoteControlMode.FORCE_CHARGE
+            await self._controller.remote_control_manager.set_mode(RemoteControlMode.FORCE_CHARGE)
         if option == _FORCE_DISCHARGE:
             assert self._controller.remote_control_manager is not None
-            self._controller.remote_control_manager.mode = RemoteControlMode.FORCE_DISCHARGE
+            await self._controller.remote_control_manager.set_mode(RemoteControlMode.FORCE_DISCHARGE)
         else:
+            if self._controller.remote_control_manager is not None:
+                await self._controller.remote_control_manager.set_mode(RemoteControlMode.DISABLE)
             await super().async_select_option(option)

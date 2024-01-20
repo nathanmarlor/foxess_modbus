@@ -81,7 +81,7 @@ class ModbusController(EntityController, UnloadController):
         # This will call back into us to register its addresses
         remote_control_config = connection_type_profile.create_remote_control_config(hass, inverter_details)
         if remote_control_config is not None:
-            self._remote_control_manager = RemoteControlManager(self, remote_control_config)
+            self._remote_control_manager = RemoteControlManager(self, remote_control_config, poll_rate)
 
         if self._hass is not None:
             refresh = async_track_time_interval(
@@ -225,7 +225,7 @@ class ModbusController(EntityController, UnloadController):
                         self._slave,
                     )
                     self._is_connected = True
-                    self._notify_is_connected_changed()
+                    await self._notify_is_connected_changed(is_connected=True)
             elif self._is_connected:
                 self._num_failed_poll_attempts += 1
                 if self._num_failed_poll_attempts >= _NUM_FAILED_POLLS_FOR_DISCONNECTION:
@@ -237,7 +237,10 @@ class ModbusController(EntityController, UnloadController):
                         exception,
                     )
                     self._is_connected = False
-                    self._notify_is_connected_changed()
+                    await self._notify_is_connected_changed(is_connected=False)
+
+        if self._remote_control_manager is not None:
+            await self._remote_control_manager.poll_complete_callback()
 
     def _create_read_ranges(self, max_read: int) -> Iterable[tuple[int, int]]:
         """
@@ -318,10 +321,13 @@ class ModbusController(EntityController, UnloadController):
         for listener in self._update_listeners:
             listener.update_callback(changed_addresses)
 
-    def _notify_is_connected_changed(self) -> None:
+    async def _notify_is_connected_changed(self, is_connected: bool) -> None:
         """Notify listeners that the availability states of the inverter changed"""
         for listener in self._update_listeners:
             listener.is_connected_changed_callback()
+
+        if is_connected and self._remote_control_manager is not None:
+            await self._remote_control_manager.became_connected_callback()
 
     @staticmethod
     async def autodetect(client: ModbusClient, slave: int, adapter_config: dict[str, Any]) -> tuple[str, str]:

@@ -36,9 +36,8 @@ class EntityRemoteControlManager(ABC):
     def mode(self) -> RemoteControlMode:
         """Get the current mode"""
 
-    @mode.setter
     @abstractmethod
-    def mode(self, value: RemoteControlMode) -> None:
+    async def set_mode(self, value: RemoteControlMode) -> None:
         """Set the current mode"""
 
 
