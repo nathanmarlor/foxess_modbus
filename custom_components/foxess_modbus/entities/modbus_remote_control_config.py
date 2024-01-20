@@ -16,10 +16,16 @@ class ModbusRemoteControlAddressConfig:
     remote_enable_address: int
     timeout_set_address: int
     active_power_address: int
+    battery_soc_address: int
 
     @property
     def addresses(self) -> list[int]:
-        return [self.remote_enable_address, self.timeout_set_address, self.active_power_address]
+        return [
+            self.remote_enable_address,
+            self.timeout_set_address,
+            self.active_power_address,
+            self.battery_soc_address,
+        ]
 
 
 class RemoteControlAddressSpec:
@@ -50,16 +56,6 @@ class RemoteControlAddressSpec:
         """Gets a InverterModelSpec instance to describe the remote enable address"""
 
         return self._get_address(lambda x: x.remote_enable_address)
-
-    def get_timeout_set_address(self) -> InverterModelSpec:
-        """Gets a InverterModelSpec instance to describe the timeout set address"""
-
-        return self._get_address(lambda x: x.timeout_set_address)
-
-    def get_active_power_address(self) -> InverterModelSpec:
-        """Gets a InverterModelSpec instance to describe the active power address"""
-
-        return self._get_address(lambda x: x.active_power_address)
 
     def _get_address(self, accessor: Callable[[ModbusRemoteControlAddressConfig], int]) -> InverterModelSpec:
         addresses = {}
