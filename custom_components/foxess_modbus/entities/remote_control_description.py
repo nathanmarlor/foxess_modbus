@@ -8,11 +8,14 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
         RemoteControlAddressSpec(
             H1_SET,
             input=ModbusRemoteControlAddressConfig(
-                remote_enable_address=44000,
-                timeout_set_address=44001,
-                active_power_address=44002,
-                battery_soc_address=11036,
-                pv_power_limit_address=44013,
+                remote_enable=44000,
+                timeout_set=44001,
+                active_power=44002,
+                battery_soc=11036,
+                max_soc=41010,
+                pv_power_limit=44013,
+                work_mode=41000,
+                load_power=11023,
             ),
         )
     ]

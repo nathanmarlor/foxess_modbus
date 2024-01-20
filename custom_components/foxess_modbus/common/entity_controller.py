@@ -67,5 +67,9 @@ class EntityController(ABC):
         """Write a single value to a register"""
 
     @abstractmethod
+    async def write_registers(self, start_address: int, values: list[int]) -> None:
+        """Write multiple registers"""
+
+    @abstractmethod
     def read(self, address: int) -> int | None:
         """Fetch the last-read value for the given address, or None if none is avaiable"""

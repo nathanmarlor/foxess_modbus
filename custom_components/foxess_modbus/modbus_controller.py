@@ -35,6 +35,9 @@ _NUM_FAILED_POLLS_FOR_DISCONNECTION = 5
 _MODEL_START_ADDRESS = 30000
 _MODEL_LENGTH = 15
 
+_INT16_MIN = -0x7FFF - 1
+_UINT16_MAX = 0xFFFF
+
 
 @contextmanager
 def _acquire_nonblocking(lock: threading.Lock) -> Iterator[bool]:
@@ -117,11 +120,20 @@ class ModbusController(EntityController, UnloadController):
             values,
         )
         try:
+            for i, value in enumerate(values):
+                value = int(value)  # Ensure that we've been given an int
+                if not (_INT16_MIN <= value <= _UINT16_MAX):
+                    raise ValueError(f"Value {value} must be between {_INT16_MIN} and {_UINT16_MAX}")
+                # pymodbus doesn't like negative values
+                if value < 0:
+                    value = _UINT16_MAX + value + 1
+                values[i] = value
+
             await self._client.write_registers(start_address, values, self._slave)
+
             changed_addresses = set()
             for i, value in enumerate(values):
                 address = start_address + i
-                value = int(value)  # Ensure that we've been given an int
                 # Only store the result of the write if it's a register we care about ourselves
                 if self._data.get(address, value) != value:
                     self._data[address] = value

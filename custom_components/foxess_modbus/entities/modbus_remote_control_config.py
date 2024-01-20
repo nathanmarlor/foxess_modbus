@@ -13,11 +13,15 @@ from .inverter_model_spec import ModbusAddressSpecBase
 class ModbusRemoteControlAddressConfig:
     """Defines the set of registers used for remote control"""
 
-    remote_enable_address: int
-    timeout_set_address: int
-    active_power_address: int
-    battery_soc_address: int
-    pv_power_limit_address: int
+    remote_enable: int
+    timeout_set: int
+    active_power: int
+    work_mode: int
+
+    battery_soc: int
+    max_soc: int
+    load_power: int
+    pv_power_limit: int
 
 
 class RemoteControlAddressSpec:
@@ -47,7 +51,7 @@ class RemoteControlAddressSpec:
     def get_remote_enable_address(self) -> InverterModelSpec:
         """Gets a InverterModelSpec instance to describe the remote enable address"""
 
-        return self._get_address(lambda x: x.remote_enable_address)
+        return self._get_address(lambda x: x.remote_enable)
 
     def _get_address(self, accessor: Callable[[ModbusRemoteControlAddressConfig], int]) -> InverterModelSpec:
         addresses = {}
