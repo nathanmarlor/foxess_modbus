@@ -1461,7 +1461,7 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
         key="work_mode",
         address=[
             ModbusAddressSpec(models=[*H1_SET, KH], input=41000),
-            ModbusAddressSpec(models=H3_SET, holding=41000),
+            ModbusAddressSpec(models=[*H3_SET, KH], holding=41000),
         ],
         name="Work Mode",
         options_map={0: "Self Use", 1: "Feed-in First", 2: "Back-up"},
@@ -1471,7 +1471,7 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
         key="max_charge_current",
         addresses=[
             ModbusAddressesSpec(models=[*H1_SET, KH], input=[41007]),
-            ModbusAddressesSpec(models=H3_SET, holding=[41007]),
+            ModbusAddressesSpec(models=[*H3_SET, KH], holding=[41007]),
         ],
         name="Max Charge Current",
         device_class=SensorDeviceClass.CURRENT,
@@ -1484,7 +1484,7 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
         key="max_charge_current",
         address=[
             ModbusAddressSpec(models=[*H1_SET, KH], input=41007),
-            ModbusAddressSpec(models=H3_SET, holding=41007),
+            ModbusAddressSpec(models=[*H3_SET, KH], holding=41007),
         ],
         name="Max Charge Current",
         mode=NumberMode.BOX,
@@ -1500,7 +1500,7 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
         key="max_discharge_current",
         addresses=[
             ModbusAddressesSpec(models=[*H1_SET, KH], input=[41008]),
-            ModbusAddressesSpec(models=H3_SET, holding=[41008]),
+            ModbusAddressesSpec(models=[*H3_SET, KH], holding=[41008]),
         ],
         name="Max Discharge Current",
         device_class=SensorDeviceClass.CURRENT,
@@ -1513,7 +1513,7 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
         key="max_discharge_current",
         address=[
             ModbusAddressSpec(models=[*H1_SET, KH], input=41008),
-            ModbusAddressSpec(models=H3_SET, holding=41008),
+            ModbusAddressSpec(models=[*H3_SET, KH], holding=41008),
         ],
         name="Max Discharge Current",
         mode=NumberMode.BOX,
@@ -1530,7 +1530,7 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
         key="min_soc",
         addresses=[
             ModbusAddressesSpec(models=[*H1_SET, KH], input=[41009]),
-            ModbusAddressesSpec(models=H3_SET, holding=[41009]),
+            ModbusAddressesSpec(models=[*H3_SET, KH], holding=[41009]),
         ],
         name="Min SoC",
         device_class=SensorDeviceClass.BATTERY,
@@ -1543,7 +1543,7 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
         key="min_soc",
         address=[
             ModbusAddressSpec(models=[*H1_SET, KH], input=41009),
-            ModbusAddressSpec(models=H3_SET, holding=41009),
+            ModbusAddressSpec(models=[*H3_SET, KH], holding=41009),
         ],
         name="Min SoC",
         mode=NumberMode.BOX,
@@ -1560,7 +1560,7 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
         key="max_soc",
         addresses=[
             ModbusAddressesSpec(models=[*H1_SET, KH], input=[41010]),
-            ModbusAddressesSpec(models=H3_SET, holding=[41010]),
+            ModbusAddressesSpec(models=[*H3_SET, KH], holding=[41010]),
         ],
         name="Max SoC",
         device_class=SensorDeviceClass.BATTERY,
@@ -1573,7 +1573,7 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
         key="max_soc",
         address=[
             ModbusAddressSpec(models=[*H1_SET, KH], input=41010),
-            ModbusAddressSpec(models=H3_SET, holding=41010),
+            ModbusAddressSpec(models=[*H3_SET, KH], holding=41010),
         ],
         name="Max SoC",
         mode=NumberMode.BOX,
@@ -1590,7 +1590,7 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
         key="min_soc_on_grid",
         addresses=[
             ModbusAddressesSpec(models=[*H1_SET, KH], input=[41011]),
-            ModbusAddressesSpec(models=H3_SET, holding=[41011]),
+            ModbusAddressesSpec(models=[*H3_SET, KH], holding=[41011]),
         ],
         name="Min SoC (On Grid)",
         device_class=SensorDeviceClass.BATTERY,
@@ -1603,7 +1603,7 @@ _CONFIGURATION_ENTITIES: list[EntityFactory] = [
         key="min_soc_on_grid",
         address=[
             ModbusAddressSpec(models=[*H1_SET, KH], input=41011),
-            ModbusAddressSpec(models=H3_SET, holding=41011),
+            ModbusAddressSpec(models=[*H3_SET, KH], holding=41011),
         ],
         name="Min SoC (On Grid)",
         mode=NumberMode.BOX,
