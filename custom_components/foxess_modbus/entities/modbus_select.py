@@ -100,7 +100,7 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
                 option,
                 self.name,
                 self._address,
-                self.options,
+                list(entity_description.options_map.values()),
             )
             return
 

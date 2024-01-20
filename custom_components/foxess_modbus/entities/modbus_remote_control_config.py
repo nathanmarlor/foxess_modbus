@@ -17,15 +17,7 @@ class ModbusRemoteControlAddressConfig:
     timeout_set_address: int
     active_power_address: int
     battery_soc_address: int
-
-    @property
-    def addresses(self) -> list[int]:
-        return [
-            self.remote_enable_address,
-            self.timeout_set_address,
-            self.active_power_address,
-            self.battery_soc_address,
-        ]
+    pv_power_limit_address: int
 
 
 class RemoteControlAddressSpec:

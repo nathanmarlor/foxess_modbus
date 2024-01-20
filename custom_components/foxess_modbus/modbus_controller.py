@@ -16,6 +16,7 @@ from pymodbus.exceptions import ConnectionException
 from .client.modbus_client import ModbusClient
 from .client.modbus_client import ModbusClientFailedError
 from .common.entity_controller import EntityController
+from .common.entity_controller import EntityRemoteControlManager
 from .common.entity_controller import ModbusControllerEntity
 from .common.exceptions import AutoconnectFailedError
 from .common.exceptions import UnsupportedInverterError
@@ -94,6 +95,10 @@ class ModbusController(EntityController, UnloadController):
     @property
     def is_connected(self) -> bool:
         return self._is_connected
+
+    @property
+    def remote_control_manager(self) -> EntityRemoteControlManager | None:
+        return self._remote_control_manager
 
     def read(self, address: int) -> int | None:
         """Modbus status"""

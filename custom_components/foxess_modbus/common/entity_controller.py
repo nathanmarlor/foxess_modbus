@@ -2,6 +2,7 @@
 import logging
 from abc import ABC
 from abc import abstractmethod
+from enum import Enum
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,6 +24,24 @@ class ModbusControllerEntity(ABC):
         """Notify listeners that availability state of the inverter has changed"""
 
 
+class RemoteControlMode(Enum):
+    DISABLE = 0
+    FORCE_CHARGE = 1
+    FORCE_DISCHARGE = 2
+
+
+class EntityRemoteControlManager(ABC):
+    @property
+    @abstractmethod
+    def mode(self) -> RemoteControlMode:
+        """Get the current mode"""
+
+    @mode.setter
+    @abstractmethod
+    def mode(self, value: RemoteControlMode) -> None:
+        """Set the current mode"""
+
+
 class EntityController(ABC):
     """Interface given to entities to access the ModbusController"""
 
@@ -30,6 +49,11 @@ class EntityController(ABC):
     @abstractmethod
     def is_connected(self) -> bool:
         """Returns whether the inverter is currently connected"""
+
+    @property
+    @abstractmethod
+    def remote_control_manager(self) -> EntityRemoteControlManager | None:
+        """Fetch the remote control manager, if any"""
 
     @abstractmethod
     def register_modbus_entity(self, listener: ModbusControllerEntity) -> None:

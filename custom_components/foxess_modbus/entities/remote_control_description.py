@@ -12,6 +12,7 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 timeout_set_address=44001,
                 active_power_address=44002,
                 battery_soc_address=11036,
+                pv_power_limit_address=44013,
             ),
         )
     ]

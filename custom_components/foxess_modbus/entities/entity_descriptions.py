@@ -22,8 +22,8 @@ from .modbus_inverter_state_sensor import KH_INVERTER_STATES
 from .modbus_inverter_state_sensor import ModbusInverterStateSensorDescription
 from .modbus_lambda_sensor import ModbusLambdaSensorDescription
 from .modbus_number import ModbusNumberDescription
-from .modbus_select import ModbusSelectDescription
 from .modbus_sensor import ModbusSensorDescription
+from .modbus_work_mode_select import ModbusWorkModeSelectDescription
 from .validation import Min
 from .validation import Range
 
@@ -1457,7 +1457,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
 ]
 
 _CONFIGURATION_ENTITIES: list[EntityFactory] = [
-    ModbusSelectDescription(
+    ModbusWorkModeSelectDescription(
         key="work_mode",
         address=[
             ModbusAddressSpec(models=[*H1_SET, KH], input=41000),
