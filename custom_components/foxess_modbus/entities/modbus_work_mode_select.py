@@ -56,13 +56,15 @@ class ModbusWorkModeSelect(ModbusSelect):
         return super().current_option
 
     async def async_select_option(self, option: str) -> None:
-        if option == _FORCE_CHARGE:
+        if option in (_FORCE_CHARGE, _FORCE_DISCHARGE):
             assert self._controller.remote_control_manager is not None
-            await self._controller.remote_control_manager.set_mode(RemoteControlMode.FORCE_CHARGE)
-        if option == _FORCE_DISCHARGE:
-            assert self._controller.remote_control_manager is not None
-            await self._controller.remote_control_manager.set_mode(RemoteControlMode.FORCE_DISCHARGE)
+            mode = RemoteControlMode.FORCE_CHARGE if option == _FORCE_CHARGE else RemoteControlMode.FORCE_DISCHARGE
+            await self._controller.remote_control_manager.set_mode(mode)
         else:
             if self._controller.remote_control_manager is not None:
                 await self._controller.remote_control_manager.set_mode(RemoteControlMode.DISABLE)
             await super().async_select_option(option)
+
+        # This update might not cause a register update (which is what triggers HA to update its state), so do this
+        # explicitly
+        self.async_schedule_update_ha_state()
