@@ -80,7 +80,7 @@ class ModbusBatterySensor(ModbusSensor):
     @property
     def native_value(self) -> Any:
         if self._bms_connect_state_address is not None:
-            bms_connect_state = self._controller.read(self._bms_connect_state_address)
+            bms_connect_state = self._controller.read(self._bms_connect_state_address, signed=False)
             # 0: Initial state, 1: OK, 2: NG
             if bms_connect_state != 1:
                 return None

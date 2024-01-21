@@ -84,7 +84,7 @@ class ModbusInverterStateSensor(ModbusEntityMixin, SensorEntity):
     @property
     def native_value(self) -> str | None:
         entity_description = cast(ModbusInverterStateSensorDescription, self.entity_description)
-        value = self._controller.read(self._address)
+        value = self._controller.read(self._address, signed=False)
         if value is None or value >= len(entity_description.states):
             return None
         return entity_description.states[value]

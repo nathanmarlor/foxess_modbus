@@ -81,7 +81,7 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
         """Return the value reported by the sensor."""
         original = 0
         for i, address in enumerate(self._addresses):
-            register_value = self._controller.read(address)
+            register_value = self._controller.read(address, signed=False)
             if register_value is None:
                 return None
             original |= (register_value & 0xFFFF) << (i * 16)

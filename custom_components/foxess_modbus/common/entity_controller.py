@@ -71,5 +71,5 @@ class EntityController(ABC):
         """Write multiple registers"""
 
     @abstractmethod
-    def read(self, address: int) -> int | None:
+    def read(self, address: int, *, signed: bool) -> int | None:
         """Fetch the last-read value for the given address, or None if none is avaiable"""

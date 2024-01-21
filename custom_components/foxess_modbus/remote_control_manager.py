@@ -1,3 +1,4 @@
+import logging
 from enum import IntEnum
 
 from .common.entity_controller import EntityController
@@ -6,12 +7,20 @@ from .common.entity_controller import ModbusControllerEntity
 from .common.entity_controller import RemoteControlMode
 from .entities.modbus_remote_control_config import ModbusRemoteControlAddressConfig
 
+_LOGGER = logging.getLogger(__package__)
+
 
 # Currently these are the same across all models
 class WorkMode(IntEnum):
     SELF_USE = 0
     FEED_IN_FIRST = 1
     BACK_UP = 2
+
+
+# TODO: Get this from the inverter
+_MAX_CHARGE_POWER = 5000
+
+_INITIAL_IMPORT_POWER = 0
 
 
 class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
@@ -25,9 +34,10 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         self._controller.register_modbus_entity(self)
         self._mode = RemoteControlMode.DISABLE
         self._remote_control_enabled: bool | None = None  # None = we don't know
+        self._current_import_power = _INITIAL_IMPORT_POWER
 
-        self.charge_power = 4000
-        self.discharge_power = 4000
+        # TODO
+        self.discharge_power = 2000
 
     @property
     def mode(self) -> RemoteControlMode:
@@ -52,33 +62,117 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
     async def _update_disable(self) -> None:
         await self._disable_remote_control()
 
+    def _pv_sum(self) -> int | None:
+        pv_sum = 0
+        for address in self._addresses.pv_powers:
+            value = self._controller.read(address, signed=True)
+            if value is None:
+                return None
+            pv_sum += value
+        return pv_sum
+
     async def _update_charge(self) -> None:
         # The inverter doesn't respect Max Soc. Therefore if the SoC >= Max SoC, turn off remote control.
+        # We don't let the user configure charge power: they can't figure it with normal charge periods, so why bother?
+        # They can set the max charge current if they want, which has the same effect.
 
-        soc = self._controller.read(self._addresses.battery_soc)
-        max_soc = self._controller.read(self._addresses.max_soc)
+        soc = self._controller.read(self._addresses.battery_soc, signed=False)
+        max_soc = self._controller.read(self._addresses.max_soc, signed=False)
+
         if soc is not None and max_soc is not None and soc >= max_soc:
+            _LOGGER.debug("Force charge: soc %s%% >= max soc %s%%, using Back-up", soc, max_soc)
             # Avoid discharging the battery with Back-Up
             await self._disable_remote_control(WorkMode.BACK_UP)
-        else:
+            return
+
+        # If it's daylight, both PV and the input power are bringing power into the inverter. The input power will
+        # first displace PV (so PV generation falls to 0), then the inverter will start limiting the input power.
+        # Therefore, we need to keep an eye on the PV generation, and decrease the input power so as not to displace
+        # it. Once we get to the point of exporting (so PV is providing all the power that the battery can take), we
+        # might as well just switch to Back-Up.
+        # Actually monitoring whether we're clipping PV is hard. The best way I've found is to monitor the sum of PV
+        # powers, and the PV Power Limit register, and we're clipping when PV Power Limit falls below the PV Power.
+        # We can also be clipping if they're close (within 50W of each other).
+        #
+        # So, we start off with a starting power (TBD, might make sense to read register 44008, but only when we
+        # have the ability to read registers once on start-up), and then we implement a little P controller, which
+        # steps up the power so long as PV isn't being saturated, and steps it down if it is.
+
+        # If the work mode is Back-up, and the inverter is currently exporting, then PV is able to handle all of the
+        # battery charging. In this case, leave it alone.
+        current_work_mode = self._controller.read(self._addresses.work_mode, signed=False)
+        if current_work_mode == WorkMode.BACK_UP:
+            inverter_power = self._controller.read(self._addresses.inverter_power, signed=True)
+            if inverter_power is not None and inverter_power > 0:
+                _LOGGER.debug("Force charge: inverter exporting and work mode Back-up, leaving as-is")
+                return
+
+        pv_sum = self._pv_sum()
+        pv_power_limit = self._controller.read(self._addresses.pv_power_limit, signed=True)
+        if pv_sum is None or pv_power_limit is None:
+            _LOGGER.warn("Remote control: unable to get PV sum or PV Power limit, defaulting to %s", _MAX_CHARGE_POWER)
             await self._enable_remote_control()
-            # Negative values = charge
-            await self._controller.write_register(self._addresses.active_power, -self.charge_power)
+            await self._controller.write_register(self._addresses.active_power, -_MAX_CHARGE_POWER)
+            return
+
+        # If we're currently disabled, do a period to get data before we start doing active control.
+        # Do this after the 'None' check above to avoid flip-flopping if the registers aren't available for some
+        # reason
+        if self._remote_control_enabled is not True:
+            self._current_import_power = _INITIAL_IMPORT_POWER
+
+        # We aim to have the PV Power Limit 50W above PV Sum.
+        # (It seems PV can still be clipped if PV is small, and the PV limit is just slightly larger)
+        # Having this also means that PV can increase between polls, and we won't lose all of it
+        setpoint = 50
+        # Positive values = not clipping (which means we can raise the import power)
+        actual = pv_power_limit - pv_sum
+        error = setpoint - actual
+
+        # Never step by more than 500W
+        max_step = 300
+
+        p = 1.0
+        delta = -int(error * p)
+        delta = min(max_step, delta) if delta > 0 else max(-max_step, delta)
+
+        previous_import_power = self._current_import_power
+        self._current_import_power = min(self._current_import_power + delta, _MAX_CHARGE_POWER)
+
+        # It's valid for this to go negative, if PV is supplying all the charging the battery can handle. In this
+        # case, switch to Back-up
+        # (It seems we start clipping solar, and the PV limit doesn't tell us this, below around 80W)
+        if self._current_import_power < 80 - setpoint:
+            # Avoid this going too negative, for when we start importing again
+            self._current_import_power = 0
+            _LOGGER.debug("Remote control: PV %sW clipping at 0W import, changing to Back-up", pv_sum)
+            await self._disable_remote_control(WorkMode.BACK_UP)
+            return
+
+        # Right, let's set that
+        _LOGGER.debug(
+            "Remote control: PV: %sW, limit: %sW, error: %sW, import %sW -> %sW",
+            pv_sum,
+            pv_power_limit,
+            error,
+            previous_import_power,
+            self._current_import_power,
+        )
+        await self._enable_remote_control()
+        await self._controller.write_register(self._addresses.active_power, -self._current_import_power)
 
     async def _update_discharge(self) -> None:
         # For force discharge, normally we can just leave it, and it will do the right thing: respect Min SoC and the
         # Max Discharge Current.
-        # However, if the house load is more than the power we set, then the inverter won't increase its power output
-        # to compensate. Therefore, if the house load exceeds the export power, disable remote control.
+        # Discharge Power should be the feed-in power, so we need to add on the house load. The house load can be
+        # negative, in which case we can end up with the inverter taking in power, but that's OK.
+        # TODO: Make sure that we don't push out PV generation when we do this.
 
-        load_power = self._controller.read(self._addresses.load_power)
-        if load_power is not None and load_power > self.discharge_power:
-            # If we're discharging, we need to use Feed-in First to avoid charging the battery
-            await self._disable_remote_control(WorkMode.FEED_IN_FIRST)
-        else:
-            await self._enable_remote_control()
-            # Positive values = discharge
-            await self._controller.write_register(self._addresses.active_power, self.discharge_power)
+        load_power = self._controller.read(self._addresses.load_power, signed=True)
+        inverter_discharge_power = self.discharge_power if load_power is None else self.discharge_power + load_power
+        await self._enable_remote_control()
+        # Positive values = discharge
+        await self._controller.write_register(self._addresses.active_power, inverter_discharge_power)
 
     async def _enable_remote_control(self) -> None:
         if self._remote_control_enabled in (None, False):
@@ -93,7 +187,9 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             self._remote_control_enabled = False
             await self._controller.write_register(self._addresses.remote_enable, 0)
 
-            if work_mode is not None:
+        if work_mode is not None:
+            current_work_mode = self._controller.read(self._addresses.work_mode, signed=False)
+            if current_work_mode != work_mode:
                 await self._controller.write_register(self._addresses.work_mode, int(work_mode))
 
     @property
@@ -102,7 +198,9 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             self._addresses.battery_soc,
             self._addresses.max_soc,
             self._addresses.load_power,
+            self._addresses.inverter_power,
             self._addresses.pv_power_limit,
+            *self._addresses.pv_powers,
         ]
 
     async def poll_complete_callback(self) -> None:

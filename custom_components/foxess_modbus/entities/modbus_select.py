@@ -72,7 +72,7 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
     @property
     def current_option(self) -> str | None:
         entity_description = cast(ModbusSelectDescription, self.entity_description)
-        value = self._controller.read(self._address)
+        value = self._controller.read(self._address, signed=False)
         if value is None:
             return None
         if not self._validate(entity_description.validate, value):

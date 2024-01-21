@@ -35,8 +35,8 @@ _NUM_FAILED_POLLS_FOR_DISCONNECTION = 5
 _MODEL_START_ADDRESS = 30000
 _MODEL_LENGTH = 15
 
-_INT16_MIN = -0x7FFF - 1
-_UINT16_MAX = 0xFFFF
+_INT16_MIN = -32768
+_UINT16_MAX = 65535
 
 
 @contextmanager
@@ -103,9 +103,13 @@ class ModbusController(EntityController, UnloadController):
     def remote_control_manager(self) -> EntityRemoteControlManager | None:
         return self._remote_control_manager
 
-    def read(self, address: int) -> int | None:
+    def read(self, address: int, *, signed: bool) -> int | None:
         """Modbus status"""
-        return self._data.get(address)
+        value = self._data.get(address)
+        if signed and value is not None:
+            sign_bit = 1 << (16 - 1)
+            value = (value & (sign_bit - 1)) - (value & sign_bit)
+        return value
 
     async def write_register(self, address: int, value: int) -> None:
         await self.write_registers(address, [value])

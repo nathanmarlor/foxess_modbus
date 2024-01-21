@@ -203,7 +203,7 @@ class ModbusFaultSensor(ModbusEntityMixin, SensorEntity):
     def native_value(self) -> str | None:
         faults = []
         for i, address in enumerate(self._addresses):
-            value = self._controller.read(address)
+            value = self._controller.read(address, signed=False)
             if value is None:
                 return None
             if value != 0:

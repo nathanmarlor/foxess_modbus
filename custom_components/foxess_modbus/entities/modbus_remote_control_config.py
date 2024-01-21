@@ -21,7 +21,9 @@ class ModbusRemoteControlAddressConfig:
     battery_soc: int
     max_soc: int
     load_power: int
+    inverter_power: int
     pv_power_limit: int
+    pv_powers: list[int]
 
 
 class RemoteControlAddressSpec:
