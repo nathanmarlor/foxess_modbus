@@ -49,7 +49,12 @@ H1_AC1_REGISTERS = SpecialRegisterConfig(invalid_register_ranges=[(11096, 39999)
 # See https://github.com/nathanmarlor/foxess_modbus/discussions/503
 H3_REGISTERS = SpecialRegisterConfig(
     invalid_register_ranges=[(41001, 41006), (41012, 41013), (41015, 41015)],
-    individual_read_register_ranges=[(41007, 41011)],
+    individual_read_register_ranges=[(41000, 41999)],
+)
+# See https://github.com/nathanmarlor/foxess_modbus/pull/512
+KH_REGISTERS = SpecialRegisterConfig(
+    invalid_register_ranges=[(41001, 41006), (41012, 41012), (41019, 43999)],
+    individual_read_register_ranges=[(41000, 41999)],
 )
 
 
@@ -185,7 +190,11 @@ INVERTER_PROFILES = {
         ),
         # The KH doesn't have a LAN port. It supports both input and holding over RS485
         # Some models start with KH-, but some are just e.g. KH10.5
-        InverterModelProfile(KH, r"^KH").add_connection_type(AUX, RegisterType.HOLDING),
+        InverterModelProfile(KH, r"^KH").add_connection_type(
+            AUX,
+            RegisterType.HOLDING,
+            special_registers=KH_REGISTERS,
+        ),
         # The H3 seems to use holding registers for everything
         InverterModelProfile(H3, r"^H3-")
         .add_connection_type(
