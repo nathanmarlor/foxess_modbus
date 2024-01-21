@@ -14,16 +14,30 @@ class ModbusRemoteControlAddressConfig:
     """Defines the set of registers used for remote control"""
 
     remote_enable: int
+    """Remote Enable, turns remote control off/on"""
     timeout_set: int
+    """Remote Timeout_Set, sets the watchdog reload value"""
     active_power: int
+    """Remote control-Active power command, sets the output power (+ve) or input power (-ve) of the inverter"""
     work_mode: int
+    """Work mode control"""
 
     battery_soc: int
+    """Current battery SoC"""
     max_soc: int
+    """Configured Max SoC"""
     load_power: int
+    """Current load power of the house"""
     inverter_power: int
+    """Current output power of the inverter (+ve) or input power (-ve)"""
+    ac_power_limit_down: int
+    """Pwr_limit Ac_P_Dn, maximum input power of the inverter"""
     pv_power_limit: int
+    """Pwr_limit PV, related to the spare input PV capacity"""
+    pv_voltages: list[int]
+    """Array of pvx_voltage addresses for PV strings"""
     pv_powers: list[int]
+    """Array of the pvx_power addresses for PV strings"""
 
 
 class RemoteControlAddressSpec:

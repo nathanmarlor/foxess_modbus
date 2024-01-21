@@ -17,10 +17,8 @@ class WorkMode(IntEnum):
     BACK_UP = 2
 
 
-# TODO: Get this from the inverter
-_MAX_CHARGE_POWER = 5000
-
-_INITIAL_IMPORT_POWER = 0
+# If the PV voltage is below this value, count it as no sun
+_PV_VOLTAGE_THRESHOLD = 20
 
 
 class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
@@ -34,7 +32,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         self._controller.register_modbus_entity(self)
         self._mode = RemoteControlMode.DISABLE
         self._remote_control_enabled: bool | None = None  # None = we don't know
-        self._current_import_power = _INITIAL_IMPORT_POWER
+        self._current_import_power = 0  # Set the first time that we enable force charge
 
         # TODO
         self.discharge_power = 2000
@@ -62,7 +60,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
     async def _update_disable(self) -> None:
         await self._disable_remote_control()
 
-    def _pv_sum(self) -> int | None:
+    def _pv_power_sum(self) -> int | None:
         pv_sum = 0
         for address in self._addresses.pv_powers:
             value = self._controller.read(address, signed=True)
@@ -70,6 +68,14 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
                 return None
             pv_sum += value
         return pv_sum
+
+    def _has_any_pv_voltage(self) -> int | None:
+        for address in self._addresses.pv_voltages:
+            value = self._controller.read(address, signed=True)
+            # Units are 0.1V
+            if value is not None and value > _PV_VOLTAGE_THRESHOLD * 10:
+                return True
+        return False
 
     async def _update_charge(self) -> None:
         # The inverter doesn't respect Max Soc. Therefore if the SoC >= Max SoC, turn off remote control.
@@ -107,26 +113,35 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
                 _LOGGER.debug("Force charge: inverter exporting and work mode Back-up, leaving as-is")
                 return
 
-        pv_sum = self._pv_sum()
+        # This is -ve
+        max_import_power = self._controller.read(self._addresses.ac_power_limit_down, signed=True)
+        if max_import_power is None or max_import_power >= 0:
+            max_import_power = 5000  # A semi-sensible (?) fallback
+        else:
+            max_import_power = -max_import_power
+
+        # If there's no sun, don't try and do any control.
+        # (If we do, we can end up limiting the power to the max PV power, rather than the max inverter input power).
+        pv_power_sum = self._pv_power_sum()
         pv_power_limit = self._controller.read(self._addresses.pv_power_limit, signed=True)
-        if pv_sum is None or pv_power_limit is None:
-            _LOGGER.warn("Remote control: unable to get PV sum or PV Power limit, defaulting to %s", _MAX_CHARGE_POWER)
+        if not self._has_any_pv_voltage() or pv_power_sum is None or pv_power_limit is None:
+            _LOGGER.debug("Remote control: no sun (or PV unavailable), defaulting to %sW", max_import_power)
             await self._enable_remote_control()
-            await self._controller.write_register(self._addresses.active_power, -_MAX_CHARGE_POWER)
+            await self._controller.write_register(self._addresses.active_power, -max_import_power)
             return
 
         # If we're currently disabled, do a period to get data before we start doing active control.
         # Do this after the 'None' check above to avoid flip-flopping if the registers aren't available for some
         # reason
         if self._remote_control_enabled is not True:
-            self._current_import_power = _INITIAL_IMPORT_POWER
+            self._current_import_power = max_import_power
 
         # We aim to have the PV Power Limit 50W above PV Sum.
         # (It seems PV can still be clipped if PV is small, and the PV limit is just slightly larger)
         # Having this also means that PV can increase between polls, and we won't lose all of it
         setpoint = 50
         # Positive values = not clipping (which means we can raise the import power)
-        actual = pv_power_limit - pv_sum
+        actual = pv_power_limit - pv_power_sum
         error = setpoint - actual
 
         # Never step by more than 500W
@@ -137,7 +152,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         delta = min(max_step, delta) if delta > 0 else max(-max_step, delta)
 
         previous_import_power = self._current_import_power
-        self._current_import_power = min(self._current_import_power + delta, _MAX_CHARGE_POWER)
+        self._current_import_power = min(self._current_import_power + delta, max_import_power)
 
         # It's valid for this to go negative, if PV is supplying all the charging the battery can handle. In this
         # case, switch to Back-up
@@ -145,14 +160,14 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         if self._current_import_power < 80 - setpoint:
             # Avoid this going too negative, for when we start importing again
             self._current_import_power = 0
-            _LOGGER.debug("Remote control: PV %sW clipping at 0W import, changing to Back-up", pv_sum)
+            _LOGGER.debug("Remote control: PV %sW clipping at 0W import, changing to Back-up", pv_power_sum)
             await self._disable_remote_control(WorkMode.BACK_UP)
             return
 
         # Right, let's set that
         _LOGGER.debug(
             "Remote control: PV: %sW, limit: %sW, error: %sW, import %sW -> %sW",
-            pv_sum,
+            pv_power_sum,
             pv_power_limit,
             error,
             previous_import_power,
@@ -200,6 +215,8 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             self._addresses.load_power,
             self._addresses.inverter_power,
             self._addresses.pv_power_limit,
+            self._addresses.ac_power_limit_down,
+            *self._addresses.pv_voltages,
             *self._addresses.pv_powers,
         ]
 
