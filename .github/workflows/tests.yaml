@@ -28,7 +28,7 @@ jobs:
 
       - name: Install Python modules
         run: |
-          pip install -r requirements.txt
+          pip install --no-cache-dir -r requirements.txt
 
       - name: Run pre-commit on all files
         run: |
