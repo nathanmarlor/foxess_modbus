@@ -208,20 +208,26 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         # For force discharge, normally we can just leave it, and it will do the right thing: respect Min SoC and the
         # Max Discharge Current.
 
-        if self._discharge_power is None:
-            _LOGGER.warn("Remote control: discharge power has not been set, so not discharging")
-            await self._disable_remote_control()
-            return
-
+        discharge_power = self._discharge_power
         max_discharge_power = self._read(self._addresses.ac_power_limit_up, signed=False)
-        inverter_discharge_power = self._discharge_power
-        if max_discharge_power is not None and inverter_discharge_power > max_discharge_power:
-            inverter_discharge_power = max_discharge_power
+
+        if discharge_power is None:
+            if max_discharge_power is not None:
+                discharge_power = max_discharge_power
+            else:
+                _LOGGER.warn(
+                    "Remote control: discharge power has not been set and ac_power_limit_up not available, so not "
+                    "discharging"
+                )
+                await self._disable_remote_control()
+                return
+        elif max_discharge_power is not None and discharge_power > max_discharge_power:
+            discharge_power = max_discharge_power
 
         # If remote control stops, we still want to feed in as much as possible
         await self._enable_remote_control(WorkMode.FEED_IN_FIRST)
         # Positive values = discharge
-        await self._controller.write_register(self._addresses.active_power, inverter_discharge_power)
+        await self._controller.write_register(self._addresses.active_power, discharge_power)
 
     async def _enable_remote_control(self, fallback_work_mode: WorkMode) -> None:
         if self._remote_control_enabled in (None, False):
