@@ -122,9 +122,11 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         # This is -ve
         max_import_power = self._controller.read(self._addresses.ac_power_limit_down, signed=True)
         if max_import_power is None or max_import_power >= 0:
-            max_import_power = 5000  # A semi-sensible (?) fallback
-        else:
-            max_import_power = -max_import_power
+            _LOGGER.warn("Max import power not available. Not enabling remote control")
+            await self._disable_remote_control()
+            return
+
+        max_import_power = -max_import_power
 
         # If there's no sun, don't try and do any control.
         # (If we do, we can end up limiting the power to the max PV power, rather than the max inverter input power).
@@ -132,7 +134,8 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         pv_power_limit = self._controller.read(self._addresses.pv_power_limit, signed=True)
         if not self._has_any_pv_voltage() or pv_power_sum is None or pv_power_limit is None:
             _LOGGER.debug("Remote control: no sun (or PV unavailable), defaulting to %sW", max_import_power)
-            await self._enable_remote_control()
+            # If remote control stops, we want to be in Back-up
+            await self._enable_remote_control(WorkMode.BACK_UP)
             await self._controller.write_register(self._addresses.active_power, -max_import_power)
             return
 
@@ -179,34 +182,46 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             previous_import_power,
             self._current_import_power,
         )
-        await self._enable_remote_control()
+
+        # If remote control stops, we want to be in Back-up, charging as much as we can
+        await self._enable_remote_control(WorkMode.BACK_UP)
         await self._controller.write_register(self._addresses.active_power, -self._current_import_power)
 
     async def _update_discharge(self) -> None:
         # For force discharge, normally we can just leave it, and it will do the right thing: respect Min SoC and the
         # Max Discharge Current.
         # Discharge Power should be the feed-in power, so we need to add on the house load. The house load can be
-        # negative, in which case we can end up with the inverter taking in power, but that's OK.
-        # TODO: Make sure that we don't push out PV generation when we do this.
+        # negative, in which case we'll treat it as zero: starting to import power during a force *dis*charge period
+        # would just be confusing.
 
         if self._discharge_power is None:
             _LOGGER.warn("Remote control: discharge power has not been set, so not discharging")
+            await self._disable_remote_control()
             return
 
         load_power = self._controller.read(self._addresses.load_power, signed=True)
         max_discharge_power = self._controller.read(self._addresses.ac_power_limit_up, signed=False)
-        inverter_discharge_power = self._discharge_power if load_power is None else self._discharge_power + load_power
+        inverter_discharge_power = (
+            self._discharge_power + load_power if load_power is not None and load_power > 0 else self._discharge_power
+        )
         if max_discharge_power is not None and inverter_discharge_power > max_discharge_power:
             inverter_discharge_power = max_discharge_power
 
-        await self._enable_remote_control()
+        # If remote control stops, we still want to feed in as much as possible
+        await self._enable_remote_control(WorkMode.FEED_IN_FIRST)
         # Positive values = discharge
         await self._controller.write_register(self._addresses.active_power, inverter_discharge_power)
 
-    async def _enable_remote_control(self) -> None:
+    async def _enable_remote_control(self, fallback_work_mode: WorkMode) -> None:
         if self._remote_control_enabled in (None, False):
             self._remote_control_enabled = True
             timeout = self._poll_rate * 2
+
+            # We set a fallback work mode so that the inverter still does "roughly" the right thing if we disconnect
+            current_work_mode = self._controller.read(self._addresses.work_mode, signed=False)
+            if current_work_mode != fallback_work_mode:
+                await self._controller.write_register(self._addresses.work_mode, int(fallback_work_mode))
+
             # We can't do multi-register writes to these registers
             await self._controller.write_register(self._addresses.timeout_set, timeout)
             await self._controller.write_register(self._addresses.remote_enable, 1)
