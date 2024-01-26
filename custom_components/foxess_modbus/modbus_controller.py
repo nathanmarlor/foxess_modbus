@@ -9,6 +9,7 @@ from typing import Any
 from typing import Iterable
 from typing import Iterator
 
+from homeassistant.components.logbook import async_log_entry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.event import async_track_time_interval
 from pymodbus.exceptions import ConnectionException
@@ -21,6 +22,8 @@ from .common.exceptions import AutoconnectFailedError
 from .common.exceptions import UnsupportedInverterError
 from .common.register_type import RegisterType
 from .common.unload_controller import UnloadController
+from .const import DOMAIN
+from .const import FRIENDLY_NAME
 from .const import MAX_READ
 from .inverter_profiles import INVERTER_PROFILES
 from .inverter_profiles import InverterModelConnectionTypeProfile
@@ -71,6 +74,7 @@ class ModbusController(EntityController, UnloadController):
         self._refresh_lock = threading.Lock()
         self._num_failed_poll_attempts = 0
         self._is_connected = True  # Start off assuming we can connect
+        self._current_connection_error: str | None = None
 
         # Setup mixins
         EntityController.__init__(self)
@@ -88,6 +92,10 @@ class ModbusController(EntityController, UnloadController):
     @property
     def is_connected(self) -> bool:
         return self._is_connected
+
+    @property
+    def current_connection_error(self) -> str | None:
+        return self._current_connection_error
 
     def read(self, address: int) -> int | None:
         """Modbus status"""
@@ -214,6 +222,8 @@ class ModbusController(EntityController, UnloadController):
                         self._slave,
                     )
                     self._is_connected = True
+                    self._current_connection_error = None
+                    self._log_message("Connection restored")
                     self._notify_is_connected_changed()
             elif self._is_connected:
                 self._num_failed_poll_attempts += 1
@@ -226,7 +236,17 @@ class ModbusController(EntityController, UnloadController):
                         exception,
                     )
                     self._is_connected = False
+                    self._current_connection_error = str(exception)
+                    self._log_message(f"Connection error: {exception}")
                     self._notify_is_connected_changed()
+
+    def _log_message(self, message: str) -> None:
+        friendly_name = self.inverter_details[FRIENDLY_NAME]
+        if friendly_name:
+            name = f"FoxESS - Modbus ({friendly_name})"
+        else:
+            name = "FoxESS - Modbus"
+        async_log_entry(self._hass, name=name, message=message, domain=DOMAIN)
 
     def _create_read_ranges(self, max_read: int) -> Iterable[tuple[int, int]]:
         """
