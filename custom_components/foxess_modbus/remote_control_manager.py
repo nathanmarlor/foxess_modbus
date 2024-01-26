@@ -153,10 +153,12 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         actual = pv_power_limit - pv_power_sum
         error = setpoint - actual
 
-        # Never step by more than 300W
-        max_step = 300
+        # Never step by more than 1kW
+        max_step = 1000
 
-        p = 1.0
+        # When we're trying to stop clipping PV, we'll use a slightly higher P. This means that we're quicker to stop
+        # clipping, but not quite as unstable going the other way
+        p = 1.5 if error > 0 else 1.0
         delta = -int(error * p)
         delta = min(max_step, delta) if delta > 0 else max(-max_step, delta)
 
