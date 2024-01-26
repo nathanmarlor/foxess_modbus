@@ -8,6 +8,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
 from .const import INVERTERS
+from .entities.connection_status_sensor import ConnectionStatusSensor
 from .inverter_profiles import create_entities
 
 _LOGGER = logging.getLogger(__package__)
@@ -19,4 +20,5 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_d
     inverters = hass.data[DOMAIN][entry.entry_id][INVERTERS]
 
     for inverter, controller in inverters:
+        async_add_devices([ConnectionStatusSensor(controller, inverter)])
         async_add_devices(create_entities(SensorEntity, hass, controller, entry, inverter))

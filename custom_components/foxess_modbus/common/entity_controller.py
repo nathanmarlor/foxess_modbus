@@ -71,6 +71,11 @@ class EntityController(ABC):
 
     @property
     @abstractmethod
+    def current_connection_error(self) -> str | None:
+        """Returns the current connection error, or None if there is no connection error"""
+
+    @property
+    @abstractmethod
     def remote_control_manager(self) -> EntityRemoteControlManager | None:
         """Fetch the remote control manager, if any"""
 
