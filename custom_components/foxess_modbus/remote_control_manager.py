@@ -35,6 +35,18 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         self._current_import_power = 0  # Set the first time that we enable force charge
         self._discharge_power: int | None = None
 
+        modbus_addresses = [
+            self._addresses.battery_soc,
+            self._addresses.work_mode,
+            self._addresses.max_soc,
+            *self._addresses.inverter_power,
+            self._addresses.pv_power_limit,
+            self._addresses.ac_power_limit_down,
+            *self._addresses.pv_voltages,
+            *self._addresses.pv_powers,
+        ]
+        self._modbus_addresses = [x for x in modbus_addresses if x is not None]
+
     @property
     def mode(self) -> RemoteControlMode:
         return self._mode
@@ -66,18 +78,18 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
     async def _update_disable(self) -> None:
         await self._disable_remote_control()
 
-    def _pv_power_sum(self) -> int | None:
-        pv_sum = 0
-        for address in self._addresses.pv_powers:
-            value = self._controller.read(address, signed=True)
+    def _sum(self, addresses: list[int]) -> int | None:
+        total = 0
+        for address in addresses:
+            value = self._read(address, signed=True)
             if value is None:
                 return None
-            pv_sum += value
-        return pv_sum
+            total += value
+        return total
 
     def _has_any_pv_voltage(self) -> int | None:
         for address in self._addresses.pv_voltages:
-            value = self._controller.read(address, signed=True)
+            value = self._read(address, signed=True)
             # Units are 0.1V
             if value is not None and value > _PV_VOLTAGE_THRESHOLD * 10:
                 return True
@@ -88,8 +100,9 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         # We don't let the user configure charge power: they can't figure it with normal charge periods, so why bother?
         # They can set the max charge current if they want, which has the same effect.
 
-        soc = self._controller.read(self._addresses.battery_soc, signed=False)
-        max_soc = self._controller.read(self._addresses.max_soc, signed=False)
+        soc = self._read(self._addresses.battery_soc, signed=False)
+        # max_soc might not be available, e.g. on H1 LAN
+        max_soc = self._read(self._addresses.max_soc, signed=False)
 
         if soc is not None and max_soc is not None and soc >= max_soc:
             _LOGGER.debug("Force charge: soc %s%% >= max soc %s%%, using Back-up", soc, max_soc)
@@ -112,15 +125,16 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
 
         # If the work mode is Back-up, and the inverter is currently exporting, then PV is able to handle all of the
         # battery charging. In this case, leave it alone.
-        current_work_mode = self._controller.read(self._addresses.work_mode, signed=False)
+        # This might not be available, e.g. on H1 LAN
+        current_work_mode = self._read(self._addresses.work_mode, signed=False)
         if current_work_mode == WorkMode.BACK_UP:
-            inverter_power = self._controller.read(self._addresses.inverter_power, signed=True)
+            inverter_power = self._sum(self._addresses.inverter_power)
             if inverter_power is not None and inverter_power > 0:
                 _LOGGER.debug("Force charge: inverter exporting and work mode Back-up, leaving as-is")
                 return
 
         # This is -ve
-        max_import_power = self._controller.read(self._addresses.ac_power_limit_down, signed=True)
+        max_import_power = self._read(self._addresses.ac_power_limit_down, signed=True)
         if max_import_power is None or max_import_power >= 0:
             _LOGGER.warn("Max import power not available. Not enabling remote control")
             await self._disable_remote_control()
@@ -130,8 +144,8 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
 
         # If there's no sun, don't try and do any control.
         # (If we do, we can end up limiting the power to the max PV power, rather than the max inverter input power).
-        pv_power_sum = self._pv_power_sum()
-        pv_power_limit = self._controller.read(self._addresses.pv_power_limit, signed=True)
+        pv_power_sum = self._sum(self._addresses.pv_powers)
+        pv_power_limit = self._read(self._addresses.pv_power_limit, signed=True)
         if not self._has_any_pv_voltage() or pv_power_sum is None or pv_power_limit is None:
             _LOGGER.debug("Remote control: no sun (or PV unavailable), defaulting to %sW", max_import_power)
             # If remote control stops, we want to be in Back-up
@@ -192,20 +206,14 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
     async def _update_discharge(self) -> None:
         # For force discharge, normally we can just leave it, and it will do the right thing: respect Min SoC and the
         # Max Discharge Current.
-        # Discharge Power should be the feed-in power, so we need to add on the house load. The house load can be
-        # negative, in which case we'll treat it as zero: starting to import power during a force *dis*charge period
-        # would just be confusing.
 
         if self._discharge_power is None:
             _LOGGER.warn("Remote control: discharge power has not been set, so not discharging")
             await self._disable_remote_control()
             return
 
-        load_power = self._controller.read(self._addresses.load_power, signed=True)
-        max_discharge_power = self._controller.read(self._addresses.ac_power_limit_up, signed=False)
-        inverter_discharge_power = (
-            self._discharge_power + load_power if load_power is not None and load_power > 0 else self._discharge_power
-        )
+        max_discharge_power = self._read(self._addresses.ac_power_limit_up, signed=False)
+        inverter_discharge_power = self._discharge_power
         if max_discharge_power is not None and inverter_discharge_power > max_discharge_power:
             inverter_discharge_power = max_discharge_power
 
@@ -220,8 +228,9 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             timeout = self._poll_rate * 2
 
             # We set a fallback work mode so that the inverter still does "roughly" the right thing if we disconnect
-            current_work_mode = self._controller.read(self._addresses.work_mode, signed=False)
-            if current_work_mode != fallback_work_mode:
+            # (This might not be available, e.g. on H1 LAN)
+            current_work_mode = self._read(self._addresses.work_mode, signed=False)
+            if current_work_mode != fallback_work_mode and self._addresses.work_mode is not None:
                 await self._controller.write_register(self._addresses.work_mode, int(fallback_work_mode))
 
             # We can't do multi-register writes to these registers
@@ -233,23 +242,20 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             self._remote_control_enabled = False
             await self._controller.write_register(self._addresses.remote_enable, 0)
 
-        if work_mode is not None:
-            current_work_mode = self._controller.read(self._addresses.work_mode, signed=False)
+        # This might not be available, e.g. on H1 LAN
+        if work_mode is not None and self._addresses.work_mode is not None:
+            current_work_mode = self._read(self._addresses.work_mode, signed=False)
             if current_work_mode != work_mode:
                 await self._controller.write_register(self._addresses.work_mode, int(work_mode))
 
+    def _read(self, address: int | None, signed: bool) -> int | None:
+        if address is None:
+            return None
+        return self._read(address, signed=signed)
+
     @property
     def addresses(self) -> list[int]:
-        return [
-            self._addresses.battery_soc,
-            self._addresses.max_soc,
-            self._addresses.load_power,
-            self._addresses.inverter_power,
-            self._addresses.pv_power_limit,
-            self._addresses.ac_power_limit_down,
-            *self._addresses.pv_voltages,
-            *self._addresses.pv_powers,
-        ]
+        return self._modbus_addresses
 
     async def poll_complete_callback(self) -> None:
         await self._update()

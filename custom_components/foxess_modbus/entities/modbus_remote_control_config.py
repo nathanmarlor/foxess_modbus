@@ -24,16 +24,14 @@ class ModbusRemoteControlAddressConfig:
     """Remote Timeout_Set, sets the watchdog reload value"""
     active_power: int
     """Remote control-Active power command, sets the output power (+ve) or input power (-ve) of the inverter"""
-    work_mode: int
+    work_mode: int | None
     """Work mode control"""
 
     battery_soc: int
     """Current battery SoC"""
-    max_soc: int
+    max_soc: int | None
     """Configured Max SoC"""
-    load_power: int
-    """Current load power of the house"""
-    inverter_power: int
+    inverter_power: list[int]
     """Current output power of the inverter (+ve) or input power (-ve)"""
     ac_power_limit_up: int
     """Pwr_limit Ac_P_Dn, maximum output power of the inverter. TODO: Read only once, when we have this ability"""
@@ -99,7 +97,8 @@ class ModbusRemoteControlFactory:
         def _set_discharge_power(manager: EntityRemoteControlManager, value: int) -> None:
             manager.discharge_power = value
 
-        max_charge_current = ModbusRemoteControlNumberDescription(
+        # hass type hints are messed up, and mypy doesn't see inherited dataclass properties on the EntityDescriptions
+        max_charge_current = ModbusRemoteControlNumberDescription(  # type: ignore
             key="force_discharge_power",
             name="Force Discharge Power",
             max_value_address=[x.get_ac_power_limit_up_address() for x in addresses],
