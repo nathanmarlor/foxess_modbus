@@ -29,7 +29,6 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         self._addresses = addresses
         self._poll_rate = poll_rate
 
-        self._controller.register_modbus_entity(self)
         self._mode = RemoteControlMode.DISABLE
         self._remote_control_enabled: bool | None = None  # None = we don't know
         self._current_import_power = 0  # Set the first time that we enable force charge
@@ -46,6 +45,8 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             *self._addresses.pv_powers,
         ]
         self._modbus_addresses = [x for x in modbus_addresses if x is not None]
+
+        self._controller.register_modbus_entity(self)
 
     @property
     def mode(self) -> RemoteControlMode:
@@ -251,7 +252,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
     def _read(self, address: int | None, signed: bool) -> int | None:
         if address is None:
             return None
-        return self._read(address, signed=signed)
+        return self._controller.read(address, signed=signed)
 
     @property
     def addresses(self) -> list[int]:

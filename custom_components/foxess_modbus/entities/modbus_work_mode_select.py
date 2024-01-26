@@ -42,6 +42,8 @@ class ModbusWorkModeSelect(ModbusSelect):
     ) -> None:
         super().__init__(controller, entity_description, address, entry, inv_details)
 
+        self._prev_remote_control_mode: RemoteControlMode | None = None
+
         if controller.remote_control_manager is not None:
             self._attr_options.extend([_FORCE_CHARGE, _FORCE_DISCHARGE])
 
@@ -49,10 +51,14 @@ class ModbusWorkModeSelect(ModbusSelect):
     def current_option(self) -> str | None:
         if self._controller.remote_control_manager is not None:
             mode = self._controller.remote_control_manager.mode
+            self._prev_remote_control_mode = mode
+
             if mode == RemoteControlMode.FORCE_CHARGE:
                 return _FORCE_CHARGE
             if mode == RemoteControlMode.FORCE_DISCHARGE:
                 return _FORCE_DISCHARGE
+
+        self._prev_remote_control_mode = None
         return super().current_option
 
     async def async_select_option(self, option: str) -> None:
@@ -68,3 +74,13 @@ class ModbusWorkModeSelect(ModbusSelect):
         # This update might not cause a register update (which is what triggers HA to update its state), so do this
         # explicitly
         self.async_schedule_update_ha_state()
+
+    def update_callback(self, changed_addresses: set[int]) -> None:
+        super().update_callback(changed_addresses)
+
+        # If the remote control mode has changed under us, update
+        if (
+            self._controller.remote_control_manager is not None
+            and self._controller.remote_control_manager.mode != self._prev_remote_control_mode
+        ):
+            self.schedule_update_ha_state()

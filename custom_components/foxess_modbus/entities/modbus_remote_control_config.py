@@ -9,9 +9,11 @@ from homeassistant.core import HomeAssistant
 from ..common.entity_controller import EntityRemoteControlManager
 from ..common.register_type import RegisterType
 from .entity_factory import EntityFactory
+from .inverter_model_spec import EntitySpec
 from .inverter_model_spec import InverterModelSpec
 from .inverter_model_spec import ModbusAddressSpecBase
 from .modbus_remote_control_number import ModbusRemoteControlNumberDescription
+from .modbus_remote_control_select import ModbusRemoteControlSelectDescription
 
 
 @dataclass(frozen=True)
@@ -69,6 +71,10 @@ class RemoteControlAddressSpec:
         if holding is not None:
             self.register_types[RegisterType.HOLDING] = holding
 
+    def get_models_without_work_mode(self) -> EntitySpec:
+        """Gets a InverterModelSpec instance to describe the Work Mode address"""
+        return EntitySpec(self.models, [k for k, v in self.register_types.items() if v.work_mode is None])
+
     def get_ac_power_limit_up_address(self) -> InverterModelSpec:
         """Gets a InverterModelSpec instance to describe Ac power limit up address"""
 
@@ -112,7 +118,14 @@ class ModbusRemoteControlFactory:
             value_setter=_set_discharge_power,
         )
 
-        self.entity_descriptions: list[EntityFactory] = [max_charge_current]
+        # Models without a work_mode address get one of these
+        remote_control_select = ModbusRemoteControlSelectDescription(  # type: ignore
+            key="force_charge_mode",
+            name="Force Charge Mode",
+            models=[x.get_models_without_work_mode() for x in self.address_specs],
+        )
+
+        self.entity_descriptions: list[EntityFactory] = [max_charge_current, remote_control_select]
 
     def create_if_supported(
         self, _hass: HomeAssistant, inverter_model: str, register_type: RegisterType, _inv_details: dict[str, Any]
