@@ -31,6 +31,11 @@ class EntityController(ABC):
     def is_connected(self) -> bool:
         """Returns whether the inverter is currently connected"""
 
+    @property
+    @abstractmethod
+    def current_connection_error(self) -> str | None:
+        """Returns the current connection error, or None if there is no connection error"""
+
     @abstractmethod
     def register_modbus_entity(self, listener: ModbusControllerEntity) -> None:
         """Register a modbus entity with the ModbusController"""
