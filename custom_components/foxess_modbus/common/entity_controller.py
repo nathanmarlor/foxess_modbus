@@ -42,6 +42,16 @@ class EntityRemoteControlManager(ABC):
 
     @property
     @abstractmethod
+    def charge_power(self) -> int | None:
+        """Get the current charge power"""
+
+    @charge_power.setter
+    @abstractmethod
+    def charge_power(self, value: int | None) -> None:
+        """Set the charge power"""
+
+    @property
+    @abstractmethod
     def discharge_power(self) -> int | None:
         """Get the current discharge power"""
 

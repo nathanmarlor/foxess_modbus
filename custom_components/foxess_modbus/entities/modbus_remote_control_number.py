@@ -32,6 +32,7 @@ class ModbusRemoteControlNumberDescription(NumberEntityDescription, EntityFactor
     max_value_address: list[InverterModelSpec]
     mode: NumberMode = NumberMode.AUTO
     scale: float = 1.0
+    signed: bool = False
     value_setter: Callable[[EntityRemoteControlManager, int], None]
 
     @property
@@ -98,7 +99,7 @@ class ModbusRemoteControlNumber(ModbusEntityMixin, RestoreNumber, NumberEntity):
 
     def _address_updated(self) -> None:
         entity_description = cast(ModbusRemoteControlNumberDescription, self.entity_description)
-        max_value = self._controller.read(self._max_value_address, signed=False)
+        max_value = self._controller.read(self._max_value_address, signed=entity_description.signed)
         if max_value is not None:
             native_max_value = max_value * entity_description.scale
             self._attr_native_max_value = native_max_value

@@ -80,6 +80,11 @@ class RemoteControlAddressSpec:
 
         return self._get_address(lambda x: x.ac_power_limit_up)
 
+    def get_ac_power_limit_down_address(self) -> InverterModelSpec:
+        """Gets a InverterModelSpec instance to describe Ac power limit down address"""
+
+        return self._get_address(lambda x: x.ac_power_limit_down)
+
     def _get_address(self, accessor: Callable[[ModbusRemoteControlAddressConfig], int]) -> InverterModelSpec:
         addresses = {}
         for register_type, address_config in self.register_types.items():
@@ -100,11 +105,30 @@ class ModbusRemoteControlFactory:
     def __init__(self, addresses: list[RemoteControlAddressSpec]) -> None:
         self.address_specs = addresses
 
+        def _set_charge_power(manager: EntityRemoteControlManager, value: int) -> None:
+            manager.charge_power = -value
+
+        charge_power = ModbusRemoteControlNumberDescription(  # type: ignore
+            key="force_charge_power",
+            name="Force Charge Power",
+            max_value_address=[x.get_ac_power_limit_down_address() for x in addresses],
+            mode=NumberMode.BOX,
+            device_class=NumberDeviceClass.POWER,
+            native_min_value=0.0,
+            # Max value is read from the inverter
+            native_step=0.001,
+            native_unit_of_measurement="kW",
+            # The register is negative
+            scale=-0.001,
+            signed=True,
+            value_setter=_set_charge_power,
+        )
+
         def _set_discharge_power(manager: EntityRemoteControlManager, value: int) -> None:
             manager.discharge_power = value
 
         # hass type hints are messed up, and mypy doesn't see inherited dataclass properties on the EntityDescriptions
-        max_charge_current = ModbusRemoteControlNumberDescription(  # type: ignore
+        discharge_power = ModbusRemoteControlNumberDescription(  # type: ignore
             key="force_discharge_power",
             name="Force Discharge Power",
             max_value_address=[x.get_ac_power_limit_up_address() for x in addresses],
@@ -125,7 +149,7 @@ class ModbusRemoteControlFactory:
             models=[x.get_models_without_work_mode() for x in self.address_specs],
         )
 
-        self.entity_descriptions: list[EntityFactory] = [max_charge_current, remote_control_select]
+        self.entity_descriptions: list[EntityFactory] = [charge_power, discharge_power, remote_control_select]
 
     def create_if_supported(
         self, _hass: HomeAssistant, inverter_model: str, register_type: RegisterType, _inv_details: dict[str, Any]

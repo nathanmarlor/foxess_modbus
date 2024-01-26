@@ -33,6 +33,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         self._remote_control_enabled: bool | None = None  # None = we don't know
         self._current_import_power = 0  # Set the first time that we enable force charge
         self._discharge_power: int | None = None
+        self._charge_power: int | None = None
 
         modbus_addresses = [
             self._addresses.battery_soc,
@@ -56,6 +57,14 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         if self._mode != mode:
             self._mode = mode
             await self._update()
+
+    @property
+    def charge_power(self) -> int | None:
+        return self._charge_power
+
+    @charge_power.setter
+    def charge_power(self, value: int | None) -> None:
+        self._charge_power = value
 
     @property
     def discharge_power(self) -> int | None:
@@ -134,14 +143,15 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
                 _LOGGER.debug("Force charge: inverter exporting and work mode Back-up, leaving as-is")
                 return
 
-        # This is -ve
-        max_import_power = self._read(self._addresses.ac_power_limit_down, signed=True)
-        if max_import_power is None or max_import_power >= 0:
-            _LOGGER.warn("Max import power not available. Not enabling remote control")
-            await self._disable_remote_control()
-            return
-
-        max_import_power = -max_import_power
+        max_charge_power = self._charge_power
+        if max_charge_power is None:
+            # This is -ve
+            max_import_power = self._read(self._addresses.ac_power_limit_down, signed=True)
+            if max_import_power is None or max_import_power >= 0:
+                _LOGGER.warn("Max charge power not available. Not enabling remote control")
+                await self._disable_remote_control()
+                return
+            max_charge_power = -max_import_power
 
         # If there's no sun, don't try and do any control.
         # (If we do, we can end up limiting the power to the max PV power, rather than the max inverter input power).
@@ -151,14 +161,8 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             _LOGGER.debug("Remote control: no sun (or PV unavailable), defaulting to %sW", max_import_power)
             # If remote control stops, we want to be in Back-up
             await self._enable_remote_control(WorkMode.BACK_UP)
-            await self._controller.write_register(self._addresses.active_power, -max_import_power)
+            await self._controller.write_register(self._addresses.active_power, -max_charge_power)
             return
-
-        # If we're currently disabled, do a period to get data before we start doing active control.
-        # Do this after the 'None' check above to avoid flip-flopping if the registers aren't available for some
-        # reason
-        if self._remote_control_enabled is not True:
-            self._current_import_power = max_import_power
 
         # We aim to have the PV Power Limit 50W above PV Sum.
         # (It seems PV can still be clipped if PV is small, and the PV limit is just slightly larger)
@@ -177,8 +181,12 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         delta = -int(error * p)
         delta = min(max_step, delta) if delta > 0 else max(-max_step, delta)
 
+        # If we're currently disabled, take the max delta from the max charge power, not from whatever we had before
+        if self._remote_control_enabled is not True:
+            self._current_import_power = max_charge_power
+
         previous_import_power = self._current_import_power
-        self._current_import_power = min(self._current_import_power + delta, max_import_power)
+        self._current_import_power = min(self._current_import_power + delta, max_charge_power)
 
         # It's valid for this to go negative, if PV is supplying all the charging the battery can handle. In this
         # case, switch to Back-up
