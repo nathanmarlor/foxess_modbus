@@ -1,7 +1,6 @@
 """Select"""
 import logging
 from dataclasses import dataclass
-from dataclasses import field
 from typing import Any
 from typing import Callable
 from typing import cast
@@ -13,27 +12,28 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.restore_state import ExtraStoredData
+from homeassistant.helpers.restore_state import RestoredExtraData
+from homeassistant.helpers.restore_state import RestoreEntity
 
 from ..common.entity_controller import EntityController
+from ..common.entity_controller import EntityRemoteControlManager
 from ..common.register_type import RegisterType
-from .base_validator import BaseValidator
 from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .entity_factory import EntityFactory
-from .inverter_model_spec import ModbusAddressSpec
+from .inverter_model_spec import EntitySpec
 from .modbus_entity_mixin import ModbusEntityMixin
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
-class ModbusNumberDescription(NumberEntityDescription, EntityFactory):
+class ModbusRemoteControlNumberDescription(NumberEntityDescription, EntityFactory):
     """Custom number entity description"""
 
-    address: list[ModbusAddressSpec]
+    models: list[EntitySpec]
     mode: NumberMode = NumberMode.AUTO
-    scale: float | None = None
-    post_process: Callable[[float], float] | None = None
-    validate: list[BaseValidator] = field(default_factory=list)
+    setter: Callable[[EntityRemoteControlManager, int], None]
 
     @property
     def entity_type(self) -> type[Entity]:
@@ -48,18 +48,18 @@ class ModbusNumberDescription(NumberEntityDescription, EntityFactory):
         entry: ConfigEntry,
         inv_details: dict[str, Any],
     ) -> Entity | None:
-        address = self._address_for_inverter_model(self.address, inverter_model, register_type)
-        return ModbusNumber(controller, self, address, entry, inv_details) if address is not None else None
+        if not self._supports_inverter_model(self.models, inverter_model, register_type):
+            return None
+        return ModbusRemoteControlNumber(controller, self, entry, inv_details)
 
 
-class ModbusNumber(ModbusEntityMixin, NumberEntity):
+class ModbusRemoteControlNumber(ModbusEntityMixin, RestoreEntity, NumberEntity):
     """Number class"""
 
     def __init__(
         self,
         controller: EntityController,
-        entity_description: ModbusNumberDescription,
-        address: int,
+        entity_description: ModbusRemoteControlNumberDescription,
         entry: ConfigEntry,
         inv_details: dict[str, Any],
     ) -> None:
@@ -67,7 +67,6 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
 
         self._controller = controller
         self.entity_description = entity_description
-        self._address = address
         self._entry = entry
         self._inv_details = inv_details
         self.entity_id = self._get_entity_id(Platform.NUMBER)
@@ -75,8 +74,8 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
     @property
     def native_value(self) -> int | float | None:
         """Return the value reported by the sensor."""
-        entity_description = cast(ModbusNumberDescription, self.entity_description)
-        value: float | int | None = self._controller.read(self._address)
+        entity_description = cast(ModbusRemoteControlNumberDescription, self.entity_description)
+        value: float | int | None = self._controller.read(self._address, signed=False)
         original = value
         if value is None:
             return None
@@ -89,12 +88,24 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
 
         return value
 
+    async def async_added_to_hass(self) -> None:
+        """Add update callback after being added to hass."""
+        await super().async_added_to_hass()
+        extra_data = await self.async_get_last_extra_data()
+        if extra_data:
+            self._last_enabled_value = extra_data.json_dict.get("last_enabled_value")
+
+    @property
+    def extra_restore_state_data(self) -> ExtraStoredData:
+        """Return specific state data to be restored."""
+        return RestoredExtraData(json_dict={"last_enabled_value": self._last_enabled_value})
+
     @property
     def mode(self) -> NumberMode:
-        return cast(ModbusNumberDescription, self.entity_description).mode
+        return cast(ModbusRemoteControlNumberDescription, self.entity_description).mode
 
     async def async_set_native_value(self, value: float) -> None:
-        entity_description = cast(ModbusNumberDescription, self.entity_description)
+        entity_description = cast(ModbusRemoteControlNumberDescription, self.entity_description)
         value = max(
             self.entity_description.native_min_value,
             min(self.entity_description.native_max_value, value),

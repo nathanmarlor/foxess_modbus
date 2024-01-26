@@ -144,7 +144,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         actual = pv_power_limit - pv_power_sum
         error = setpoint - actual
 
-        # Never step by more than 500W
+        # Never step by more than 300W
         max_step = 300
 
         p = 1.0
