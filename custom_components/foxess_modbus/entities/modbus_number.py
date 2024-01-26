@@ -76,7 +76,7 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
     def native_value(self) -> int | float | None:
         """Return the value reported by the sensor."""
         entity_description = cast(ModbusNumberDescription, self.entity_description)
-        value: float | int | None = self._controller.read(self._address)
+        value: float | int | None = self._controller.read(self._address, signed=False)
         original = value
         if value is None:
             return None

@@ -1,9 +1,7 @@
-"""Select"""
+"""This is only used for H1 on LAN, as it doesn't have a work mode"""
 import logging
 from dataclasses import dataclass
-from dataclasses import field
 from typing import Any
-from typing import cast
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.select import SelectEntityDescription
@@ -13,23 +11,19 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
+from ..common.entity_controller import RemoteControlMode
 from ..common.register_type import RegisterType
-from .base_validator import BaseValidator
 from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .entity_factory import EntityFactory
-from .inverter_model_spec import ModbusAddressSpec
+from .inverter_model_spec import EntitySpec
 from .modbus_entity_mixin import ModbusEntityMixin
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
-class ModbusSelectDescription(SelectEntityDescription, EntityFactory):
-    """Custom select entity description"""
-
-    address: list[ModbusAddressSpec]
-    options_map: dict[int, str]
-    validate: list[BaseValidator] = field(default_factory=list)
+class ModbusRemoteControlSelectDescription(SelectEntityDescription, EntityFactory):
+    models: list[EntitySpec]
 
     @property
     def entity_type(self) -> type[Entity]:
@@ -44,18 +38,16 @@ class ModbusSelectDescription(SelectEntityDescription, EntityFactory):
         entry: ConfigEntry,
         inv_details: dict[str, Any],
     ) -> Entity | None:
-        address = self._address_for_inverter_model(self.address, inverter_model, register_type)
-        return ModbusSelect(controller, self, address, entry, inv_details) if address is not None else None
+        if not self._supports_inverter_model(self.models, inverter_model, register_type):
+            return None
+        return ModbusRemoteControlSelect(controller, self, entry, inv_details)
 
 
-class ModbusSelect(ModbusEntityMixin, SelectEntity):
-    """Select class"""
-
+class ModbusRemoteControlSelect(ModbusEntityMixin, SelectEntity):
     def __init__(
         self,
         controller: EntityController,
-        entity_description: ModbusSelectDescription,
-        address: int,
+        entity_description: ModbusRemoteControlSelectDescription,
         entry: ConfigEntry,
         inv_details: dict[str, Any],
     ) -> None:
@@ -63,49 +55,55 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
 
         self._controller = controller
         self.entity_description = entity_description
-        self._address = address
         self._entry = entry
         self._inv_details = inv_details
         self.entity_id = self._get_entity_id(Platform.SELECT)
-        self._attr_options = list(self.entity_description.options_map.values())
+        self._options_map = {
+            RemoteControlMode.DISABLE: "Disable",
+            RemoteControlMode.FORCE_CHARGE: "Force Charge",
+            RemoteControlMode.FORCE_DISCHARGE: "Force Discharge",
+        }
+        self._attr_options = list(self._options_map.values())
+        self._prev_option: RemoteControlMode | None = None
+
+        assert self._controller.remote_control_manager is not None
+        self._manager = self._controller.remote_control_manager
 
     @property
     def current_option(self) -> str | None:
-        entity_description = cast(ModbusSelectDescription, self.entity_description)
-        value = self._controller.read(self._address, signed=False)
-        if value is None:
-            return None
-        if not self._validate(entity_description.validate, value):
-            return None
+        value = self._manager.mode
 
-        selected = entity_description.options_map.get(value)
+        selected = self._options_map.get(value)
         if selected is None:
             _LOGGER.warning(
-                "Select option (%s) for address (%s) is not valid. Valid values: (%s)",
+                "Select option (%s) is not valid. Valid values: (%s)",
                 value,
-                self._address,
-                entity_description.options_map,
+                self._options_map,
             )
+
+        self._prev_option = value
         return selected
 
     async def async_select_option(self, option: str) -> None:
-        entity_description = cast(ModbusSelectDescription, self.entity_description)
         value = next(
-            (k for k, v in entity_description.options_map.items() if v == option),
+            (k for k, v in self._options_map.items() if v == option),
             None,
         )
         if value is None:
             _LOGGER.warning(
-                "Failed to write unknown value '%s' to register '%s' with address %s. Valid values: %s",
+                "Failed to set unknown value '%s' Valid values: %s",
                 option,
-                self.name,
-                self._address,
-                list(entity_description.options_map.values()),
+                list(self._options_map.values()),
             )
             return
 
-        await self._controller.write_register(self._address, value)
+        await self._manager.set_mode(value)
+        self.schedule_update_ha_state()
+
+    def update_callback(self, _changed_addresses: set[int]) -> None:
+        if self._manager.mode != self._prev_option:
+            self.schedule_update_ha_state()
 
     @property
     def addresses(self) -> list[int]:
-        return [self._address]
+        return []

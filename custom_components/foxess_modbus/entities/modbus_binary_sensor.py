@@ -72,7 +72,7 @@ class ModbusBinarySensor(ModbusEntityMixin, BinarySensorEntity):
     @property
     def is_on(self) -> bool | None:
         """Return the value reported by the sensor."""
-        value = self._controller.read(self._address)
+        value = self._controller.read(self._address, signed=False)
         if value is None:
             return value
         rules = cast(ModbusBinarySensorDescription, self.entity_description).validate

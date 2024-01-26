@@ -9,7 +9,7 @@ from ..common.register_type import RegisterType
 from ..const import H1_SET
 from ..const import H3_SET
 from ..const import KH
-from .charge_periods import CHARGE_PERIODS
+from .charge_period_descriptions import CHARGE_PERIODS
 from .entity_factory import EntityFactory
 from .inverter_model_spec import EntitySpec
 from .inverter_model_spec import ModbusAddressesSpec
@@ -22,8 +22,9 @@ from .modbus_inverter_state_sensor import KH_INVERTER_STATES
 from .modbus_inverter_state_sensor import ModbusInverterStateSensorDescription
 from .modbus_lambda_sensor import ModbusLambdaSensorDescription
 from .modbus_number import ModbusNumberDescription
-from .modbus_select import ModbusSelectDescription
 from .modbus_sensor import ModbusSensorDescription
+from .modbus_work_mode_select import ModbusWorkModeSelectDescription
+from .remote_control_description import REMOTE_CONTROL_DESCRIPTION
 from .validation import Min
 from .validation import Range
 
@@ -1457,7 +1458,7 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
 ]
 
 _CONFIGURATION_ENTITIES: list[EntityFactory] = [
-    ModbusSelectDescription(
+    ModbusWorkModeSelectDescription(
         key="work_mode",
         address=[
             ModbusAddressSpec(models=[*H1_SET, KH], input=41000),
@@ -1624,4 +1625,5 @@ ENTITIES: list[EntityFactory] = (
     + _INVERTER_ENTITIES
     + _CONFIGURATION_ENTITIES
     + [description for x in CHARGE_PERIODS for description in x.entity_descriptions]
+    + REMOTE_CONTROL_DESCRIPTION.entity_descriptions
 )

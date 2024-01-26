@@ -116,7 +116,7 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
     @property
     def native_value(self) -> time | None:
         """Return the value reported by the sensor."""
-        value = self._controller.read(self._address)
+        value = self._controller.read(self._address, signed=False)
 
         if value is None:
             return None
@@ -125,7 +125,7 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
         if not self._validate(rules, value):
             return None
 
-        other_value = self._controller.read(self._other_address)
+        other_value = self._controller.read(self._other_address, signed=False)
         # If the charge window is disabled (i.e. both start and end are 0),
         # return the last-stored value rather than midnight. If other_value is unavailable,
         # assume the charge window is enabled, so we'll only fall back to _last_enabled_value
@@ -159,9 +159,9 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
         # 0 to a non-zero value, that means that someone has enabled a force-charge window
         # with a start time of midnight, so we need to update ourselves.
         # Therefore, we need to be sensitive to other_address
-        value = self._controller.read(self._address)
+        value = self._controller.read(self._address, signed=False)
         if value is not None:
-            other_value = self._controller.read(self._other_address)
+            other_value = self._controller.read(self._other_address, signed=False)
             rules = cast(ModbusChargePeriodStartEndSensorDescription, self.entity_description).validate
             if (
                 self._validate(rules, value)
@@ -249,8 +249,8 @@ class ModbusEnableForceChargeSensor(ModbusEntityMixin, BinarySensorEntity):
 
     @property
     def is_on(self) -> bool | None:
-        start_time = self._controller.read(self._period_start_address)
-        end_time = self._controller.read(self._period_end_address)
+        start_time = self._controller.read(self._period_start_address, signed=False)
+        end_time = self._controller.read(self._period_end_address, signed=False)
         rules = cast(ModbusEnableForceChargeSensorDescription, self.entity_description).validate
 
         if (

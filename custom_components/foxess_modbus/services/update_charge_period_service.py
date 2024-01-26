@@ -185,9 +185,11 @@ async def _update_charge_period(
         if i == charge_period_index:
             continue
 
-        period_start_time_value = controller.read(charge_period.addresses.period_start_address)
-        period_end_time_value = controller.read(charge_period.addresses.period_end_address)
-        period_enable_charge_from_grid_value = controller.read(charge_period.addresses.enable_charge_from_grid_address)
+        period_start_time_value = controller.read(charge_period.addresses.period_start_address, signed=False)
+        period_end_time_value = controller.read(charge_period.addresses.period_end_address, signed=False)
+        period_enable_charge_from_grid_value = controller.read(
+            charge_period.addresses.enable_charge_from_grid_address, signed=False
+        )
 
         if (
             period_start_time_value is None

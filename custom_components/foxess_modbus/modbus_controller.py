@@ -17,6 +17,7 @@ from pymodbus.exceptions import ConnectionException
 from .client.modbus_client import ModbusClient
 from .client.modbus_client import ModbusClientFailedError
 from .common.entity_controller import EntityController
+from .common.entity_controller import EntityRemoteControlManager
 from .common.entity_controller import ModbusControllerEntity
 from .common.exceptions import AutoconnectFailedError
 from .common.exceptions import UnsupportedInverterError
@@ -27,6 +28,7 @@ from .const import FRIENDLY_NAME
 from .const import MAX_READ
 from .inverter_profiles import INVERTER_PROFILES
 from .inverter_profiles import InverterModelConnectionTypeProfile
+from .remote_control_manager import RemoteControlManager
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,6 +37,9 @@ _NUM_FAILED_POLLS_FOR_DISCONNECTION = 5
 
 _MODEL_START_ADDRESS = 30000
 _MODEL_LENGTH = 15
+
+_INT16_MIN = -32768
+_UINT16_MAX = 65535
 
 
 @contextmanager
@@ -80,6 +85,11 @@ class ModbusController(EntityController, UnloadController):
         EntityController.__init__(self)
         UnloadController.__init__(self)
 
+        # This will call back into us to register its addresses
+        remote_control_config = connection_type_profile.create_remote_control_config(hass, inverter_details)
+        if remote_control_config is not None:
+            self._remote_control_manager = RemoteControlManager(self, remote_control_config, poll_rate)
+
         if self._hass is not None:
             refresh = async_track_time_interval(
                 self._hass,
@@ -97,9 +107,17 @@ class ModbusController(EntityController, UnloadController):
     def current_connection_error(self) -> str | None:
         return self._current_connection_error
 
-    def read(self, address: int) -> int | None:
+    @property
+    def remote_control_manager(self) -> EntityRemoteControlManager | None:
+        return self._remote_control_manager
+
+    def read(self, address: int, *, signed: bool) -> int | None:
         """Modbus status"""
-        return self._data.get(address)
+        value = self._data.get(address)
+        if signed and value is not None:
+            sign_bit = 1 << (16 - 1)
+            value = (value & (sign_bit - 1)) - (value & sign_bit)
+        return value
 
     async def write_register(self, address: int, value: int) -> None:
         await self.write_registers(address, [value])
@@ -114,11 +132,20 @@ class ModbusController(EntityController, UnloadController):
             values,
         )
         try:
+            for i, value in enumerate(values):
+                value = int(value)  # Ensure that we've been given an int
+                if not (_INT16_MIN <= value <= _UINT16_MAX):
+                    raise ValueError(f"Value {value} must be between {_INT16_MIN} and {_UINT16_MAX}")
+                # pymodbus doesn't like negative values
+                if value < 0:
+                    value = _UINT16_MAX + value + 1
+                values[i] = value
+
             await self._client.write_registers(start_address, values, self._slave)
+
             changed_addresses = set()
             for i, value in enumerate(values):
                 address = start_address + i
-                value = int(value)  # Ensure that we've been given an int
                 # Only store the result of the write if it's a register we care about ourselves
                 if self._data.get(address, value) != value:
                     self._data[address] = value
@@ -224,7 +251,7 @@ class ModbusController(EntityController, UnloadController):
                     self._is_connected = True
                     self._current_connection_error = None
                     self._log_message("Connection restored")
-                    self._notify_is_connected_changed()
+                    await self._notify_is_connected_changed(is_connected=True)
             elif self._is_connected:
                 self._num_failed_poll_attempts += 1
                 if self._num_failed_poll_attempts >= _NUM_FAILED_POLLS_FOR_DISCONNECTION:
@@ -238,7 +265,10 @@ class ModbusController(EntityController, UnloadController):
                     self._is_connected = False
                     self._current_connection_error = str(exception)
                     self._log_message(f"Connection error: {exception}")
-                    self._notify_is_connected_changed()
+                    await self._notify_is_connected_changed(is_connected=False)
+
+        if self._remote_control_manager is not None:
+            await self._remote_control_manager.poll_complete_callback()
 
     def _log_message(self, message: str) -> None:
         friendly_name = self.inverter_details[FRIENDLY_NAME]
@@ -327,10 +357,13 @@ class ModbusController(EntityController, UnloadController):
         for listener in self._update_listeners:
             listener.update_callback(changed_addresses)
 
-    def _notify_is_connected_changed(self) -> None:
+    async def _notify_is_connected_changed(self, is_connected: bool) -> None:
         """Notify listeners that the availability states of the inverter changed"""
         for listener in self._update_listeners:
             listener.is_connected_changed_callback()
+
+        if is_connected and self._remote_control_manager is not None:
+            await self._remote_control_manager.became_connected_callback()
 
     @staticmethod
     async def autodetect(client: ModbusClient, slave: int, adapter_config: dict[str, Any]) -> tuple[str, str]:

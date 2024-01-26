@@ -22,9 +22,11 @@ from .const import KUARA_H3
 from .const import LAN
 from .const import SK_HWR
 from .const import STAR_H3
-from .entities.charge_periods import CHARGE_PERIODS
+from .entities.charge_period_descriptions import CHARGE_PERIODS
 from .entities.entity_descriptions import ENTITIES
 from .entities.modbus_charge_period_config import ModbusChargePeriodInfo
+from .entities.modbus_remote_control_config import ModbusRemoteControlAddressConfig
+from .entities.remote_control_description import REMOTE_CONTROL_DESCRIPTION
 
 _LOGGER = logging.getLogger(__package__)
 
@@ -119,6 +121,13 @@ class InverterModelConnectionTypeProfile:
                 result.append(charge_period)
 
         return result
+
+    def create_remote_control_config(
+        self, hass: HomeAssistant, inverter_detials: dict[str, Any]
+    ) -> ModbusRemoteControlAddressConfig | None:
+        return REMOTE_CONTROL_DESCRIPTION.create_if_supported(
+            hass, self.inverter_model, self.register_type, inverter_detials
+        )
 
 
 class InverterModelProfile:

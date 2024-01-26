@@ -2,6 +2,7 @@
 import logging
 from abc import ABC
 from abc import abstractmethod
+from enum import Enum
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,6 +24,43 @@ class ModbusControllerEntity(ABC):
         """Notify listeners that availability state of the inverter has changed"""
 
 
+class RemoteControlMode(Enum):
+    DISABLE = 0
+    FORCE_CHARGE = 1
+    FORCE_DISCHARGE = 2
+
+
+class EntityRemoteControlManager(ABC):
+    @property
+    @abstractmethod
+    def mode(self) -> RemoteControlMode:
+        """Get the current mode"""
+
+    @abstractmethod
+    async def set_mode(self, value: RemoteControlMode) -> None:
+        """Set the current mode"""
+
+    @property
+    @abstractmethod
+    def charge_power(self) -> int | None:
+        """Get the current charge power"""
+
+    @charge_power.setter
+    @abstractmethod
+    def charge_power(self, value: int | None) -> None:
+        """Set the charge power"""
+
+    @property
+    @abstractmethod
+    def discharge_power(self) -> int | None:
+        """Get the current discharge power"""
+
+    @discharge_power.setter
+    @abstractmethod
+    def discharge_power(self, value: int | None) -> None:
+        """Set the discharge power"""
+
+
 class EntityController(ABC):
     """Interface given to entities to access the ModbusController"""
 
@@ -35,6 +73,11 @@ class EntityController(ABC):
     @abstractmethod
     def current_connection_error(self) -> str | None:
         """Returns the current connection error, or None if there is no connection error"""
+
+    @property
+    @abstractmethod
+    def remote_control_manager(self) -> EntityRemoteControlManager | None:
+        """Fetch the remote control manager, if any"""
 
     @abstractmethod
     def register_modbus_entity(self, listener: ModbusControllerEntity) -> None:
@@ -49,5 +92,9 @@ class EntityController(ABC):
         """Write a single value to a register"""
 
     @abstractmethod
-    def read(self, address: int) -> int | None:
+    async def write_registers(self, start_address: int, values: list[int]) -> None:
+        """Write multiple registers"""
+
+    @abstractmethod
+    def read(self, address: int, *, signed: bool) -> int | None:
         """Fetch the last-read value for the given address, or None if none is avaiable"""
