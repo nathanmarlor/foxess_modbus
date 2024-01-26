@@ -133,16 +133,6 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         # have the ability to read registers once on start-up), and then we implement a little P controller, which
         # steps up the power so long as PV isn't being saturated, and steps it down if it is.
 
-        # If the work mode is Back-up, and the inverter is currently exporting, then PV is able to handle all of the
-        # battery charging. In this case, leave it alone.
-        # This might not be available, e.g. on H1 LAN
-        current_work_mode = self._read(self._addresses.work_mode, signed=False)
-        if current_work_mode == WorkMode.BACK_UP:
-            inverter_power = self._sum(self._addresses.inverter_power)
-            if inverter_power is not None and inverter_power > 0:
-                _LOGGER.debug("Force charge: inverter exporting and work mode Back-up, leaving as-is")
-                return
-
         max_charge_power = self._charge_power
         if max_charge_power is None:
             # This is -ve
@@ -194,7 +184,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         if self._current_import_power < 80 - setpoint:
             # Avoid this going too negative, for when we start importing again
             self._current_import_power = 0
-            _LOGGER.debug("Remote control: PV %sW clipping at 0W import, changing to Back-up", pv_power_sum)
+            _LOGGER.debug("Remote control: PV %sW clipping at 0W import, seting Back-up", pv_power_sum)
             await self._disable_remote_control(WorkMode.BACK_UP)
             return
 
