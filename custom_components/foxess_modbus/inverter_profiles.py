@@ -22,7 +22,7 @@ from .const import KUARA_H3
 from .const import LAN
 from .const import SK_HWR
 from .const import STAR_H3
-from .entities.charge_periods import CHARGE_PERIODS
+from .entities.charge_period_descriptions import CHARGE_PERIODS
 from .entities.entity_descriptions import ENTITIES
 from .entities.modbus_charge_period_config import ModbusChargePeriodInfo
 from .entities.modbus_remote_control_config import ModbusRemoteControlAddressConfig

@@ -2,11 +2,16 @@ from dataclasses import dataclass
 from typing import Any
 from typing import Callable
 
+from homeassistant.components.number import NumberDeviceClass
+from homeassistant.components.number import NumberMode
 from homeassistant.core import HomeAssistant
 
+from ..common.entity_controller import EntityRemoteControlManager
 from ..common.register_type import RegisterType
+from .entity_factory import EntityFactory
 from .inverter_model_spec import InverterModelSpec
 from .inverter_model_spec import ModbusAddressSpecBase
+from .modbus_remote_control_number import ModbusRemoteControlNumberDescription
 
 
 @dataclass(frozen=True)
@@ -30,8 +35,10 @@ class ModbusRemoteControlAddressConfig:
     """Current load power of the house"""
     inverter_power: int
     """Current output power of the inverter (+ve) or input power (-ve)"""
+    ac_power_limit_up: int
+    """Pwr_limit Ac_P_Dn, maximum output power of the inverter. TODO: Read only once, when we have this ability"""
     ac_power_limit_down: int
-    """Pwr_limit Ac_P_Dn, maximum input power of the inverter"""
+    """Pwr_limit Ac_P_Dn, maximum input power of the inverter TODO: Read only once, when we have this ability"""
     pv_power_limit: int
     """Pwr_limit PV, related to the spare input PV capacity"""
     pv_voltages: list[int]
@@ -64,10 +71,10 @@ class RemoteControlAddressSpec:
         if holding is not None:
             self.register_types[RegisterType.HOLDING] = holding
 
-    def get_remote_enable_address(self) -> InverterModelSpec:
-        """Gets a InverterModelSpec instance to describe the remote enable address"""
+    def get_ac_power_limit_up_address(self) -> InverterModelSpec:
+        """Gets a InverterModelSpec instance to describe Ac power limit up address"""
 
-        return self._get_address(lambda x: x.remote_enable)
+        return self._get_address(lambda x: x.ac_power_limit_up)
 
     def _get_address(self, accessor: Callable[[ModbusRemoteControlAddressConfig], int]) -> InverterModelSpec:
         addresses = {}
@@ -88,6 +95,25 @@ class ModbusRemoteControlFactory:
 
     def __init__(self, addresses: list[RemoteControlAddressSpec]) -> None:
         self.address_specs = addresses
+
+        def _set_discharge_power(manager: EntityRemoteControlManager, value: int) -> None:
+            manager.discharge_power = value
+
+        max_charge_current = ModbusRemoteControlNumberDescription(
+            key="force_discharge_power",
+            name="Force Discharge Power",
+            max_value_address=[x.get_ac_power_limit_up_address() for x in addresses],
+            mode=NumberMode.BOX,
+            device_class=NumberDeviceClass.POWER,
+            native_min_value=0.0,
+            # Max value is read from the inverter
+            native_step=0.001,
+            native_unit_of_measurement="kW",
+            scale=0.001,
+            value_setter=_set_discharge_power,
+        )
+
+        self.entity_descriptions: list[EntityFactory] = [max_charge_current]
 
     def create_if_supported(
         self, _hass: HomeAssistant, inverter_model: str, register_type: RegisterType, _inv_details: dict[str, Any]

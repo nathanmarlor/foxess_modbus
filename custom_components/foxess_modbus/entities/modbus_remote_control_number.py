@@ -8,20 +8,18 @@ from typing import cast
 from homeassistant.components.number import NumberEntity
 from homeassistant.components.number import NumberEntityDescription
 from homeassistant.components.number import NumberMode
+from homeassistant.components.number import RestoreNumber
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.restore_state import ExtraStoredData
-from homeassistant.helpers.restore_state import RestoredExtraData
-from homeassistant.helpers.restore_state import RestoreEntity
 
 from ..common.entity_controller import EntityController
 from ..common.entity_controller import EntityRemoteControlManager
 from ..common.register_type import RegisterType
 from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .entity_factory import EntityFactory
-from .inverter_model_spec import EntitySpec
+from .inverter_model_spec import InverterModelSpec
 from .modbus_entity_mixin import ModbusEntityMixin
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -31,9 +29,10 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 class ModbusRemoteControlNumberDescription(NumberEntityDescription, EntityFactory):
     """Custom number entity description"""
 
-    models: list[EntitySpec]
+    max_value_address: list[InverterModelSpec]
     mode: NumberMode = NumberMode.AUTO
-    setter: Callable[[EntityRemoteControlManager, int], None]
+    scale: float = 1.0
+    value_setter: Callable[[EntityRemoteControlManager, int], None]
 
     @property
     def entity_type(self) -> type[Entity]:
@@ -48,18 +47,18 @@ class ModbusRemoteControlNumberDescription(NumberEntityDescription, EntityFactor
         entry: ConfigEntry,
         inv_details: dict[str, Any],
     ) -> Entity | None:
-        if not self._supports_inverter_model(self.models, inverter_model, register_type):
-            return None
-        return ModbusRemoteControlNumber(controller, self, entry, inv_details)
+        address = self._address_for_inverter_model(self.max_value_address, inverter_model, register_type)
+        return ModbusRemoteControlNumber(controller, self, address, entry, inv_details) if address is not None else None
 
 
-class ModbusRemoteControlNumber(ModbusEntityMixin, RestoreEntity, NumberEntity):
+class ModbusRemoteControlNumber(ModbusEntityMixin, RestoreNumber, NumberEntity):
     """Number class"""
 
     def __init__(
         self,
         controller: EntityController,
         entity_description: ModbusRemoteControlNumberDescription,
+        max_value_address: int,
         entry: ConfigEntry,
         inv_details: dict[str, Any],
     ) -> None:
@@ -67,57 +66,60 @@ class ModbusRemoteControlNumber(ModbusEntityMixin, RestoreEntity, NumberEntity):
 
         self._controller = controller
         self.entity_description = entity_description
+        self._max_value_address = max_value_address
         self._entry = entry
         self._inv_details = inv_details
         self.entity_id = self._get_entity_id(Platform.NUMBER)
 
-    @property
-    def native_value(self) -> int | float | None:
-        """Return the value reported by the sensor."""
-        entity_description = cast(ModbusRemoteControlNumberDescription, self.entity_description)
-        value: float | int | None = self._controller.read(self._address, signed=False)
-        original = value
-        if value is None:
-            return None
-        if entity_description.scale is not None:
-            value = value * entity_description.scale
-        if entity_description.post_process is not None:
-            value = entity_description.post_process(float(value))
-        if not self._validate(entity_description.validate, value, original):
-            return None
-
-        return value
+        assert controller.remote_control_manager is not None
+        self._manager = controller.remote_control_manager
 
     async def async_added_to_hass(self) -> None:
         """Add update callback after being added to hass."""
         await super().async_added_to_hass()
-        extra_data = await self.async_get_last_extra_data()
-        if extra_data:
-            self._last_enabled_value = extra_data.json_dict.get("last_enabled_value")
 
-    @property
-    def extra_restore_state_data(self) -> ExtraStoredData:
-        """Return specific state data to be restored."""
-        return RestoredExtraData(json_dict={"last_enabled_value": self._last_enabled_value})
+        extra_data = await self.async_get_last_number_data()
+        if extra_data:
+            self._attr_native_max_value = extra_data.native_max_value
+            self._update_native_value(extra_data.native_value)
+        else:
+            self._attr_native_value = None
+
+        # This might overwrite the max value we set above
+        self._address_updated()
+        self.schedule_update_ha_state()
 
     @property
     def mode(self) -> NumberMode:
         return cast(ModbusRemoteControlNumberDescription, self.entity_description).mode
 
     async def async_set_native_value(self, value: float) -> None:
+        self._update_native_value(value)
+
+    def _address_updated(self) -> None:
         entity_description = cast(ModbusRemoteControlNumberDescription, self.entity_description)
-        value = max(
-            self.entity_description.native_min_value,
-            min(self.entity_description.native_max_value, value),
+        max_value = self._controller.read(self._max_value_address, signed=False)
+        if max_value is not None:
+            native_max_value = max_value * entity_description.scale
+            self._attr_native_max_value = native_max_value
+            if self._attr_native_value is None or self._attr_native_value > native_max_value:
+                self._update_native_value(native_max_value)
+
+    def _update_native_value(self, native_value: float) -> None:
+        entity_description = cast(ModbusRemoteControlNumberDescription, self.entity_description)
+
+        native_value = max(
+            self.native_min_value,
+            min(self.native_max_value, native_value),
         )
 
-        if entity_description.scale is not None:
-            value = value / entity_description.scale
+        self._attr_native_value = native_value
 
-        int_value = int(round(value))
+        scaled = int(native_value / entity_description.scale)
+        entity_description.value_setter(self._manager, scaled)
 
-        await self._controller.write_register(self._address, int_value)
+        self.schedule_update_ha_state()
 
     @property
     def addresses(self) -> list[int]:
-        return [self._address]
+        return [self._max_value_address]

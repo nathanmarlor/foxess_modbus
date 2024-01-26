@@ -40,6 +40,16 @@ class EntityRemoteControlManager(ABC):
     async def set_mode(self, value: RemoteControlMode) -> None:
         """Set the current mode"""
 
+    @property
+    @abstractmethod
+    def discharge_power(self) -> int | None:
+        """Get the current discharge power"""
+
+    @discharge_power.setter
+    @abstractmethod
+    def discharge_power(self, value: int | None) -> None:
+        """Set the discharge power"""
+
 
 class EntityController(ABC):
     """Interface given to entities to access the ModbusController"""

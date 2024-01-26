@@ -33,9 +33,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         self._mode = RemoteControlMode.DISABLE
         self._remote_control_enabled: bool | None = None  # None = we don't know
         self._current_import_power = 0  # Set the first time that we enable force charge
-
-        # TODO
-        self.discharge_power = 2000
+        self._discharge_power: int | None = None
 
     @property
     def mode(self) -> RemoteControlMode:
@@ -45,6 +43,14 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         if self._mode != mode:
             self._mode = mode
             await self._update()
+
+    @property
+    def discharge_power(self) -> int | None:
+        return self._discharge_power
+
+    @discharge_power.setter
+    def discharge_power(self, value: int | None) -> None:
+        self._discharge_power = value
 
     async def _update(self) -> None:
         if not self._controller.is_connected:
@@ -183,8 +189,16 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         # negative, in which case we can end up with the inverter taking in power, but that's OK.
         # TODO: Make sure that we don't push out PV generation when we do this.
 
+        if self._discharge_power is None:
+            _LOGGER.warn("Remote control: discharge power has not been set, so not discharging")
+            return
+
         load_power = self._controller.read(self._addresses.load_power, signed=True)
-        inverter_discharge_power = self.discharge_power if load_power is None else self.discharge_power + load_power
+        max_discharge_power = self._controller.read(self._addresses.ac_power_limit_up, signed=False)
+        inverter_discharge_power = self._discharge_power if load_power is None else self._discharge_power + load_power
+        if max_discharge_power is not None and inverter_discharge_power > max_discharge_power:
+            inverter_discharge_power = max_discharge_power
+
         await self._enable_remote_control()
         # Positive values = discharge
         await self._controller.write_register(self._addresses.active_power, inverter_discharge_power)
