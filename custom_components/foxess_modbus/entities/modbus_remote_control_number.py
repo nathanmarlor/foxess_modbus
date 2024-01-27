@@ -65,6 +65,8 @@ class ModbusRemoteControlNumber(ModbusEntityMixin, RestoreNumber, NumberEntity):
     ) -> None:
         """Initialize the sensor."""
 
+        # This defaults to 100 before we manage to read from the inverter, which isn't particularly helpful
+        self._attr_native_max_value = float("inf")
         self._controller = controller
         self.entity_description = entity_description
         self._max_value_address = max_value_address
@@ -80,7 +82,8 @@ class ModbusRemoteControlNumber(ModbusEntityMixin, RestoreNumber, NumberEntity):
         await super().async_added_to_hass()
 
         extra_data = await self.async_get_last_number_data()
-        if extra_data:
+        # Sometimes we can have extra_data set, but incomplete
+        if extra_data and extra_data.native_value is not None:
             self._attr_native_max_value = extra_data.native_max_value
             self._update_native_value(extra_data.native_value)
         else:
