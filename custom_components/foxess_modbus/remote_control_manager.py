@@ -30,6 +30,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         self._poll_rate = poll_rate
 
         self._mode = RemoteControlMode.DISABLE
+        self._prev_mode = RemoteControlMode.DISABLE
         self._remote_control_enabled: bool | None = None  # None = we don't know
         self._current_import_power = 0  # Set the first time that we enable force charge
         self._discharge_power: int | None = None
@@ -76,6 +77,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
 
     async def _update(self) -> None:
         if not self._controller.is_connected:
+            self._prev_mode = RemoteControlMode.DISABLE
             return
 
         if self._mode == RemoteControlMode.DISABLE:
@@ -84,6 +86,8 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             await self._update_charge()
         elif self._mode == RemoteControlMode.FORCE_DISCHARGE:
             await self._update_discharge()
+
+        self._prev_mode = self._mode
 
     async def _update_disable(self) -> None:
         await self._disable_remote_control()
@@ -104,6 +108,12 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             if value is not None and value > _PV_VOLTAGE_THRESHOLD * 10:
                 return True
         return False
+
+    def _inverter_capacity(self) -> int | None:
+        value = self._read(self._addresses.ac_power_limit_down, signed=True)
+        if value is None or value >= 0:
+            return None
+        return -value
 
     async def _update_charge(self) -> None:
         # The inverter doesn't respect Max Soc. Therefore if the SoC >= Max SoC, turn off remote control.
@@ -133,15 +143,21 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         # have the ability to read registers once on start-up), and then we implement a little P controller, which
         # steps up the power so long as PV isn't being saturated, and steps it down if it is.
 
-        max_charge_power = self._charge_power
-        if max_charge_power is None:
-            # This is -ve
-            max_import_power = self._read(self._addresses.ac_power_limit_down, signed=True)
-            if max_import_power is None or max_import_power >= 0:
-                _LOGGER.warn("Max charge power not available. Not enabling remote control")
+        max_import_power = self._charge_power
+        inverter_capacity = self._inverter_capacity()
+
+        if max_import_power is None:
+            if inverter_capacity is not None:
+                max_import_power = inverter_capacity
+            else:
+                _LOGGER.warn(
+                    "Remote control: max charge power has not been set and inverter capacity not available, so not "
+                    "charging"
+                )
                 await self._disable_remote_control()
                 return
-            max_charge_power = -max_import_power
+        elif inverter_capacity is not None and max_import_power > inverter_capacity:
+            max_import_power = inverter_capacity
 
         # If there's no sun, don't try and do any control.
         # (If we do, we can end up limiting the power to the max PV power, rather than the max inverter input power).
@@ -151,7 +167,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             _LOGGER.debug("Remote control: no sun (or PV unavailable), defaulting to %sW", max_import_power)
             # If remote control stops, we want to be in Back-up
             await self._enable_remote_control(WorkMode.BACK_UP)
-            await self._controller.write_register(self._addresses.active_power, -max_charge_power)
+            await self._controller.write_register(self._addresses.active_power, -max_import_power)
             return
 
         # We aim to have the PV Power Limit 50W above PV Sum.
@@ -171,12 +187,13 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         delta = -int(error * p)
         delta = min(max_step, delta) if delta > 0 else max(-max_step, delta)
 
-        # If we're currently disabled, take the max delta from the max charge power, not from whatever we had before
-        if self._remote_control_enabled is not True:
-            self._current_import_power = max_charge_power
+        # If we're just switching to export, take the max delta from the max charge power, not from whatever we had
+        # # before
+        if self._prev_mode != RemoteControlMode.FORCE_CHARGE:
+            self._current_import_power = max_import_power
 
         previous_import_power = self._current_import_power
-        self._current_import_power = min(self._current_import_power + delta, max_charge_power)
+        self._current_import_power = min(self._current_import_power + delta, max_import_power)
 
         # It's valid for this to go negative, if PV is supplying all the charging the battery can handle. In this
         # case, switch to Back-up
@@ -206,26 +223,26 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         # For force discharge, normally we can just leave it, and it will do the right thing: respect Min SoC and the
         # Max Discharge Current.
 
-        discharge_power = self._discharge_power
-        max_discharge_power = self._read(self._addresses.ac_power_limit_up, signed=False)
+        export_power = self._discharge_power
+        inverter_capacity = self._inverter_capacity()
 
-        if discharge_power is None:
-            if max_discharge_power is not None:
-                discharge_power = max_discharge_power
+        if export_power is None:
+            if inverter_capacity is not None:
+                export_power = inverter_capacity
             else:
                 _LOGGER.warn(
-                    "Remote control: discharge power has not been set and ac_power_limit_up not available, so not "
+                    "Remote control: max discharge power has not been set and inverter capacity not available, so not "
                     "discharging"
                 )
                 await self._disable_remote_control()
                 return
-        elif max_discharge_power is not None and discharge_power > max_discharge_power:
-            discharge_power = max_discharge_power
+        elif inverter_capacity is not None and export_power > inverter_capacity:
+            export_power = inverter_capacity
 
         # If remote control stops, we still want to feed in as much as possible
         await self._enable_remote_control(WorkMode.FEED_IN_FIRST)
         # Positive values = discharge
-        await self._controller.write_register(self._addresses.active_power, discharge_power)
+        await self._controller.write_register(self._addresses.active_power, export_power)
 
     async def _enable_remote_control(self, fallback_work_mode: WorkMode) -> None:
         if self._remote_control_enabled in (None, False):
