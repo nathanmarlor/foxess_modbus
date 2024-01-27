@@ -30,6 +30,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         self._poll_rate = poll_rate
 
         self._mode = RemoteControlMode.DISABLE
+        self._prev_mode = RemoteControlMode.DISABLE
         self._remote_control_enabled: bool | None = None  # None = we don't know
         self._current_import_power = 0  # Set the first time that we enable force charge
         self._discharge_power: int | None = None
@@ -76,6 +77,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
 
     async def _update(self) -> None:
         if not self._controller.is_connected:
+            self._prev_mode = RemoteControlMode.DISABLE
             return
 
         if self._mode == RemoteControlMode.DISABLE:
@@ -84,6 +86,8 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             await self._update_charge()
         elif self._mode == RemoteControlMode.FORCE_DISCHARGE:
             await self._update_discharge()
+
+        self._prev_mode = self._mode
 
     async def _update_disable(self) -> None:
         await self._disable_remote_control()
@@ -183,8 +187,9 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         delta = -int(error * p)
         delta = min(max_step, delta) if delta > 0 else max(-max_step, delta)
 
-        # If we're currently disabled, take the max delta from the max charge power, not from whatever we had before
-        if self._remote_control_enabled is not True:
+        # If we're just switching to export, take the max delta from the max charge power, not from whatever we had
+        # # before
+        if self._prev_mode != RemoteControlMode.FORCE_CHARGE:
             self._current_import_power = max_import_power
 
         previous_import_power = self._current_import_power
