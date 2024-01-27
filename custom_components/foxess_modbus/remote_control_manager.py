@@ -170,50 +170,64 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             await self._controller.write_register(self._addresses.active_power, -max_import_power)
             return
 
-        # We aim to have the PV Power Limit 50W above PV Sum.
-        # (It seems PV can still be clipped if PV is small, and the PV limit is just slightly larger)
-        # Having this also means that PV can increase between polls, and we won't lose all of it
-        setpoint = 50
-        # Positive values = not clipping (which means we can raise the import power)
-        actual = pv_power_limit - pv_power_sum
-        error = setpoint - actual
-
-        # Never step by more than 1kW
-        max_step = 1000
-
-        # When we're trying to stop clipping PV, we'll use a slightly higher P. This means that we're quicker to stop
-        # clipping, but not quite as unstable going the other way
-        p = 1.5 if error > 0 else 1.0
-        delta = -int(error * p)
-        delta = min(max_step, delta) if delta > 0 else max(-max_step, delta)
-
-        # If we're just switching to export, take the max delta from the max charge power, not from whatever we had
-        # # before
+        # If we're just switching to export, do a cycle at max power to just let things settle
         if self._prev_mode != RemoteControlMode.FORCE_CHARGE:
             self._current_import_power = max_import_power
+        else:
+            # We aim to have the PV Power Limit 50W above PV Sum.
+            # (It seems PV can still be clipped if PV is small, and the PV limit is just slightly larger)
+            # Having this also means that PV can increase between polls, and we won't lose all of it.
+            # We seem to need a higher value when the inverter is exporting.
+            setpoint = 50 if self._current_import_power > 0 else 150
+            # Positive values = not clipping (which means we can raise the import power)
+            actual = pv_power_limit - pv_power_sum
+            error = setpoint - actual
 
-        previous_import_power = self._current_import_power
-        self._current_import_power = min(self._current_import_power + delta, max_import_power)
+            # When we're trying to stop clipping PV, we'll use a slightly higher P. This means that we're quicker to stop
+            # clipping, but not quite as unstable going the other way
+            p = 1.2 if error > 0 else 1.0
+            delta = -int(error * p)
 
-        # It's valid for this to go negative, if PV is supplying all the charging the battery can handle. In this
-        # case, switch to Back-up
-        # (It seems we start clipping solar, and the PV limit doesn't tell us this, below around 80W)
-        if self._current_import_power < 80 - setpoint:
-            # Avoid this going too negative, for when we start importing again
-            self._current_import_power = 0
-            _LOGGER.debug("Remote control: PV %sW clipping at 0W import, seting Back-up", pv_power_sum)
-            await self._disable_remote_control(WorkMode.BACK_UP)
-            return
+            # It's valid for this to go negative, if PV is supplying all the charging the battery can handle.
+            # We can't switch to back-up, as that prioritises house load over charging batteries.
+            # Therefore, we just have to control the inverter to export.
+            # However, we don't allowe switching from +ve to -ve without pausing at 0. This stops us from oscillating
+            # between import and export as we settle
 
-        # Right, let's set that
-        _LOGGER.debug(
-            "Remote control: PV: %sW, limit: %sW, error: %sW, import %sW -> %sW",
-            pv_power_sum,
-            pv_power_limit,
-            error,
-            previous_import_power,
-            self._current_import_power,
-        )
+            previous_import_power = self._current_import_power
+            new_import_power = previous_import_power + delta
+            # If the import power is negative (inverter is exporting), it should never exceed PV: that would imply that
+            # we're draining the battery, rather than charging it.
+            # TODO: This doesn't work properly: using pv_power means that we can get stuck not increasing export (and so
+            # not increasing PV output) when we could, but using pv_power_limit means the battery still ends up
+            # discharging. We should probably actually look at the battery current, and if it's negative, take action to
+            # control it back.
+            if (
+                previous_import_power < 0
+                and new_import_power < 0
+                and pv_power_limit > 0
+                and -new_import_power > pv_power_limit
+            ):
+                new_import_power = -pv_power_limit
+
+            if (previous_import_power > 0 and new_import_power < 0) or (
+                previous_import_power < 0 and new_import_power > 0
+            ):
+                new_import_power = 0
+            else:
+                new_import_power = max(min(new_import_power, max_import_power), -max_import_power)
+
+            self._current_import_power = new_import_power
+
+            # Right, let's set that
+            _LOGGER.debug(
+                "Remote control: PV: %sW, limit: %sW, error: %sW, import %sW -> %sW",
+                pv_power_sum,
+                pv_power_limit,
+                error,
+                previous_import_power,
+                self._current_import_power,
+            )
 
         # If remote control stops, we want to be in Back-up, charging as much as we can
         await self._enable_remote_control(WorkMode.BACK_UP)
