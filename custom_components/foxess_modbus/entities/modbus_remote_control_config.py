@@ -35,10 +35,13 @@ class ModbusRemoteControlAddressConfig:
     """Configured Max SoC"""
     inverter_power: list[int]
     """Current output power of the inverter (+ve) or input power (-ve)"""
-    ac_power_limit_up: int
-    """Pwr_limit Ac_P_Dn, maximum output power of the inverter. TODO: Read only once, when we have this ability"""
     ac_power_limit_down: int
-    """Pwr_limit Ac_P_Dn, maximum input power of the inverter TODO: Read only once, when we have this ability"""
+    """
+    Pwr_limit Ac_P_Dn, maximum active power provided by the inverter. NOTE this is negative!
+
+    It seems that Pwr_lmit_Ac_P_Up takes the export limit into account, whereas this doesn't.
+
+    TODO: Read only once, when we have this ability"""
     pv_power_limit: int
     """Pwr_limit PV, related to the spare input PV capacity"""
     pv_voltages: list[int]
@@ -74,11 +77,6 @@ class RemoteControlAddressSpec:
     def get_models_without_work_mode(self) -> EntitySpec:
         """Gets a InverterModelSpec instance to describe the Work Mode address"""
         return EntitySpec(self.models, [k for k, v in self.register_types.items() if v.work_mode is None])
-
-    def get_ac_power_limit_up_address(self) -> InverterModelSpec:
-        """Gets a InverterModelSpec instance to describe Ac power limit up address"""
-
-        return self._get_address(lambda x: x.ac_power_limit_up)
 
     def get_ac_power_limit_down_address(self) -> InverterModelSpec:
         """Gets a InverterModelSpec instance to describe Ac power limit down address"""
@@ -125,20 +123,21 @@ class ModbusRemoteControlFactory:
         )
 
         def _set_discharge_power(manager: EntityRemoteControlManager, value: int) -> None:
-            manager.discharge_power = value
+            manager.discharge_power = -value
 
         # hass type hints are messed up, and mypy doesn't see inherited dataclass properties on the EntityDescriptions
         discharge_power = ModbusRemoteControlNumberDescription(  # type: ignore
             key="force_discharge_power",
             name="Force Discharge Power",
-            max_value_address=[x.get_ac_power_limit_up_address() for x in addresses],
+            max_value_address=[x.get_ac_power_limit_down_address() for x in addresses],
             mode=NumberMode.BOX,
             device_class=NumberDeviceClass.POWER,
             native_min_value=0.0,
             # Max value is read from the inverter
             native_step=0.001,
             native_unit_of_measurement="kW",
-            scale=0.001,
+            scale=-0.001,
+            signed=True,
             value_setter=_set_discharge_power,
         )
 
