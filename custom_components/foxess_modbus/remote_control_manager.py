@@ -148,7 +148,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         pv_power_sum = self._sum(self._addresses.pv_powers)
         pv_power_limit = self._read(self._addresses.pv_power_limit, signed=True)
         if not self._has_any_pv_voltage() or pv_power_sum is None or pv_power_limit is None:
-            _LOGGER.debug("Remote control: no sun (or PV unavailable), defaulting to %sW", max_import_power)
+            _LOGGER.debug("Remote control: no sun (or PV unavailable), defaulting to %sW", max_charge_power)
             # If remote control stops, we want to be in Back-up
             await self._enable_remote_control(WorkMode.BACK_UP)
             await self._controller.write_register(self._addresses.active_power, -max_charge_power)
