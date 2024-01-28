@@ -33,8 +33,8 @@ class ModbusRemoteControlAddressConfig:
     """Current battery SoC"""
     max_soc: int | None
     """Configured Max SoC"""
-    inverter_power: list[int]
-    """Current output power of the inverter (+ve) or input power (-ve)"""
+    invbatpower: int
+    """Current battery charge (negative) / discharge (positive) power"""
     ac_power_limit_down: int
     """
     Pwr_limit Ac_P_Dn, maximum active power provided by the inverter. NOTE this is negative!
@@ -42,12 +42,10 @@ class ModbusRemoteControlAddressConfig:
     It seems that Pwr_lmit_Ac_P_Up takes the export limit into account, whereas this doesn't.
 
     TODO: Read only once, when we have this ability"""
-    pv_power_limit: int
-    """Pwr_limit PV, related to the spare input PV capacity"""
+    pwr_limit_bat_up: int
+    """Prw_limit Bat_up, maximum power that the battery can accept"""
     pv_voltages: list[int]
     """Array of pvx_voltage addresses for PV strings"""
-    pv_powers: list[int]
-    """Array of the pvx_power addresses for PV strings"""
 
 
 class RemoteControlAddressSpec:
