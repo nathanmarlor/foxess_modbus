@@ -18,7 +18,7 @@ class WorkMode(IntEnum):
 
 
 # If the PV voltage is below this value, count it as no sun
-_PV_VOLTAGE_THRESHOLD = 20
+_PV_VOLTAGE_THRESHOLD = 70
 
 
 class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
