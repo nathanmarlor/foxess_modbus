@@ -35,14 +35,14 @@ class ModbusRemoteControlAddressConfig:
     """Configured Max SoC"""
     invbatpower: int
     """Current battery charge (negative) / discharge (positive) power"""
-    ac_power_limit_down: int
+    ac_power_limit_down: int | None
     """
     Pwr_limit Ac_P_Dn, maximum active power provided by the inverter. NOTE this is negative!
 
     It seems that Pwr_lmit_Ac_P_Up takes the export limit into account, whereas this doesn't.
 
     TODO: Read only once, when we have this ability"""
-    pwr_limit_bat_up: int
+    pwr_limit_bat_up: int | None
     """Prw_limit Bat_up, maximum power that the battery can accept"""
     pv_voltages: list[int]
     """Array of pvx_voltage addresses for PV strings"""
@@ -72,6 +72,9 @@ class RemoteControlAddressSpec:
         if holding is not None:
             self.register_types[RegisterType.HOLDING] = holding
 
+    def get_all_models(self) -> EntitySpec:
+        return EntitySpec(self.models, list(self.register_types.keys()))
+
     def get_models_without_work_mode(self) -> EntitySpec:
         """Gets a InverterModelSpec instance to describe the Work Mode address"""
         return EntitySpec(self.models, [k for k, v in self.register_types.items() if v.work_mode is None])
@@ -81,10 +84,11 @@ class RemoteControlAddressSpec:
 
         return self._get_address(lambda x: x.ac_power_limit_down)
 
-    def _get_address(self, accessor: Callable[[ModbusRemoteControlAddressConfig], int]) -> InverterModelSpec:
+    def _get_address(self, accessor: Callable[[ModbusRemoteControlAddressConfig], int | None]) -> InverterModelSpec:
         addresses = {}
         for register_type, address_config in self.register_types.items():
-            addresses[register_type] = [accessor(address_config)]
+            address = accessor(address_config)
+            addresses[register_type] = [address] if address is not None else None
         return ModbusAddressSpecBase(self.models, addresses)
 
 
@@ -101,13 +105,18 @@ class ModbusRemoteControlFactory:
     def __init__(self, addresses: list[RemoteControlAddressSpec]) -> None:
         self.address_specs = addresses
 
+        all_models = [x.get_all_models() for x in addresses]
+        ac_power_limit_down_address = [x.get_ac_power_limit_down_address() for x in addresses]
+
         def _set_charge_power(manager: EntityRemoteControlManager, value: int) -> None:
             manager.charge_power = -value
 
         charge_power = ModbusRemoteControlNumberDescription(  # type: ignore
             key="force_charge_power",
             name="Force Charge Power",
-            max_value_address=[x.get_ac_power_limit_down_address() for x in addresses],
+            models=all_models,
+            max_value_address=ac_power_limit_down_address,
+            fallback_native_max_value=-20000,
             mode=NumberMode.BOX,
             device_class=NumberDeviceClass.POWER,
             native_min_value=0.0,
@@ -127,7 +136,9 @@ class ModbusRemoteControlFactory:
         discharge_power = ModbusRemoteControlNumberDescription(  # type: ignore
             key="force_discharge_power",
             name="Force Discharge Power",
-            max_value_address=[x.get_ac_power_limit_down_address() for x in addresses],
+            models=all_models,
+            max_value_address=ac_power_limit_down_address,
+            fallback_native_max_value=-20000,
             mode=NumberMode.BOX,
             device_class=NumberDeviceClass.POWER,
             native_min_value=0.0,

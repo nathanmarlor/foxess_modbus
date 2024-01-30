@@ -19,6 +19,7 @@ from ..common.entity_controller import EntityRemoteControlManager
 from ..common.register_type import RegisterType
 from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .entity_factory import EntityFactory
+from .inverter_model_spec import EntitySpec
 from .inverter_model_spec import InverterModelSpec
 from .modbus_entity_mixin import ModbusEntityMixin
 
@@ -29,7 +30,10 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 class ModbusRemoteControlNumberDescription(NumberEntityDescription, EntityFactory):
     """Custom number entity description"""
 
+    models: list[EntitySpec]
     max_value_address: list[InverterModelSpec]
+    fallback_native_max_value: int
+    """Used if the max_value_address isn't available for an inverter"""
     mode: NumberMode = NumberMode.AUTO
     scale: float = 1.0
     signed: bool = False
@@ -48,8 +52,10 @@ class ModbusRemoteControlNumberDescription(NumberEntityDescription, EntityFactor
         entry: ConfigEntry,
         inv_details: dict[str, Any],
     ) -> Entity | None:
-        address = self._address_for_inverter_model(self.max_value_address, inverter_model, register_type)
-        return ModbusRemoteControlNumber(controller, self, address, entry, inv_details) if address is not None else None
+        if not self._supports_inverter_model(self.models, inverter_model, register_type):
+            return None
+        max_value_address = self._address_for_inverter_model(self.max_value_address, inverter_model, register_type)
+        return ModbusRemoteControlNumber(controller, self, max_value_address, entry, inv_details)
 
 
 class ModbusRemoteControlNumber(ModbusEntityMixin, RestoreNumber, NumberEntity):
@@ -59,7 +65,7 @@ class ModbusRemoteControlNumber(ModbusEntityMixin, RestoreNumber, NumberEntity):
         self,
         controller: EntityController,
         entity_description: ModbusRemoteControlNumberDescription,
-        max_value_address: int,
+        max_value_address: int | None,
         entry: ConfigEntry,
         inv_details: dict[str, Any],
     ) -> None:
@@ -102,7 +108,11 @@ class ModbusRemoteControlNumber(ModbusEntityMixin, RestoreNumber, NumberEntity):
 
     def _address_updated(self) -> None:
         entity_description = cast(ModbusRemoteControlNumberDescription, self.entity_description)
-        max_value = self._controller.read(self._max_value_address, signed=entity_description.signed)
+        max_value = (
+            self._controller.read(self._max_value_address, signed=entity_description.signed)
+            if self._max_value_address is not None
+            else entity_description.fallback_native_max_value
+        )
         if max_value is not None:
             native_max_value = max_value * entity_description.scale
             self._attr_native_max_value = native_max_value
@@ -126,4 +136,4 @@ class ModbusRemoteControlNumber(ModbusEntityMixin, RestoreNumber, NumberEntity):
 
     @property
     def addresses(self) -> list[int]:
-        return [self._max_value_address]
+        return [self._max_value_address] if self._max_value_address is not None else []

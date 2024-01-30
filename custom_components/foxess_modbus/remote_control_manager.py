@@ -152,6 +152,8 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         # it can take and still clip PV: I suspect this is to do with losses somewhere, but I'm not quite sure where.
 
         max_import_power = self._charge_power
+        # This isn't available on H1 LAN. But in that case we can't intelligently control anyway, so it's OK if this we
+        # specify a power which is far too large.
         inverter_capacity = self._inverter_capacity()
 
         if max_import_power is None:
@@ -177,11 +179,12 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             return
 
         # These are both negative
+        # max_battery_charge_power_negative isn't available on the H1 over LAN
         max_battery_charge_power_negative = self._read(self._addresses.pwr_limit_bat_up, signed=True)
         current_battery_charge_power_negative = self._read(self._addresses.invbatpower, signed=True)
         if max_battery_charge_power_negative is None or current_battery_charge_power_negative is None:
-            _LOGGER.warn(
-                "Remote control: max and current battery charge power unavailable, defaulting to %sW",
+            _LOGGER.debug(
+                "Remote control: max or current battery charge power unavailable, defaulting to %sW",
                 max_import_power,
             )
             await self._enable_remote_control(WorkMode.BACK_UP)
