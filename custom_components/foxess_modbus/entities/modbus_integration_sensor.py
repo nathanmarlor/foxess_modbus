@@ -1,7 +1,9 @@
 """Sensor"""
+
 import logging
 from dataclasses import dataclass
 from typing import Any
+from typing import cast
 
 from homeassistant.components.integration.sensor import DEFAULT_ROUND
 from homeassistant.components.integration.sensor import IntegrationSensor
@@ -93,7 +95,7 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
         IntegrationSensor.__init__(
             self=self,
             integration_method=integration_method,
-            name=entity_description.name,
+            name=cast(str, entity_description.name),
             round_digits=round_digits,
             source_entity=source_entity,
             unique_id=None,

@@ -1,4 +1,5 @@
 """Time period sensors"""
+
 import logging
 from dataclasses import dataclass
 from dataclasses import field
@@ -147,7 +148,7 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
         await super().async_added_to_hass()
         extra_data = await self.async_get_last_extra_data()
         if extra_data:
-            self._last_enabled_value = extra_data.json_dict.get("last_enabled_value")
+            self._last_enabled_value = extra_data.as_dict().get("last_enabled_value")
 
     @property
     def extra_restore_state_data(self) -> ExtraStoredData:

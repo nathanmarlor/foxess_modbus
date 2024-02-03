@@ -1,8 +1,12 @@
 """Sensor"""
+
 import logging
 from collections import deque
 from dataclasses import dataclass
 from dataclasses import field
+from datetime import date
+from datetime import datetime
+from decimal import Decimal
 from typing import Any
 from typing import Callable
 from typing import cast
@@ -13,6 +17,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.typing import StateType
 
 from ..common.entity_controller import EntityController
 from ..common.register_type import RegisterType
@@ -103,7 +108,7 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
 
         return value
 
-    def _round_native_value(self, value: int | float | None) -> Any:
+    def _round_native_value(self, value: StateType | date | datetime | Decimal) -> Any:
         def nearest_multiple(value: float, round_to: float) -> float:
             return round_to * round(value / round_to)
 
@@ -128,7 +133,7 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
             assert self._moving_average_filter is not None
             assert self._moving_average_filter.maxlen is not None
 
-            if value is None:
+            if value is None or not isinstance(value, float):
                 self._moving_average_filter.clear()
             else:
                 self._moving_average_filter.append(value)
@@ -137,7 +142,7 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
                     self._moving_average_filter.append(value)
                 average_value = sum(self._moving_average_filter) / len(self._moving_average_filter)
 
-                if self._attr_native_value is None:
+                if self._attr_native_value is None or not isinstance(self._attr_native_value, float):
                     value = nearest_multiple(value, self._round_to)
                 else:
                     if abs(self._attr_native_value - average_value) >= self._round_to:

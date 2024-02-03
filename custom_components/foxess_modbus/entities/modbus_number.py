@@ -1,4 +1,5 @@
 """Select"""
+
 import logging
 from dataclasses import dataclass
 from dataclasses import field
@@ -95,10 +96,14 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         entity_description = cast(ModbusNumberDescription, self.entity_description)
-        value = max(
-            self.entity_description.native_min_value,
-            min(self.entity_description.native_max_value, value),
-        )
+        if (
+            self.entity_description.native_min_value is not None
+            and self.entity_description.native_max_value is not None
+        ):
+            value = max(
+                self.entity_description.native_min_value,
+                min(self.entity_description.native_max_value, value),
+            )
 
         if entity_description.scale is not None:
             value = value / entity_description.scale

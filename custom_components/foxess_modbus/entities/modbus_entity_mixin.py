@@ -1,4 +1,5 @@
 """Mixin providing common functionality for all entity classes"""
+
 import logging
 from abc import ABC
 from typing import TYPE_CHECKING
@@ -33,7 +34,7 @@ def get_entity_id(hass: HomeAssistant, platform: Platform, key: str, inv_details
     er = entity_registry.async_get(hass)
 
     # Type annotation missing in the annotations package maybe?
-    entity_id = cast(str | None, er.async_get_entity_id(platform, DOMAIN, unique_id))
+    entity_id = er.async_get_entity_id(platform, DOMAIN, unique_id)
 
     if entity_id is None:
         # This can happen when first setting up, as the target entity hasn't been created yet.
