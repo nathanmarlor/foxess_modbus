@@ -113,7 +113,7 @@ class ModbusEntityMixin(
         else:
             attr_name = "FoxESS - Modbus"
 
-        return DeviceInfo(  # type: ignore
+        return DeviceInfo(
             # services/utils.py relies on the order of entries here. Update that if you update this!
             identifiers={(DOMAIN, inv_model, conn_type, friendly_name)},  # type: ignore
             name=attr_name,

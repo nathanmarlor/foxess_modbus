@@ -8,7 +8,7 @@ ruff==0.0.275
 # These are duplicated in .pre-commit-config.yaml
 reorder-python-imports==3.10.0
 mypy==1.4.1
-homeassistant-stubs # HA version automatically matched
+homeassistant-stubs==2023.7.0 # Matching HA version
 types-python-slugify==8.0.0.2
 voluptuous-stubs==0.1.1
 # For mypy. Keep in sync with manifest.json and https://github.com/home-assistant/core/blob/master/requirements_all.txt.

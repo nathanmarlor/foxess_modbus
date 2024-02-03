@@ -30,7 +30,7 @@ repos:
         # These are duplicated from requirements.txt
         additional_dependencies:
           [
-            homeassistant-stubs==2023.3.0,
+            homeassistant-stubs==2023.7.0,
             types-python-slugify==8.0.0.2,
             voluptuous-stubs==0.1.1,
           ]
