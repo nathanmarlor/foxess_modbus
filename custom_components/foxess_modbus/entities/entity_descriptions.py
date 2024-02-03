@@ -1,4 +1,5 @@
 """Holds all entity descriptions for all entities across all inverters"""
+
 from homeassistant.components.number import NumberDeviceClass
 from homeassistant.components.number import NumberMode
 from homeassistant.components.sensor import SensorDeviceClass
@@ -34,7 +35,8 @@ from .validation import Range
 
 # TODO: There should be equivalent registers for the H3 somewhere
 BMS_CONNECT_STATE_ADDRESS = [
-    ModbusAddressSpec(models=[*H1_SET, KH], input=11058, holding=31029),
+    ModbusAddressSpec(models=H1_SET, input=11058, holding=31029),
+    ModbusAddressSpec(models=[KH], input=11058, holding=31028),
     ModbusAddressSpec(models=H3_SET, holding=31042),
 ]
 
@@ -310,7 +312,8 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="load_power",
         addresses=[
-            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11023], holding=[31016]),
+            ModbusAddressesSpec(models=H1_SET, input=[11023], holding=[31016]),
+            ModbusAddressesSpec(models=[KH], input=[11023], holding=[31054, 31053]),
         ],
         name="Load Power",
         device_class=SensorDeviceClass.POWER,
@@ -352,7 +355,8 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="rpower",
         addresses=[
-            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11011], holding=[31008]),
+            ModbusAddressesSpec(models=H1_SET, input=[11011], holding=[31008]),
+            ModbusAddressesSpec(models=[KH], input=[11011], holding=[31046, 31045]),
         ],
         name="Inverter Power",
         device_class=SensorDeviceClass.POWER,
@@ -430,7 +434,8 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="eps_rpower",
         addresses=[
-            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11017], holding=[31012]),
+            ModbusAddressesSpec(models=H1_SET, input=[11017], holding=[31012]),
+            ModbusAddressesSpec(models=[KH], input=[11017], holding=[31048, 31047]),
         ],
         entity_registry_enabled_default=False,
         name="EPS Power",
@@ -480,7 +485,8 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="grid_ct",
         addresses=[
-            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11021], holding=[31014]),
+            ModbusAddressesSpec(models=H1_SET, input=[11021], holding=[31014]),
+            ModbusAddressesSpec(models=[KH], input=[11021], holding=[31050, 31049]),
         ],
         name="Grid CT",
         device_class=SensorDeviceClass.POWER,
@@ -524,7 +530,8 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
     ModbusSensorDescription(
         key="ct2_meter",
         addresses=[
-            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11022], holding=[31015]),
+            ModbusAddressesSpec(models=H1_SET, input=[11022], holding=[31015]),
+            ModbusAddressesSpec(models=[KH], input=[11022], holding=[31052, 31051]),
         ],
         name="CT2 Meter",
         device_class=SensorDeviceClass.POWER,
@@ -1111,7 +1118,8 @@ _INVERTER_ENTITIES: list[EntityFactory] = [
         # We don't map Fault Code 3, as it's unused
         addresses=[
             ModbusAddressesSpec(
-                models=[*H1_SET, KH],
+                # These addresses are correct for the KH, but the fault codes are not
+                models=H1_SET,
                 input=[11061, 11062, 11064, 11065, 11066, 11067, 11068],
                 holding=[31031, 31032, 31034, 31035, 31036, 31037, 31038],
             ),
