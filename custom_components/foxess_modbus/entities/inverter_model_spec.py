@@ -1,4 +1,5 @@
 """Holds a means of mapping different register addresses and types do different inverter models"""
+
 from abc import ABC
 from abc import abstractmethod
 
@@ -26,7 +27,7 @@ class ModbusAddressSpecBase(InverterModelSpec):
     Entities should normally use one of the other types, which are a bit neater to interface with.
     """
 
-    def __init__(self, models: list[str], addresses: dict[RegisterType, list[int]]) -> None:
+    def __init__(self, models: list[str], addresses: dict[RegisterType, list[int] | None]) -> None:
         self._models = models
         self._addresses = addresses
 
@@ -45,7 +46,7 @@ class ModbusAddressSpec(ModbusAddressSpecBase):
         input: int | None = None,  # noqa: A002
         holding: int | None = None,
     ) -> None:
-        addresses = {}
+        addresses: dict[RegisterType, list[int] | None] = {}
         if input is not None:
             addresses[RegisterType.INPUT] = [input]
         if holding is not None:
@@ -62,7 +63,7 @@ class ModbusAddressesSpec(ModbusAddressSpecBase):
         input: list[int] | None = None,  # noqa: A002
         holding: list[int] | None = None,
     ) -> None:
-        addresses = {}
+        addresses: dict[RegisterType, list[int] | None] = {}
         if input is not None:
             addresses[RegisterType.INPUT] = input
         if holding is not None:

@@ -116,7 +116,7 @@ class ModbusRemoteControlFactory:
             name="Force Charge Power",
             models=all_models,
             max_value_address=ac_power_limit_down_address,
-            fallback_native_max_value=-20000,
+            fallback_native_max_value=-6000,  # H1 goes up to 6kW
             mode=NumberMode.BOX,
             device_class=NumberDeviceClass.POWER,
             native_min_value=0.0,
@@ -138,7 +138,7 @@ class ModbusRemoteControlFactory:
             name="Force Discharge Power",
             models=all_models,
             max_value_address=ac_power_limit_down_address,
-            fallback_native_max_value=-20000,
+            fallback_native_max_value=-6000,  # H1 goes up to 6kW
             mode=NumberMode.BOX,
             device_class=NumberDeviceClass.POWER,
             native_min_value=0.0,
