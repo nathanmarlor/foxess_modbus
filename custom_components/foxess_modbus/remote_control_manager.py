@@ -191,28 +191,31 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             await self._controller.write_register(self._addresses.active_power, -max_import_power)
             return
 
+        max_battery_charge_power = -max_battery_charge_power_negative
+        current_battery_charge_power = -current_battery_charge_power_negative
+
+        # If the BMS has decided not to charge the battery (which it might do if it's almost full), then don't try and
+        # be clever.
+        # Similarly, if the max battery power is very small, we won't be able to set the setpoint such that there's a
+        # margin for PV, which means we run the risk of completely clipping PV.
+        if max_battery_charge_power < 50:
+            _LOGGER.debug("Remote control: max battery charge power is %sW, using Back-up", max_battery_charge_power)
+            await self._disable_remote_control(WorkMode.BACK_UP)
+            return
+
         # If we're just switching to export, do a cycle with 0 import. This tells us how much PV is providing
         # (as bat charge power = pv power), which lets us set the import/export power pretty accurately.
         if self._prev_mode != RemoteControlMode.FORCE_CHARGE:
             self._current_import_power = 0
         else:
-            # Remember, negative = charging
-            setpoint = -max_battery_charge_power_negative - 200
-
-            # If the max battery current is this small, then we're kind of stuck: if we set the setpoint to the
-            # max_battery_charge_period, we'll run the risk of providing all of that power from AC and completely
-            # clipping PV. We'll scale back the margin a bit, then just switch to back-up
-            if setpoint < 0:
-                setpoint = -max_battery_charge_power_negative - 50
-                if setpoint < 0:
-                    _LOGGER.debug("Remote control: battery won't take any more charge, using Back-up")
-                    await self._disable_remote_control(WorkMode.BACK_UP)
-                    return
+            # We'll try and set the setpoint 200W below the desired charge current, then scale back to 50 if this is
+            # too much. We checked above that it's > 50
+            setpoint = max(max_battery_charge_power - 200, 50)
 
             previous_import_power = self._current_import_power
 
             # We should never be importing more than the battery can take
-            error = setpoint + current_battery_charge_power_negative
+            error = setpoint - current_battery_charge_power
             if previous_import_power > setpoint:
                 new_import_power = setpoint
             else:
@@ -236,8 +239,8 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             # Right, let's set that
             _LOGGER.debug(
                 "Remote control: Bat: %sW, limit: %sW, error: %sW, import %sW -> %sW",
-                -current_battery_charge_power_negative,
-                -max_battery_charge_power_negative,
+                current_battery_charge_power,
+                max_battery_charge_power,
                 error,
                 previous_import_power,
                 self._current_import_power,
