@@ -1,4 +1,5 @@
 """Callback controller"""
+
 import logging
 from abc import ABC
 from abc import abstractmethod
@@ -59,6 +60,16 @@ class EntityRemoteControlManager(ABC):
     @abstractmethod
     def discharge_power(self, value: int | None) -> None:
         """Set the discharge power"""
+
+    @property
+    @abstractmethod
+    def max_soc(self) -> int | None:
+        """Gets a value to override the max_soc register, if any"""
+
+    @max_soc.setter
+    @abstractmethod
+    def max_soc(self, value: int | None) -> None:
+        """Set a value to override the max_soc register, if any"""
 
 
 class EntityController(ABC):

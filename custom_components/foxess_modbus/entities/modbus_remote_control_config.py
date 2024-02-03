@@ -79,6 +79,10 @@ class RemoteControlAddressSpec:
         """Gets a InverterModelSpec instance to describe the Work Mode address"""
         return EntitySpec(self.models, [k for k, v in self.register_types.items() if v.work_mode is None])
 
+    def get_models_without_max_soc(self) -> EntitySpec:
+        """Gets a InverterModelSpec instance to describe the Max SoC address"""
+        return EntitySpec(self.models, [k for k, v in self.register_types.items() if v.max_soc is None])
+
     def get_ac_power_limit_down_address(self) -> InverterModelSpec:
         """Gets a InverterModelSpec instance to describe Ac power limit down address"""
 
@@ -157,7 +161,32 @@ class ModbusRemoteControlFactory:
             models=[x.get_models_without_work_mode() for x in self.address_specs],
         )
 
-        self.entity_descriptions: list[EntityFactory] = [charge_power, discharge_power, remote_control_select]
+        def _set_max_soc(manager: EntityRemoteControlManager, value: int) -> None:
+            manager.max_soc = value
+
+        # Models without max_soc get one of these
+        force_charge_max_soc = ModbusRemoteControlNumberDescription(  # type: ignore
+            key="force_charge_max_soc",
+            name="Force Charge Max SoC",
+            models=[x.get_models_without_max_soc() for x in self.address_specs],
+            max_value_address=None,
+            native_min_value=0.0,
+            fallback_native_max_value=100,
+            mode=NumberMode.BOX,
+            device_class=NumberDeviceClass.BATTERY,
+            # Max value is read from the inverter
+            native_step=1,
+            native_unit_of_measurement="%",
+            icon="mdi:battery-arrow-up",
+            value_setter=_set_max_soc,
+        )
+
+        self.entity_descriptions: list[EntityFactory] = [
+            charge_power,
+            discharge_power,
+            remote_control_select,
+            force_charge_max_soc,
+        ]
 
     def create_if_supported(
         self, _hass: HomeAssistant, inverter_model: str, register_type: RegisterType, _inv_details: dict[str, Any]

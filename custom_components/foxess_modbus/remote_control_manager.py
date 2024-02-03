@@ -35,6 +35,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         self._current_import_power = 0  # Set the first time that we enable force charge
         self._discharge_power: int | None = None
         self._charge_power: int | None = None
+        self._max_soc_override: int | None = None
 
         modbus_addresses = [
             self._addresses.battery_soc,
@@ -73,6 +74,14 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
     @discharge_power.setter
     def discharge_power(self, value: int | None) -> None:
         self._discharge_power = value
+
+    @property
+    def max_soc(self) -> int | None:
+        return self._max_soc_override
+
+    @max_soc.setter
+    def max_soc(self, value: int | None) -> None:
+        self._max_soc_override = value
 
     async def _update(self) -> None:
         if not self._controller.is_connected:
@@ -120,8 +129,11 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         # They can set the max charge current if they want, which has the same effect.
 
         soc = self._read(self._addresses.battery_soc, signed=False)
-        # max_soc might not be available, e.g. on H1 LAN
-        max_soc = self._read(self._addresses.max_soc, signed=False)
+        # max_soc might not be available, e.g. on H1 LAN. In this case, we use an override, controlled from a sensor
+        if self._max_soc_override is not None:
+            max_soc: int | None = self._max_soc_override
+        else:
+            max_soc = self._read(self._addresses.max_soc, signed=False)
 
         if soc is not None and max_soc is not None and soc >= max_soc:
             _LOGGER.debug("Force charge: soc %s%% >= max soc %s%%, using Back-up", soc, max_soc)

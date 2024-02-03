@@ -1,4 +1,5 @@
 """Select"""
+
 import logging
 from dataclasses import dataclass
 from typing import Any
@@ -31,7 +32,7 @@ class ModbusRemoteControlNumberDescription(NumberEntityDescription, EntityFactor
     """Custom number entity description"""
 
     models: list[EntitySpec]
-    max_value_address: list[InverterModelSpec]
+    max_value_address: list[InverterModelSpec] | None
     fallback_native_max_value: int
     """Used if the max_value_address isn't available for an inverter"""
     mode: NumberMode = NumberMode.AUTO
@@ -54,7 +55,11 @@ class ModbusRemoteControlNumberDescription(NumberEntityDescription, EntityFactor
     ) -> Entity | None:
         if not self._supports_inverter_model(self.models, inverter_model, register_type):
             return None
-        max_value_address = self._address_for_inverter_model(self.max_value_address, inverter_model, register_type)
+        max_value_address = (
+            self._address_for_inverter_model(self.max_value_address, inverter_model, register_type)
+            if self.max_value_address is not None
+            else None
+        )
         return ModbusRemoteControlNumber(controller, self, max_value_address, entry, inv_details)
 
 
