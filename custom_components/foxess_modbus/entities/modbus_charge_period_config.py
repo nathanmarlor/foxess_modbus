@@ -1,4 +1,5 @@
 """Time period config"""
+
 import logging
 from dataclasses import dataclass
 from typing import Any
@@ -81,7 +82,7 @@ class ChargePeriodAddressSpec:
         return self._get_address(lambda x: x.enable_charge_from_grid_address)
 
     def _get_address(self, accessor: Callable[[ModbusChargePeriodAddressConfig], int]) -> InverterModelSpec:
-        addresses = {}
+        addresses: dict[RegisterType, list[int] | None] = {}
         for register_type, address_config in self.register_types.items():
             addresses[register_type] = [accessor(address_config)]
         return ModbusAddressSpecBase(self.models, addresses)

@@ -1,6 +1,7 @@
 from ..const import H1_SET
 from ..const import H3_SET
 from ..const import KH
+from ..const import KUARA_H3
 from .modbus_remote_control_config import ModbusRemoteControlAddressConfig
 from .modbus_remote_control_config import ModbusRemoteControlFactory
 from .modbus_remote_control_config import RemoteControlAddressSpec
@@ -25,12 +26,12 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 remote_enable=44000,
                 timeout_set=44001,
                 active_power=44002,
-                ac_power_limit_down=44008,
+                ac_power_limit_down=None,
                 work_mode=None,
                 max_soc=None,
                 invbatpower=31022,
                 battery_soc=31024,
-                pwr_limit_bat_up=44012,
+                pwr_limit_bat_up=None,
                 pv_voltages=[31000, 31003],
             ),
         ),
@@ -62,7 +63,8 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
             ),
         ),
         RemoteControlAddressSpec(
-            H3_SET,
+            # The Kuara H3 doesn't support this, see https://github.com/nathanmarlor/foxess_modbus/issues/532
+            list(set(H3_SET) - {KUARA_H3}),
             holding=ModbusRemoteControlAddressConfig(
                 remote_enable=44000,
                 timeout_set=44001,

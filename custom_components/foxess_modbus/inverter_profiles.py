@@ -48,10 +48,6 @@ class SpecialRegisterConfig:
 
 
 H1_AC1_REGISTERS = SpecialRegisterConfig(invalid_register_ranges=[(11096, 39999)])
-H1_LAN_REGISTERS = SpecialRegisterConfig(
-    invalid_register_ranges=[(11096, 39999)],
-    individual_read_register_ranges=[(41000, 41999)],
-)
 # See https://github.com/nathanmarlor/foxess_modbus/discussions/503
 H3_REGISTERS = SpecialRegisterConfig(
     invalid_register_ranges=[(41001, 41006), (41012, 41013), (41015, 41015)],
@@ -180,7 +176,6 @@ INVERTER_PROFILES = {
         .add_connection_type(
             LAN,
             RegisterType.HOLDING,
-            special_registers=H1_LAN_REGISTERS,
         ),
         InverterModelProfile(AC1, r"^AC1-")
         .add_connection_type(

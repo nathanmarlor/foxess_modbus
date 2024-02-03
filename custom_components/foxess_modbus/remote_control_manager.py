@@ -35,6 +35,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         self._current_import_power = 0  # Set the first time that we enable force charge
         self._discharge_power: int | None = None
         self._charge_power: int | None = None
+        self._max_soc_override: int | None = None
 
         modbus_addresses = [
             self._addresses.battery_soc,
@@ -73,6 +74,14 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
     @discharge_power.setter
     def discharge_power(self, value: int | None) -> None:
         self._discharge_power = value
+
+    @property
+    def max_soc(self) -> int | None:
+        return self._max_soc_override
+
+    @max_soc.setter
+    def max_soc(self, value: int | None) -> None:
+        self._max_soc_override = value
 
     async def _update(self) -> None:
         if not self._controller.is_connected:
@@ -120,8 +129,11 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         # They can set the max charge current if they want, which has the same effect.
 
         soc = self._read(self._addresses.battery_soc, signed=False)
-        # max_soc might not be available, e.g. on H1 LAN
-        max_soc = self._read(self._addresses.max_soc, signed=False)
+        # max_soc might not be available, e.g. on H1 LAN. In this case, we use an override, controlled from a sensor
+        if self._max_soc_override is not None:
+            max_soc: int | None = self._max_soc_override
+        else:
+            max_soc = self._read(self._addresses.max_soc, signed=False)
 
         if soc is not None and max_soc is not None and soc >= max_soc:
             _LOGGER.debug("Force charge: soc %s%% >= max soc %s%%, using Back-up", soc, max_soc)
@@ -152,6 +164,8 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         # it can take and still clip PV: I suspect this is to do with losses somewhere, but I'm not quite sure where.
 
         max_import_power = self._charge_power
+        # This isn't available on H1 LAN. But in that case we can't intelligently control anyway, so it's OK if this we
+        # specify a power which is far too large.
         inverter_capacity = self._inverter_capacity()
 
         if max_import_power is None:
@@ -177,15 +191,28 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             return
 
         # These are both negative
+        # max_battery_charge_power_negative isn't available on the H1 over LAN
         max_battery_charge_power_negative = self._read(self._addresses.pwr_limit_bat_up, signed=True)
         current_battery_charge_power_negative = self._read(self._addresses.invbatpower, signed=True)
         if max_battery_charge_power_negative is None or current_battery_charge_power_negative is None:
-            _LOGGER.warn(
-                "Remote control: max and current battery charge power unavailable, defaulting to %sW",
+            _LOGGER.debug(
+                "Remote control: max or current battery charge power unavailable, defaulting to %sW",
                 max_import_power,
             )
             await self._enable_remote_control(WorkMode.BACK_UP)
             await self._controller.write_register(self._addresses.active_power, -max_import_power)
+            return
+
+        max_battery_charge_power = -max_battery_charge_power_negative
+        current_battery_charge_power = -current_battery_charge_power_negative
+
+        # If the BMS has decided not to charge the battery (which it might do if it's almost full), then don't try and
+        # be clever.
+        # Similarly, if the max battery power is very small, we won't be able to set the setpoint such that there's a
+        # margin for PV, which means we run the risk of completely clipping PV.
+        if max_battery_charge_power < 50:
+            _LOGGER.debug("Remote control: max battery charge power is %sW, using Back-up", max_battery_charge_power)
+            await self._disable_remote_control(WorkMode.BACK_UP)
             return
 
         # If we're just switching to export, do a cycle with 0 import. This tells us how much PV is providing
@@ -193,23 +220,14 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         if self._prev_mode != RemoteControlMode.FORCE_CHARGE:
             self._current_import_power = 0
         else:
-            # Remember, negative = charging
-            setpoint = -max_battery_charge_power_negative - 200
-
-            # If the max battery current is this small, then we're kind of stuck: if we set the setpoint to the
-            # max_battery_charge_period, we'll run the risk of providing all of that power from AC and completely
-            # clipping PV. We'll scale back the margin a bit, then just switch to back-up
-            if setpoint < 0:
-                setpoint = -max_battery_charge_power_negative - 50
-                if setpoint < 0:
-                    _LOGGER.debug("Remote control: battery won't take any more charge, using Back-up")
-                    await self._disable_remote_control(WorkMode.BACK_UP)
-                    return
+            # We'll try and set the setpoint 200W below the desired charge current, then scale back to 50 if this is
+            # too much. We checked above that it's > 50
+            setpoint = max(max_battery_charge_power - 200, 50)
 
             previous_import_power = self._current_import_power
 
             # We should never be importing more than the battery can take
-            error = setpoint + current_battery_charge_power_negative
+            error = setpoint - current_battery_charge_power
             if previous_import_power > setpoint:
                 new_import_power = setpoint
             else:
@@ -233,8 +251,8 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             # Right, let's set that
             _LOGGER.debug(
                 "Remote control: Bat: %sW, limit: %sW, error: %sW, import %sW -> %sW",
-                -current_battery_charge_power_negative,
-                -max_battery_charge_power_negative,
+                current_battery_charge_power,
+                max_battery_charge_power,
                 error,
                 previous_import_power,
                 self._current_import_power,
