@@ -4,6 +4,7 @@ Custom integration to integrate FoxESS Modbus with Home Assistant.
 For more details about this integration, please refer to
 https://github.com/nathanmarlor/foxess_modbus
 """
+
 import asyncio
 import copy
 import logging
@@ -42,6 +43,7 @@ from .const import UNIQUE_ID_PREFIX
 from .inverter_adapters import ADAPTERS
 from .inverter_profiles import inverter_connection_type_profile_from_config
 from .modbus_controller import ModbusController
+from .services import read_registers_service
 from .services import update_charge_period_service
 from .services import websocket_api
 from .services import write_registers_service
@@ -120,6 +122,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             clients[client_key] = client
         create_controller(client, inverter)
 
+    read_registers_service.register(hass, inverter_controllers)
     write_registers_service.register(hass, inverter_controllers)
     update_charge_period_service.register(hass, inverter_controllers)
     websocket_api.register(hass)

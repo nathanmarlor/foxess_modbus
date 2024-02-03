@@ -1,4 +1,46 @@
 ---
+read_registers:
+  name: Read Registers
+  description: >
+    Read one or more registers, for debugging purposes
+  fields:
+    inverter:
+      name: Inverter
+      description: Which inverter to target. Pass a device ID or unique friendly name.
+      required: true
+      default: "''"
+      example: "''"
+      selector:
+        device:
+          integration: foxess_modbus
+    start_address:
+      name: Start Address
+      description: Start address to write to
+      required: true
+      example: 31000
+      default: 31000
+      selector:
+        number:
+          mode: box
+    count:
+      name: Count
+      description: Number of registers to read
+      required: true
+      example: 1
+      default: 1
+      selector:
+        number:
+          mode: box
+    type:
+      name: Type
+      description: Type of register to read
+      required: true
+      default: input
+      selector:
+        select:
+          options:
+            - input
+            - holding
 write_registers:
   name: Write Registers
   description: >

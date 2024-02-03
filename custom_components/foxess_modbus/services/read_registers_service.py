@@ -1,39 +1,29 @@
-"""Defines the service to write registers"""
-
 import logging
 from typing import Any
 
 import voluptuous as vol
 from homeassistant.core import HomeAssistant
 from homeassistant.core import ServiceCall
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.core import ServiceResponse
+from homeassistant.core import SupportsResponse
 from homeassistant.helpers import config_validation as cv
-from pymodbus.exceptions import ModbusIOException
 
+from ..common.register_type import RegisterType
 from ..const import DOMAIN
 from ..modbus_controller import ModbusController
 from .utils import get_controller_from_friendly_name_or_device_id
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
-
-def _must_specify_either_interver_or_friendly_name(data: dict[str, Any]) -> dict[str, Any]:
-    if "inverter" not in data and "friendly_name" not in data:
-        raise vol.Invalid("required key not provided", path=["inverter"])
-    return data
-
-
-_WRITE_SCHEMA = vol.Schema(
+_READ_SCHEMA = vol.Schema(
     vol.All(
         {
-            # We require either inverter or friendly_name (legacy)
             # Let the value to this be omitted, instead of forcing them to specify ''
-            vol.Optional("inverter", description="Inverter"): vol.Any(cv.string, None),
-            vol.Optional("friendly_name", description="Friendly Name"): cv.string,
+            vol.Required("inverter", description="Inverter"): vol.Any(cv.string, None),
             vol.Required("start_address", description="Start Address"): cv.positive_int,
-            vol.Required("values", description="Values"): cv.string,
+            vol.Required("count", description="Values"): cv.positive_int,
+            vol.Required("type", description="Type of register to read"): vol.In(["input", "holding"]),
         },
-        _must_specify_either_interver_or_friendly_name,
     )
 )
 
@@ -41,22 +31,23 @@ _WRITE_SCHEMA = vol.Schema(
 def register(hass: HomeAssistant, inverter_controllers: list[tuple[Any, ModbusController]]) -> None:
     """Register the service with hass"""
 
-    async def _callback(service_data: ServiceCall) -> None:
-        await hass.loop.create_task(_write_service(inverter_controllers, service_data, hass))
+    async def _callback(service_data: ServiceCall) -> ServiceResponse:
+        return await hass.async_create_task(_read_service(inverter_controllers, service_data, hass))
 
     hass.services.async_register(
         DOMAIN,
-        "write_registers",
+        "read_registers",
         _callback,
-        _WRITE_SCHEMA,
+        _READ_SCHEMA,
+        supports_response=SupportsResponse.ONLY,
     )
 
 
-async def _write_service(
+async def _read_service(
     mapping: list[tuple[Any, ModbusController]],
     service_data: ServiceCall,
     hass: HomeAssistant,
-) -> None:
+) -> ServiceResponse:
     """Write service"""
     # Support both for backwards compatibility
     inverter_id = service_data.data.get("inverter")
@@ -65,10 +56,23 @@ async def _write_service(
         inverter_id if inverter_id is not None else friendly_name, mapping, hass
     )
 
+    response: dict[str, Any] = {}
+
     try:
         start_address = service_data.data["start_address"]
-        values = service_data.data["values"].split(",")
-        await controller.write_registers(start_address, values)
-    except ModbusIOException as ex:
+        num_registers = service_data.data["count"]
+        types = {"input": RegisterType.INPUT, "holding": RegisterType.HOLDING}
+        register_type = types[service_data.data["type"]]
+        values = await controller.read_registers(start_address, num_registers, register_type)
+        response_values = {}
+        for i in range(num_registers):
+            response_values[start_address + i] = values[i]
+        response["values"] = response_values
+    except Exception as ex:
         _LOGGER.warning(ex, exc_info=True)
-        raise HomeAssistantError() from ex
+        response["error"] = str(ex)
+
+    if service_data.return_response:
+        return response
+
+    return None
