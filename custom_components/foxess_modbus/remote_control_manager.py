@@ -123,6 +123,15 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             return None
         return -value
 
+    async def _write_active_power(self, export_power: int) -> None:
+        values = []
+        for i in range(len(self._addresses.active_power)):
+            # If there are multiple registers, they must be contiguous and descending
+            if i > 0:
+                assert self._addresses.active_power[i] == self._addresses.active_power[i - 1] - 1
+            values.append((export_power >> (i * 16)) & 0xFFFF)
+        await self._controller.write_registers(self._addresses.active_power[0], values)
+
     async def _update_charge(self) -> None:
         # The inverter doesn't respect Max Soc. Therefore if the SoC >= Max SoC, turn off remote control.
         # We don't let the user configure charge power: they can't figure it with normal charge periods, so why bother?
@@ -187,7 +196,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             _LOGGER.debug("Remote control: no sun (or PV unavailable), defaulting to %sW", max_import_power)
             # If remote control stops, we want to be in Back-up
             await self._enable_remote_control(WorkMode.BACK_UP)
-            await self._controller.write_register(self._addresses.active_power, -max_import_power)
+            await self._write_active_power(-max_import_power)
             return
 
         # These are both negative
@@ -200,7 +209,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
                 max_import_power,
             )
             await self._enable_remote_control(WorkMode.BACK_UP)
-            await self._controller.write_register(self._addresses.active_power, -max_import_power)
+            await self._write_active_power(-max_import_power)
             return
 
         max_battery_charge_power = -max_battery_charge_power_negative
@@ -260,7 +269,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
 
         # If remote control stops, we want to be in Back-up, charging as much as we can
         await self._enable_remote_control(WorkMode.BACK_UP)
-        await self._controller.write_register(self._addresses.active_power, -self._current_import_power)
+        await self._write_active_power(-self._current_import_power)
 
     async def _update_discharge(self) -> None:
         # For force discharge, normally we can just leave it, and it will do the right thing: respect Min SoC and the
@@ -285,7 +294,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         # If remote control stops, we still want to feed in as much as possible
         await self._enable_remote_control(WorkMode.FEED_IN_FIRST)
         # Positive values = discharge
-        await self._controller.write_register(self._addresses.active_power, export_power)
+        await self._write_active_power(export_power)
 
     async def _enable_remote_control(self, fallback_work_mode: WorkMode) -> None:
         if self._remote_control_enabled in (None, False):

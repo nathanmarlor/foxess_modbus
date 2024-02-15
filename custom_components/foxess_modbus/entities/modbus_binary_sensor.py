@@ -1,4 +1,5 @@
 """Binary Sensor"""
+
 import logging
 from dataclasses import dataclass
 from dataclasses import field

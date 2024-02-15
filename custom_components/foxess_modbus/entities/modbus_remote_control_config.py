@@ -15,6 +15,9 @@ from .inverter_model_spec import ModbusAddressSpecBase
 from .modbus_remote_control_number import ModbusRemoteControlNumberDescription
 from .modbus_remote_control_select import ModbusRemoteControlSelectDescription
 
+# H3-12.0
+MAX_INVERTER_POWER = 12000
+
 
 @dataclass(frozen=True)
 class ModbusRemoteControlAddressConfig:
@@ -24,7 +27,7 @@ class ModbusRemoteControlAddressConfig:
     """Remote Enable, turns remote control off/on"""
     timeout_set: int
     """Remote Timeout_Set, sets the watchdog reload value"""
-    active_power: int
+    active_power: list[int]
     """Remote control-Active power command, sets the output power (+ve) or input power (-ve) of the inverter"""
     work_mode: int | None
     """Work mode control"""
@@ -120,7 +123,7 @@ class ModbusRemoteControlFactory:
             name="Force Charge Power",
             models=all_models,
             max_value_address=ac_power_limit_down_address,
-            fallback_native_max_value=-6000,  # H1 goes up to 6kW
+            fallback_native_max_value=-MAX_INVERTER_POWER,
             mode=NumberMode.BOX,
             device_class=NumberDeviceClass.POWER,
             native_min_value=0.0,
@@ -142,7 +145,7 @@ class ModbusRemoteControlFactory:
             name="Force Discharge Power",
             models=all_models,
             max_value_address=ac_power_limit_down_address,
-            fallback_native_max_value=-6000,  # H1 goes up to 6kW
+            fallback_native_max_value=-MAX_INVERTER_POWER,
             mode=NumberMode.BOX,
             device_class=NumberDeviceClass.POWER,
             native_min_value=0.0,
