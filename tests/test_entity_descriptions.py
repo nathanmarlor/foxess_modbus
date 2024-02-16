@@ -15,7 +15,8 @@ from custom_components.foxess_modbus.inverter_profiles import INVERTER_PROFILES
 from custom_components.foxess_modbus.inverter_profiles import create_entities
 
 
-def test_creates_all_entities(hass: HomeAssistant) -> None:
+async def test_creates_all_entities(hass: HomeAssistant) -> None:
+    print(hass)
     controller = MagicMock()
     config_entry = MockConfigEntry()
 
