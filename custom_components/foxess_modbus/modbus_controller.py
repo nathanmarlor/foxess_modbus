@@ -1,4 +1,5 @@
 """Modbus controller"""
+
 import logging
 import re
 import threading
@@ -118,6 +119,10 @@ class ModbusController(EntityController, UnloadController):
             sign_bit = 1 << (16 - 1)
             value = (value & (sign_bit - 1)) - (value & sign_bit)
         return value
+
+    async def read_registers(self, start_address: int, num_registers: int, register_type: RegisterType) -> list[int]:
+        """Read one of more registers, used by the read_registers_service"""
+        return await self._client.read_registers(start_address, num_registers, register_type, self._slave)
 
     async def write_register(self, address: int, value: int) -> None:
         await self.write_registers(address, [value])

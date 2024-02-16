@@ -95,7 +95,8 @@ class ModbusRemoteControlNumber(ModbusEntityMixin, RestoreNumber, NumberEntity):
         extra_data = await self.async_get_last_number_data()
         # Sometimes we can have extra_data set, but incomplete
         if extra_data and extra_data.native_value is not None:
-            self._attr_native_max_value = extra_data.native_max_value
+            if extra_data.native_max_value is not None:
+                self._attr_native_max_value = extra_data.native_max_value
             self._update_native_value(extra_data.native_value)
         else:
             self._attr_native_value = None

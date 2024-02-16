@@ -37,3 +37,6 @@ force-single-line = true
 [tool.black]
 line-length = 120
 exclude = "scripts"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

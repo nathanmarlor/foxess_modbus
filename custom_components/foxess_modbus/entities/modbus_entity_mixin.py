@@ -1,4 +1,5 @@
 """Mixin providing common functionality for all entity classes"""
+
 import logging
 from abc import ABC
 from typing import TYPE_CHECKING
@@ -33,7 +34,7 @@ def get_entity_id(hass: HomeAssistant, platform: Platform, key: str, inv_details
     er = entity_registry.async_get(hass)
 
     # Type annotation missing in the annotations package maybe?
-    entity_id = cast(str | None, er.async_get_entity_id(platform, DOMAIN, unique_id))
+    entity_id = er.async_get_entity_id(platform, DOMAIN, unique_id)
 
     if entity_id is None:
         # This can happen when first setting up, as the target entity hasn't been created yet.
@@ -112,9 +113,9 @@ class ModbusEntityMixin(
         else:
             attr_name = "FoxESS - Modbus"
 
-        return DeviceInfo(  # type: ignore
+        return DeviceInfo(
             # services/utils.py relies on the order of entries here. Update that if you update this!
-            identifiers={(DOMAIN, inv_model, conn_type, friendly_name)},
+            identifiers={(DOMAIN, inv_model, conn_type, friendly_name)},  # type: ignore
             name=attr_name,
             model=f"{inv_model} - {conn_type}",
             manufacturer="FoxESS",

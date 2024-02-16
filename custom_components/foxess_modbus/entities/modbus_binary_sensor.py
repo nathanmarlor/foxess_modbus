@@ -86,7 +86,7 @@ class ModbusBinarySensor(ModbusEntityMixin, BinarySensorEntity):
         entity_description = cast(ModbusBinarySensorDescription, self.entity_description)
         if entity_description.icon_func is not None:
             return entity_description.icon_func(self.is_on)
-        return cast(str | None, super().icon)
+        return super().icon
 
     @property
     def addresses(self) -> list[int]:
