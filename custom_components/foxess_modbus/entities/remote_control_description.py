@@ -76,7 +76,7 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 work_mode=41000,
                 max_soc=41010,
                 invbatpower=31022,
-                battery_soc=31036,
+                battery_soc=31038,
                 pwr_limit_bat_up=None,
                 pv_voltages=[31000, 31003],
             ),
