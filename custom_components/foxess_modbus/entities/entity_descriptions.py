@@ -501,6 +501,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         key="feed_in",
         addresses=[
             ModbusAddressesSpec(models=[*H1_SET, KH], input=[11021], holding=[31014]),
+            ModbusAddressesSpec(models=[KH], input=[11021], holding=[31050, 31049]),
         ],
         name="Feed-in",
         device_class=SensorDeviceClass.POWER,
@@ -516,6 +517,7 @@ _H1_CURRENT_VOLTAGE_POWER_ENTITIES: list[EntityFactory] = [
         key="grid_consumption",
         addresses=[
             ModbusAddressesSpec(models=[*H1_SET, KH], input=[11021], holding=[31014]),
+            ModbusAddressesSpec(models=[KH], input=[11021], holding=[31050, 31049]),
         ],
         name="Grid Consumption",
         device_class=SensorDeviceClass.POWER,
