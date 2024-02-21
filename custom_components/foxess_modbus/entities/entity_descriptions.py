@@ -504,68 +504,99 @@ def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
         post_process=lambda x: max(x, 0),
         validate=[Range(0, 100)],
     )
-    yield ModbusSensorDescription(
-        key="grid_ct",
-        addresses=[
-            ModbusAddressesSpec(models=H1_SET, input=[11021], holding=[31014]),
-            ModbusAddressesSpec(models=[KH], input=[11021], holding=[31050, 31049]),
-        ],
-        name="Grid CT",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        icon="mdi:meter-electric-outline",
+
+    # The KH uses the opposite sign for Grid CT, for some bizarre reason
+
+    def _grid_ct(addresses: list[ModbusAddressesSpec], scale: float) -> ModbusSensorDescription:
+        return ModbusSensorDescription(
+            key="grid_ct",
+            addresses=addresses,
+            name="Grid CT",
+            device_class=SensorDeviceClass.POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement="kW",
+            icon="mdi:meter-electric-outline",
+            scale=scale,
+            round_to=0.01,
+            validate=[Range(-100, 100)],
+        )
+
+    yield _grid_ct(
+        addresses=[ModbusAddressesSpec(models=H1_SET, input=[11021], holding=[31014])],
         scale=0.001,
-        round_to=0.01,
-        validate=[Range(-100, 100)],
     )
-    yield ModbusSensorDescription(
-        key="feed_in",
-        addresses=[
-            ModbusAddressesSpec(models=H1_SET, input=[11021], holding=[31014]),
-            ModbusAddressesSpec(models=[KH], input=[11021], holding=[31050, 31049]),
-        ],
-        name="Feed-in",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        icon="mdi:transmission-tower-import",
+    yield _grid_ct(
+        addresses=[ModbusAddressesSpec(models=[KH], input=[11021], holding=[31050, 31049])],
+        scale=-0.001,
+    )
+
+    def _feed_in(addresses: list[ModbusAddressesSpec], scale: float) -> ModbusSensorDescription:
+        return ModbusSensorDescription(
+            key="feed_in",
+            addresses=addresses,
+            name="Feed-in",
+            device_class=SensorDeviceClass.POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement="kW",
+            icon="mdi:transmission-tower-import",
+            scale=scale,
+            round_to=0.01,
+            post_process=lambda v: v if v > 0 else 0,
+            validate=[Range(0, 100)],
+        )
+
+    yield _feed_in(
+        addresses=[ModbusAddressesSpec(models=H1_SET, input=[11021], holding=[31014])],
         scale=0.001,
-        round_to=0.01,
-        post_process=lambda v: v if v > 0 else 0,
-        validate=[Range(0, 100)],
     )
-    yield ModbusSensorDescription(
-        key="grid_consumption",
-        addresses=[
-            ModbusAddressesSpec(models=H1_SET, input=[11021], holding=[31014]),
-            ModbusAddressesSpec(models=[KH], input=[11021], holding=[31050, 31049]),
-        ],
-        name="Grid Consumption",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        icon="mdi:transmission-tower-export",
+    yield _feed_in(
+        addresses=[ModbusAddressesSpec(models=[KH], input=[11021], holding=[31050, 31049])],
+        scale=-0.001,
+    )
+
+    def _grid_consumption(addresses: list[ModbusAddressesSpec], scale: float) -> ModbusSensorDescription:
+        return ModbusSensorDescription(
+            key="grid_consumption",
+            addresses=addresses,
+            name="Grid Consumption",
+            device_class=SensorDeviceClass.POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement="kW",
+            icon="mdi:transmission-tower-export",
+            scale=scale,
+            round_to=0.01,
+            post_process=lambda v: abs(v) if v < 0 else 0,
+            validate=[Range(0, 100)],
+        )
+
+    yield _grid_consumption(
+        addresses=[ModbusAddressesSpec(models=H1_SET, input=[11021], holding=[31014])],
         scale=0.001,
-        round_to=0.01,
-        post_process=lambda v: abs(v) if v < 0 else 0,
-        validate=[Range(0, 100)],
     )
-    yield ModbusSensorDescription(
-        key="ct2_meter",
-        addresses=[
-            ModbusAddressesSpec(models=H1_SET, input=[11022], holding=[31015]),
-            ModbusAddressesSpec(models=[KH], input=[11022], holding=[31052, 31051]),
-        ],
-        name="CT2 Meter",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        icon="mdi:meter-electric-outline",
+    yield _grid_consumption(
+        addresses=[ModbusAddressesSpec(models=[KH], input=[11021], holding=[31050, 31049])],
+        scale=-0.001,
+    )
+
+    def _ct2_meter(addresses: list[ModbusAddressesSpec], scale: float) -> ModbusSensorDescription:
+        return ModbusSensorDescription(
+            key="ct2_meter",
+            addresses=addresses,
+            name="CT2 Meter",
+            device_class=SensorDeviceClass.POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement="kW",
+            icon="mdi:meter-electric-outline",
+            scale=scale,
+            round_to=0.01,
+            validate=[Range(-100, 100)],
+        )
+
+    yield _ct2_meter(
+        addresses=[ModbusAddressesSpec(models=H1_SET, input=[11022], holding=[31015])],
         scale=0.001,
-        round_to=0.01,
-        validate=[Range(-100, 100)],
     )
+    yield _ct2_meter(addresses=[ModbusAddressesSpec(models=[KH], input=[11022], holding=[31052, 31051])], scale=-0.001)
 
 
 def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
