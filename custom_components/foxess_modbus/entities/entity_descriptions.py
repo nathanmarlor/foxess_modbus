@@ -1174,13 +1174,14 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         native_unit_of_measurement="kWh",
         icon="mdi:solar-power",
         scale=0.1,
+        signed=False,
         validate=[Range(0, 1000)],
     )
     yield ModbusSensorDescription(
         key="battery_charge_total",
         addresses=[
             ModbusAddressesSpec(models=H1_SET, input=[11073, 11072]),
-            ModbusAddressesSpec(models=[KH], input=[11073, 11072], holding=[32004, 32004]),
+            ModbusAddressesSpec(models=[KH], input=[11073, 11072], holding=[32004, 32003]),
             ModbusAddressesSpec(models=H3_SET, holding=[32004, 32003]),
         ],
         name="Battery Charge Total",
