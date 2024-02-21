@@ -3,7 +3,9 @@
 import logging
 import re
 import threading
+import time
 from contextlib import contextmanager
+from dataclasses import dataclass
 from datetime import datetime
 from datetime import timedelta
 from typing import Any
@@ -42,6 +44,15 @@ _MODEL_LENGTH = 15
 _INT16_MIN = -32768
 _UINT16_MAX = 65535
 
+_INVERTER_WRITE_DELAY_SECS = 5
+
+
+@dataclass
+class RegisterValue:
+    read_value: int | None = None
+    written_value: int | None = None
+    written_at: float | None = None  # From time.monotonic()
+
 
 @contextmanager
 def _acquire_nonblocking(lock: threading.Lock) -> Iterator[bool]:
@@ -69,7 +80,7 @@ class ModbusController(EntityController, UnloadController):
         """Init"""
         self._hass = hass
         self._update_listeners: set[ModbusControllerEntity] = set()
-        self._data: dict[int, int | None] = {}
+        self._data: dict[int, RegisterValue] = {}
         self._client = client
         self._connection_type_profile = connection_type_profile
         self.inverter_details = inverter_details
@@ -113,8 +124,24 @@ class ModbusController(EntityController, UnloadController):
         return self._remote_control_manager
 
     def read(self, address: int, *, signed: bool) -> int | None:
-        """Modbus status"""
-        value = self._data.get(address)
+        # There can be a delay between writing a register, and actually reading that value back (presumably the delay
+        # is on the inverter somewhere). If we've recently written a value, use that value, rather than the latest-read
+        # value
+        register_value = self._data.get(address)
+        if register_value is None:
+            return None
+
+        now = time.monotonic()
+        value: int | None
+        if (
+            register_value.written_value is not None
+            and register_value.written_at is not None
+            and now - register_value.written_at < _INVERTER_WRITE_DELAY_SECS
+        ):
+            value = register_value.written_value
+        else:
+            value = register_value.read_value
+
         if signed and value is not None:
             sign_bit = 1 << (16 - 1)
             value = (value & (sign_bit - 1)) - (value & sign_bit)
@@ -152,10 +179,13 @@ class ModbusController(EntityController, UnloadController):
             for i, value in enumerate(values):
                 address = start_address + i
                 # Only store the result of the write if it's a register we care about ourselves
-                if self._data.get(address, value) != value:
-                    self._data[address] = value
+                register_value = self._data.get(address)
+                if register_value is not None:
+                    register_value.written_value = value
+                    register_value.written_at = time.monotonic()
                     changed_addresses.add(address)
-            self._notify_update(changed_addresses)
+            if len(changed_addresses) > 0:
+                self._notify_update(changed_addresses)
         except Exception as ex:
             # Failed writes are always bad
             _LOGGER.error("Failed to write registers", exc_info=True)
@@ -206,9 +236,10 @@ class ModbusController(EntityController, UnloadController):
                     for i, value in enumerate(reads):
                         address = start_address + i
                         # We might be reading a register we don't care about (for efficiency). Discard it if so
-                        if self._data.get(address, value) != value:
+                        register_value = self._data.get(address)
+                        if register_value is not None:
+                            register_value.read_value = value
                             changed_addresses.add(address)
-                            self._data[address] = value
 
                 _LOGGER.debug(
                     "Refresh of %s %s complete - notifying sensors: %s",
@@ -347,7 +378,7 @@ class ModbusController(EntityController, UnloadController):
                 f"{self._connection_type_profile.special_registers.invalid_register_ranges}"
             )
             if address not in self._data:
-                self._data[address] = None
+                self._data[address] = RegisterValue()
 
     def remove_modbus_entity(self, listener: ModbusControllerEntity) -> None:
         self._update_listeners.discard(listener)
