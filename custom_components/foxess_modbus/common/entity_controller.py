@@ -96,6 +96,11 @@ class EntityController(ABC):
     def remote_control_manager(self) -> EntityRemoteControlManager | None:
         """Fetch the remote control manager, if any"""
 
+    @property
+    @abstractmethod
+    def inverter_capacity(self) -> int:
+        """Fetches the inverter capacity as parsed from the inverter name, if possible"""
+
     @abstractmethod
     def register_modbus_entity(self, listener: ModbusControllerEntity) -> None:
         """Register a modbus entity with the ModbusController"""

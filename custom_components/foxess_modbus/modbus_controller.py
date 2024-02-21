@@ -30,6 +30,7 @@ from .common.register_type import RegisterType
 from .common.unload_controller import UnloadController
 from .const import DOMAIN
 from .const import FRIENDLY_NAME
+from .const import INVERTER_MODEL
 from .const import MAX_READ
 from .inverter_profiles import INVERTER_PROFILES
 from .inverter_profiles import InverterModelConnectionTypeProfile
@@ -102,6 +103,7 @@ class ModbusController(EntityController, UnloadController):
         # To start, we're neither connected nor disconnected
         self._connection_state = ConnectionState.INITIAL
         self._current_connection_error: str | None = None
+        self._inverter_capacity = connection_type_profile.inverter_capacity(self.inverter_details[INVERTER_MODEL])
 
         # Setup mixins
         EntityController.__init__(self)
@@ -133,6 +135,10 @@ class ModbusController(EntityController, UnloadController):
     @property
     def remote_control_manager(self) -> EntityRemoteControlManager | None:
         return self._remote_control_manager
+
+    @property
+    def inverter_capacity(self) -> int:
+        return self._inverter_capacity
 
     def read(self, address: int, *, signed: bool) -> int | None:
         # There can be a delay between writing a register, and actually reading that value back (presumably the delay

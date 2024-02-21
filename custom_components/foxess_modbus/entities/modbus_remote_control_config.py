@@ -15,9 +15,6 @@ from .inverter_model_spec import ModbusAddressSpecBase
 from .modbus_remote_control_number import ModbusRemoteControlNumberDescription
 from .modbus_remote_control_select import ModbusRemoteControlSelectDescription
 
-# H3-12.0
-MAX_INVERTER_POWER = 12000
-
 
 @dataclass(frozen=True)
 class ModbusRemoteControlAddressConfig:
@@ -123,7 +120,7 @@ class ModbusRemoteControlFactory:
             name="Force Charge Power",
             models=all_models,
             max_value_address=ac_power_limit_down_address,
-            fallback_native_max_value=-MAX_INVERTER_POWER,
+            fallback_native_max_value=lambda x: -x.inverter_capacity,  # - to counteract -ve scale
             mode=NumberMode.BOX,
             device_class=NumberDeviceClass.POWER,
             native_min_value=0.0,
@@ -145,7 +142,7 @@ class ModbusRemoteControlFactory:
             name="Force Discharge Power",
             models=all_models,
             max_value_address=ac_power_limit_down_address,
-            fallback_native_max_value=-MAX_INVERTER_POWER,
+            fallback_native_max_value=lambda x: -x.inverter_capacity,  # - to counteract -ve scale
             mode=NumberMode.BOX,
             device_class=NumberDeviceClass.POWER,
             native_min_value=0.0,
@@ -174,7 +171,7 @@ class ModbusRemoteControlFactory:
             models=[x.get_models_without_max_soc() for x in self.address_specs],
             max_value_address=None,
             native_min_value=0.0,
-            fallback_native_max_value=100,
+            fallback_native_max_value=lambda _x: 100,
             mode=NumberMode.BOX,
             device_class=NumberDeviceClass.BATTERY,
             # Max value is read from the inverter
