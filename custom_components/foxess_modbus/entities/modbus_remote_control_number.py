@@ -33,7 +33,7 @@ class ModbusRemoteControlNumberDescription(NumberEntityDescription, EntityFactor
 
     models: list[EntitySpec]
     max_value_address: list[InverterModelSpec] | None
-    fallback_native_max_value: int
+    fallback_native_max_value: Callable[[EntityController], int]
     """Used if the max_value_address isn't available for an inverter"""
     mode: NumberMode = NumberMode.AUTO
     scale: float = 1.0
@@ -117,7 +117,7 @@ class ModbusRemoteControlNumber(ModbusEntityMixin, RestoreNumber, NumberEntity):
         max_value = (
             self._controller.read(self._max_value_address, signed=entity_description.signed)
             if self._max_value_address is not None
-            else entity_description.fallback_native_max_value
+            else entity_description.fallback_native_max_value(self._controller)
         )
         if max_value is not None:
             native_max_value = max_value * entity_description.scale

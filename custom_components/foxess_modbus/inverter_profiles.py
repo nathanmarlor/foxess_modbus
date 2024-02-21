@@ -1,5 +1,7 @@
 """Defines the different inverter models and connection types"""
+
 import logging
+import re
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -36,7 +38,7 @@ class SpecialRegisterConfig:
         self,
         *,
         invalid_register_ranges: list[tuple[int, int]] | None = None,
-        individual_read_register_ranges: list[tuple[int, int]] | None = None
+        individual_read_register_ranges: list[tuple[int, int]] | None = None,
     ) -> None:
         if invalid_register_ranges is None:
             invalid_register_ranges = []
@@ -66,11 +68,13 @@ class InverterModelConnectionTypeProfile:
     def __init__(
         self,
         inverter_model: str,
+        model_pattern: str,
         connection_type: str,
         register_type: RegisterType,
         special_registers: SpecialRegisterConfig,
     ) -> None:
         self.inverter_model = inverter_model
+        self._model_pattern = model_pattern
         self.connection_type = connection_type
         self.register_type = register_type
         self.special_registers = special_registers
@@ -83,6 +87,17 @@ class InverterModelConnectionTypeProfile:
 
     def is_individual_read(self, address: int) -> bool:
         return any(r[0] <= address <= r[1] for r in self.special_registers.individual_read_register_ranges)
+
+    def inverter_capacity(self, inverter_model: str) -> int:
+        match = re.match(self._model_pattern, inverter_model)
+        if match is None:
+            raise Exception(f"Unable to determine capacity of inverter '{inverter_model}'")
+
+        try:
+            capacity = int(float(match.group(1)) * 1000)
+            return capacity
+        except ValueError as ex:
+            raise Exception(f"Unable parse capacity {match.group(1)} of inverter '{inverter_model}'") from ex
 
     def create_entities(
         self,
@@ -157,6 +172,7 @@ class InverterModelProfile:
 
         self.connection_types[connection_type] = InverterModelConnectionTypeProfile(
             self.model,
+            self.model_pattern,
             connection_type,
             register_type,
             special_registers,
@@ -167,7 +183,7 @@ class InverterModelProfile:
 INVERTER_PROFILES = {
     x.model: x
     for x in [
-        InverterModelProfile(H1, r"^H1-")
+        InverterModelProfile(H1, r"^H1-([\d\.]+)-")
         .add_connection_type(
             AUX,
             RegisterType.INPUT,
@@ -177,7 +193,7 @@ INVERTER_PROFILES = {
             LAN,
             RegisterType.HOLDING,
         ),
-        InverterModelProfile(AC1, r"^AC1-")
+        InverterModelProfile(AC1, r"^AC1-([\d\.]+)")
         .add_connection_type(
             AUX,
             RegisterType.INPUT,
@@ -187,7 +203,7 @@ INVERTER_PROFILES = {
             LAN,
             RegisterType.HOLDING,
         ),
-        InverterModelProfile(AIO_H1, r"^AIO-H1-")
+        InverterModelProfile(AIO_H1, r"^AIO-H1-([\d\.]+)")
         .add_connection_type(
             AUX,
             RegisterType.INPUT,
@@ -199,13 +215,13 @@ INVERTER_PROFILES = {
         ),
         # The KH doesn't have a LAN port. It supports both input and holding over RS485
         # Some models start with KH-, but some are just e.g. KH10.5
-        InverterModelProfile(KH, r"^KH").add_connection_type(
+        InverterModelProfile(KH, r"^KH([\d\.]+)").add_connection_type(
             AUX,
             RegisterType.HOLDING,
             special_registers=KH_REGISTERS,
         ),
         # The H3 seems to use holding registers for everything
-        InverterModelProfile(H3, r"^H3-")
+        InverterModelProfile(H3, r"^H3-([\d\.]+)-")
         .add_connection_type(
             LAN,
             RegisterType.HOLDING,
@@ -216,7 +232,7 @@ INVERTER_PROFILES = {
             RegisterType.HOLDING,
             special_registers=H3_REGISTERS,
         ),
-        InverterModelProfile(AC3, r"^AC3-")
+        InverterModelProfile(AC3, r"^AC3-([\d\.]+)")
         .add_connection_type(
             LAN,
             RegisterType.HOLDING,
@@ -227,7 +243,7 @@ INVERTER_PROFILES = {
             RegisterType.HOLDING,
             special_registers=H3_REGISTERS,
         ),
-        InverterModelProfile(AIO_H3, r"^AIO-H3-")
+        InverterModelProfile(AIO_H3, r"^AIO-H3-([\d\.]+)")
         .add_connection_type(
             AUX,
             RegisterType.HOLDING,
@@ -243,7 +259,7 @@ INVERTER_PROFILES = {
         # Kuara 10.0-3-H: H3-10.0-E
         # Kuara 12.0-3-H: H3-12.0-E
         # I haven't seen any indication that these support a direct LAN connection
-        InverterModelProfile(KUARA_H3, r"^Kuara [^-]+-3-H$").add_connection_type(
+        InverterModelProfile(KUARA_H3, r"^Kuara ([\d\.]+)-3-H$").add_connection_type(
             AUX,
             RegisterType.HOLDING,
             special_registers=H3_REGISTERS,
@@ -251,7 +267,7 @@ INVERTER_PROFILES = {
         # Sonnenkraft:
         # SK-HWR-8: H3-8.0-E
         # (presumably there are other sizes also)
-        InverterModelProfile(SK_HWR, r"^SK-HWR-").add_connection_type(
+        InverterModelProfile(SK_HWR, r"^SK-HWR-([\d\.]+)-").add_connection_type(
             AUX,
             RegisterType.HOLDING,
             special_registers=H3_REGISTERS,
@@ -259,7 +275,7 @@ INVERTER_PROFILES = {
         # STAR
         # STAR-H3-12.0-E: H3-12.0-E
         # (presumably there are other sizes also)
-        InverterModelProfile(STAR_H3, r"^STAR-H3-").add_connection_type(
+        InverterModelProfile(STAR_H3, r"^STAR-H3-([\d\.]+)-").add_connection_type(
             AUX,
             RegisterType.HOLDING,
             special_registers=H3_REGISTERS,
