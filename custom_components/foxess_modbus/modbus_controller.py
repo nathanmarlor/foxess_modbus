@@ -8,6 +8,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from datetime import timedelta
+from enum import Enum
 from typing import Any
 from typing import Iterable
 from typing import Iterator
@@ -24,6 +25,7 @@ from .common.entity_controller import EntityRemoteControlManager
 from .common.entity_controller import ModbusControllerEntity
 from .common.exceptions import AutoconnectFailedError
 from .common.exceptions import UnsupportedInverterError
+from .common.register_poll_type import RegisterPollType
 from .common.register_type import RegisterType
 from .common.unload_controller import UnloadController
 from .const import DOMAIN
@@ -49,9 +51,16 @@ _INVERTER_WRITE_DELAY_SECS = 5
 
 @dataclass
 class RegisterValue:
+    poll_type: RegisterPollType
     read_value: int | None = None
     written_value: int | None = None
     written_at: float | None = None  # From time.monotonic()
+
+
+class ConnectionState(Enum):
+    INITIAL = 0
+    DISCONNECTED = 1
+    CONNECTED = 2
 
 
 @contextmanager
@@ -90,7 +99,8 @@ class ModbusController(EntityController, UnloadController):
         self._max_read = max_read
         self._refresh_lock = threading.Lock()
         self._num_failed_poll_attempts = 0
-        self._is_connected = True  # Start off assuming we can connect
+        # To start, we're neither connected nor disconnected
+        self._connection_state = ConnectionState.INITIAL
         self._current_connection_error: str | None = None
 
         # Setup mixins
@@ -113,7 +123,8 @@ class ModbusController(EntityController, UnloadController):
 
     @property
     def is_connected(self) -> bool:
-        return self._is_connected
+        # Only tell things we're not connected if we're actually disconnected
+        return self._connection_state == ConnectionState.INITIAL or self._connection_state == ConnectionState.CONNECTED
 
     @property
     def current_connection_error(self) -> str | None:
@@ -209,10 +220,10 @@ class ModbusController(EntityController, UnloadController):
             read_values: list[tuple[int, list[int]]] = []
             exception: Exception | None = None
             try:
-                for (
-                    start_address,
-                    num_reads,
-                ) in self._create_read_ranges(self._max_read):
+                read_ranges = self._create_read_ranges(
+                    self._max_read, is_initial_connection=self._connection_state != ConnectionState.CONNECTED
+                )
+                for start_address, num_reads in read_ranges:
                     _LOGGER.debug(
                         "Reading addresses on %s %s: (%s, %s)",
                         self._client,
@@ -278,17 +289,19 @@ class ModbusController(EntityController, UnloadController):
             # become available after a disconnection
             if exception is None:
                 self._num_failed_poll_attempts = 0
-                if not self._is_connected:
+                if self._connection_state == ConnectionState.INITIAL:
+                    self._connection_state = ConnectionState.CONNECTED
+                elif self._connection_state == ConnectionState.DISCONNECTED:
                     _LOGGER.info(
                         "%s %s - poll succeeded: now connected",
                         self._client,
                         self._slave,
                     )
-                    self._is_connected = True
+                    self._connection_state = ConnectionState.CONNECTED
                     self._current_connection_error = None
                     self._log_message("Connection restored")
                     await self._notify_is_connected_changed(is_connected=True)
-            elif self._is_connected:
+            elif self._connection_state != ConnectionState.DISCONNECTED:
                 self._num_failed_poll_attempts += 1
                 if self._num_failed_poll_attempts >= _NUM_FAILED_POLLS_FOR_DISCONNECTION:
                     _LOGGER.warning(
@@ -298,7 +311,7 @@ class ModbusController(EntityController, UnloadController):
                         self._num_failed_poll_attempts,
                         exception,
                     )
-                    self._is_connected = False
+                    self._connection_state = ConnectionState.DISCONNECTED
                     self._current_connection_error = str(exception)
                     self._log_message(f"Connection error: {exception}")
                     await self._notify_is_connected_changed(is_connected=False)
@@ -314,7 +327,7 @@ class ModbusController(EntityController, UnloadController):
             name = "FoxESS - Modbus"
         async_log_entry(self._hass, name=name, message=message, domain=DOMAIN)
 
-    def _create_read_ranges(self, max_read: int) -> Iterable[tuple[int, int]]:
+    def _create_read_ranges(self, max_read: int, is_initial_connection: bool) -> Iterable[tuple[int, int]]:
         """
         Generates a set of read ranges to cover the addresses of all registers on this inverter,
         respecting the maxumum number of registers to read at a time
@@ -338,7 +351,11 @@ class ModbusController(EntityController, UnloadController):
         start_address: int | None = None
         read_size = 0
         # TODO: Do we want to cache the result of this?
-        for address in sorted(self._data.keys()):
+        for address, register_value in sorted(self._data.items()):
+
+            if register_value.poll_type == RegisterPollType.ON_CONNECTION and not is_initial_connection:
+                continue
+
             # This register must be read in a single individual read. Yield any ranges we've found so far,
             # and yield just this register on its own
             if self._connection_type_profile.is_individual_read(address):
@@ -378,7 +395,10 @@ class ModbusController(EntityController, UnloadController):
                 f"{self._connection_type_profile.special_registers.invalid_register_ranges}"
             )
             if address not in self._data:
-                self._data[address] = RegisterValue()
+                self._data[address] = RegisterValue(poll_type=listener.register_poll_type)
+            else:
+                # We could handle this (removing gets harder), but it shouldn't happen in practice anyway
+                assert self._data[address].poll_type == listener.register_poll_type
 
     def remove_modbus_entity(self, listener: ModbusControllerEntity) -> None:
         self._update_listeners.discard(listener)
