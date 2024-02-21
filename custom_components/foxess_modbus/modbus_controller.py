@@ -352,7 +352,6 @@ class ModbusController(EntityController, UnloadController):
         read_size = 0
         # TODO: Do we want to cache the result of this?
         for address, register_value in sorted(self._data.items()):
-
             if register_value.poll_type == RegisterPollType.ON_CONNECTION and not is_initial_connection:
                 continue
 

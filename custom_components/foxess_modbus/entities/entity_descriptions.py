@@ -27,6 +27,7 @@ from .modbus_inverter_state_sensor import ModbusInverterStateSensorDescription
 from .modbus_lambda_sensor import ModbusLambdaSensorDescription
 from .modbus_number import ModbusNumberDescription
 from .modbus_sensor import ModbusSensorDescription
+from .modbus_version_sensor import ModbusVersionSensorDescription
 from .modbus_work_mode_select import ModbusWorkModeSelectDescription
 from .remote_control_description import REMOTE_CONTROL_DESCRIPTION
 from .validation import Min
@@ -42,6 +43,28 @@ BMS_CONNECT_STATE_ADDRESS = [
     ModbusAddressSpec(models=[KH], input=11058, holding=31028),
     ModbusAddressSpec(models=H3_SET, holding=31042),
 ]
+
+
+def _version_entities() -> Iterable[EntityFactory]:
+    # Named so that they sort together
+    yield ModbusVersionSensorDescription(
+        key="master_version",
+        address=[ModbusAddressSpec(models=[*H1_SET, KH, *H3_SET], input=10016, holding=30016)],
+        name="Version: Master",
+        icon="mdi:source-branch",
+    )
+    yield ModbusVersionSensorDescription(
+        key="slave_version",
+        address=[ModbusAddressSpec(models=[*H1_SET, KH, *H3_SET], input=10017, holding=30017)],
+        name="Version: Slave",
+        icon="mdi:source-branch",
+    )
+    yield ModbusVersionSensorDescription(
+        key="manager_version",
+        address=[ModbusAddressSpec(models=[*H1_SET, KH, *H3_SET], input=10018, holding=30018)],
+        name="Version: Manager",
+        icon="mdi:source-branch",
+    )
 
 
 def _pv_entities() -> Iterable[EntityFactory]:
@@ -1630,6 +1653,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
 
 ENTITIES: list[EntityFactory] = list(
     itertools.chain(
+        _version_entities(),
         _pv_entities(),
         _h1_current_voltage_power_entities(),
         _h3_current_voltage_power_entities(),
