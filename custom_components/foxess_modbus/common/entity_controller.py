@@ -5,6 +5,8 @@ from abc import ABC
 from abc import abstractmethod
 from enum import Enum
 
+from .register_poll_type import RegisterPollType
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -15,6 +17,10 @@ class ModbusControllerEntity(ABC):
     @abstractmethod
     def addresses(self) -> list[int]:
         """The addresses that this entity depends on (if any)"""
+
+    @property
+    def register_poll_type(self) -> RegisterPollType:
+        return RegisterPollType.PERIODICALLY
 
     @abstractmethod
     def update_callback(self, changed_addresses: set[int]) -> None:
