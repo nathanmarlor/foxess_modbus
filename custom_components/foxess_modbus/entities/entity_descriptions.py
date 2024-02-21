@@ -499,7 +499,7 @@ def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
     yield ModbusSensorDescription(
         key="feed_in",
         addresses=[
-            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11021], holding=[31014]),
+            ModbusAddressesSpec(models=H1_SET, input=[11021], holding=[31014]),
             ModbusAddressesSpec(models=[KH], input=[11021], holding=[31050, 31049]),
         ],
         name="Feed-in",
@@ -515,7 +515,7 @@ def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
     yield ModbusSensorDescription(
         key="grid_consumption",
         addresses=[
-            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11021], holding=[31014]),
+            ModbusAddressesSpec(models=H1_SET, input=[11021], holding=[31014]),
             ModbusAddressesSpec(models=[KH], input=[11021], holding=[31050, 31049]),
         ],
         name="Grid Consumption",
