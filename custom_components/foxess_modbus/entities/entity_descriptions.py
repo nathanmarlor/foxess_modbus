@@ -2,6 +2,7 @@
 
 import itertools
 from typing import Iterable
+
 from homeassistant.components.number import NumberDeviceClass
 from homeassistant.components.number import NumberMode
 from homeassistant.components.sensor import SensorDeviceClass
@@ -86,7 +87,6 @@ def _pv_entities() -> Iterable[EntityFactory]:
             # This can go negative if no panels are attached
             post_process=lambda x: max(x, 0),
         )
-
 
     def _pv_energy_total(key: str, models: list[EntitySpec], name: str, source_entity: str) -> EntityFactory:
         return ModbusIntegrationSensorDescription(
@@ -279,6 +279,7 @@ def _pv_entities() -> Iterable[EntityFactory]:
         native_unit_of_measurement="kW",
         icon="mdi:solar-power-variant-outline",
     )
+
 
 def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
     yield ModbusSensorDescription(
@@ -542,6 +543,7 @@ def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
         round_to=0.01,
         validate=[Range(-100, 100)],
     )
+
 
 def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
     yield ModbusSensorDescription(
@@ -838,6 +840,7 @@ def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
         round_to=0.01,
         validate=[Range(-100, 100)],
     )
+
 
 def _inverter_entities() -> Iterable[EntityFactory]:
     yield ModbusSensorDescription(
@@ -1463,6 +1466,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         validate=[Range(-1000, 1000)],
     )
 
+
 def _configuration_entities() -> Iterable[EntityFactory]:
     yield ModbusWorkModeSelectDescription(
         key="work_mode",
@@ -1623,12 +1627,15 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         validate=[Range(0, 100)],
     )
 
-ENTITIES: list[EntityFactory] = list(itertools.chain(
-    _pv_entities(),
-    _h1_current_voltage_power_entities(),
-    _h3_current_voltage_power_entities(),
-    _inverter_entities(),
-    _configuration_entities(),
-    (description for x in CHARGE_PERIODS for description in x.entity_descriptions),
-    REMOTE_CONTROL_DESCRIPTION.entity_descriptions
-))
+
+ENTITIES: list[EntityFactory] = list(
+    itertools.chain(
+        _pv_entities(),
+        _h1_current_voltage_power_entities(),
+        _h3_current_voltage_power_entities(),
+        _inverter_entities(),
+        _configuration_entities(),
+        (description for x in CHARGE_PERIODS for description in x.entity_descriptions),
+        REMOTE_CONTROL_DESCRIPTION.entity_descriptions,
+    )
+)
