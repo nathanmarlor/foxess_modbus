@@ -103,7 +103,9 @@ class ModbusController(EntityController, UnloadController):
         # To start, we're neither connected nor disconnected
         self._connection_state = ConnectionState.INITIAL
         self._current_connection_error: str | None = None
-        self._inverter_capacity = connection_type_profile.inverter_capacity(self.inverter_details[INVERTER_MODEL])
+        self._inverter_capacity = connection_type_profile.inverter_model_profile.inverter_capacity(
+            self.inverter_details[INVERTER_MODEL]
+        )
 
         # Setup mixins
         EntityController.__init__(self)
@@ -471,7 +473,9 @@ class ModbusController(EntityController, UnloadController):
             full_model = full_model.strip()
             for model in INVERTER_PROFILES.values():
                 if re.match(model.model_pattern, full_model):
-                    _LOGGER.info("Autodetected inverter as '%s' (%s)", model.model, full_model)
+                    # Make sure that we can parse the capacity out
+                    capacity = model.inverter_capacity(full_model)
+                    _LOGGER.info("Autodetected inverter as '%s' (%s, %sW)", model.model, full_model, capacity)
                     return model.model, full_model
 
             # We've read the model type, but been unable to match it against a supported model

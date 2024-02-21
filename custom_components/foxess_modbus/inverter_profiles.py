@@ -23,6 +23,7 @@ from .const import KH
 from .const import KUARA_H3
 from .const import LAN
 from .const import SK_HWR
+from .const import SOLAVITA_SP
 from .const import STAR_H3
 from .entities.charge_period_descriptions import CHARGE_PERIODS
 from .entities.entity_descriptions import ENTITIES
@@ -67,14 +68,12 @@ class InverterModelConnectionTypeProfile:
 
     def __init__(
         self,
-        inverter_model: str,
-        model_pattern: str,
+        inverter_model_profile: "InverterModelProfile",
         connection_type: str,
         register_type: RegisterType,
         special_registers: SpecialRegisterConfig,
     ) -> None:
-        self.inverter_model = inverter_model
-        self._model_pattern = model_pattern
+        self.inverter_model_profile = inverter_model_profile
         self.connection_type = connection_type
         self.register_type = register_type
         self.special_registers = special_registers
@@ -87,17 +86,6 @@ class InverterModelConnectionTypeProfile:
 
     def is_individual_read(self, address: int) -> bool:
         return any(r[0] <= address <= r[1] for r in self.special_registers.individual_read_register_ranges)
-
-    def inverter_capacity(self, inverter_model: str) -> int:
-        match = re.match(self._model_pattern, inverter_model)
-        if match is None:
-            raise Exception(f"Unable to determine capacity of inverter '{inverter_model}'")
-
-        try:
-            capacity = int(float(match.group(1)) * 1000)
-            return capacity
-        except ValueError as ex:
-            raise Exception(f"Unable parse capacity {match.group(1)} of inverter '{inverter_model}'") from ex
 
     def create_entities(
         self,
@@ -116,7 +104,7 @@ class InverterModelConnectionTypeProfile:
                 entity = entity_factory.create_entity_if_supported(
                     hass,
                     controller,
-                    self.inverter_model,
+                    self.inverter_model_profile.model,
                     self.register_type,
                     entry,
                     inverter_details,
@@ -135,7 +123,7 @@ class InverterModelConnectionTypeProfile:
 
         for charge_period_factory in CHARGE_PERIODS:
             charge_period = charge_period_factory.create_charge_period_config_if_supported(
-                hass, self.inverter_model, self.register_type, inverter_details
+                hass, self.inverter_model_profile.model, self.register_type, inverter_details
             )
             if charge_period is not None:
                 result.append(charge_period)
@@ -146,16 +134,17 @@ class InverterModelConnectionTypeProfile:
         self, hass: HomeAssistant, inverter_detials: dict[str, Any]
     ) -> ModbusRemoteControlAddressConfig | None:
         return REMOTE_CONTROL_DESCRIPTION.create_if_supported(
-            hass, self.inverter_model, self.register_type, inverter_detials
+            hass, self.inverter_model_profile.model, self.register_type, inverter_detials
         )
 
 
 class InverterModelProfile:
     """Describes the capabilities of an inverter model"""
 
-    def __init__(self, model: str, model_pattern: str) -> None:
+    def __init__(self, model: str, model_pattern: str, capacity_map: dict[str, int] | None = None) -> None:
         self.model = model
         self.model_pattern = model_pattern
+        self._capacity_map = capacity_map
         self.connection_types: dict[str, InverterModelConnectionTypeProfile] = {}
 
     def add_connection_type(
@@ -171,13 +160,30 @@ class InverterModelProfile:
             special_registers = SpecialRegisterConfig()
 
         self.connection_types[connection_type] = InverterModelConnectionTypeProfile(
-            self.model,
-            self.model_pattern,
+            self,
             connection_type,
             register_type,
             special_registers,
         )
         return self
+
+    def inverter_capacity(self, inverter_model: str) -> int:
+        match = re.match(self.model_pattern, inverter_model)
+        if match is None:
+            raise Exception(f"Unable to determine capacity of inverter '{inverter_model}'")
+
+        # Some inverters don't put their power into their model, so we have to have a separate map
+        if self._capacity_map is not None:
+            capacity = self._capacity_map.get(match.group(1))
+            if capacity is None:
+                raise Exception(f"Unknown capacity '{match.group(1)}' for inverter model '{inverter_model}'")
+            return capacity
+
+        try:
+            capacity = int(float(match.group(1)) * 1000)
+            return capacity
+        except ValueError as ex:
+            raise Exception(f"Unable parse capacity '{match.group(1)}' of inverter '{inverter_model}'") from ex
 
 
 INVERTER_PROFILES = {
@@ -276,6 +282,22 @@ INVERTER_PROFILES = {
         # STAR-H3-12.0-E: H3-12.0-E
         # (presumably there are other sizes also)
         InverterModelProfile(STAR_H3, r"^STAR-H3-([\d\.]+)-").add_connection_type(
+            AUX,
+            RegisterType.HOLDING,
+            special_registers=H3_REGISTERS,
+        ),
+        # Solavita SP
+        # These have the form 'SP R8KH3', 'R10KH3', 'R12KH3', but the number doesn't map to a power
+        # https://www.svcenergy.com/product/three-phase-solar-power-hybrid-inverter-sih
+        InverterModelProfile(
+            SOLAVITA_SP,
+            r"^R(\d+)KH3",
+            capacity_map={
+                "8": 10400,
+                "10": 13000,
+                "12": 15600,
+            },
+        ).add_connection_type(
             AUX,
             RegisterType.HOLDING,
             special_registers=H3_REGISTERS,

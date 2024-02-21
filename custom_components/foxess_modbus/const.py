@@ -1,4 +1,5 @@
 """Constants for foxess_modbus."""
+
 # Base component constants
 NAME = "foxess_modbus"
 DOMAIN = "foxess_modbus"
@@ -26,7 +27,8 @@ AIO_H3 = "AIO-H3"
 KUARA_H3 = "KUARA-H3"
 SK_HWR = "SK-HWR"
 STAR_H3 = "STAR-H3"
-H3_SET = [H3, AIO_H3, AC3, KUARA_H3, SK_HWR, STAR_H3]
+SOLAVITA_SP = "SOLAVITA-SP"
+H3_SET = [H3, AIO_H3, AC3, KUARA_H3, SK_HWR, STAR_H3, SOLAVITA_SP]
 
 # Platforms
 SENSOR = "sensor"
