@@ -23,6 +23,7 @@ Supported models:
 - FoxESS KH
 - Sonnenkraft SK-HWR
 - Kuara H3
+- Solavita SP
 
 You will need a direct connection to your inverter.
 In most cases, this means buying a modbus to ethernet/USB adapter and wiring this to a port on your inverter.
