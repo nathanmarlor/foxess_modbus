@@ -291,7 +291,7 @@ INVERTER_PROFILES = {
         # https://www.svcenergy.com/product/three-phase-solar-power-hybrid-inverter-sih
         InverterModelProfile(
             SOLAVITA_SP,
-            r"^R(\d+)KH3",
+            r"^SP R(\d+)KH3",
             capacity_map={
                 "8": 10400,
                 "10": 13000,
