@@ -468,7 +468,7 @@ class ModbusController(EntityController, UnloadController):
                 model_chars = []
                 # High byte, then low byte
                 for register in register_values:
-                    model_chars.append((register >> 16) & 0xFF)
+                    model_chars.append((register >> 8) & 0xFF)
                     model_chars.append(register & 0xFF)
             else:
                 model_chars = register_values
