@@ -444,27 +444,38 @@ class ModbusController(EntityController, UnloadController):
             pymodbus_logger.addHandler(spy_handler)
 
             # All known inverter types expose the model number at holding register 30000 onwards.
-            # (The H1 series additional expose some model info in input registers))
+            # (The H1 series additionally expose some model info in input registers))
             # Holding registers 30000-300015 seem to be all used for the model, with registers
             # after the model containing 32 (an ascii space) or 0. Input registers 10008 onwards
             # are for the serial number (and there doesn't seem to be enough space to hold all models!)
             # The H3 starts the model number with a space, annoyingly.
-            result: list[int] = []
+            # Some models (H1-5.0-E-G2 and H3-PRO) pack two ASCII chars into each register.
+            register_values: list[int] = []
             start_address = _MODEL_START_ADDRESS
-            while len(result) < _MODEL_LENGTH:
-                result.extend(
+            while len(register_values) < _MODEL_LENGTH:
+                register_values.extend(
                     await client.read_registers(
                         start_address,
-                        min(adapter_config[MAX_READ], _MODEL_LENGTH - len(result)),
+                        min(adapter_config[MAX_READ], _MODEL_LENGTH - len(register_values)),
                         RegisterType.HOLDING,
                         slave,
                     )
                 )
                 start_address += adapter_config[MAX_READ]
 
+            # If they've packed 2 ASCII chars into each register, unpack them
+            if (register_values[0] & 0xFF00) != 0:
+                model_chars = []
+                # High byte, then low byte
+                for register in register_values:
+                    model_chars.append((register >> 16) & 0xFF)
+                    model_chars.append(register & 0xFF)
+            else:
+                model_chars = register_values
+
             # Stop as soon as we find something non-printable-ASCII
             full_model = ""
-            for char in result:
+            for char in model_chars:
                 if 0x20 <= char < 0x7F:
                     full_model += chr(char)
                 else:
@@ -479,7 +490,7 @@ class ModbusController(EntityController, UnloadController):
                     return model.model, full_model
 
             # We've read the model type, but been unable to match it against a supported model
-            _LOGGER.error("Did not recognise inverter model '%s' (%s)", full_model, result)
+            _LOGGER.error("Did not recognise inverter model '%s' (%s)", full_model, register_values)
             raise UnsupportedInverterError(full_model)
         except Exception as ex:
             _LOGGER.error("Autodetect: failed to connect to (%s)", client, exc_info=True)
