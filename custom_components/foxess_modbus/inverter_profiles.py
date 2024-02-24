@@ -189,7 +189,8 @@ class InverterModelProfile:
 INVERTER_PROFILES = {
     x.model: x
     for x in [
-        InverterModelProfile(H1, r"^H1-([\d\.]+)-")
+        # Can be both e.g. H1-5.0 and H1-5.0-E
+        InverterModelProfile(H1, r"^H1-([\d\.]+)")
         .add_connection_type(
             AUX,
             RegisterType.INPUT,
@@ -227,7 +228,7 @@ INVERTER_PROFILES = {
             special_registers=KH_REGISTERS,
         ),
         # The H3 seems to use holding registers for everything
-        InverterModelProfile(H3, r"^H3-([\d\.]+)-")
+        InverterModelProfile(H3, r"^H3-([\d\.]+)")
         .add_connection_type(
             LAN,
             RegisterType.HOLDING,
@@ -273,7 +274,7 @@ INVERTER_PROFILES = {
         # Sonnenkraft:
         # SK-HWR-8: H3-8.0-E
         # (presumably there are other sizes also)
-        InverterModelProfile(SK_HWR, r"^SK-HWR-([\d\.]+)-").add_connection_type(
+        InverterModelProfile(SK_HWR, r"^SK-HWR-([\d\.]+)").add_connection_type(
             AUX,
             RegisterType.HOLDING,
             special_registers=H3_REGISTERS,
@@ -281,7 +282,7 @@ INVERTER_PROFILES = {
         # STAR
         # STAR-H3-12.0-E: H3-12.0-E
         # (presumably there are other sizes also)
-        InverterModelProfile(STAR_H3, r"^STAR-H3-([\d\.]+)-").add_connection_type(
+        InverterModelProfile(STAR_H3, r"^STAR-H3-([\d\.]+)").add_connection_type(
             AUX,
             RegisterType.HOLDING,
             special_registers=H3_REGISTERS,
