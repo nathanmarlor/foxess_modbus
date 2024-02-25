@@ -20,7 +20,7 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.typing import StateType
 
 from ..common.entity_controller import EntityController
-from ..common.register_type import RegisterType
+from ..common.types import RegisterType
 from ..const import ROUND_SENSOR_VALUES
 from .base_validator import BaseValidator
 from .entity_factory import ENTITY_DESCRIPTION_KWARGS

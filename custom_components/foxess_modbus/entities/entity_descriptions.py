@@ -9,7 +9,7 @@ from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorStateClass
 from homeassistant.const import UnitOfTime
 
-from ..common.register_type import RegisterType
+from ..common.types import RegisterType
 from ..const import H1_SET
 from ..const import H3_SET
 from ..const import KH

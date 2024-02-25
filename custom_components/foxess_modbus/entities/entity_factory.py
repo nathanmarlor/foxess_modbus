@@ -10,7 +10,7 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity import EntityDescription
 
 from ..common.entity_controller import EntityController
-from ..common.register_type import RegisterType
+from ..common.types import RegisterType
 from .inverter_model_spec import InverterModelSpec
 
 # HA introduced a FrozenOrThawed metaclass which is used by EntityDescription.

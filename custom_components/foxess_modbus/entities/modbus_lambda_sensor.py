@@ -1,4 +1,5 @@
 """Entity which gets its value by applying a lambda to a set of other entities"""
+
 import logging
 from dataclasses import dataclass
 from typing import Any
@@ -14,7 +15,7 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.event import async_track_state_change_event
 
 from ..common.entity_controller import EntityController
-from ..common.register_type import RegisterType
+from ..common.types import RegisterType
 from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .entity_factory import EntityFactory
 from .inverter_model_spec import EntitySpec

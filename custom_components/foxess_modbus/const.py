@@ -10,10 +10,6 @@ ISSUE_URL = "https://github.com/nathanmarlor/foxess_modbus/issues"
 # Icons
 ICON = "mdi:format-quote-close"
 
-# Inverter connection types
-AUX = "AUX"
-LAN = "LAN"
-
 # Inverter models. These need to match config[INVERTER_BASE]
 H1 = "H1"
 AC1 = "AC1"

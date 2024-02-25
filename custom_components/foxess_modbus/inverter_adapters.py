@@ -1,12 +1,12 @@
 """Contains information on the various adapters to connect to an inverter"""
+
 from abc import ABC
 from abc import abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
-from .const import AUX
-from .const import LAN
+from .common.types import ConnectionType
 from .const import MAX_READ
 from .const import POLL_RATE
 from .const import RTU_OVER_TCP
@@ -57,7 +57,7 @@ class InverterAdapter:
 
     adapter_id: str  # Internal ID, also used as the translation key in the config flow
     adapter_type: InverterAdapterType
-    connection_type: str  # AUX / LAN
+    connection_type: ConnectionType
     setup_link: str
     config: InverterAdapterConfigProvider
     network_protocols: list[str] | None = None  # If type is NETWORK/DIRECT, whether we support TCP and/or UDP
@@ -75,7 +75,7 @@ class InverterAdapter:
         return InverterAdapter(
             adapter_id=adapter_id,
             adapter_type=InverterAdapterType.DIRECT,
-            connection_type=LAN,
+            connection_type=ConnectionType.LAN,
             setup_link=setup_link,
             network_protocols=[TCP],
             config=config,
@@ -93,7 +93,7 @@ class InverterAdapter:
         return InverterAdapter(
             adapter_id=adapter_id,
             adapter_type=InverterAdapterType.SERIAL,
-            connection_type=AUX,
+            connection_type=ConnectionType.AUX,
             setup_link=setup_link,
             default_host=default_host,
             config=config,
@@ -112,7 +112,7 @@ class InverterAdapter:
         return InverterAdapter(
             adapter_id=adapter_id,
             adapter_type=InverterAdapterType.NETWORK,
-            connection_type=AUX,
+            connection_type=ConnectionType.AUX,
             setup_link=setup_link,
             network_protocols=network_protocols,
             recommended_protocol=recommended_protocol,

@@ -9,19 +9,18 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
 from .common.entity_controller import EntityController
-from .common.register_type import RegisterType
+from .common.types import ConnectionType
+from .common.types import RegisterType
 from .const import AC1
 from .const import AC3
 from .const import AIO_H1
 from .const import AIO_H3
-from .const import AUX
 from .const import H1
 from .const import H3
 from .const import INVERTER_BASE
 from .const import INVERTER_CONN
 from .const import KH
 from .const import KUARA_H3
-from .const import LAN
 from .const import SK_HWR
 from .const import SOLAVITA_SP
 from .const import STAR_H3
@@ -192,72 +191,72 @@ INVERTER_PROFILES = {
         # Can be both e.g. H1-5.0 and H1-5.0-E
         InverterModelProfile(H1, r"^H1-([\d\.]+)")
         .add_connection_type(
-            AUX,
+            ConnectionType.AUX,
             RegisterType.INPUT,
             special_registers=H1_AC1_REGISTERS,
         )
         .add_connection_type(
-            LAN,
+            ConnectionType.LAN,
             RegisterType.HOLDING,
         ),
         InverterModelProfile(AC1, r"^AC1-([\d\.]+)")
         .add_connection_type(
-            AUX,
+            ConnectionType.AUX,
             RegisterType.INPUT,
             special_registers=H1_AC1_REGISTERS,
         )
         .add_connection_type(
-            LAN,
+            ConnectionType.LAN,
             RegisterType.HOLDING,
         ),
         InverterModelProfile(AIO_H1, r"^AIO-H1-([\d\.]+)")
         .add_connection_type(
-            AUX,
+            ConnectionType.AUX,
             RegisterType.INPUT,
             special_registers=H1_AC1_REGISTERS,
         )
         .add_connection_type(
-            LAN,
+            ConnectionType.LAN,
             RegisterType.HOLDING,
         ),
         # The KH doesn't have a LAN port. It supports both input and holding over RS485
         # Some models start with KH-, but some are just e.g. KH10.5
         InverterModelProfile(KH, r"^KH([\d\.]+)").add_connection_type(
-            AUX,
+            ConnectionType.AUX,
             RegisterType.HOLDING,
             special_registers=KH_REGISTERS,
         ),
         # The H3 seems to use holding registers for everything
         InverterModelProfile(H3, r"^H3-([\d\.]+)")
         .add_connection_type(
-            LAN,
+            ConnectionType.LAN,
             RegisterType.HOLDING,
             special_registers=H3_REGISTERS,
         )
         .add_connection_type(
-            AUX,
+            ConnectionType.AUX,
             RegisterType.HOLDING,
             special_registers=H3_REGISTERS,
         ),
         InverterModelProfile(AC3, r"^AC3-([\d\.]+)")
         .add_connection_type(
-            LAN,
+            ConnectionType.LAN,
             RegisterType.HOLDING,
             special_registers=H3_REGISTERS,
         )
         .add_connection_type(
-            AUX,
+            ConnectionType.AUX,
             RegisterType.HOLDING,
             special_registers=H3_REGISTERS,
         ),
         InverterModelProfile(AIO_H3, r"^AIO-H3-([\d\.]+)")
         .add_connection_type(
-            AUX,
+            ConnectionType.AUX,
             RegisterType.HOLDING,
             special_registers=H3_REGISTERS,
         )
         .add_connection_type(
-            LAN,
+            ConnectionType.LAN,
             RegisterType.HOLDING,
             special_registers=H3_REGISTERS,
         ),
@@ -267,7 +266,7 @@ INVERTER_PROFILES = {
         # Kuara 12.0-3-H: H3-12.0-E
         # I haven't seen any indication that these support a direct LAN connection
         InverterModelProfile(KUARA_H3, r"^Kuara ([\d\.]+)-3-H$").add_connection_type(
-            AUX,
+            ConnectionType.AUX,
             RegisterType.HOLDING,
             special_registers=H3_REGISTERS,
         ),
@@ -275,7 +274,7 @@ INVERTER_PROFILES = {
         # SK-HWR-8: H3-8.0-E
         # (presumably there are other sizes also)
         InverterModelProfile(SK_HWR, r"^SK-HWR-([\d\.]+)").add_connection_type(
-            AUX,
+            ConnectionType.AUX,
             RegisterType.HOLDING,
             special_registers=H3_REGISTERS,
         ),
@@ -283,7 +282,7 @@ INVERTER_PROFILES = {
         # STAR-H3-12.0-E: H3-12.0-E
         # (presumably there are other sizes also)
         InverterModelProfile(STAR_H3, r"^STAR-H3-([\d\.]+)").add_connection_type(
-            AUX,
+            ConnectionType.AUX,
             RegisterType.HOLDING,
             special_registers=H3_REGISTERS,
         ),
@@ -299,7 +298,7 @@ INVERTER_PROFILES = {
                 "12": 15600,
             },
         ).add_connection_type(
-            AUX,
+            ConnectionType.AUX,
             RegisterType.HOLDING,
             special_registers=H3_REGISTERS,
         ),

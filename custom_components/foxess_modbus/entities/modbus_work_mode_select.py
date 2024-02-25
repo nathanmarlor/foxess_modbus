@@ -7,7 +7,7 @@ from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
 from ..common.entity_controller import RemoteControlMode
-from ..common.register_type import RegisterType
+from ..common.types import RegisterType
 from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .modbus_select import ModbusSelect
 from .modbus_select import ModbusSelectDescription

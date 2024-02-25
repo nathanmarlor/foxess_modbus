@@ -1,4 +1,5 @@
 """The client used to talk Modbus"""
+
 import asyncio
 import logging
 import os
@@ -21,8 +22,8 @@ from pymodbus.transaction import ModbusRtuFramer
 from pymodbus.transaction import ModbusSocketFramer
 
 from .. import client
-from ..common.register_type import RegisterType
-from ..const import LAN
+from ..common.types import ConnectionType
+from ..common.types import RegisterType
 from ..const import RTU_OVER_TCP
 from ..const import SERIAL
 from ..const import TCP
@@ -74,7 +75,7 @@ class ModbusClient:
         config = {
             **config,
             "framer": client["framer"],
-            "delay_on_connect": 1 if adapter.connection_type == LAN else None,
+            "delay_on_connect": 1 if adapter.connection_type == ConnectionType.LAN else None,
         }
 
         # If our custom PosixPollSerial hack is supported, use that. This uses poll rather than select, which means we
@@ -87,7 +88,7 @@ class ModbusClient:
 
         # Some serial devices need a short delay after polling. Also do this for the inverter, just
         # in case it helps.
-        self._poll_delay = 30 / 1000 if protocol == SERIAL or adapter.connection_type == LAN else 0
+        self._poll_delay = 30 / 1000 if protocol == SERIAL or adapter.connection_type == ConnectionType.LAN else 0
 
         self._client = client["client"](**config)
 

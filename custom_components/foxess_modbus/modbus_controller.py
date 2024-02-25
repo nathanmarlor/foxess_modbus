@@ -25,8 +25,8 @@ from .common.entity_controller import EntityRemoteControlManager
 from .common.entity_controller import ModbusControllerEntity
 from .common.exceptions import AutoconnectFailedError
 from .common.exceptions import UnsupportedInverterError
-from .common.register_poll_type import RegisterPollType
-from .common.register_type import RegisterType
+from .common.types import RegisterPollType
+from .common.types import RegisterType
 from .common.unload_controller import UnloadController
 from .const import DOMAIN
 from .const import FRIENDLY_NAME

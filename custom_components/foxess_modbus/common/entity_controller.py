@@ -5,7 +5,7 @@ from abc import ABC
 from abc import abstractmethod
 from enum import Enum
 
-from .register_poll_type import RegisterPollType
+from .types import RegisterPollType
 
 _LOGGER = logging.getLogger(__name__)
 
