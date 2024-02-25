@@ -10,12 +10,13 @@ from homeassistant.helpers.entity import Entity
 
 from .common.entity_controller import EntityController
 from .common.types import ConnectionType
+from .common.types import Inv
+from .common.types import InverterModel
 from .common.types import RegisterType
 from .const import AC1
 from .const import AC3
 from .const import AIO_H1
 from .const import AIO_H3
-from .const import H1
 from .const import H3
 from .const import INVERTER_BASE
 from .const import INVERTER_CONN
@@ -68,7 +69,8 @@ class InverterModelConnectionTypeProfile:
     def __init__(
         self,
         inverter_model_profile: "InverterModelProfile",
-        connection_type: str,
+        inv: Inv,
+        connection_type: ConnectionType,
         register_type: RegisterType,
         special_registers: SpecialRegisterConfig,
     ) -> None:
@@ -140,15 +142,16 @@ class InverterModelConnectionTypeProfile:
 class InverterModelProfile:
     """Describes the capabilities of an inverter model"""
 
-    def __init__(self, model: str, model_pattern: str, capacity_map: dict[str, int] | None = None) -> None:
+    def __init__(self, model: InverterModel, model_pattern: str, capacity_map: dict[str, int] | None = None) -> None:
         self.model = model
         self.model_pattern = model_pattern
         self._capacity_map = capacity_map
-        self.connection_types: dict[str, InverterModelConnectionTypeProfile] = {}
+        self.connection_types: dict[ConnectionType, InverterModelConnectionTypeProfile] = {}
 
     def add_connection_type(
         self,
-        connection_type: str,
+        inv: Inv,
+        connection_type: ConnectionType,
         register_type: RegisterType,
         special_registers: SpecialRegisterConfig | None = None,
     ) -> "InverterModelProfile":
@@ -160,6 +163,7 @@ class InverterModelProfile:
 
         self.connection_types[connection_type] = InverterModelConnectionTypeProfile(
             self,
+            inv,
             connection_type,
             register_type,
             special_registers,
@@ -189,13 +193,15 @@ INVERTER_PROFILES = {
     x.model: x
     for x in [
         # Can be both e.g. H1-5.0 and H1-5.0-E
-        InverterModelProfile(H1, r"^H1-([\d\.]+)")
+        InverterModelProfile(InverterModel.H1, r"^H1-([\d\.]+)")
         .add_connection_type(
+            Inv.H1_G1,
             ConnectionType.AUX,
             RegisterType.INPUT,
             special_registers=H1_AC1_REGISTERS,
         )
         .add_connection_type(
+            Inv.H1_LAN,
             ConnectionType.LAN,
             RegisterType.HOLDING,
         ),
