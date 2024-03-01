@@ -1,18 +1,16 @@
 """Decodes the fault registers"""
 
 from dataclasses import dataclass
-from typing import Any
 from typing import cast
 
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
+from ..common.types import Inv
 from ..common.types import RegisterType
 from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .entity_factory import EntityFactory
@@ -52,15 +50,12 @@ class ModbusInverterStateSensorDescription(SensorEntityDescription, EntityFactor
 
     def create_entity_if_supported(
         self,
-        _hass: HomeAssistant,
         controller: EntityController,
-        inverter_model: str,
+        inverter_model: Inv,
         register_type: RegisterType,
-        _entry: ConfigEntry,
-        inv_details: dict[str, Any],
     ) -> Entity | None:
         address = self._address_for_inverter_model(self.address, inverter_model, register_type)
-        return ModbusInverterStateSensor(controller, self, address, inv_details) if address is not None else None
+        return ModbusInverterStateSensor(controller, self, address) if address is not None else None
 
 
 class ModbusInverterStateSensor(ModbusEntityMixin, SensorEntity):
@@ -71,7 +66,6 @@ class ModbusInverterStateSensor(ModbusEntityMixin, SensorEntity):
         controller: EntityController,
         entity_description: ModbusInverterStateSensorDescription,
         address: int,
-        inv_details: dict[str, Any],
     ) -> None:
         self._attr_device_class = SensorDeviceClass.ENUM
         self._attr_options = entity_description.states
@@ -79,7 +73,6 @@ class ModbusInverterStateSensor(ModbusEntityMixin, SensorEntity):
         self._controller = controller
         self.entity_description = entity_description
         self._address = address
-        self._inv_details = inv_details
         self.entity_id = self._get_entity_id(Platform.SENSOR)
 
     @property

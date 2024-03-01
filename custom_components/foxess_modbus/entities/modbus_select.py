@@ -3,17 +3,15 @@
 import logging
 from dataclasses import dataclass
 from dataclasses import field
-from typing import Any
 from typing import cast
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.select import SelectEntityDescription
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
+from ..common.types import Inv
 from ..common.types import RegisterType
 from .base_validator import BaseValidator
 from .entity_factory import ENTITY_DESCRIPTION_KWARGS
@@ -38,15 +36,12 @@ class ModbusSelectDescription(SelectEntityDescription, EntityFactory):
 
     def create_entity_if_supported(
         self,
-        _hass: HomeAssistant,
         controller: EntityController,
-        inverter_model: str,
+        inverter_model: Inv,
         register_type: RegisterType,
-        entry: ConfigEntry,
-        inv_details: dict[str, Any],
     ) -> Entity | None:
         address = self._address_for_inverter_model(self.address, inverter_model, register_type)
-        return ModbusSelect(controller, self, address, entry, inv_details) if address is not None else None
+        return ModbusSelect(controller, self, address) if address is not None else None
 
 
 class ModbusSelect(ModbusEntityMixin, SelectEntity):
@@ -57,16 +52,12 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
         controller: EntityController,
         entity_description: ModbusSelectDescription,
         address: int,
-        entry: ConfigEntry,
-        inv_details: dict[str, Any],
     ) -> None:
         """Initialize the sensor."""
 
         self._controller = controller
         self.entity_description = entity_description
         self._address = address
-        self._entry = entry
-        self._inv_details = inv_details
         self.entity_id = self._get_entity_id(Platform.SELECT)
         self._attr_options = list(self.entity_description.options_map.values())
 

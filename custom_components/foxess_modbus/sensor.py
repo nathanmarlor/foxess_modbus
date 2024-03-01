@@ -1,4 +1,5 @@
 """Sensor platform for foxess_modbus."""
+
 import logging
 
 from homeassistant.components.sensor import SensorEntity
@@ -6,8 +7,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+from .const import CONTROLLERS
 from .const import DOMAIN
-from .const import INVERTERS
 from .entities.connection_status_sensor import ConnectionStatusSensor
 from .inverter_profiles import create_entities
 
@@ -17,8 +18,8 @@ _LOGGER = logging.getLogger(__package__)
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_devices: AddEntitiesCallback) -> None:
     """Setup sensor platform."""
 
-    inverters = hass.data[DOMAIN][entry.entry_id][INVERTERS]
+    controllers = hass.data[DOMAIN][entry.entry_id][CONTROLLERS]
 
-    for inverter, controller in inverters:
-        async_add_devices([ConnectionStatusSensor(controller, inverter)])
-        async_add_devices(create_entities(SensorEntity, hass, controller, entry, inverter))
+    for controller in controllers:
+        async_add_devices([ConnectionStatusSensor(controller)])
+        async_add_devices(create_entities(SensorEntity, controller))

@@ -22,6 +22,7 @@ from .client.modbus_client import ModbusClient
 from .const import ADAPTER_ID
 from .const import ADAPTER_WAS_MIGRATED
 from .const import CONFIG_SAVE_TIME
+from .const import CONTROLLERS
 from .const import DOMAIN
 from .const import ENTITY_ID_PREFIX
 from .const import FRIENDLY_NAME
@@ -85,9 +86,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             inverter[POLL_RATE],
             inverter[MAX_READ],
         )
-        inverter_controllers.append((inverter, controller))
+        controllers.append(controller)
 
-    inverter_controllers: list[tuple[dict[str, Any], ModbusController]] = []
+    controllers: list[ModbusController] = []
 
     # {(modbus_type, host): client}
     clients: dict[tuple[str, str], ModbusClient] = {}
@@ -122,12 +123,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             clients[client_key] = client
         create_controller(client, inverter)
 
-    read_registers_service.register(hass, inverter_controllers)
-    write_registers_service.register(hass, inverter_controllers)
-    update_charge_period_service.register(hass, inverter_controllers)
+    read_registers_service.register(hass, controllers)
+    write_registers_service.register(hass, controllers)
+    update_charge_period_service.register(hass, controllers)
     websocket_api.register(hass)
 
-    hass.data[DOMAIN][entry.entry_id][INVERTERS] = inverter_controllers
+    hass.data[DOMAIN][entry.entry_id][CONTROLLERS] = controllers
     hass.data[DOMAIN][entry.entry_id][MODBUS_CLIENTS] = clients.values()
     hass.data[DOMAIN][entry.entry_id]["unload"] = entry.add_update_listener(async_reload_entry)
 

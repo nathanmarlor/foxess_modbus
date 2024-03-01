@@ -1,4 +1,5 @@
 """Defines the services to update charge periods"""
+
 import logging
 from dataclasses import dataclass
 from datetime import time
@@ -105,11 +106,11 @@ _UPDATE_ALL_CHARGE_PERIODS_SCHEMA = vol.Schema(
 )
 
 
-def register(hass: HomeAssistant, inverter_controllers: list[tuple[Any, ModbusController]]) -> None:
+def register(hass: HomeAssistant, controllers: list[ModbusController]) -> None:
     """Register the services with HA"""
 
     async def _update_charge_period_callback(service_data: ServiceCall) -> None:
-        await hass.loop.create_task(_update_charge_period(inverter_controllers, service_data, hass))
+        await hass.loop.create_task(_update_charge_period(controllers, service_data, hass))
 
     hass.services.async_register(
         DOMAIN,
@@ -119,7 +120,7 @@ def register(hass: HomeAssistant, inverter_controllers: list[tuple[Any, ModbusCo
     )
 
     async def _update_all_charge_periods_callback(service_data: ServiceCall) -> None:
-        await hass.loop.create_task(_update_all_charge_periods(inverter_controllers, service_data, hass))
+        await hass.loop.create_task(_update_all_charge_periods(controllers, service_data, hass))
 
     hass.services.async_register(
         DOMAIN,
@@ -140,11 +141,11 @@ class ChargePeriod:
 
 
 async def _update_all_charge_periods(
-    mapping: list[tuple[Any, ModbusController]],
+    controllers: list[ModbusController],
     service_data: ServiceCall,
     hass: HomeAssistant,
 ) -> None:
-    controller = get_controller_from_friendly_name_or_device_id(service_data.data["inverter"], mapping, hass)
+    controller = get_controller_from_friendly_name_or_device_id(service_data.data["inverter"], controllers, hass)
 
     charge_periods: list[ChargePeriod] = []
     for charge_period in service_data.data["charge_periods"]:
@@ -161,11 +162,11 @@ async def _update_all_charge_periods(
 
 
 async def _update_charge_period(
-    mapping: list[tuple[Any, ModbusController]],
+    controllers: list[ModbusController],
     service_data: ServiceCall,
     hass: HomeAssistant,
 ) -> None:
-    controller = get_controller_from_friendly_name_or_device_id(service_data.data["inverter"], mapping, hass)
+    controller = get_controller_from_friendly_name_or_device_id(service_data.data["inverter"], controllers, hass)
     charge_period_index = service_data.data["charge_period"] - 1
 
     if charge_period_index >= len(controller.charge_periods):

@@ -1,15 +1,14 @@
 """Entity Factory"""
+
 from abc import ABC
 from abc import abstractmethod
-from typing import Any
 from typing import Sequence
 
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity import EntityDescription
 
 from ..common.entity_controller import EntityController
+from ..common.types import Inv
 from ..common.types import RegisterType
 from .inverter_model_spec import InverterModelSpec
 
@@ -44,19 +43,16 @@ class EntityFactory(ABC, metaclass=_METACLASS):  # type: ignore
     @abstractmethod
     def create_entity_if_supported(
         self,
-        hass: HomeAssistant,
         controller: EntityController,
-        inverter_model: str,
+        inverter_model: Inv,
         register_type: RegisterType,
-        entry: ConfigEntry,
-        inv_details: dict[str, Any],
     ) -> Entity | None:
         """Instantiate a new entity. The returned type must match self.entity_type"""
 
     def _supports_inverter_model(
         self,
         address_specs: Sequence[InverterModelSpec],
-        inverter_model: str,
+        inverter_model: Inv,
         register_type: RegisterType,
     ) -> bool:
         """Helper to determine whether this entity description supports the given inverter model and register type"""
@@ -73,7 +69,7 @@ class EntityFactory(ABC, metaclass=_METACLASS):  # type: ignore
     def _address_for_inverter_model(
         self,
         address_specs: Sequence[InverterModelSpec],
-        inverter_model: str,
+        inverter_model: Inv,
         register_type: RegisterType,
     ) -> int | None:
         """
@@ -100,7 +96,7 @@ class EntityFactory(ABC, metaclass=_METACLASS):  # type: ignore
     def _addresses_for_inverter_model(
         self,
         address_specs: Sequence[InverterModelSpec],
-        inverter_model: str,
+        inverter_model: Inv,
         register_type: RegisterType,
     ) -> list[int] | None:
         """Helper to fetch the addresses of an entity, on this inverter and connection type combination, given the

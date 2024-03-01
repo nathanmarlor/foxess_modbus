@@ -9,6 +9,7 @@ from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorStateClass
 from homeassistant.const import UnitOfTime
 
+from ..common.types import Inv
 from ..common.types import RegisterType
 from ..const import H1_SET
 from ..const import H3_SET
@@ -39,9 +40,11 @@ from .validation import Range
 
 # TODO: There should be equivalent registers for the H3 somewhere
 BMS_CONNECT_STATE_ADDRESS = [
-    ModbusAddressSpec(models=H1_SET, input=11058, holding=31029),
-    ModbusAddressSpec(models=[KH], input=11058, holding=31028),
-    ModbusAddressSpec(models=H3_SET, holding=31042),
+    ModbusAddressSpec(Inv.H1_LAN, holding=31029),
+    ModbusAddressSpec(Inv.H1_G1, input=11058, holding=31029),
+    ModbusAddressSpec(Inv.KH_PRE119, input=11058),
+    ModbusAddressSpec(Inv.KH_119, holding=31028),
+    ModbusAddressSpec(Inv.H3_SET, holding=31042),
 ]
 
 
@@ -49,19 +52,31 @@ def _version_entities() -> Iterable[EntityFactory]:
     # Named so that they sort together
     yield ModbusVersionSensorDescription(
         key="master_version",
-        address=[ModbusAddressSpec(models=[*H1_SET, KH, *H3_SET], input=10016, holding=30016)],
+        address=[
+            ModbusAddressSpec(Inv.H1_G1, input=10016, holding=30016),
+            ModbusAddressSpec(Inv.KH_PRE119, input=10016),
+            ModbusAddressSpec(Inv.H1_LAN | Inv.KH_119 | Inv.H3_SET, holding=30016),
+        ],
         name="Version: Master",
         icon="mdi:source-branch",
     )
     yield ModbusVersionSensorDescription(
         key="slave_version",
-        address=[ModbusAddressSpec(models=[*H1_SET, KH, *H3_SET], input=10017, holding=30017)],
+        address=[
+            ModbusAddressSpec(Inv.H1_G1, input=10017, holding=30017),
+            ModbusAddressSpec(Inv.KH_PRE119, input=10017),
+            ModbusAddressSpec(Inv.H1_LAN | Inv.KH_119 | Inv.H3_SET, holding=30017),
+        ],
         name="Version: Slave",
         icon="mdi:source-branch",
     )
     yield ModbusVersionSensorDescription(
         key="manager_version",
-        address=[ModbusAddressSpec(models=[*H1_SET, KH, *H3_SET], input=10018, holding=30018)],
+        address=[
+            ModbusAddressSpec(Inv.H1_G1, input=10018, holding=30018),
+            ModbusAddressSpec(Inv.KH_PRE119, input=10018),
+            ModbusAddressSpec(Inv.H1_LAN | Inv.KH_119 | Inv.H3_SET, holding=30018),
+        ],
         name="Version: Manager",
         icon="mdi:source-branch",
     )
@@ -127,24 +142,27 @@ def _pv_entities() -> Iterable[EntityFactory]:
     yield _pv_voltage(
         key="pv1_voltage",
         addresses=[
-            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11000], holding=[31000]),
-            ModbusAddressesSpec(models=H3_SET, holding=[31000]),
+            ModbusAddressesSpec(Inv.H1_G1, input=[11000], holding=[31000]),
+            ModbusAddressesSpec(Inv.KH_PRE119, input=[11000]),
+            ModbusAddressesSpec(Inv.H1_LAN | Inv.KH_119 | Inv.H3_SET, holding=[31000]),
         ],
         name="PV1 Voltage",
     )
     yield _pv_current(
         key="pv1_current",
         addresses=[
-            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11001], holding=[31001]),
-            ModbusAddressesSpec(models=H3_SET, holding=[31001]),
+            ModbusAddressesSpec(Inv.H1_G1, input=[11001], holding=[31001]),
+            ModbusAddressesSpec(Inv.KH_PRE119, input=[11001]),
+            ModbusAddressesSpec(Inv.H1_LAN | Inv.KH_119 | Inv.H3_SET, holding=[31001]),
         ],
         name="PV1 Current",
     )
     yield _pv_power(
         key="pv1_power",
         addresses=[
-            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11002], holding=[31002]),
-            ModbusAddressesSpec(models=H3_SET, holding=[31002]),
+            ModbusAddressesSpec(Inv.H1_G1, input=[11002], holding=[31002]),
+            ModbusAddressesSpec(Inv.KH_PRE119, input=[11002]),
+            ModbusAddressesSpec(Inv.H1_LAN | Inv.KH_119 | Inv.H3_SET, holding=[31002]),
         ],
         name="PV1 Power",
     )
@@ -152,12 +170,8 @@ def _pv_entities() -> Iterable[EntityFactory]:
         key="pv1_energy_total",
         models=[
             EntitySpec(
-                models=[*H1_SET, KH],
+                Inv.ALL,
                 register_types=[RegisterType.INPUT, RegisterType.HOLDING],
-            ),
-            EntitySpec(
-                models=H3_SET,
-                register_types=[RegisterType.HOLDING],
             ),
         ],
         name="PV1 Power Total",
@@ -166,24 +180,27 @@ def _pv_entities() -> Iterable[EntityFactory]:
     yield _pv_voltage(
         key="pv2_voltage",
         addresses=[
-            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11003], holding=[31003]),
-            ModbusAddressesSpec(models=H3_SET, holding=[31003]),
+            ModbusAddressesSpec(Inv.H1_G1, input=[11003], holding=[31003]),
+            ModbusAddressesSpec(Inv.KH_PRE119, input=[11003]),
+            ModbusAddressesSpec(Inv.H1_LAN | Inv.KH_119 | Inv.H3_SET, holding=[31003]),
         ],
         name="PV2 Voltage",
     )
     yield _pv_current(
         key="pv2_current",
         addresses=[
-            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11004], holding=[31004]),
-            ModbusAddressesSpec(models=H3_SET, holding=[31004]),
+            ModbusAddressesSpec(Inv.H1_G1, input=[11004], holding=[31004]),
+            ModbusAddressesSpec(Inv.KH_PRE119, input=[11004]),
+            ModbusAddressesSpec(Inv.H1_LAN | Inv.KH_119 | Inv.H3_SET, holding=[31004]),
         ],
         name="PV2 Current",
     )
     yield _pv_power(
         key="pv2_power",
         addresses=[
-            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11005], holding=[31005]),
-            ModbusAddressesSpec(models=H3_SET, holding=[31005]),
+            ModbusAddressesSpec(Inv.H1_G1, input=[11005], holding=[31005]),
+            ModbusAddressesSpec(Inv.KH_PRE119, input=[11005]),
+            ModbusAddressesSpec(Inv.H1_LAN | Inv.KH_119 | Inv.H3_SET, holding=[31005]),
         ],
         name="PV2 Power",
     )
@@ -191,12 +208,8 @@ def _pv_entities() -> Iterable[EntityFactory]:
         key="pv2_energy_total",
         models=[
             EntitySpec(
-                models=[*H1_SET, KH],
+                Inv.ALL,
                 register_types=[RegisterType.INPUT, RegisterType.HOLDING],
-            ),
-            EntitySpec(
-                models=H3_SET,
-                register_types=[RegisterType.HOLDING],
             ),
         ],
         name="PV2 Power Total",
@@ -205,21 +218,24 @@ def _pv_entities() -> Iterable[EntityFactory]:
     yield _pv_voltage(
         key="pv3_voltage",
         addresses=[
-            ModbusAddressesSpec(models=[KH], input=[11096], holding=[31039]),
+            ModbusAddressesSpec(Inv.KH_PRE119, input=[11096]),
+            ModbusAddressesSpec(Inv.KH_119, holding=[31039]),
         ],
         name="PV3 Voltage",
     )
     yield _pv_current(
         key="pv3_current",
         addresses=[
-            ModbusAddressesSpec(models=[KH], input=[11097], holding=[31040]),
+            ModbusAddressesSpec(Inv.KH_PRE119, input=[11097]),
+            ModbusAddressesSpec(Inv.KH_119, holding=[31040]),
         ],
         name="PV3 Current",
     )
     yield _pv_power(
         key="pv3_power",
         addresses=[
-            ModbusAddressesSpec(models=[KH], input=[11098], holding=[31041]),
+            ModbusAddressesSpec(Inv.KH_PRE119, input=[11098]),
+            ModbusAddressesSpec(Inv.KH_119, holding=[31041]),
         ],
         name="PV3 Power",
     )
@@ -227,7 +243,7 @@ def _pv_entities() -> Iterable[EntityFactory]:
         key="pv3_energy_total",
         models=[
             EntitySpec(
-                models=[KH],
+                Inv.KH_SET,
                 register_types=[RegisterType.INPUT, RegisterType.HOLDING],
             ),
         ],
@@ -237,21 +253,24 @@ def _pv_entities() -> Iterable[EntityFactory]:
     yield _pv_voltage(
         key="pv4_voltage",
         addresses=[
-            ModbusAddressesSpec(models=[KH], input=[11099], holding=[31042]),
+            ModbusAddressesSpec(Inv.KH_PRE119, input=[11099]),
+            ModbusAddressesSpec(Inv.KH_119, holding=[31042]),
         ],
         name="PV4 Voltage",
     )
     yield _pv_current(
         key="pv4_current",
         addresses=[
-            ModbusAddressesSpec(models=[KH], input=[11100], holding=[31043]),
+            ModbusAddressesSpec(Inv.KH_PRE119, input=[11100]),
+            ModbusAddressesSpec(Inv.KH_119, holding=[31043]),
         ],
         name="PV4 Current",
     )
     yield _pv_power(
         key="pv4_power",
         addresses=[
-            ModbusAddressesSpec(models=[KH], input=[11101], holding=[31044]),
+            ModbusAddressesSpec(Inv.KH_PRE119, input=[11101]),
+            ModbusAddressesSpec(Inv.KH_119, holding=[31044]),
         ],
         name="PV4 Power",
     )
@@ -259,7 +278,7 @@ def _pv_entities() -> Iterable[EntityFactory]:
         key="pv4_energy_total",
         models=[
             EntitySpec(
-                models=[KH],
+                Inv.KH_SET,
                 register_types=[RegisterType.INPUT, RegisterType.HOLDING],
             ),
         ],
@@ -270,12 +289,8 @@ def _pv_entities() -> Iterable[EntityFactory]:
         key="pv_power_now",
         models=[
             EntitySpec(
-                models=H1_SET,
+                Inv.ALL & ~Inv.KH_SET,
                 register_types=[RegisterType.INPUT, RegisterType.HOLDING],
-            ),
-            EntitySpec(
-                models=H3_SET,
-                register_types=[RegisterType.HOLDING],
             ),
         ],
         sources=["pv1_power", "pv2_power"],
@@ -290,7 +305,7 @@ def _pv_entities() -> Iterable[EntityFactory]:
         key="pv_power_now",
         models=[
             EntitySpec(
-                models=[KH],
+                Inv.KH_SET,
                 register_types=[RegisterType.INPUT, RegisterType.HOLDING],
             ),
         ],
@@ -308,7 +323,9 @@ def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
     yield ModbusSensorDescription(
         key="invbatvolt",
         addresses=[
-            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11006], holding=[31020]),
+            ModbusAddressesSpec(Inv.H1_G1, input=[11006], holding=[31020]),
+            ModbusAddressesSpec(Inv.KH_PRE119, input=[11006]),
+            ModbusAddressesSpec(Inv.H1_LAN | Inv.KH_119, holding=[31020]),
         ],
         name="Inverter Battery Voltage",
         device_class=SensorDeviceClass.VOLTAGE,
@@ -321,7 +338,9 @@ def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
     yield ModbusSensorDescription(
         key="invbatcurrent",
         addresses=[
-            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11007], holding=[31021]),
+            ModbusAddressesSpec(Inv.H1_G1, input=[11007], holding=[31021]),
+            ModbusAddressesSpec(Inv.KH_PRE119, input=[11007]),
+            ModbusAddressesSpec(Inv.H1_LAN | Inv.KH_119, holding=[31021]),
         ],
         name="Inverter Battery Current",
         device_class=SensorDeviceClass.CURRENT,
@@ -334,8 +353,10 @@ def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
     yield ModbusSensorDescription(
         key="load_power",
         addresses=[
-            ModbusAddressesSpec(models=H1_SET, input=[11023], holding=[31016]),
-            ModbusAddressesSpec(models=[KH], input=[11023], holding=[31054, 31053]),
+            ModbusAddressesSpec(Inv.H1_G1, input=[11007], holding=[31021]),
+            ModbusAddressesSpec(Inv.H1_LAN, holding=[31021]),
+            ModbusAddressesSpec(Inv.KH_PRE119, input=[11023]),
+            ModbusAddressesSpec(Inv.KH_119, holding=[31054, 31053]),
         ],
         name="Load Power",
         device_class=SensorDeviceClass.POWER,
@@ -349,7 +370,9 @@ def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
     yield ModbusSensorDescription(
         key="rvolt",  # Ideally rename to grid_voltage?
         addresses=[
-            ModbusAddressesSpec(models=[*H1_SET, KH], input=[11009], holding=[31006]),
+            ModbusAddressesSpec(Inv.H1_G1, input=[11009], holding=[31006]),
+            ModbusAddressesSpec(Inv.KH_PRE119, input=[11009]),
+            ModbusAddressesSpec(Inv.H1_LAN | Inv.KH_119, holding=[31006]),
         ],
         entity_registry_enabled_default=False,
         name="Grid Voltage",

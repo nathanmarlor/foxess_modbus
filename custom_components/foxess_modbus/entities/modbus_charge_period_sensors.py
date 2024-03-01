@@ -4,7 +4,6 @@ import logging
 from dataclasses import dataclass
 from dataclasses import field
 from datetime import time
-from typing import Any
 from typing import cast
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
@@ -12,15 +11,14 @@ from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.binary_sensor import BinarySensorEntityDescription
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.restore_state import ExtraStoredData
 from homeassistant.helpers.restore_state import RestoredExtraData
 from homeassistant.helpers.restore_state import RestoreEntity
 
 from ..common.entity_controller import EntityController
+from ..common.types import Inv
 from ..common.types import RegisterType
 from .base_validator import BaseValidator
 from .entity_factory import ENTITY_DESCRIPTION_KWARGS
@@ -70,12 +68,9 @@ class ModbusChargePeriodStartEndSensorDescription(SensorEntityDescription, Entit
 
     def create_entity_if_supported(
         self,
-        _hass: HomeAssistant,
         controller: EntityController,
-        inverter_model: str,
+        inverter_model: Inv,
         register_type: RegisterType,
-        entry: ConfigEntry,
-        inv_details: dict[str, Any],
     ) -> Entity | None:
         address = self._address_for_inverter_model(self.address, inverter_model, register_type)
         other_address = self._address_for_inverter_model(self.other_address, inverter_model, register_type)
@@ -89,7 +84,7 @@ class ModbusChargePeriodStartEndSensorDescription(SensorEntityDescription, Entit
         assert (
             other_address is not None
         ), f"{self}: address is {address} but other_address is None for ({inverter_model}, {register_type})"
-        return ModbusChargePeriodStartEndSensor(controller, self, address, other_address, entry, inv_details)
+        return ModbusChargePeriodStartEndSensor(controller, self, address, other_address)
 
 
 class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorEntity):
@@ -101,15 +96,11 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
         entity_description: ModbusChargePeriodStartEndSensorDescription,
         address: int,
         other_address: int,
-        entry: ConfigEntry,
-        inv_details: dict[str, Any],
     ) -> None:
         self._controller = controller
         self.entity_description = entity_description
         self._address = address
         self._other_address = other_address
-        self._entry = entry
-        self._inv_details = inv_details
         self.entity_id = self._get_entity_id(Platform.SENSOR)
         # The last value this sensor had when force-charge was enabled
         self._last_enabled_value: int | None = None
@@ -195,12 +186,9 @@ class ModbusEnableForceChargeSensorDescription(BinarySensorEntityDescription, En
 
     def create_entity_if_supported(
         self,
-        _hass: HomeAssistant,
         controller: EntityController,
-        inverter_model: str,
+        inverter_model: Inv,
         register_type: RegisterType,
-        entry: ConfigEntry,
-        inv_details: dict[str, Any],
     ) -> Entity | None:
         period_start_address = self._address_for_inverter_model(
             self.period_start_address, inverter_model, register_type
@@ -222,8 +210,6 @@ class ModbusEnableForceChargeSensorDescription(BinarySensorEntityDescription, En
             self,
             period_start_address,
             period_end_address,
-            entry,
-            inv_details,
         )
 
 
@@ -236,15 +222,11 @@ class ModbusEnableForceChargeSensor(ModbusEntityMixin, BinarySensorEntity):
         entity_description: ModbusEnableForceChargeSensorDescription,
         period_start_address: int,
         period_end_address: int,
-        entry: ConfigEntry,
-        inv_details: dict[str, Any],
     ) -> None:
         self._controller = controller
         self.entity_description = entity_description
         self._period_start_address = period_start_address
         self._period_end_address = period_end_address
-        self._entry = entry
-        self._inv_details = inv_details
         self.entity_id = self._get_entity_id(Platform.BINARY_SENSOR)
         self._attr_device_class = BinarySensorDeviceClass.POWER
 

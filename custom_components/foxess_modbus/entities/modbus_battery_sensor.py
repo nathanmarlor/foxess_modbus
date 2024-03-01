@@ -6,11 +6,10 @@ register
 from dataclasses import dataclass
 from typing import Any
 
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
+from ..common.types import Inv
 from ..common.types import RegisterType
 from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .inverter_model_spec import ModbusAddressSpec
@@ -26,12 +25,9 @@ class ModbusBatterySensorDescription(ModbusSensorDescription):
 
     def create_entity_if_supported(
         self,
-        _hass: HomeAssistant,
         controller: EntityController,
-        inverter_model: str,
+        inverter_model: Inv,
         register_type: RegisterType,
-        _entry: ConfigEntry,
-        inv_details: dict[str, Any],
     ) -> Entity | None:
         addresses = self._addresses_for_inverter_model(self.addresses, inverter_model, register_type)
         bms_connect_address = (
@@ -45,7 +41,6 @@ class ModbusBatterySensorDescription(ModbusSensorDescription):
                 self,
                 addresses,
                 bms_connect_address,
-                inv_details,
             )
             if addresses is not None
             else None
@@ -62,14 +57,12 @@ class ModbusBatterySensor(ModbusSensor):
         # Array of registers which this value is split over, from lower-order bits to higher-order bits
         addresses: list[int],
         bms_connect_state_address: int | None,
-        inv_details: dict[str, Any],
     ) -> None:
         super().__init__(
             controller=controller,
             entity_description=entity_description,
             addresses=addresses,
             round_to=None,
-            inv_details=inv_details,
         )
 
         self._interested_addresses = addresses.copy()

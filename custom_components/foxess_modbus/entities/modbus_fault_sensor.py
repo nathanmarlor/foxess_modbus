@@ -1,16 +1,14 @@
 """Decodes the fault registers"""
 
 from dataclasses import dataclass
-from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
+from ..common.types import Inv
 from ..common.types import RegisterType
 from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .entity_factory import EntityFactory
@@ -171,15 +169,12 @@ class ModbusFaultSensorDescription(SensorEntityDescription, EntityFactory):
 
     def create_entity_if_supported(
         self,
-        _hass: HomeAssistant,
         controller: EntityController,
-        inverter_model: str,
+        inverter_model: Inv,
         register_type: RegisterType,
-        _entry: ConfigEntry,
-        inv_details: dict[str, Any],
     ) -> Entity | None:
         addresses = self._addresses_for_inverter_model(self.addresses, inverter_model, register_type)
-        return ModbusFaultSensor(controller, self, addresses, inv_details) if addresses is not None else None
+        return ModbusFaultSensor(controller, self, addresses) if addresses is not None else None
 
 
 class ModbusFaultSensor(ModbusEntityMixin, SensorEntity):
@@ -190,14 +185,12 @@ class ModbusFaultSensor(ModbusEntityMixin, SensorEntity):
         controller: EntityController,
         entity_description: ModbusFaultSensorDescription,
         addresses: list[int],
-        inv_details: dict[str, Any],
     ) -> None:
         assert len(addresses) == len(_FAULTS)
 
         self._controller = controller
         self.entity_description = entity_description
         self._addresses = addresses
-        self._inv_details = inv_details
         self.entity_id = self._get_entity_id(Platform.SENSOR)
 
     @property

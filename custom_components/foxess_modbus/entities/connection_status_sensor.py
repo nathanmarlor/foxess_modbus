@@ -1,5 +1,3 @@
-from typing import Any
-
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.const import Platform
@@ -12,14 +10,12 @@ class ConnectionStatusSensor(ModbusEntityMixin, SensorEntity):
     def __init__(
         self,
         controller: EntityController,
-        inv_details: dict[str, Any],
     ) -> None:
         self.entity_description = SensorEntityDescription(  # type: ignore
             key="connection_status",
             name="Connection Status",
         )
         self._controller = controller
-        self._inv_details = inv_details
         self.entity_id = self._get_entity_id(Platform.SENSOR)
 
     @property
