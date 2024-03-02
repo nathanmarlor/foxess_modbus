@@ -75,9 +75,9 @@ class ModbusAddressesSpec(ModbusAddressSpecBase):
 class EntitySpec(InverterModelSpec):
     """InverterModelSpec for entities which don't rely on any addresses at all"""
 
-    def __init__(self, models: Inv, register_types: list[RegisterType]) -> None:
-        self._models = models
+    def __init__(self, register_types: list[RegisterType], models: Inv) -> None:
         self._register_types = register_types
+        self._models = models
 
     def addresses_for_inverter_model(self, inverter_model: Inv, register_type: RegisterType) -> list[int] | None:
         return [] if register_type in self._register_types and inverter_model in self._models else None

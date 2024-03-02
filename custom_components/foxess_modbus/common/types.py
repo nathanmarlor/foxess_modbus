@@ -51,15 +51,15 @@ class Inv(Flag):
     H1_LAN = auto()
     H1_G1 = auto()
 
-    H3 = auto()
-    KUARA_H3 = auto()
-    H3_SET = H3 | KUARA_H3
-
     KH_PRE119 = auto()
     KH_119 = auto()
     KH_SET = KH_PRE119 | KH_119
 
-    ALL = H1_LAN | H1_G1 | H3_SET | KH_SET
+    H3 = auto()
+    KUARA_H3 = auto()
+    H3_SET = H3 | KUARA_H3
+
+    ALL = H1_LAN | H1_G1 | KH_SET | H3_SET
 
 
 class RegisterPollType(IntEnum):
