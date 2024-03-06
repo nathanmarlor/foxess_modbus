@@ -2,13 +2,13 @@
 
 import logging
 from dataclasses import dataclass
-from typing import Any
 from typing import Callable
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
 
+from ..common.entity_controller import EntityController
+from ..common.types import Inv
 from ..common.types import RegisterType
 from .inverter_model_spec import InverterModelSpec
 from .inverter_model_spec import ModbusAddressSpecBase
@@ -55,7 +55,7 @@ class ChargePeriodAddressSpec:
 
     def __init__(
         self,
-        models: list[str],
+        models: Inv,
         input: ModbusChargePeriodAddressConfig | None = None,  # noqa: A002
         holding: ModbusChargePeriodAddressConfig | None = None,
     ) -> None:
@@ -85,7 +85,7 @@ class ChargePeriodAddressSpec:
         addresses: dict[RegisterType, list[int] | None] = {}
         for register_type, address_config in self.register_types.items():
             addresses[register_type] = [accessor(address_config)]
-        return ModbusAddressSpecBase(self.models, addresses)
+        return ModbusAddressSpecBase(addresses, self.models)
 
 
 @dataclass
@@ -163,7 +163,10 @@ class ModbusChargePeriodFactory:
         ]
 
     def create_charge_period_config_if_supported(
-        self, hass: HomeAssistant, inverter_model: str, register_type: RegisterType, inv_details: dict[str, Any]
+        self,
+        controller: EntityController,
+        inverter_model: Inv,
+        register_type: RegisterType,
     ) -> ModbusChargePeriodInfo | None:
         """
         If the inverter model / connection type supports a charge period, fetches a ModbusChargePeriodAddressConfig
@@ -179,13 +182,13 @@ class ModbusChargePeriodFactory:
                         result is None
                     ), f"{self}: multiple charge periods defined for ({inverter_model}, {register_type})"
 
-                    start_id = get_entity_id(hass, Platform.SENSOR, self._period_start_key, inv_details)
-                    end_id = get_entity_id(hass, Platform.SENSOR, self._period_end_key, inv_details)
+                    start_id = get_entity_id(controller, Platform.SENSOR, self._period_start_key)
+                    end_id = get_entity_id(controller, Platform.SENSOR, self._period_end_key)
                     enable_force_charge_id = get_entity_id(
-                        hass, Platform.BINARY_SENSOR, self._enable_force_charge_key, inv_details
+                        controller, Platform.BINARY_SENSOR, self._enable_force_charge_key
                     )
                     enable_charge_from_grid_id = get_entity_id(
-                        hass, Platform.BINARY_SENSOR, self._enable_charge_from_grid_key, inv_details
+                        controller, Platform.BINARY_SENSOR, self._enable_charge_from_grid_key
                     )
                     result = ModbusChargePeriodInfo(
                         addresses=address_config,

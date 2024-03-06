@@ -59,7 +59,7 @@ class EntityFactory(ABC, metaclass=_METACLASS):  # type: ignore
 
         result = False
         for spec in address_specs:
-            addresses = spec.addresses_for_inverter_model(inverter_model, register_type)
+            addresses = spec.addresses_for_inverter_model(register_type=register_type, models=inverter_model)
             if addresses is not None:
                 # We shouldn't get more than one spec which matches
                 assert not result, f"{self}: more than one address spec defined for ({inverter_model}, {register_type})"
@@ -83,7 +83,7 @@ class EntityFactory(ABC, metaclass=_METACLASS):  # type: ignore
 
         result: int | None = None
         for spec in address_specs:
-            addresses = spec.addresses_for_inverter_model(inverter_model, register_type)
+            addresses = spec.addresses_for_inverter_model(register_type=register_type, models=inverter_model)
             if addresses is not None:
                 assert len(addresses) == 1, f"{self}: != 1 addresses defined for ({inverter_model}, {register_type})"
                 # We shouldn't get more than one spec which matches
@@ -108,7 +108,7 @@ class EntityFactory(ABC, metaclass=_METACLASS):  # type: ignore
 
         result: list[int] | None = None
         for spec in address_specs:
-            addresses = spec.addresses_for_inverter_model(inverter_model, register_type)
+            addresses = spec.addresses_for_inverter_model(register_type=register_type, models=inverter_model)
             if addresses is not None:
                 # We shouldn't get more than one spec which matches
                 assert (

@@ -1,8 +1,8 @@
 """Inverter time period configs"""
+
 import logging
 
-from ..const import H1_SET
-from ..const import KH
+from ..common.types import Inv
 from .modbus_charge_period_config import ChargePeriodAddressSpec
 from .modbus_charge_period_config import ModbusChargePeriodAddressConfig
 from .modbus_charge_period_config import ModbusChargePeriodFactory
@@ -13,12 +13,12 @@ CHARGE_PERIODS = [
     ModbusChargePeriodFactory(
         addresses=[
             ChargePeriodAddressSpec(
-                models=[*H1_SET, KH],
                 input=ModbusChargePeriodAddressConfig(
                     period_start_address=41002,
                     period_end_address=41003,
                     enable_charge_from_grid_address=41001,
                 ),
+                models=Inv.H1_G1 | Inv.KH_PRE119,
             )
         ],
         period_start_key="time_period_1_start",
@@ -33,12 +33,12 @@ CHARGE_PERIODS = [
     ModbusChargePeriodFactory(
         addresses=[
             ChargePeriodAddressSpec(
-                models=[*H1_SET, KH],
                 input=ModbusChargePeriodAddressConfig(
                     period_start_address=41005,
                     period_end_address=41006,
                     enable_charge_from_grid_address=41004,
                 ),
+                models=Inv.H1_G1 | Inv.KH_PRE119,
             )
         ],
         period_start_key="time_period_2_start",

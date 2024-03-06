@@ -4,7 +4,6 @@ import logging
 import re
 from typing import Any
 
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
 from .common.entity_controller import EntityController
@@ -99,28 +98,22 @@ class InverterModelConnectionTypeProfile:
 
         return result
 
-    def create_charge_periods(
-        self, hass: HomeAssistant, inverter_details: dict[str, Any]
-    ) -> list[ModbusChargePeriodInfo]:
+    def create_charge_periods(self, controller: EntityController) -> list[ModbusChargePeriodInfo]:
         """Create all of the charge periods which support this inverter/connection combination"""
 
         result = []
 
         for charge_period_factory in CHARGE_PERIODS:
             charge_period = charge_period_factory.create_charge_period_config_if_supported(
-                hass, self.inverter_model_profile.model, self.register_type, inverter_details
+                controller, self._inv, self.register_type
             )
             if charge_period is not None:
                 result.append(charge_period)
 
         return result
 
-    def create_remote_control_config(
-        self, hass: HomeAssistant, inverter_detials: dict[str, Any]
-    ) -> ModbusRemoteControlAddressConfig | None:
-        return REMOTE_CONTROL_DESCRIPTION.create_if_supported(
-            hass, self.inverter_model_profile.model, self.register_type, inverter_detials
-        )
+    def create_remote_control_config(self, controller: EntityController) -> ModbusRemoteControlAddressConfig | None:
+        return REMOTE_CONTROL_DESCRIPTION.create_if_supported(controller, self._inv, self.register_type)
 
 
 class InverterModelProfile:

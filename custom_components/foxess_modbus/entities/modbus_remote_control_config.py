@@ -1,12 +1,12 @@
 from dataclasses import dataclass
-from typing import Any
 from typing import Callable
 
 from homeassistant.components.number import NumberDeviceClass
 from homeassistant.components.number import NumberMode
-from homeassistant.core import HomeAssistant
 
+from ..common.entity_controller import EntityController
 from ..common.entity_controller import EntityRemoteControlManager
+from ..common.types import Inv
 from ..common.types import RegisterType
 from .entity_factory import EntityFactory
 from .inverter_model_spec import EntitySpec
@@ -61,7 +61,7 @@ class RemoteControlAddressSpec:
 
     def __init__(
         self,
-        models: list[str],
+        models: Inv,
         input: ModbusRemoteControlAddressConfig | None = None,  # noqa: A002
         holding: ModbusRemoteControlAddressConfig | None = None,
     ) -> None:
@@ -73,15 +73,19 @@ class RemoteControlAddressSpec:
             self.register_types[RegisterType.HOLDING] = holding
 
     def get_all_models(self) -> EntitySpec:
-        return EntitySpec(self.models, list(self.register_types.keys()))
+        return EntitySpec(register_types=list(self.register_types.keys()), models=self.models)
 
     def get_models_without_work_mode(self) -> EntitySpec:
         """Gets a InverterModelSpec instance to describe the Work Mode address"""
-        return EntitySpec(self.models, [k for k, v in self.register_types.items() if v.work_mode is None])
+        return EntitySpec(
+            register_types=[k for k, v in self.register_types.items() if v.work_mode is None], models=self.models
+        )
 
     def get_models_without_max_soc(self) -> EntitySpec:
         """Gets a InverterModelSpec instance to describe the Max SoC address"""
-        return EntitySpec(self.models, [k for k, v in self.register_types.items() if v.max_soc is None])
+        return EntitySpec(
+            register_types=[k for k, v in self.register_types.items() if v.max_soc is None], models=self.models
+        )
 
     def get_ac_power_limit_down_address(self) -> InverterModelSpec:
         """Gets a InverterModelSpec instance to describe Ac power limit down address"""
@@ -93,7 +97,7 @@ class RemoteControlAddressSpec:
         for register_type, address_config in self.register_types.items():
             address = accessor(address_config)
             addresses[register_type] = [address] if address is not None else None
-        return ModbusAddressSpecBase(self.models, addresses)
+        return ModbusAddressSpecBase(addresses, self.models)
 
 
 @dataclass
@@ -189,7 +193,10 @@ class ModbusRemoteControlFactory:
         ]
 
     def create_if_supported(
-        self, _hass: HomeAssistant, inverter_model: str, register_type: RegisterType, _inv_details: dict[str, Any]
+        self,
+        _controller: EntityController,
+        inverter_model: Inv,
+        register_type: RegisterType,
     ) -> ModbusRemoteControlAddressConfig | None:
         """
         If the inverter model / connection type supports a charge period, fetches a ModbusChargePeriodAddressConfig

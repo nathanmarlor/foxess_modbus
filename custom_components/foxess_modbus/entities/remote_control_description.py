@@ -1,7 +1,4 @@
-from ..const import H1_SET
-from ..const import H3_SET
-from ..const import KH
-from ..const import KUARA_H3
+from ..common.types import Inv
 from .modbus_remote_control_config import ModbusRemoteControlAddressConfig
 from .modbus_remote_control_config import ModbusRemoteControlFactory
 from .modbus_remote_control_config import RemoteControlAddressSpec
@@ -9,7 +6,6 @@ from .modbus_remote_control_config import RemoteControlAddressSpec
 REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
     addresses=[
         RemoteControlAddressSpec(
-            H1_SET,
             input=ModbusRemoteControlAddressConfig(
                 remote_enable=44000,
                 timeout_set=44001,
@@ -22,6 +18,9 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 pwr_limit_bat_up=44012,
                 pv_voltages=[11000, 11003],
             ),
+            models=Inv.H1_G1,
+        ),
+        RemoteControlAddressSpec(
             # H1 LAN doesn't support anything above 44003, or work mode / max soc
             holding=ModbusRemoteControlAddressConfig(
                 remote_enable=44000,
@@ -35,10 +34,10 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 pwr_limit_bat_up=None,
                 pv_voltages=[31000, 31003],
             ),
+            models=Inv.H1_LAN,
         ),
+        # The KH doesn't support anything above 44003
         RemoteControlAddressSpec(
-            # The KH doesn't support anything above 44003
-            [KH],
             input=ModbusRemoteControlAddressConfig(
                 remote_enable=44000,
                 timeout_set=44001,
@@ -51,6 +50,9 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 pwr_limit_bat_up=None,
                 pv_voltages=[11000, 11003, 11096, 11099],
             ),
+            models=Inv.KH_PRE119,
+        ),
+        RemoteControlAddressSpec(
             holding=ModbusRemoteControlAddressConfig(
                 remote_enable=44000,
                 timeout_set=44001,
@@ -63,11 +65,11 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 pwr_limit_bat_up=None,
                 pv_voltages=[31000, 31003, 31039, 31042],
             ),
+            models=Inv.KH_119,
         ),
         RemoteControlAddressSpec(
             # The H3 doesn't support anything above 44005, and the active/reactive power regisers are 2 values
             # The Kuara H3 doesn't support this, see https://github.com/nathanmarlor/foxess_modbus/issues/532
-            list(set(H3_SET) - {KUARA_H3}),
             holding=ModbusRemoteControlAddressConfig(
                 remote_enable=44000,
                 timeout_set=44001,
@@ -80,6 +82,7 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 pwr_limit_bat_up=None,
                 pv_voltages=[31000, 31003],
             ),
+            models=Inv.H3_SET & ~Inv.KUARA_H3,
         ),
     ]
 )
