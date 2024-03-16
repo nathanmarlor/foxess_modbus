@@ -52,6 +52,7 @@ def _version_entities() -> Iterable[EntityFactory]:
             ModbusAddressSpec(input=11016, models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressSpec(holding=30016, models=Inv.H1_G1 | Inv.H1_LAN | Inv.KH_119 | Inv.H3_SET),
         ],
+        is_hex=False,
         name="Version: Master",
         icon="mdi:source-branch",
     )
@@ -61,17 +62,32 @@ def _version_entities() -> Iterable[EntityFactory]:
             ModbusAddressSpec(input=11017, models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressSpec(holding=30017, models=Inv.H1_G1 | Inv.H1_LAN | Inv.KH_119 | Inv.H3_SET),
         ],
+        is_hex=False,
         name="Version: Slave",
         icon="mdi:source-branch",
     )
-    yield ModbusVersionSensorDescription(
-        key="manager_version",
+
+    def _manager_version(address: list[ModbusAddressSpec], is_hex: bool) -> ModbusVersionSensorDescription:
+        return ModbusVersionSensorDescription(
+            key="manager_version",
+            address=address,
+            is_hex=is_hex,
+            name="Version: Manager",
+            icon="mdi:source-branch",
+        )
+
+    yield _manager_version(
         address=[
             ModbusAddressSpec(input=11018, models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressSpec(holding=30018, models=Inv.H1_G1 | Inv.H1_LAN | Inv.KH_119 | Inv.H3_SET),
+            ModbusAddressSpec(holding=30018, models=Inv.H1_G1 | Inv.H1_LAN | Inv.H3_SET),
         ],
-        name="Version: Manager",
-        icon="mdi:source-branch",
+        is_hex=False,
+    )
+    yield _manager_version(
+        address=[
+            ModbusAddressSpec(holding=30018, models=Inv.KH_119),
+        ],
+        is_hex=True,
     )
 
 

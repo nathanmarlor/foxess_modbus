@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import cast
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
@@ -20,6 +21,7 @@ class ModbusVersionSensorDescription(SensorEntityDescription, EntityFactory):
     """Description for ModbusVersionSensor"""
 
     address: list[ModbusAddressSpec]
+    is_hex: bool
 
     @property
     def entity_type(self) -> type[Entity]:
@@ -51,11 +53,18 @@ class ModbusVersionSensor(ModbusEntityMixin, SensorEntity):
 
     @property
     def native_value(self) -> str | None:
+        entity_description = cast(ModbusVersionSensorDescription, self.entity_description)
         value = self._controller.read(self._address, signed=False)
         if value is None:
             return None
 
         # These have the format x.yy
+
+        if entity_description.is_hex:
+            major = value >> 8
+            minor = value & 0xFF
+            return f"{major:X}.{minor:02X}"
+
         major = value // 100
         minor = value % 100
         return f"{major}.{minor:02}"
