@@ -14,8 +14,7 @@ from ..client.modbus_client import ModbusClient
 from ..client.modbus_client import ModbusClientFailedError
 from ..common.exceptions import AutoconnectFailedError
 from ..common.exceptions import UnsupportedInverterError
-from ..const import AUX
-from ..const import LAN
+from ..common.types import ConnectionType
 from ..const import RTU_OVER_TCP
 from ..const import SERIAL
 from ..const import TCP
@@ -167,7 +166,7 @@ class AdapterFlowSegment:
                 }
             )
 
-        if adapter.connection_type == AUX:
+        if adapter.connection_type == ConnectionType.AUX:
             schema_parts[vol.Required("adapter_host")] = cv.string
             schema_parts[
                 vol.Required(
@@ -310,9 +309,11 @@ class AdapterFlowSegment:
                 # Mainly TCP timeouts. The actual exception message dosen't contain anything interesting here
                 raise ValidationFailedError(
                     {
-                        "base": "unable_to_connect_to_inverter"
-                        if adapter.connection_type == LAN
-                        else "unable_to_connect_to_adapter"
+                        "base": (
+                            "unable_to_connect_to_inverter"
+                            if adapter.connection_type == ConnectionType.LAN
+                            else "unable_to_connect_to_adapter"
+                        )
                     },
                     error_placeholders={"error_details": get_details(ex, False)},
                 ) from ex
@@ -321,9 +322,11 @@ class AdapterFlowSegment:
                 # This is for things like invalid frames. The exception message here can be useful
                 raise ValidationFailedError(
                     {
-                        "base": "unable_to_communicate_with_inverter"
-                        if adapter.connection_type == LAN
-                        else "adapter_unable_to_communicate_with_inverter"
+                        "base": (
+                            "unable_to_communicate_with_inverter"
+                            if adapter.connection_type == ConnectionType.LAN
+                            else "adapter_unable_to_communicate_with_inverter"
+                        )
                     },
                     error_placeholders={"error_details": get_details(ex, True)},
                 ) from ex
@@ -339,12 +342,24 @@ class AdapterFlowSegment:
                 details = "; ".join(detail_parts)
 
                 raise ValidationFailedError(
-                    {"base": "other_inverter_error" if adapter.connection_type == LAN else "other_adapter_error"},
+                    {
+                        "base": (
+                            "other_inverter_error"
+                            if adapter.connection_type == ConnectionType.LAN
+                            else "other_adapter_error"
+                        )
+                    },
                     error_placeholders={"error_details": details},
                 ) from ex
 
             raise ValidationFailedError(
-                {"base": "other_inverter_error" if adapter.connection_type == LAN else "other_adapter_error"},
+                {
+                    "base": (
+                        "other_inverter_error"
+                        if adapter.connection_type == ConnectionType.LAN
+                        else "other_adapter_error"
+                    )
+                },
                 error_placeholders={"error_details": get_details(ex, True)},
             ) from ex
 

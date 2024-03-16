@@ -3,20 +3,18 @@
 import logging
 from dataclasses import dataclass
 from dataclasses import field
-from typing import Any
 from typing import Callable
 from typing import cast
 
 from homeassistant.components.number import NumberEntity
 from homeassistant.components.number import NumberEntityDescription
 from homeassistant.components.number import NumberMode
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
-from ..common.register_type import RegisterType
+from ..common.types import Inv
+from ..common.types import RegisterType
 from .base_validator import BaseValidator
 from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .entity_factory import EntityFactory
@@ -42,15 +40,12 @@ class ModbusNumberDescription(NumberEntityDescription, EntityFactory):
 
     def create_entity_if_supported(
         self,
-        _hass: HomeAssistant,
         controller: EntityController,
-        inverter_model: str,
+        inverter_model: Inv,
         register_type: RegisterType,
-        entry: ConfigEntry,
-        inv_details: dict[str, Any],
     ) -> Entity | None:
         address = self._address_for_inverter_model(self.address, inverter_model, register_type)
-        return ModbusNumber(controller, self, address, entry, inv_details) if address is not None else None
+        return ModbusNumber(controller, self, address) if address is not None else None
 
 
 class ModbusNumber(ModbusEntityMixin, NumberEntity):
@@ -61,16 +56,12 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
         controller: EntityController,
         entity_description: ModbusNumberDescription,
         address: int,
-        entry: ConfigEntry,
-        inv_details: dict[str, Any],
     ) -> None:
         """Initialize the sensor."""
 
         self._controller = controller
         self.entity_description = entity_description
         self._address = address
-        self._entry = entry
-        self._inv_details = inv_details
         self.entity_id = self._get_entity_id(Platform.NUMBER)
 
     @property

@@ -10,26 +10,6 @@ ISSUE_URL = "https://github.com/nathanmarlor/foxess_modbus/issues"
 # Icons
 ICON = "mdi:format-quote-close"
 
-# Inverter connection types
-AUX = "AUX"
-LAN = "LAN"
-
-# Inverter models. These need to match config[INVERTER_BASE]
-H1 = "H1"
-AC1 = "AC1"
-AIO_H1 = "AIO-H1"
-H1_SET = [H1, AIO_H1, AC1]
-KH = "KH"
-
-H3 = "H3"
-AC3 = "AC3"
-AIO_H3 = "AIO-H3"
-KUARA_H3 = "KUARA-H3"
-SK_HWR = "SK-HWR"
-STAR_H3 = "STAR-H3"
-SOLAVITA_SP = "SOLAVITA-SP"
-H3_SET = [H3, AIO_H3, AC3, KUARA_H3, SK_HWR, STAR_H3, SOLAVITA_SP]
-
 # Platforms
 SENSOR = "sensor"
 BINARY_SENSOR = "binary_sensor"
@@ -68,6 +48,7 @@ INVERTER_MODEL = "inverter_model"
 INVERTER_BASE = "inverter_base"
 INVERTER_CONN = "inverter_conn"
 INVERTERS = "inverters"
+CONTROLLERS = "controllers"
 MODBUS_CLIENTS = "modbus_clients"
 
 CONFIG_SAVE_TIME = "save_time"

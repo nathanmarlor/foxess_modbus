@@ -1,13 +1,11 @@
 from dataclasses import dataclass
-from typing import Any
 
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
 from ..common.entity_controller import RemoteControlMode
-from ..common.register_type import RegisterType
+from ..common.types import Inv
+from ..common.types import RegisterType
 from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .modbus_select import ModbusSelect
 from .modbus_select import ModbusSelectDescription
@@ -20,15 +18,12 @@ _FORCE_DISCHARGE = "Force Discharge"
 class ModbusWorkModeSelectDescription(ModbusSelectDescription):
     def create_entity_if_supported(
         self,
-        _hass: HomeAssistant,
         controller: EntityController,
-        inverter_model: str,
+        inverter_model: Inv,
         register_type: RegisterType,
-        entry: ConfigEntry,
-        inv_details: dict[str, Any],
     ) -> Entity | None:
         address = self._address_for_inverter_model(self.address, inverter_model, register_type)
-        return ModbusWorkModeSelect(controller, self, address, entry, inv_details) if address is not None else None
+        return ModbusWorkModeSelect(controller, self, address) if address is not None else None
 
 
 class ModbusWorkModeSelect(ModbusSelect):
@@ -37,10 +32,8 @@ class ModbusWorkModeSelect(ModbusSelect):
         controller: EntityController,
         entity_description: ModbusSelectDescription,
         address: int,
-        entry: ConfigEntry,
-        inv_details: dict[str, Any],
     ) -> None:
-        super().__init__(controller, entity_description, address, entry, inv_details)
+        super().__init__(controller, entity_description, address)
 
         self._prev_remote_control_mode: RemoteControlMode | None = None
 

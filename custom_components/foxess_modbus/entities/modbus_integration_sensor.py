@@ -2,21 +2,19 @@
 
 import logging
 from dataclasses import dataclass
-from typing import Any
 from typing import cast
 
 from homeassistant.components.integration.sensor import DEFAULT_ROUND
 from homeassistant.components.integration.sensor import IntegrationSensor
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.const import UnitOfTime
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
-from ..common.register_type import RegisterType
+from ..common.types import Inv
+from ..common.types import RegisterType
 from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .entity_factory import EntityFactory
 from .inverter_model_spec import EntitySpec
@@ -42,24 +40,19 @@ class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory)
 
     def create_entity_if_supported(
         self,
-        hass: HomeAssistant,
         controller: EntityController,
-        inverter_model: str,
+        inverter_model: Inv,
         register_type: RegisterType,
-        entry: ConfigEntry,
-        inv_details: dict[str, Any],
     ) -> Entity | None:
         if not self._supports_inverter_model(self.models, inverter_model, register_type):
             return None
 
-        source_entity = get_entity_id(hass, Platform.SENSOR, self.source_entity, inv_details)
+        source_entity = get_entity_id(controller, Platform.SENSOR, self.source_entity)
 
         # this piggybacks on the existing factory to create IntegrationSensors
         return ModbusIntegrationSensor(
             controller=controller,
             entity_description=self,
-            entry=entry,
-            inv_details=inv_details,
             integration_method=self.integration_method,
             round_digits=self.round_digits,
             source_entity=source_entity,
@@ -74,8 +67,6 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
         self,
         controller: EntityController,
         entity_description: ModbusIntegrationSensorDescription,
-        entry: ConfigEntry,
-        inv_details: dict[str, Any],
         integration_method: str,
         round_digits: int | None,
         source_entity: str,
@@ -87,8 +78,6 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
             round_digits = DEFAULT_ROUND
 
         self._controller = controller
-        self._entry = entry
-        self._inv_details = inv_details
         self.entity_description = entity_description
         self.entity_id = self._get_entity_id(Platform.SENSOR)
 

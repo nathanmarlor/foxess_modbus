@@ -1,4 +1,5 @@
 """Entity which gets its value by applying a lambda to a set of other entities"""
+
 import logging
 from dataclasses import dataclass
 from typing import Any
@@ -6,15 +7,14 @@ from typing import Callable
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import Event
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.event import async_track_state_change_event
 
 from ..common.entity_controller import EntityController
-from ..common.register_type import RegisterType
+from ..common.types import Inv
+from ..common.types import RegisterType
 from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .entity_factory import EntityFactory
 from .inverter_model_spec import EntitySpec
@@ -39,22 +39,18 @@ class ModbusLambdaSensorDescription(SensorEntityDescription, EntityFactory):
 
     def create_entity_if_supported(
         self,
-        hass: HomeAssistant,
         controller: EntityController,
-        inverter_model: str,
+        inverter_model: Inv,
         register_type: RegisterType,
-        _entry: ConfigEntry,
-        inv_details: dict[str, Any],
     ) -> Entity | None:
         if not self._supports_inverter_model(self.models, inverter_model, register_type):
             return None
 
-        source_entity_ids = [get_entity_id(hass, Platform.SENSOR, x, inv_details) for x in self.sources]
+        source_entity_ids = [get_entity_id(controller, Platform.SENSOR, x) for x in self.sources]
 
         return ModbusLambdaSensor(
             controller=controller,
             entity_description=self,
-            inv_details=inv_details,
             source_entity_ids=source_entity_ids,
             method=self.method,
         )
@@ -67,13 +63,11 @@ class ModbusLambdaSensor(ModbusEntityMixin, SensorEntity):
         self,
         controller: EntityController,
         entity_description: ModbusLambdaSensorDescription,
-        inv_details: dict[str, Any],
         source_entity_ids: list[str],
         method: Callable[[list[float]], Any],
     ) -> None:
         self._controller = controller
         self.entity_description = entity_description
-        self._inv_details = inv_details
         self._source_entity_ids = source_entity_ids
         self._method = method
 

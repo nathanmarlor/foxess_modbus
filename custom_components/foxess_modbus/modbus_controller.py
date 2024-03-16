@@ -25,8 +25,8 @@ from .common.entity_controller import EntityRemoteControlManager
 from .common.entity_controller import ModbusControllerEntity
 from .common.exceptions import AutoconnectFailedError
 from .common.exceptions import UnsupportedInverterError
-from .common.register_poll_type import RegisterPollType
-from .common.register_type import RegisterType
+from .common.types import RegisterPollType
+from .common.types import RegisterType
 from .common.unload_controller import UnloadController
 from .const import DOMAIN
 from .const import FRIENDLY_NAME
@@ -93,8 +93,7 @@ class ModbusController(EntityController, UnloadController):
         self._data: dict[int, RegisterValue] = {}
         self._client = client
         self._connection_type_profile = connection_type_profile
-        self.inverter_details = inverter_details
-        self.charge_periods = connection_type_profile.create_charge_periods(hass, inverter_details)
+        self._inverter_details = inverter_details
         self._slave = slave
         self._poll_rate = poll_rate
         self._max_read = max_read
@@ -111,8 +110,9 @@ class ModbusController(EntityController, UnloadController):
         EntityController.__init__(self)
         UnloadController.__init__(self)
 
+        self.charge_periods = connection_type_profile.create_charge_periods(self)
         # This will call back into us to register its addresses
-        remote_control_config = connection_type_profile.create_remote_control_config(hass, inverter_details)
+        remote_control_config = connection_type_profile.create_remote_control_config(self)
         if remote_control_config is not None:
             self._remote_control_manager = RemoteControlManager(self, remote_control_config, poll_rate)
 
@@ -124,6 +124,10 @@ class ModbusController(EntityController, UnloadController):
             )
 
             self._unload_listeners.append(refresh)
+
+    @property
+    def hass(self) -> HomeAssistant:
+        return self._hass
 
     @property
     def is_connected(self) -> bool:
@@ -141,6 +145,10 @@ class ModbusController(EntityController, UnloadController):
     @property
     def inverter_capacity(self) -> int:
         return self._inverter_capacity
+
+    @property
+    def inverter_details(self) -> dict[str, Any]:
+        return self._inverter_details
 
     def read(self, address: int, *, signed: bool) -> int | None:
         # There can be a delay between writing a register, and actually reading that value back (presumably the delay

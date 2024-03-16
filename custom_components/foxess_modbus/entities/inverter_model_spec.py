@@ -3,14 +3,15 @@
 from abc import ABC
 from abc import abstractmethod
 
-from ..common.register_type import RegisterType
+from ..common.types import Inv
+from ..common.types import RegisterType
 
 
 class InverterModelSpec(ABC):
     """Base class for specifications which describe which inverter models an entity supports"""
 
     @abstractmethod
-    def addresses_for_inverter_model(self, inverter_model: str, register_type: RegisterType) -> list[int] | None:
+    def addresses_for_inverter_model(self, *, register_type: RegisterType, models: Inv) -> list[int] | None:
         """
         If this spec supports the given inverter model (e.g. "H1") and register type (e.g. "holding"), return the list
         of addresses which it cares about (or an empty list if it dosen't rely on any addresses).
@@ -27,12 +28,12 @@ class ModbusAddressSpecBase(InverterModelSpec):
     Entities should normally use one of the other types, which are a bit neater to interface with.
     """
 
-    def __init__(self, models: list[str], addresses: dict[RegisterType, list[int] | None]) -> None:
-        self._models = models
+    def __init__(self, addresses: dict[RegisterType, list[int] | None], models: Inv) -> None:
         self._addresses = addresses
+        self._models = models
 
-    def addresses_for_inverter_model(self, inverter_model: str, register_type: RegisterType) -> list[int] | None:
-        if inverter_model not in self._models:
+    def addresses_for_inverter_model(self, *, register_type: RegisterType, models: Inv) -> list[int] | None:
+        if models not in self._models:
             return None
         return self._addresses.get(register_type)
 
@@ -42,16 +43,17 @@ class ModbusAddressSpec(ModbusAddressSpecBase):
 
     def __init__(
         self,
-        models: list[str],
+        *,
         input: int | None = None,  # noqa: A002
         holding: int | None = None,
+        models: Inv,
     ) -> None:
         addresses: dict[RegisterType, list[int] | None] = {}
         if input is not None:
             addresses[RegisterType.INPUT] = [input]
         if holding is not None:
             addresses[RegisterType.HOLDING] = [holding]
-        super().__init__(models, addresses)
+        super().__init__(addresses, models)
 
 
 class ModbusAddressesSpec(ModbusAddressSpecBase):
@@ -59,24 +61,25 @@ class ModbusAddressesSpec(ModbusAddressSpecBase):
 
     def __init__(
         self,
-        models: list[str],
+        *,
         input: list[int] | None = None,  # noqa: A002
         holding: list[int] | None = None,
+        models: Inv,
     ) -> None:
         addresses: dict[RegisterType, list[int] | None] = {}
         if input is not None:
             addresses[RegisterType.INPUT] = input
         if holding is not None:
             addresses[RegisterType.HOLDING] = holding
-        super().__init__(models, addresses)
+        super().__init__(addresses, models)
 
 
 class EntitySpec(InverterModelSpec):
     """InverterModelSpec for entities which don't rely on any addresses at all"""
 
-    def __init__(self, models: list[str], register_types: list[RegisterType]) -> None:
-        self._models = models
+    def __init__(self, register_types: list[RegisterType], models: Inv) -> None:
         self._register_types = register_types
+        self._models = models
 
-    def addresses_for_inverter_model(self, inverter_model: str, register_type: RegisterType) -> list[int] | None:
-        return [] if register_type in self._register_types and inverter_model in self._models else None
+    def addresses_for_inverter_model(self, register_type: RegisterType, models: Inv) -> list[int] | None:
+        return [] if register_type in self._register_types and models in self._models else None

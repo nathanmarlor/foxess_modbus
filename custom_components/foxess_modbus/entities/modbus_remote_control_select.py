@@ -1,18 +1,17 @@
 """This is only used for H1 on LAN, as it doesn't have a work mode"""
+
 import logging
 from dataclasses import dataclass
-from typing import Any
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.select import SelectEntityDescription
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
 from ..common.entity_controller import RemoteControlMode
-from ..common.register_type import RegisterType
+from ..common.types import Inv
+from ..common.types import RegisterType
 from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .entity_factory import EntityFactory
 from .inverter_model_spec import EntitySpec
@@ -31,16 +30,13 @@ class ModbusRemoteControlSelectDescription(SelectEntityDescription, EntityFactor
 
     def create_entity_if_supported(
         self,
-        _hass: HomeAssistant,
         controller: EntityController,
-        inverter_model: str,
+        inverter_model: Inv,
         register_type: RegisterType,
-        entry: ConfigEntry,
-        inv_details: dict[str, Any],
     ) -> Entity | None:
         if not self._supports_inverter_model(self.models, inverter_model, register_type):
             return None
-        return ModbusRemoteControlSelect(controller, self, entry, inv_details)
+        return ModbusRemoteControlSelect(controller, self)
 
 
 class ModbusRemoteControlSelect(ModbusEntityMixin, SelectEntity):
@@ -48,15 +44,11 @@ class ModbusRemoteControlSelect(ModbusEntityMixin, SelectEntity):
         self,
         controller: EntityController,
         entity_description: ModbusRemoteControlSelectDescription,
-        entry: ConfigEntry,
-        inv_details: dict[str, Any],
     ) -> None:
         """Initialize the sensor."""
 
         self._controller = controller
         self.entity_description = entity_description
-        self._entry = entry
-        self._inv_details = inv_details
         self.entity_id = self._get_entity_id(Platform.SELECT)
         self._options_map = {
             RemoteControlMode.DISABLE: "Disable",

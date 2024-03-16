@@ -38,11 +38,11 @@ _WRITE_SCHEMA = vol.Schema(
 )
 
 
-def register(hass: HomeAssistant, inverter_controllers: list[tuple[Any, ModbusController]]) -> None:
+def register(hass: HomeAssistant, controllers: list[ModbusController]) -> None:
     """Register the service with hass"""
 
     async def _callback(service_data: ServiceCall) -> None:
-        await hass.loop.create_task(_write_service(inverter_controllers, service_data, hass))
+        await hass.loop.create_task(_write_service(controllers, service_data, hass))
 
     hass.services.async_register(
         DOMAIN,
@@ -53,7 +53,7 @@ def register(hass: HomeAssistant, inverter_controllers: list[tuple[Any, ModbusCo
 
 
 async def _write_service(
-    mapping: list[tuple[Any, ModbusController]],
+    controllers: list[ModbusController],
     service_data: ServiceCall,
     hass: HomeAssistant,
 ) -> None:
@@ -62,7 +62,7 @@ async def _write_service(
     inverter_id = service_data.data.get("inverter")
     friendly_name = service_data.data.get("friendly_name")
     controller = get_controller_from_friendly_name_or_device_id(
-        inverter_id if inverter_id is not None else friendly_name, mapping, hass
+        inverter_id if inverter_id is not None else friendly_name, controllers, hass
     )
 
     try:

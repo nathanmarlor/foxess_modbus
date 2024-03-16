@@ -4,8 +4,11 @@ import logging
 from abc import ABC
 from abc import abstractmethod
 from enum import Enum
+from typing import Any
 
-from .register_poll_type import RegisterPollType
+from homeassistant.core import HomeAssistant
+
+from .types import RegisterPollType
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -83,6 +86,11 @@ class EntityController(ABC):
 
     @property
     @abstractmethod
+    def hass(self) -> HomeAssistant:
+        """Returns the hass instance"""
+
+    @property
+    @abstractmethod
     def is_connected(self) -> bool:
         """Returns whether the inverter is currently connected"""
 
@@ -100,6 +108,11 @@ class EntityController(ABC):
     @abstractmethod
     def inverter_capacity(self) -> int:
         """Fetches the inverter capacity as parsed from the inverter name, if possible"""
+
+    @property
+    @abstractmethod
+    def inverter_details(self) -> dict[str, Any]:
+        """Fetches the inverter details"""
 
     @abstractmethod
     def register_modbus_entity(self, listener: ModbusControllerEntity) -> None:

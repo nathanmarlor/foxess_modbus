@@ -8,7 +8,6 @@ from typing import Protocol
 from typing import cast
 
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity import Entity
@@ -26,12 +25,12 @@ from .base_validator import BaseValidator
 _LOGGER = logging.getLogger(__name__)
 
 
-def get_entity_id(hass: HomeAssistant, platform: Platform, key: str, inv_details: dict[str, Any]) -> str:
+def get_entity_id(controller: EntityController, platform: Platform, key: str) -> str:
     """Gets the entity ID for the entity with the given platform and key"""
 
-    unique_id = _create_unique_id(key, inv_details)
+    unique_id = _create_unique_id(key, controller.inverter_details)
 
-    er = entity_registry.async_get(hass)
+    er = entity_registry.async_get(controller.hass)
 
     # Type annotation missing in the annotations package maybe?
     entity_id = er.async_get_entity_id(platform, DOMAIN, unique_id)
@@ -39,7 +38,7 @@ def get_entity_id(hass: HomeAssistant, platform: Platform, key: str, inv_details
     if entity_id is None:
         # This can happen when first setting up, as the target entity hasn't been created yet.
         # In this case, assume that it's going to be correctly named
-        entity_id = _add_entity_id_prefix(key, inv_details)
+        entity_id = _add_entity_id_prefix(key, controller.inverter_details)
 
     return entity_id
 
@@ -67,7 +66,6 @@ class ModbusEntityProtocol(Protocol):
     """Protocol which types including ModbusEntityMixin must implement"""
 
     _controller: EntityController
-    _inv_details: dict[str, Any]
 
 
 if TYPE_CHECKING:
@@ -100,14 +98,14 @@ class ModbusEntityMixin(
     @property
     def unique_id(self) -> str:
         """Return a unique ID."""
-        return _create_unique_id(self.entity_description.key, self._inv_details)
+        return _create_unique_id(self.entity_description.key, self._controller.inverter_details)
 
     @property
     def device_info(self) -> DeviceInfo:
         """Return device specific attributes."""
-        friendly_name = self._inv_details[FRIENDLY_NAME]
-        inv_model = self._inv_details[INVERTER_MODEL]
-        conn_type = self._inv_details[INVERTER_CONN]
+        friendly_name = self._controller.inverter_details[FRIENDLY_NAME]
+        inv_model = self._controller.inverter_details[INVERTER_MODEL]
+        conn_type = self._controller.inverter_details[INVERTER_CONN]
         if friendly_name:
             attr_name = f"FoxESS - Modbus ({friendly_name})"
         else:
@@ -124,7 +122,7 @@ class ModbusEntityMixin(
     @property
     def name(self) -> str | None:
         """Return the name of the sensor."""
-        friendly_name = self._inv_details[FRIENDLY_NAME]
+        friendly_name = self._controller.inverter_details[FRIENDLY_NAME]
         if friendly_name:
             return f"{self.entity_description.name} ({friendly_name})"
         return cast(str | None, self.entity_description.name)
@@ -157,7 +155,7 @@ class ModbusEntityMixin(
 
     def _get_entity_id(self, platform: Platform) -> str:
         """Gets the entity ID"""
-        return f"{platform}.{_add_entity_id_prefix(self.entity_description.key, self._inv_details)}"
+        return f"{platform}.{_add_entity_id_prefix(self.entity_description.key, self._controller.inverter_details)}"
 
     def _validate(
         self,
