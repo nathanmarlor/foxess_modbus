@@ -13,7 +13,7 @@ from .utils import get_controller_from_friendly_name_or_device_id
 
 
 def register(hass: HomeAssistant) -> None:
-    hass.components.websocket_api.async_register_command(get_charge_periods)
+    websocket_api.async_register_command(hass, get_charge_periods)
 
 
 @websocket_api.websocket_command(
