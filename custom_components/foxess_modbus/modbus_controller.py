@@ -15,7 +15,9 @@ from typing import Iterator
 
 from homeassistant.components.logbook import async_log_entry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import issue_registry
 from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.issue_registry import IssueSeverity
 from pymodbus.exceptions import ConnectionException
 
 from .client.modbus_client import ModbusClient
@@ -29,6 +31,7 @@ from .common.types import RegisterPollType
 from .common.types import RegisterType
 from .common.unload_controller import UnloadController
 from .const import DOMAIN
+from .const import ENTITY_ID_PREFIX
 from .const import FRIENDLY_NAME
 from .const import INVERTER_MODEL
 from .const import MAX_READ
@@ -316,6 +319,11 @@ class ModbusController(EntityController, UnloadController):
                     self._connection_state = ConnectionState.CONNECTED
                     self._current_connection_error = None
                     self._log_message("Connection restored")
+                    issue_registry.async_delete_issue(
+                        self._hass,
+                        domain=DOMAIN,
+                        issue_id=f"connection_error_{self.inverter_details[ENTITY_ID_PREFIX]}",
+                    )
                     await self._notify_is_connected_changed(is_connected=True)
             elif self._connection_state != ConnectionState.DISCONNECTED:
                 self._num_failed_poll_attempts += 1
@@ -330,6 +338,19 @@ class ModbusController(EntityController, UnloadController):
                     self._connection_state = ConnectionState.DISCONNECTED
                     self._current_connection_error = str(exception)
                     self._log_message(f"Connection error: {exception}")
+                    issue_registry.async_create_issue(
+                        self._hass,
+                        domain=DOMAIN,
+                        issue_id=f"connection_error_{self.inverter_details[ENTITY_ID_PREFIX]}",
+                        is_fixable=False,
+                        is_persistent=False,
+                        severity=IssueSeverity.ERROR,
+                        translation_key="connection_error",
+                        translation_placeholders={
+                            "friendly_name": self.inverter_details[FRIENDLY_NAME],
+                            "error": str(exception),
+                        },
+                    )
                     await self._notify_is_connected_changed(is_connected=False)
 
         if self._remote_control_manager is not None:
