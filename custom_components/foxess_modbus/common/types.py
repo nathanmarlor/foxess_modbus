@@ -56,8 +56,9 @@ class Inv(Flag):
     KH_SET = KH_PRE119 | KH_119
 
     H3 = auto()
+    AIO_H3 = auto()
     KUARA_H3 = auto()
-    H3_SET = H3 | KUARA_H3
+    H3_SET = H3 | AIO_H3 | KUARA_H3
 
     ALL = H1_LAN | H1_G1 | KH_SET | H3_SET
 

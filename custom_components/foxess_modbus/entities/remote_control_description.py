@@ -82,7 +82,7 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 pwr_limit_bat_up=None,
                 pv_voltages=[31000, 31003],
             ),
-            models=Inv.H3_SET & ~Inv.KUARA_H3,
+            models=Inv.H3_SET & ~Inv.KUARA_H3 & ~Inv.AIO_H3,
         ),
     ]
 )

@@ -243,7 +243,7 @@ INVERTER_PROFILES = {
         ),
         InverterModelProfile(InverterModel.AIO_H3, r"^AIO-H3-([\d\.]+)")
         .add_connection_type(
-            Inv.H3,
+            Inv.AIO_H3,
             ConnectionType.AUX,
             RegisterType.HOLDING,
             special_registers=H3_REGISTERS,
