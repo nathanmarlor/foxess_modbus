@@ -189,5 +189,11 @@
         "network_other": "Other"
       }
     }
+  },
+  "issues": {
+    "connection_error": {
+      "title": "Connection Error",
+      "description": "Error connecting to inverter (friendly name: '{friendly_name}'). {error}"
+    }
   }
 }
