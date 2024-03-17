@@ -46,25 +46,50 @@ BMS_CONNECT_STATE_ADDRESS = [
 
 def _version_entities() -> Iterable[EntityFactory]:
     # Named so that they sort together
-    yield ModbusVersionSensorDescription(
-        key="master_version",
+    def _master_version(address: list[ModbusAddressSpec], is_hex: bool) -> ModbusVersionSensorDescription:
+        return ModbusVersionSensorDescription(
+            key="master_version",
+            address=address,
+            is_hex=is_hex,
+            name="Version: Master",
+            icon="mdi:source-branch",
+        )
+
+    yield _master_version(
         address=[
             ModbusAddressSpec(input=11016, models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressSpec(holding=30016, models=Inv.H1_G1 | Inv.H1_LAN | Inv.KH_119 | Inv.H3_SET),
+            ModbusAddressSpec(holding=30016, models=Inv.H1_G1 | Inv.H1_LAN | Inv.H3_SET),
         ],
         is_hex=False,
-        name="Version: Master",
-        icon="mdi:source-branch",
     )
-    yield ModbusVersionSensorDescription(
-        key="slave_version",
+    yield _master_version(
+        address=[
+            ModbusAddressSpec(holding=30016, models=Inv.KH_119),
+        ],
+        is_hex=True,
+    )
+
+    def _slave_version(address: list[ModbusAddressSpec], is_hex: bool) -> ModbusVersionSensorDescription:
+        return ModbusVersionSensorDescription(
+            key="slave_version",
+            address=address,
+            is_hex=is_hex,
+            name="Version: Slave",
+            icon="mdi:source-branch",
+        )
+
+    yield _slave_version(
         address=[
             ModbusAddressSpec(input=11017, models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressSpec(holding=30017, models=Inv.H1_G1 | Inv.H1_LAN | Inv.KH_119 | Inv.H3_SET),
+            ModbusAddressSpec(holding=30017, models=Inv.H1_G1 | Inv.H1_LAN | Inv.H3_SET),
         ],
         is_hex=False,
-        name="Version: Slave",
-        icon="mdi:source-branch",
+    )
+    yield _slave_version(
+        address=[
+            ModbusAddressSpec(holding=30017, models=Inv.KH_119),
+        ],
+        is_hex=True,
     )
 
     def _manager_version(address: list[ModbusAddressSpec], is_hex: bool) -> ModbusVersionSensorDescription:
@@ -79,13 +104,13 @@ def _version_entities() -> Iterable[EntityFactory]:
     yield _manager_version(
         address=[
             ModbusAddressSpec(input=11018, models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressSpec(holding=30018, models=Inv.H1_G1 | Inv.H1_LAN | Inv.H3_SET),
+            ModbusAddressSpec(holding=30018, models=Inv.H1_G1 | Inv.H1_LAN),
         ],
         is_hex=False,
     )
     yield _manager_version(
         address=[
-            ModbusAddressSpec(holding=30018, models=Inv.KH_119),
+            ModbusAddressSpec(holding=30018, models=Inv.KH_119 | Inv.H3_SET),
         ],
         is_hex=True,
     )
