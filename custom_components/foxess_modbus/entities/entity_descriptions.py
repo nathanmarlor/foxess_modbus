@@ -379,8 +379,7 @@ def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
     yield ModbusSensorDescription(
         key="load_power",
         addresses=[
-            ModbusAddressesSpec(input=[11023], models=Inv.H1_G1),
-            ModbusAddressesSpec(input=[11023], models=Inv.KH_PRE119),
+            ModbusAddressesSpec(input=[11023], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31016], models=Inv.H1_G1 | Inv.H1_LAN),
             ModbusAddressesSpec(holding=[31054, 31053], models=Inv.KH_119),
         ],
