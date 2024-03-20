@@ -985,7 +985,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[11008], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31022], models=Inv.H1_G1 | Inv.H1_LAN | Inv.KH_119),
-            ModbusAddressesSpec(holding=[31039], models=Inv.H3_SET),
+            ModbusAddressesSpec(holding=[31036], models=Inv.H3_SET),
         ]
     )
 
