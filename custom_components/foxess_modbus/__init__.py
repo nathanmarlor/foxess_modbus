@@ -18,10 +18,11 @@ from homeassistant.helpers.typing import UNDEFINED
 from slugify import slugify
 
 from .client.modbus_client import ModbusClient
+from .common.types import HassData
+from .common.types import HassDataEntry
 from .const import ADAPTER_ID
 from .const import ADAPTER_WAS_MIGRATED
 from .const import CONFIG_SAVE_TIME
-from .const import CONTROLLERS
 from .const import DOMAIN
 from .const import ENTITY_ID_PREFIX
 from .const import FRIENDLY_NAME
@@ -29,7 +30,6 @@ from .const import HOST
 from .const import INVERTER_CONN
 from .const import INVERTERS
 from .const import MAX_READ
-from .const import MODBUS_CLIENTS
 from .const import MODBUS_SLAVE
 from .const import MODBUS_TYPE
 from .const import PLATFORMS
@@ -64,7 +64,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry_options = copy.deepcopy(dict(entry.options))
 
     # Create this before throwing ConfigEntryAuthFailed, so the sensors, etc, platforms don't fail
-    hass.data.setdefault(DOMAIN, {}).setdefault(entry.entry_id, {})[INVERTERS] = []
+    hass.data.setdefault(DOMAIN, HassData()).setdefault(
+        entry.entry_id, HassDataEntry(controllers=[], modbus_clients=[])
+    )
 
     for platform in PLATFORMS:
         if entry_options.get(platform, True):
@@ -122,9 +124,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     update_charge_period_service.register(hass, controllers)
     websocket_api.register(hass)
 
-    hass.data[DOMAIN][entry.entry_id][CONTROLLERS] = controllers
-    hass.data[DOMAIN][entry.entry_id][MODBUS_CLIENTS] = clients.values()
-    hass.data[DOMAIN][entry.entry_id]["unload"] = entry.add_update_listener(async_reload_entry)
+    hass_data: HassData = hass.data[DOMAIN]
+    hass_data[entry.entry_id]["controllers"] = controllers
+    hass_data[entry.entry_id]["modbus_clients"] = list(clients.values())
+    hass_data[entry.entry_id]["unload"] = entry.add_update_listener(async_reload_entry)
 
     return True
 
@@ -249,14 +252,16 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     if unloaded:
-        controllers = hass.data[DOMAIN][entry.entry_id][INVERTERS]
-        for _, controller in controllers:
+        hass_data: HassData = hass.data[DOMAIN]
+        controllers = hass_data[entry.entry_id]["controllers"]
+        for controller in controllers:
             controller.unload()
-        clients = hass.data[DOMAIN][entry.entry_id][MODBUS_CLIENTS]
+
+        clients = hass_data[entry.entry_id]["modbus_clients"]
         await asyncio.gather(*[client.close() for client in clients])
 
-        hass.data[DOMAIN][entry.entry_id]["unload"]()
-        hass.data[DOMAIN].pop(entry.entry_id)
+        hass_data[entry.entry_id]["unload"]()
+        hass_data.pop(entry.entry_id)
 
     return unloaded
 

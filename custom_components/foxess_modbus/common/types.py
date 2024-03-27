@@ -5,6 +5,15 @@ from enum import Flag
 from enum import IntEnum
 from enum import StrEnum
 from enum import auto
+from typing import TYPE_CHECKING
+from typing import Callable
+from typing import NotRequired
+from typing import TypeAlias
+from typing import TypedDict
+
+if TYPE_CHECKING:
+    from ..client.modbus_client import ModbusClient
+    from ..modbus_controller import ModbusController
 
 
 class RegisterType(Enum):
@@ -69,3 +78,12 @@ class RegisterPollType(IntEnum):
     # These must be ordered from least frequent to most frequent
     ON_CONNECTION = 0
     PERIODICALLY = 1
+
+
+class HassDataEntry(TypedDict):
+    controllers: list["ModbusController"]
+    modbus_clients: list["ModbusClient"]
+    unload: NotRequired[Callable[[], None]]
+
+
+HassData: TypeAlias = dict[str, HassDataEntry]
