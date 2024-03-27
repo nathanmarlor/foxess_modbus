@@ -1,0 +1,8 @@
+{
+  "services": {
+    "read_registers": "mdi:export",
+    "write_registers": "mdi:import",
+    "update_charge_period": "mdi:timer-outline",
+    "update_all_charge_periods": "mdi:timer-outline"
+  }
+}
