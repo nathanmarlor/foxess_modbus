@@ -18,7 +18,7 @@ CHARGE_PERIODS = [
                     period_end_address=41003,
                     enable_charge_from_grid_address=41001,
                 ),
-                models=Inv.H1_G1 | Inv.KH_PRE119,
+                models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_PRE119,
             )
         ],
         period_start_key="time_period_1_start",
@@ -38,7 +38,7 @@ CHARGE_PERIODS = [
                     period_end_address=41006,
                     enable_charge_from_grid_address=41004,
                 ),
-                models=Inv.H1_G1 | Inv.KH_PRE119,
+                models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_PRE119,
             )
         ],
         period_start_key="time_period_2_start",
