@@ -1139,8 +1139,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         key="battery_temp",
         addresses=[
             ModbusAddressesSpec(input=[11038], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(holding=[31023], models=Inv.H1_G1 | Inv.H1_LAN | Inv.KH_119),
-            ModbusAddressesSpec(holding=[37611], models=Inv.H1_G2),
+            ModbusAddressesSpec(holding=[31023], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2 | Inv.KH_119),
             ModbusAddressesSpec(holding=[31037], models=Inv.H3_SET),
         ],
         # TODO: There might be an equivalent register for the H3
