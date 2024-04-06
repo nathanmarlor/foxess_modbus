@@ -271,7 +271,6 @@ def _pv_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[11096], models=Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31039], models=Inv.KH_119),
-            ModbusAddressesSpec(holding=[39074], models=Inv.H1_G2),
         ],
         name="PV3 Voltage",
     )
@@ -280,7 +279,6 @@ def _pv_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[11097], models=Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31040], models=Inv.KH_119),
-            ModbusAddressesSpec(holding=[39075], models=Inv.H1_G2),
         ],
         name="PV3 Current",
     )
@@ -289,7 +287,6 @@ def _pv_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[11098], models=Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31041], models=Inv.KH_119),
-            ModbusAddressesSpec(holding=[39284, 39283], models=Inv.H1_G2),
         ],
         name="PV3 Power",
     )
@@ -309,7 +306,6 @@ def _pv_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[11099], models=Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31042], models=Inv.KH_119),
-            ModbusAddressesSpec(holding=[39076], models=Inv.H1_G2),
         ],
         name="PV4 Voltage",
     )
@@ -318,7 +314,6 @@ def _pv_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[11100], models=Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31043], models=Inv.KH_119),
-            ModbusAddressesSpec(holding=[39077], models=Inv.H1_G2),
         ],
         name="PV4 Current",
     )
@@ -327,7 +322,6 @@ def _pv_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[11101], models=Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31044], models=Inv.KH_119),
-            ModbusAddressesSpec(holding=[39286, 39285], models=Inv.H1_G2),
         ],
         name="PV4 Power",
     )

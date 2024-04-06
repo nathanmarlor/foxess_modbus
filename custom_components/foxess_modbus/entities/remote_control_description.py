@@ -47,7 +47,7 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 invbatpower=31022,
                 battery_soc=31024,
                 pwr_limit_bat_up=None,
-                pv_voltages=[39070, 39072, 39074, 39076],
+                pv_voltages=[39070, 39072],
             ),
             models=Inv.H1_G2,
         ),
