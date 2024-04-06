@@ -266,7 +266,7 @@ def _pv_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[11097], models=Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31040], models=Inv.KH_119),
-            ModbusAddressesSpec(holding=[39073], models=Inv.H1_G2),
+            ModbusAddressesSpec(holding=[39075], models=Inv.H1_G2),
         ],
         name="PV3 Current",
     )
