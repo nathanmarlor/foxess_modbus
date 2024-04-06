@@ -35,8 +35,9 @@ class InverterModel(StrEnum):
     as config[INVERTER_BASE].
     """
 
-    H1 = "H1"
-    
+    H1_G1 = "H1"  # Can't change the value, as it's set in people's configs
+    H1_G2 = "H1_G2"
+
     AC1 = "AC1"
     AIO_H1 = "AIO-H1"
 

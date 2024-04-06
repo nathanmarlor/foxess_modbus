@@ -54,6 +54,7 @@ H1_G2_REGISTERS = SpecialRegisterConfig(
     individual_read_register_ranges=[(41000, 41999)],
 )
 
+
 class InverterModelConnectionTypeProfile:
     """Describes the capabilities of an inverter when connected to over a particular interface"""
 
@@ -172,8 +173,15 @@ class InverterModelProfile:
 INVERTER_PROFILES = {
     x.model: x
     for x in [
+        # E.g. H1-5.0-E-G2. Has to appear before H1_G1.
+        InverterModelProfile(InverterModel.H1_G2, r"^H1-([\d\.]+)-E-G2").add_connection_type(
+            Inv.H1_G2,
+            ConnectionType.AUX,
+            RegisterType.HOLDING,
+            special_registers=H1_G2_REGISTERS,
+        ),
         # Can be both e.g. H1-5.0 and H1-5.0-E, but not H1-5.0-E-G2
-        InverterModelProfile(InverterModel.H1, r"^H1-([\d\.]+)(-E)*(?<!-G2)$")
+        InverterModelProfile(InverterModel.H1_G1, r"^H1-([\d\.]+)")
         .add_connection_type(
             Inv.H1_G1,
             ConnectionType.AUX,
@@ -184,14 +192,6 @@ INVERTER_PROFILES = {
             Inv.H1_LAN,
             ConnectionType.LAN,
             RegisterType.HOLDING,
-        ),
-        # H1 G2 models have a different register map}
-        InverterModelProfile(InverterModel.H1, r"^H1-([\d\.]+)-E-G2")
-        .add_connection_type(
-            Inv.H1_G2,
-            ConnectionType.AUX,
-            RegisterType.HOLDING,
-            special_registers=H1_G2_REGISTERS,
         ),
         InverterModelProfile(InverterModel.AC1, r"^AC1-([\d\.]+)")
         .add_connection_type(
@@ -320,7 +320,7 @@ def create_entities(
     controller: EntityController,
 ) -> list[Entity]:
     """Create all of the entities which support the inverter described by the given configuration object"""
-    
+
     return inverter_connection_type_profile_from_config(controller.inverter_details).create_entities(
         entity_type, controller
     )
