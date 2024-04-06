@@ -133,7 +133,7 @@ def _pv_entities() -> Iterable[EntityFactory]:
             # This can go negative if no panels are attached
         )
 
-    def _pv_current(key: str, addresses: list[ModbusAddressesSpec], name: str) -> EntityFactory:
+    def _pv_current(key: str, addresses: list[ModbusAddressesSpec], name: str, scale: float = 0.1) -> EntityFactory:
         return ModbusSensorDescription(
             key=key,
             addresses=addresses,
@@ -141,7 +141,7 @@ def _pv_entities() -> Iterable[EntityFactory]:
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
             native_unit_of_measurement="A",
-            scale=0.1,
+            scale=scale,
             round_to=1,
             # This can a small amount negative
             post_process=lambda x: max(x, 0),
@@ -190,9 +190,16 @@ def _pv_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[11001], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31001], models=Inv.H1_G1 | Inv.H1_LAN | Inv.KH_119 | Inv.H3_SET),
+        ],
+        name="PV1 Current",
+    )
+    yield _pv_current(
+        key="pv1_current",
+        addresses=[
             ModbusAddressesSpec(holding=[39071], models=Inv.H1_G2),
         ],
         name="PV1 Current",
+        scale=0.01,
     )
     yield _pv_power(
         key="pv1_power",
@@ -228,9 +235,16 @@ def _pv_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[11004], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31004], models=Inv.H1_G1 | Inv.H1_LAN | Inv.KH_119 | Inv.H3_SET),
+        ],
+        name="PV2 Current",
+    )
+    yield _pv_current(
+        key="pv2_current",
+        addresses=[
             ModbusAddressesSpec(holding=[39073], models=Inv.H1_G2),
         ],
         name="PV2 Current",
+        scale=0.01,
     )
     yield _pv_power(
         key="pv2_power",
