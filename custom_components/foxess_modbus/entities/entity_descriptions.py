@@ -1073,7 +1073,6 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[11034], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31034], models=Inv.H3_SET),
-            ModbusAddressesSpec(holding=[31020], models=Inv.H1_G2),
         ],
         name="Battery Voltage",
         device_class=SensorDeviceClass.VOLTAGE,
@@ -1088,7 +1087,6 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[11035], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31035], models=Inv.H3_SET),
-            ModbusAddressesSpec(holding=[31021], models=Inv.H1_G2),
         ],
         name="Battery Current",
         device_class=SensorDeviceClass.CURRENT,
