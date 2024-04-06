@@ -21,6 +21,7 @@ from .modbus_fault_sensor import ModbusFaultSensorDescription
 from .modbus_integration_sensor import ModbusIntegrationSensorDescription
 from .modbus_inverter_state_sensor import H1_INVERTER_STATES
 from .modbus_inverter_state_sensor import KH_INVERTER_STATES
+from .modbus_inverter_state_sensor import ModbusG2InverterStateSensorDescription
 from .modbus_inverter_state_sensor import ModbusInverterStateSensorDescription
 from .modbus_lambda_sensor import ModbusLambdaSensorDescription
 from .modbus_number import ModbusNumberDescription
@@ -1283,7 +1284,6 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         address=[
             ModbusAddressSpec(input=11056, models=Inv.H1_G1),
             ModbusAddressSpec(holding=31027, models=Inv.H1_G1 | Inv.H1_LAN),
-            ModbusAddressSpec(holding=39063, models=Inv.H1_G2),
         ],
         name="Inverter State",
         states=H1_INVERTER_STATES,
@@ -1296,6 +1296,13 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         ],
         name="Inverter State",
         states=KH_INVERTER_STATES,
+    )
+    yield ModbusG2InverterStateSensorDescription(
+        key="inverter_state",
+        addresses=[
+            ModbusAddressesSpec(holding=[39063, 39065], models=Inv.H1_G2),
+        ],
+        name="Inverter State",
     )
     yield ModbusSensorDescription(
         key="state_code",
