@@ -36,6 +36,21 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
             ),
             models=Inv.H1_LAN,
         ),
+        RemoteControlAddressSpec(
+            holding=ModbusRemoteControlAddressConfig(
+                remote_enable=44000,
+                timeout_set=44001,
+                active_power=[44002],
+                ac_power_limit_down=None,
+                work_mode=41000,
+                max_soc=41010,
+                invbatpower=31022,
+                battery_soc=31024,
+                pwr_limit_bat_up=44012,
+                pv_voltages=[39070, 39072],
+            ),
+            models=Inv.H1_G2,
+        ),
         # The KH doesn't support anything above 44003
         RemoteControlAddressSpec(
             input=ModbusRemoteControlAddressConfig(

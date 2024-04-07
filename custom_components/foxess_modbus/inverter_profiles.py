@@ -49,6 +49,10 @@ KH_REGISTERS = SpecialRegisterConfig(
     invalid_register_ranges=[(41001, 41006), (41012, 41012), (41019, 43999)],
     individual_read_register_ranges=[(41000, 41999)],
 )
+# See https://github.com/nathanmarlor/foxess_modbus/discussions/553
+H1_G2_REGISTERS = SpecialRegisterConfig(
+    individual_read_register_ranges=[(41000, 41999)],
+)
 
 
 class InverterModelConnectionTypeProfile:
@@ -169,8 +173,15 @@ class InverterModelProfile:
 INVERTER_PROFILES = {
     x.model: x
     for x in [
-        # Can be both e.g. H1-5.0 and H1-5.0-E
-        InverterModelProfile(InverterModel.H1, r"^H1-([\d\.]+)")
+        # E.g. H1-5.0-E-G2. Has to appear before H1_G1.
+        InverterModelProfile(InverterModel.H1_G2, r"^H1-([\d\.]+)-E-G2").add_connection_type(
+            Inv.H1_G2,
+            ConnectionType.AUX,
+            RegisterType.HOLDING,
+            special_registers=H1_G2_REGISTERS,
+        ),
+        # Can be both e.g. H1-5.0 and H1-5.0-E, but not H1-5.0-E-G2
+        InverterModelProfile(InverterModel.H1_G1, r"^H1-([\d\.]+)")
         .add_connection_type(
             Inv.H1_G1,
             ConnectionType.AUX,

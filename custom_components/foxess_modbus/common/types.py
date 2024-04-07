@@ -35,7 +35,9 @@ class InverterModel(StrEnum):
     as config[INVERTER_BASE].
     """
 
-    H1 = "H1"
+    H1_G1 = "H1"  # Can't change the value, as it's set in people's configs
+    H1_G2 = "H1_G2"
+
     AC1 = "AC1"
     AIO_H1 = "AIO-H1"
 
@@ -59,6 +61,7 @@ class Inv(Flag):
 
     H1_LAN = auto()
     H1_G1 = auto()
+    H1_G2 = auto()
 
     KH_PRE119 = auto()
     KH_119 = auto()
@@ -69,7 +72,7 @@ class Inv(Flag):
     KUARA_H3 = auto()
     H3_SET = H3 | AIO_H3 | KUARA_H3
 
-    ALL = H1_LAN | H1_G1 | KH_SET | H3_SET
+    ALL = H1_LAN | H1_G1 | H1_G2 | KH_SET | H3_SET
 
 
 class RegisterPollType(IntEnum):

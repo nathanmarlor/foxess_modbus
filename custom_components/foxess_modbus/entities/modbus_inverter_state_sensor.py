@@ -14,6 +14,7 @@ from ..common.types import Inv
 from ..common.types import RegisterType
 from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .entity_factory import EntityFactory
+from .inverter_model_spec import ModbusAddressesSpec
 from .inverter_model_spec import ModbusAddressSpec
 from .modbus_entity_mixin import ModbusEntityMixin
 
@@ -86,3 +87,67 @@ class ModbusInverterStateSensor(ModbusEntityMixin, SensorEntity):
     @property
     def addresses(self) -> list[int]:
         return [self._address]
+
+
+@dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
+class ModbusG2InverterStateSensorDescription(SensorEntityDescription, EntityFactory):
+    """Description for ModbusInverterStateSensor"""
+
+    # Fault 1 code, fault 3 code
+    addresses: list[ModbusAddressesSpec]
+
+    @property
+    def entity_type(self) -> type[Entity]:
+        return SensorEntity
+
+    def create_entity_if_supported(
+        self,
+        controller: EntityController,
+        inverter_model: Inv,
+        register_type: RegisterType,
+    ) -> Entity | None:
+        addresses = self._addresses_for_inverter_model(self.addresses, inverter_model, register_type)
+        return ModbusG2InverterStateSensor(controller, self, addresses) if addresses is not None else None
+
+
+class ModbusG2InverterStateSensor(ModbusEntityMixin, SensorEntity):
+    """Sensor class."""
+
+    def __init__(
+        self,
+        controller: EntityController,
+        entity_description: ModbusG2InverterStateSensorDescription,
+        addresses: list[int],
+    ) -> None:
+        assert len(addresses) == 2
+
+        self._attr_device_class = SensorDeviceClass.ENUM
+        self._attr_options = ["Fault", "Off Grid", "On Grid", "Standby"]
+
+        self._controller = controller
+        self.entity_description = entity_description
+        self._addresses = addresses
+        self.entity_id = self._get_entity_id(Platform.SENSOR)
+
+    @property
+    def native_value(self) -> str | None:
+        # Bit 0: Standby, 2: Operation, 6: Fault
+        status1 = self._controller.read(self._addresses[0], signed=False)
+        # Bit 0: On-Grid/Off-grid (0/1)
+        status3 = self._controller.read(self._addresses[1], signed=False)
+        if status1 is None or status3 is None:
+            return None
+
+        if (status1 & 0x40) > 0:
+            return "Fault"
+        if (status3 & 0x01) > 0:
+            return "Off Grid"
+        if (status1 & 0x04) > 0:
+            return "On Grid"
+        if (status1 & 0x01) > 0:
+            return "Standby"
+        return None
+
+    @property
+    def addresses(self) -> list[int]:
+        return self._addresses
