@@ -207,7 +207,9 @@ def _pv_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[11002], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31002], models=Inv.H1_G1 | Inv.H1_LAN | Inv.KH_119 | Inv.H3_SET),
-            ModbusAddressesSpec(holding=[39280, 39279], models=Inv.H1_G2),
+            # This is techincally a 32-bit register on the G2, but it doesn't appear to actually write the upper word,
+            # which means that negative values are represented incorrectly (as 0x0000FFFF etc)
+            ModbusAddressesSpec(holding=[39280], models=Inv.H1_G2),
         ],
         name="PV1 Power",
     )
@@ -252,7 +254,9 @@ def _pv_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[11005], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31005], models=Inv.H1_G1 | Inv.H1_LAN | Inv.KH_119 | Inv.H3_SET),
-            ModbusAddressesSpec(holding=[39282, 39281], models=Inv.H1_G2),
+            # This is techincally a 32-bit register on the G2, but it doesn't appear to actually write the upper word,
+            # which means that negative values are represented incorrectly (as 0x0000FFFF etc)
+            ModbusAddressesSpec(holding=[39282], models=Inv.H1_G2),
         ],
         name="PV2 Power",
     )
