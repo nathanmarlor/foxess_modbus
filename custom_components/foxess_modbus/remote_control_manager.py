@@ -31,7 +31,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
 
         self._mode = RemoteControlMode.DISABLE
         self._prev_mode = RemoteControlMode.DISABLE
-        self._remote_control_enabled: bool | None = None  # None = we don't know
+        self._remote_control_enabled = False
         self._current_import_power = 0  # Set the first time that we enable force charge
         self._discharge_power: int | None = None
         self._charge_power: int | None = None
@@ -297,7 +297,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         await self._write_active_power(export_power)
 
     async def _enable_remote_control(self, fallback_work_mode: WorkMode) -> None:
-        if self._remote_control_enabled in (None, False):
+        if not self._remote_control_enabled:
             self._remote_control_enabled = True
             timeout = self._poll_rate * 2
 
@@ -312,7 +312,12 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             await self._controller.write_register(self._addresses.remote_enable, 1)
 
     async def _disable_remote_control(self, work_mode: WorkMode | None = None) -> None:
-        if self._remote_control_enabled in (None, True):
+        # The strategy periods feature of the foxess app use the remote control register internally. If we disable
+        # remote control when a strategy period is active, we'll end up disabling it.
+        # We therefore need to be a bit careful, and only disable remote control if we previously enabled it.
+        # If we did have it enabled, but then restarted, then we just need to let the watchdog catch it.
+
+        if self._remote_control_enabled:
             self._remote_control_enabled = False
             await self._controller.write_register(self._addresses.remote_enable, 0)
 
@@ -335,7 +340,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         await self._update()
 
     async def became_connected_callback(self) -> None:
-        self._remote_control_enabled = None  # Don't know whether it's enabled or not
+        self._remote_control_enabled = False
         await self._update()
 
     def update_callback(self, changed_addresses: set[int]) -> None:
