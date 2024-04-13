@@ -297,15 +297,15 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         await self._write_active_power(export_power)
 
     async def _enable_remote_control(self, fallback_work_mode: WorkMode) -> None:
+        # We set a fallback work mode so that the inverter still does "roughly" the right thing if we disconnect
+        # (This might not be available, e.g. on H1 LAN)
+        current_work_mode = self._read(self._addresses.work_mode, signed=False)
+        if current_work_mode != fallback_work_mode and self._addresses.work_mode is not None:
+            await self._controller.write_register(self._addresses.work_mode, int(fallback_work_mode))
+
         if not self._remote_control_enabled:
             self._remote_control_enabled = True
             timeout = self._poll_rate * 2
-
-            # We set a fallback work mode so that the inverter still does "roughly" the right thing if we disconnect
-            # (This might not be available, e.g. on H1 LAN)
-            current_work_mode = self._read(self._addresses.work_mode, signed=False)
-            if current_work_mode != fallback_work_mode and self._addresses.work_mode is not None:
-                await self._controller.write_register(self._addresses.work_mode, int(fallback_work_mode))
 
             # We can't do multi-register writes to these registers
             await self._controller.write_register(self._addresses.timeout_set, timeout)
