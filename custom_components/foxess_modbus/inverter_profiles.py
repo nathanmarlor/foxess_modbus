@@ -217,6 +217,12 @@ INVERTER_PROFILES = {
             ConnectionType.LAN,
             RegisterType.HOLDING,
         ),
+        InverterModelProfile(InverterModel.AIO_AC1, r"^AIO-AC1-([\d\.]+)").add_connection_type(
+            Inv.H1_G1,
+            ConnectionType.AUX,
+            RegisterType.INPUT,
+            special_registers=H1_AC1_REGISTERS,
+        ),
         # The KH doesn't have a LAN port. It supports both input and holding over RS485
         # Some models start with KH-, but some are just e.g. KH10.5
         InverterModelProfile(InverterModel.KH, r"^KH([\d\.]+)").add_connection_type(
