@@ -407,34 +407,6 @@ def _pv_entities() -> Iterable[EntityFactory]:
 
 def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
     yield ModbusSensorDescription(
-        key="invbatvolt",
-        addresses=[
-            ModbusAddressesSpec(input=[11006], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(holding=[31020], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2 | Inv.KH_119),
-        ],
-        name="Inverter Battery Voltage",
-        device_class=SensorDeviceClass.VOLTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="V",
-        scale=0.1,
-        round_to=1,
-        # This can go negative if no battery is attached
-    )
-    yield ModbusSensorDescription(
-        key="invbatcurrent",
-        addresses=[
-            ModbusAddressesSpec(input=[11007], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(holding=[31021], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2 | Inv.KH_119),
-        ],
-        name="Inverter Battery Current",
-        device_class=SensorDeviceClass.CURRENT,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="A",
-        scale=0.1,
-        round_to=1,
-        validate=[Range(-100, 100)],
-    )
-    yield ModbusSensorDescription(
         key="load_power",
         addresses=[
             ModbusAddressesSpec(input=[11023], models=Inv.H1_G1 | Inv.KH_PRE119),
@@ -703,149 +675,242 @@ def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
 
 
 def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
-    yield ModbusSensorDescription(
-        key="grid_voltage_R",
-        addresses=[ModbusAddressesSpec(holding=[31006], models=Inv.H3_SET)],
-        entity_registry_enabled_default=False,
-        name="Grid Voltage R",
-        device_class=SensorDeviceClass.VOLTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="V",
+    def _grid_voltage(phase: str, addresses: list[ModbusAddressesSpec]) -> EntityFactory:
+        return ModbusSensorDescription(
+            key=f"grid_voltage_{phase}",
+            addresses=addresses,
+            entity_registry_enabled_default=False,
+            name=f"Grid Voltage {phase}",
+            device_class=SensorDeviceClass.VOLTAGE,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement="V",
+            scale=0.1,
+            round_to=1,
+            signed=False,
+            validate=[Range(0, 300)],
+        )
+
+    yield _grid_voltage(
+        "R",
+        addresses=[
+            ModbusAddressesSpec(holding=[31006], models=Inv.H3_SET),
+            ModbusAddressesSpec(holding=[39123], models=Inv.H3_PRO),
+        ],
+    )
+    yield _grid_voltage(
+        "S",
+        addresses=[
+            ModbusAddressesSpec(holding=[31007], models=Inv.H3_SET),
+            ModbusAddressesSpec(holding=[39124], models=Inv.H3_PRO),
+        ],
+    )
+    yield _grid_voltage(
+        "T",
+        addresses=[
+            ModbusAddressesSpec(holding=[31008], models=Inv.H3_SET),
+            ModbusAddressesSpec(holding=[39125], models=Inv.H3_PRO),
+        ],
+    )
+
+    def _inv_current(phase: str, addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
+        return ModbusSensorDescription(
+            key=f"inv_current_{phase}",
+            addresses=addresses,
+            name=f"Inverter Current {phase}",
+            device_class=SensorDeviceClass.CURRENT,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement="A",
+            scale=scale,
+            round_to=1,
+            validate=[Range(0, 100)],
+        )
+
+    def _inv_current_set(
+        r_addresses: list[ModbusAddressesSpec],
+        s_addresses: list[ModbusAddressesSpec],
+        t_addresses: list[ModbusAddressesSpec],
+        scale: float,
+    ) -> Iterable[EntityFactory]:
+        yield _inv_current("R", addresses=r_addresses, scale=scale)
+        yield _inv_current("S", addresses=s_addresses, scale=scale)
+        yield _inv_current("T", addresses=t_addresses, scale=scale)
+
+    yield from _inv_current_set(
+        r_addresses=[ModbusAddressesSpec(holding=[31009], models=Inv.H3_SET)],
+        s_addresses=[ModbusAddressesSpec(holding=[31010], models=Inv.H3_SET)],
+        t_addresses=[ModbusAddressesSpec(holding=[31011], models=Inv.H3_SET)],
         scale=0.1,
-        round_to=1,
-        signed=False,
-        validate=[Range(0, 300)],
     )
-    yield ModbusSensorDescription(
-        key="grid_voltage_S",
-        addresses=[ModbusAddressesSpec(holding=[31007], models=Inv.H3_SET)],
-        entity_registry_enabled_default=False,
-        name="Grid Voltage S",
-        device_class=SensorDeviceClass.VOLTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="V",
-        scale=0.1,
-        round_to=1,
-        signed=False,
-        validate=[Range(0, 300)],
+
+    yield from _inv_current_set(
+        r_addresses=[ModbusAddressesSpec(holding=[39127, 39126], models=Inv.H3_PRO)],
+        s_addresses=[ModbusAddressesSpec(holding=[39129, 39128], models=Inv.H3_PRO)],
+        t_addresses=[ModbusAddressesSpec(holding=[39131, 39130], models=Inv.H3_PRO)],
+        scale=000.1,
     )
-    yield ModbusSensorDescription(
-        key="grid_voltage_T",
-        addresses=[ModbusAddressesSpec(holding=[31008], models=Inv.H3_SET)],
-        entity_registry_enabled_default=False,
-        name="Grid Voltage T",
-        device_class=SensorDeviceClass.VOLTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="V",
-        scale=0.1,
-        round_to=1,
-        signed=False,
-        validate=[Range(0, 300)],
+
+    def _inv_power(phase: str | None, addresses: list[ModbusAddressesSpec]) -> EntityFactory:
+        key_suffix = f"_{phase}" if phase is not None else ""
+        name_suffix = f" {phase}" if phase is not None else ""
+        return ModbusSensorDescription(
+            key=f"inv_power{key_suffix}",
+            addresses=addresses,
+            name=f"Inverter Power{name_suffix}",
+            device_class=SensorDeviceClass.POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement="kW",
+            scale=0.001,
+            round_to=0.01,
+            validate=[Range(-100, 100)],
+        )
+
+    yield _inv_power(
+        phase=None,
+        addresses=[
+            ModbusAddressesSpec(holding=[39135, 39134], models=Inv.H3_PRO),
+        ],
     )
-    yield ModbusSensorDescription(
-        key="inv_current_R",
-        addresses=[ModbusAddressesSpec(holding=[31009], models=Inv.H3_SET)],
-        name="Inverter Current R",
-        device_class=SensorDeviceClass.CURRENT,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="A",
-        scale=0.1,
-        round_to=1,
-        validate=[Range(0, 100)],
+    yield _inv_power(
+        "R",
+        addresses=[
+            ModbusAddressesSpec(holding=[31012], models=Inv.H3_SET),
+            ModbusAddressesSpec(holding=[39249, 39248], models=Inv.H3_PRO),
+        ],
     )
-    yield ModbusSensorDescription(
-        key="inv_current_S",
-        addresses=[ModbusAddressesSpec(holding=[31010], models=Inv.H3_SET)],
-        name="Inverter Current S",
-        device_class=SensorDeviceClass.CURRENT,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="A",
-        scale=0.1,
-        round_to=1,
-        validate=[Range(0, 100)],
+    yield _inv_power(
+        "S",
+        addresses=[
+            ModbusAddressesSpec(holding=[31013], models=Inv.H3_SET),
+            ModbusAddressesSpec(holding=[39251, 39250], models=Inv.H3_PRO),
+        ],
     )
-    yield ModbusSensorDescription(
-        key="inv_current_T",
-        addresses=[ModbusAddressesSpec(holding=[31011], models=Inv.H3_SET)],
-        name="Inverter Current T",
-        device_class=SensorDeviceClass.CURRENT,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="A",
-        scale=0.1,
-        round_to=1,
-        validate=[Range(0, 100)],
+    yield _inv_power(
+        "T",
+        addresses=[
+            ModbusAddressesSpec(holding=[31014], models=Inv.H3_SET),
+            ModbusAddressesSpec(holding=[39253, 39252], models=Inv.H3_PRO),
+        ],
     )
-    yield ModbusSensorDescription(
-        key="inv_power_R",
-        addresses=[ModbusAddressesSpec(holding=[31012], models=Inv.H3_SET)],
-        name="Inverter Power R",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        scale=0.001,
-        round_to=0.01,
-        validate=[Range(-100, 100)],
+
+    def _inv_power_reactive(phase: str | None, addresses: list[ModbusAddressesSpec]) -> EntityFactory:
+        key_suffix = f"_{phase}" if phase is not None else ""
+        name_suffix = f" {phase}" if phase is not None else ""
+        return ModbusSensorDescription(
+            key=f"inv_power_Q{key_suffix}",
+            addresses=addresses,
+            entity_registry_enabled_default=False,
+            name=f"Inverter Power (Reactive){name_suffix}",
+            # REACTIVE_POWER only supports var, not kvar
+            # device_class=SensorDeviceClass.REACTIVE_POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement="kvar",
+            icon="mdi:export",
+            scale=0.001,
+            round_to=0.01,
+            # Negative = charging batteries
+            validate=[Range(-100, 100)],
+        )
+
+    yield _inv_power_reactive(phase=None, addresses=[ModbusAddressesSpec(holding=[39137, 39136], models=Inv.H3_PRO)])
+    yield _inv_power_reactive(phase="R", addresses=[ModbusAddressesSpec(holding=[39257, 39256], models=Inv.H3_PRO)])
+    yield _inv_power_reactive(phase="S", addresses=[ModbusAddressesSpec(holding=[39259, 39258], models=Inv.H3_PRO)])
+    yield _inv_power_reactive(phase="T", addresses=[ModbusAddressesSpec(holding=[39261, 39260], models=Inv.H3_PRO)])
+
+    def _inv_power_apparent(phase: str | None, addresses: list[ModbusAddressesSpec]) -> EntityFactory:
+        key_suffix = f"_{phase}" if phase is not None else ""
+        name_suffix = f" {phase}" if phase is not None else ""
+        return ModbusSensorDescription(
+            key=f"rpower_S{key_suffix}",
+            addresses=addresses,
+            entity_registry_enabled_default=False,
+            name=f"Inverter Power (Apparent){name_suffix}",
+            # APPARENT_POWER only supports VA, not kVA
+            # device_class=SensorDeviceClass.APPARENT_POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement="kVA",
+            icon="mdi:export",
+            scale=0.001,
+            round_to=0.01,
+            # Negative = charging batteries
+            validate=[Range(-100, 100)],
+        )
+
+    yield _inv_power_apparent(phase="R", addresses=[ModbusAddressesSpec(holding=[39265, 39264], models=Inv.H3_PRO)])
+    yield _inv_power_apparent(phase="S", addresses=[ModbusAddressesSpec(holding=[39267, 39266], models=Inv.H3_PRO)])
+    yield _inv_power_apparent(phase="T", addresses=[ModbusAddressesSpec(holding=[39269, 39268], models=Inv.H3_PRO)])
+
+    def _eps_rvolt(phase: str, addresses: list[ModbusAddressesSpec]) -> EntityFactory:
+        return ModbusSensorDescription(
+            key=f"eps_rvolt_{phase}",
+            addresses=addresses,
+            entity_registry_enabled_default=False,
+            name=f"EPS Voltage_{phase}",
+            device_class=SensorDeviceClass.VOLTAGE,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement="V",
+            scale=0.1,
+            round_to=1,
+            signed=False,
+            validate=[Range(0, 300)],
+        )
+
+    yield _eps_rvolt("R", addresses=[ModbusAddressesSpec(holding=[39201], models=Inv.H3_PRO)])
+    yield _eps_rvolt("S", addresses=[ModbusAddressesSpec(holding=[39202], models=Inv.H3_PRO)])
+    yield _eps_rvolt("T", addresses=[ModbusAddressesSpec(holding=[39203], models=Inv.H3_PRO)])
+
+    def _eps_rcurrent(phase: str, addresses: list[ModbusAddressesSpec]) -> EntityFactory:
+        return ModbusSensorDescription(
+            key=f"eps_rcurrent_{phase}",
+            addresses=addresses,
+            entity_registry_enabled_default=False,
+            name=f"EPS Current {phase}",
+            device_class=SensorDeviceClass.CURRENT,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement="A",
+            scale=000.1,
+            round_to=1,
+            validate=[Range(0, 100)],
+        )
+
+    yield _eps_rcurrent("R", addresses=[ModbusAddressesSpec(holding=[39205, 39204], modbus=Inv.H3_PRO)])
+    yield _eps_rcurrent("S", addresses=[ModbusAddressesSpec(holding=[39207, 39206], modbus=Inv.H3_PRO)])
+    yield _eps_rcurrent("T", addresses=[ModbusAddressesSpec(holding=[39209, 39208], modbus=Inv.H3_PRO)])
+
+    def _eps_power(phase: str, addresses: list[ModbusAddressesSpec]) -> EntityFactory:
+        return ModbusSensorDescription(
+            key=f"eps_power_{phase}",
+            addresses=addresses,
+            entity_registry_enabled_default=False,
+            name=f"EPS Power {phase}",
+            device_class=SensorDeviceClass.POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement="kW",
+            icon="mdi:power-socket",
+            scale=0.001,
+            round_to=0.01,
+            validate=[Range(-100, 100)],
+        )
+
+    yield _eps_power(
+        "R",
+        addresses=[
+            ModbusAddressesSpec(holding=[31022], models=Inv.H3_SET),
+            ModbusAddressesSpec(holding=[39213, 39212], models=Inv.H3_PRO),
+        ],
     )
-    yield ModbusSensorDescription(
-        key="inv_power_S",
-        addresses=[ModbusAddressesSpec(holding=[31013], models=Inv.H3_SET)],
-        name="Inverter Power S",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        scale=0.001,
-        round_to=0.01,
-        validate=[Range(-100, 100)],
+    yield _eps_power(
+        "S",
+        addresses=[
+            ModbusAddressesSpec(holding=[31023], models=Inv.H3_SET),
+            ModbusAddressesSpec(holding=[39215, 39214], models=Inv.H3_PRO),
+        ],
     )
-    yield ModbusSensorDescription(
-        key="inv_power_T",
-        addresses=[ModbusAddressesSpec(holding=[31014], models=Inv.H3_SET)],
-        name="Inverter Power T",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        scale=0.001,
-        round_to=0.01,
-        validate=[Range(-100, 100)],
-    )
-    yield ModbusSensorDescription(
-        key="eps_power_R",
-        addresses=[ModbusAddressesSpec(holding=[31022], models=Inv.H3_SET)],
-        entity_registry_enabled_default=False,
-        name="EPS Power R",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        icon="mdi:power-socket",
-        scale=0.001,
-        round_to=0.01,
-        validate=[Range(-100, 100)],
-    )
-    yield ModbusSensorDescription(
-        key="eps_power_S",
-        addresses=[ModbusAddressesSpec(holding=[31023], models=Inv.H3_SET)],
-        entity_registry_enabled_default=False,
-        name="EPS Power S",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        icon="mdi:power-socket",
-        scale=0.001,
-        round_to=0.01,
-        validate=[Range(-100, 100)],
-    )
-    yield ModbusSensorDescription(
-        key="eps_power_T",
-        addresses=[ModbusAddressesSpec(holding=[31024], models=Inv.H3_SET)],
-        entity_registry_enabled_default=False,
-        name="EPS Power T",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        icon="mdi:power-socket",
-        scale=0.001,
-        round_to=0.01,
-        validate=[Range(-100, 100)],
+    yield _eps_power(
+        "T",
+        addresses=[
+            ModbusAddressesSpec(holding=[31024], models=Inv.H3_SET),
+            ModbusAddressesSpec(holding=[39217, 39216], models=Inv.H3_PRO),
+        ],
     )
 
     def _grid_ct(phase: str | None, scale: float, addresses: list[ModbusAddressesSpec]) -> Iterable[EntityFactory]:
@@ -965,90 +1030,179 @@ def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
     yield _ct2_meter("S", scale=0.0001, addresses=[ModbusAddressesSpec(holding=[38919, 38918], models=Inv.H3_PRO)])
     yield _ct2_meter("T", scale=0.0001, addresses=[ModbusAddressesSpec(holding=[38921, 38920], models=Inv.H3_PRO)])
 
-    yield ModbusSensorDescription(
-        key="load_power_R",
-        addresses=[ModbusAddressesSpec(holding=[31029], models=Inv.H3_SET)],
-        name="Load Power R",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        icon="mdi:home-lightning-bolt-outline",
-        scale=0.001,
-        round_to=0.01,
-        validate=[Range(-100, 100)],
-    )
-    yield ModbusSensorDescription(
-        key="load_power_S",
-        addresses=[ModbusAddressesSpec(holding=[31030], models=Inv.H3_SET)],
-        name="Load Power S",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        icon="mdi:home-lightning-bolt-outline",
-        scale=0.001,
-        round_to=0.01,
-        validate=[Range(-100, 100)],
-    )
-    yield ModbusSensorDescription(
-        key="load_power_T",
-        addresses=[ModbusAddressesSpec(holding=[31031], models=Inv.H3_SET)],
-        name="Load Power T",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="kW",
-        icon="mdi:home-lightning-bolt-outline",
-        scale=0.001,
-        round_to=0.01,
-        validate=[Range(-100, 100)],
-    )
-
-
-def _inverter_entities() -> Iterable[EntityFactory]:
-    def _invbatpower(addresses: list[ModbusAddressesSpec]) -> Iterable[ModbusSensorDescription]:
-        yield ModbusSensorDescription(
-            key="invbatpower",
+    def _load_power(phase: str | None, *, addresses: list[ModbusAddressesSpec]) -> EntityFactory:
+        key_suffix = f"_{phase}" if phase is not None else None
+        name_suffix = f" {phase}" if phase is not None else None
+        return ModbusSensorDescription(
+            key=f"load_power{key_suffix}",
             addresses=addresses,
-            name="Inverter Battery Power",
+            name=f"Load Power{name_suffix}",
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
             native_unit_of_measurement="kW",
+            icon="mdi:home-lightning-bolt-outline",
             scale=0.001,
             round_to=0.01,
             validate=[Range(-100, 100)],
         )
-        yield ModbusSensorDescription(
-            key="battery_discharge",
+
+    yield _load_power(
+        "R",
+        addresses=[
+            ModbusAddressesSpec(holding=[31029], models=Inv.H3_SET),
+            ModbusAddressesSpec(holding=[39220, 39219], models=Inv.H3_PRO),
+        ],
+    )
+    yield _load_power(
+        "S",
+        addresses=[
+            ModbusAddressesSpec(holding=[31030], models=Inv.H3_SET),
+            ModbusAddressesSpec(holding=[39222, 39221], models=Inv.H3_PRO),
+        ],
+    )
+    yield _load_power(
+        "T",
+        addresses=[
+            ModbusAddressesSpec(holding=[31031], models=Inv.H3_SET),
+            ModbusAddressesSpec(holding=[39224, 39223], models=Inv.H3_PRO),
+        ],
+    )
+    yield _load_power(
+        phase=None,
+        addresses=[
+            ModbusAddressesSpec(holding=[39226, 39225], models=Inv.H3_PRO),
+        ],
+    )
+
+
+def _inverter_entities() -> Iterable[EntityFactory]:
+    def _invbatvolt(index: int | None, addresses: list[ModbusAddressesSpec]) -> EntityFactory:
+        key_suffix = f"_{index}" if index is not None else ""
+        name_infix = f" {index}" if index is not None else ""
+        return ModbusSensorDescription(
+            key=f"invbatvolt{key_suffix}",
             addresses=addresses,
-            name="Battery Discharge",
+            name=f"Inverter Battery{name_infix} Voltage",
+            device_class=SensorDeviceClass.VOLTAGE,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement="V",
+            scale=0.1,
+            round_to=1,
+            # This can go negative if no battery is attached
+        )
+
+    yield _invbatvolt(
+        index=None,
+        addresses=[
+            ModbusAddressesSpec(input=[11006], models=Inv.H1_G1 | Inv.KH_PRE119),
+            ModbusAddressesSpec(holding=[31020], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2 | Inv.KH_119),
+        ],
+    )
+    yield _invbatvolt(index=1, addresses=[ModbusAddressesSpec(holding=[39227], models=Inv.H3_PRO)])
+    yield _invbatvolt(index=2, addresses=[ModbusAddressesSpec(holding=[39232], models=Inv.H3_PRO)])
+
+    def _invbatcurrent(index: int | None, scale: float, addresses: list[ModbusAddressesSpec]) -> EntityFactory:
+        key_suffix = f"_{index}" if index is not None else ""
+        name_infix = f" {index}" if index is not None else ""
+        return ModbusSensorDescription(
+            key=f"invbatcurrent{key_suffix}",
+            addresses=addresses,
+            name=f"Inverter Battery{name_infix} Current",
+            device_class=SensorDeviceClass.CURRENT,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement="A",
+            scale=scale,
+            round_to=1,
+            validate=[Range(-100, 100)],
+        )
+
+    yield _invbatcurrent(
+        index=None,
+        scale=0.1,
+        addresses=[
+            ModbusAddressesSpec(input=[11007], models=Inv.H1_G1 | Inv.KH_PRE119),
+            ModbusAddressesSpec(holding=[31021], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2 | Inv.KH_119),
+        ],
+    )
+    yield _invbatcurrent(
+        index=1, scale=0.001, addresses=[ModbusAddressesSpec(holding=[39229, 39228], models=Inv.H3_PRO)]
+    )
+    yield _invbatcurrent(
+        index=2, scale=0.001, addresses=[ModbusAddressesSpec(holding=[39234, 39233], models=Inv.H3_PRO)]
+    )
+
+    def _invbatpower(
+        index: int | None, addresses: list[ModbusAddressesSpec], scale: float
+    ) -> Iterable[ModbusSensorDescription]:
+        key_suffix = f"_{index}" if index is not None else ""
+        name_infix = f" {index}" if index is not None else ""
+        yield ModbusSensorDescription(
+            key=f"invbatpower{key_suffix}",
+            addresses=addresses,
+            name=f"Inverter Battery{name_infix} Power",
+            device_class=SensorDeviceClass.POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement="kW",
+            scale=scale,
+            round_to=0.01,
+            validate=[Range(-100, 100)],
+        )
+        yield ModbusSensorDescription(
+            key=f"battery_discharge{key_suffix}",
+            addresses=addresses,
+            name=f"Battery{name_infix} Discharge",
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
             native_unit_of_measurement="kW",
             icon="mdi:battery-arrow-down-outline",
-            scale=0.001,
+            scale=scale,
             round_to=0.01,
             post_process=lambda v: v if v > 0 else 0,
             validate=[Range(0, 100)],
         )
         yield ModbusSensorDescription(
-            key="battery_charge",
+            key=f"battery_charge{key_suffix}",
             addresses=addresses,
-            name="Battery Charge",
+            name=f"Battery{name_infix} Charge",
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
             native_unit_of_measurement="kW",
             icon="mdi:battery-arrow-up-outline",
-            scale=0.001,
+            scale=scale,
             round_to=0.01,
             post_process=lambda v: abs(v) if v < 0 else 0,
             validate=[Range(0, 100)],
         )
 
     yield from _invbatpower(
+        index=None,
         addresses=[
             ModbusAddressesSpec(input=[11008], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31022], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2 | Inv.KH_119),
             ModbusAddressesSpec(holding=[31036], models=Inv.H3_SET),
-        ]
+        ],
+        scale=0.01,
+    )
+    yield from _invbatpower(
+        index=None,
+        addresses=[
+            ModbusAddressesSpec(holding=[39238, 39237], models=Inv.H3_PRO),
+        ],
+        scale=0.001,
+    )
+    yield from _invbatpower(
+        index=1,
+        addresses=[
+            ModbusAddressesSpec(holding=[39231, 39230], models=Inv.H3_PRO),
+        ],
+        scale=0.001,
+    )
+    yield from _invbatpower(
+        index=2,
+        addresses=[
+            ModbusAddressesSpec(holding=[39236, 39235], models=Inv.H3_PRO),
+        ],
+        scale=0.001,
     )
 
     yield ModbusSensorDescription(
@@ -1092,6 +1246,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             ModbusAddressesSpec(input=[11024], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31018], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2 | Inv.KH_119),
             ModbusAddressesSpec(holding=[31032], models=Inv.H3_SET),
+            ModbusAddressesSpec(holding=[39141], models=Inv.H3_PRO),
         ],
         name="Inverter Temp",
         device_class=SensorDeviceClass.TEMPERATURE,
