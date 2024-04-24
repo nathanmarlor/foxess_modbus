@@ -99,5 +99,6 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
             ),
             models=Inv.H3_SET & ~Inv.KUARA_H3 & ~Inv.AIO_H3,
         ),
+        # The H3 Pro has its own Force Charge / Discharge work modes
     ]
 )
