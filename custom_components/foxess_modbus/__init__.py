@@ -68,10 +68,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.entry_id, HassDataEntry(controllers=[], modbus_clients=[])
     )
 
-    for platform in PLATFORMS:
-        if entry_options.get(platform, True):
-            hass.async_add_job(hass.config_entries.async_forward_entry_setup(entry, platform))
-
     def create_controller(client: ModbusClient, inverter: dict[str, Any]) -> None:
         controller = ModbusController(
             hass,
@@ -128,6 +124,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass_data[entry.entry_id]["controllers"] = controllers
     hass_data[entry.entry_id]["modbus_clients"] = list(clients.values())
     hass_data[entry.entry_id]["unload"] = entry.add_update_listener(async_reload_entry)
+
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
 

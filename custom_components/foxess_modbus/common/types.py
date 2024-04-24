@@ -40,6 +40,7 @@ class InverterModel(StrEnum):
 
     AC1 = "AC1"
     AIO_H1 = "AIO-H1"
+    AIO_AC1 = "AIO-AC1"
 
     KH = "KH"
 
