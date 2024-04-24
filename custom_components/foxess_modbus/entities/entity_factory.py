@@ -2,6 +2,7 @@
 
 from abc import ABC
 from abc import abstractmethod
+from typing import Any
 from typing import Sequence
 
 from homeassistant.helpers.entity import Entity
@@ -48,6 +49,10 @@ class EntityFactory(ABC, metaclass=_METACLASS):  # type: ignore
         register_type: RegisterType,
     ) -> Entity | None:
         """Instantiate a new entity. The returned type must match self.entity_type"""
+
+    @abstractmethod
+    def serialize(self, inverter_model: Inv) -> dict[str, Any]:
+        pass
 
     def _supports_inverter_model(
         self,
@@ -115,4 +120,15 @@ class EntityFactory(ABC, metaclass=_METACLASS):  # type: ignore
                     result is None
                 ), f"{self}: more than one address spec defined for ({inverter_model}, {register_type})"
                 result = addresses
+        return result
+
+    def _addresses_and_types_for_inverter_model(
+        self, address_specs: Sequence[InverterModelSpec], inverter_model: Inv
+    ) -> dict[RegisterType, list[int] | None]:
+        result: dict[RegisterType, list[int] | None] = {}
+        for spec in address_specs:
+            address_type_map = spec.address_type_map_for_inverter_model(inverter_model)
+            for k, v in address_type_map.items():
+                assert k not in result
+                result[k] = v
         return result

@@ -4,6 +4,7 @@ import logging
 from dataclasses import dataclass
 from dataclasses import field
 from datetime import time
+from typing import Any
 from typing import cast
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
@@ -85,6 +86,9 @@ class ModbusChargePeriodStartEndSensorDescription(SensorEntityDescription, Entit
             other_address is not None
         ), f"{self}: address is {address} but other_address is None for ({inverter_model}, {register_type})"
         return ModbusChargePeriodStartEndSensor(controller, self, address, other_address)
+
+    def serialize(self, inverter_model: Inv) -> dict[str, Any]:
+        return {}
 
 
 class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorEntity):
@@ -211,6 +215,9 @@ class ModbusEnableForceChargeSensorDescription(BinarySensorEntityDescription, En
             period_start_address,
             period_end_address,
         )
+
+    def serialize(self, inverter_model: Inv) -> dict[str, Any]:
+        return {}
 
 
 class ModbusEnableForceChargeSensor(ModbusEntityMixin, BinarySensorEntity):

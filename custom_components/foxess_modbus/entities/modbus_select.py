@@ -3,6 +3,7 @@
 import logging
 from dataclasses import dataclass
 from dataclasses import field
+from typing import Any
 from typing import cast
 
 from homeassistant.components.select import SelectEntity
@@ -42,6 +43,9 @@ class ModbusSelectDescription(SelectEntityDescription, EntityFactory):
     ) -> Entity | None:
         address = self._address_for_inverter_model(self.address, inverter_model, register_type)
         return ModbusSelect(controller, self, address) if address is not None else None
+
+    def serialize(self, inverter_model: Inv) -> dict[str, Any]:
+        return {}
 
 
 class ModbusSelect(ModbusEntityMixin, SelectEntity):

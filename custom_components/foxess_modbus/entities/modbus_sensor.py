@@ -55,6 +55,18 @@ class ModbusSensorDescription(SensorEntityDescription, EntityFactory):
         round_to = self.round_to if controller.inverter_details.get(ROUND_SENSOR_VALUES, False) else None
         return ModbusSensor(controller, self, addresses, round_to) if addresses is not None else None
 
+    def serialize(self, inverter_model: Inv) -> dict[str, Any] | None:
+        address_map = self._addresses_and_types_for_inverter_model(self.addresses, inverter_model)
+        if len(address_map) == 0:
+            return None
+
+        return {
+            "key": self.key,
+            "addresses": address_map,
+            "scale": self.scale,
+            "signed": self.signed,
+        }
+
 
 class ModbusSensor(ModbusEntityMixin, SensorEntity):
     """Sensor class."""

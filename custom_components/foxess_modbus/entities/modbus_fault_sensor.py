@@ -1,6 +1,7 @@
 """Decodes the fault registers"""
 
 from dataclasses import dataclass
+from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
@@ -175,6 +176,9 @@ class ModbusFaultSensorDescription(SensorEntityDescription, EntityFactory):
     ) -> Entity | None:
         addresses = self._addresses_for_inverter_model(self.addresses, inverter_model, register_type)
         return ModbusFaultSensor(controller, self, addresses) if addresses is not None else None
+
+    def serialize(self, inverter_model: Inv) -> dict[str, Any]:
+        return {}
 
 
 class ModbusFaultSensor(ModbusEntityMixin, SensorEntity):

@@ -46,6 +46,9 @@ class ModbusBatterySensorDescription(ModbusSensorDescription):
             else None
         )
 
+    def serialize(self, inverter_model: Inv) -> dict[str, Any]:
+        return {}
+
 
 class ModbusBatterySensor(ModbusSensor):
     """A sensor which returns Unknown if the battery is not connected"""

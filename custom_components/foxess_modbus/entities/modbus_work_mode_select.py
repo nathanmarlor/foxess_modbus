@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 
 from homeassistant.helpers.entity import Entity
 
@@ -24,6 +25,9 @@ class ModbusWorkModeSelectDescription(ModbusSelectDescription):
     ) -> Entity | None:
         address = self._address_for_inverter_model(self.address, inverter_model, register_type)
         return ModbusWorkModeSelect(controller, self, address) if address is not None else None
+
+    def serialize(self, inverter_model: Inv) -> dict[str, Any]:
+        return {}
 
 
 class ModbusWorkModeSelect(ModbusSelect):

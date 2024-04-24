@@ -3,6 +3,7 @@
 import logging
 from dataclasses import dataclass
 from dataclasses import field
+from typing import Any
 from typing import Callable
 from typing import cast
 
@@ -46,6 +47,9 @@ class ModbusNumberDescription(NumberEntityDescription, EntityFactory):
     ) -> Entity | None:
         address = self._address_for_inverter_model(self.address, inverter_model, register_type)
         return ModbusNumber(controller, self, address) if address is not None else None
+
+    def serialize(self, inverter_model: Inv) -> dict[str, Any]:
+        return {}
 
 
 class ModbusNumber(ModbusEntityMixin, NumberEntity):

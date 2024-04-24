@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 from typing import cast
 
 from homeassistant.components.sensor import SensorEntity
@@ -35,6 +36,9 @@ class ModbusVersionSensorDescription(SensorEntityDescription, EntityFactory):
     ) -> Entity | None:
         address = self._address_for_inverter_model(self.address, inverter_model, register_type)
         return ModbusVersionSensor(controller, self, address) if address is not None else None
+
+    def serialize(self, inverter_model: Inv) -> dict[str, Any]:
+        return {}
 
 
 class ModbusVersionSensor(ModbusEntityMixin, SensorEntity):

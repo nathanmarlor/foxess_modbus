@@ -55,6 +55,9 @@ class ModbusLambdaSensorDescription(SensorEntityDescription, EntityFactory):
             method=self.method,
         )
 
+    def serialize(self, inverter_model: Inv) -> dict[str, Any]:
+        return {}
+
 
 class ModbusLambdaSensor(ModbusEntityMixin, SensorEntity):
     """Generates a value by applying a lambda to the values of a number of other sensors"""

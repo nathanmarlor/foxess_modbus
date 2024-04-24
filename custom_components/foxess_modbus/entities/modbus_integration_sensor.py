@@ -2,6 +2,7 @@
 
 import logging
 from dataclasses import dataclass
+from typing import Any
 from typing import cast
 
 from homeassistant.components.integration.sensor import DEFAULT_ROUND
@@ -58,6 +59,9 @@ class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory)
             source_entity=source_entity,
             unit_time=self.unit_time,
         )
+
+    def serialize(self, inverter_model: Inv) -> dict[str, Any]:
+        return {}
 
 
 class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
