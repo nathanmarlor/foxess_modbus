@@ -246,6 +246,7 @@ def _pv_entities() -> Iterable[EntityFactory]:
             ModbusAddressesSpec(holding=[31004], models=Inv.H1_G1 | Inv.H1_LAN | Inv.KH_119 | Inv.H3_SET),
         ],
         name="PV2 Current",
+        scale=0.1,
     )
     yield _pv_current(
         key="pv2_current",
@@ -294,6 +295,7 @@ def _pv_entities() -> Iterable[EntityFactory]:
             ModbusAddressesSpec(holding=[31040], models=Inv.KH_119),
         ],
         name="PV3 Current",
+        scale=0.1,
     )
     yield _pv_current(
         key="pv3_current",
@@ -339,6 +341,7 @@ def _pv_entities() -> Iterable[EntityFactory]:
             ModbusAddressesSpec(holding=[31043], models=Inv.KH_119),
         ],
         name="PV4 Current",
+        scale=0.1,
     )
     yield _pv_current(
         key="pv4_current",
