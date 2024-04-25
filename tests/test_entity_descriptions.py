@@ -1,4 +1,5 @@
 from typing import Any
+from typing import Iterable
 from unittest.mock import MagicMock
 
 import pytest
@@ -50,10 +51,25 @@ def pytest_generate_tests(metafunc: Any) -> None:
 
 
 def test_entity_descriptions_for_model(model: Inv, snapshot_json: SnapshotAssertion) -> None:
+    # syrupy doesn't like keys which aren't strings
+    def _process(d: Any) -> None:
+        if isinstance(d, dict):
+            for k, v in d.items():
+                if not isinstance(k, str):
+                    del d[k]
+                    d[str(k)] = v
+                _process(v)
+        elif isinstance(d, str):
+            pass
+        elif isinstance(d, Iterable):
+            for v in d:
+                _process(v)
+
     entities = []
     for entity_factory in ENTITIES:
         serialized = entity_factory.serialize(model)
         if serialized is not None:
+            _process(serialized)
             entities.append(serialized)
 
     entities.sort(key=lambda x: x.get("key", ""))

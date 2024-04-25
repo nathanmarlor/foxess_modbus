@@ -60,8 +60,20 @@ class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory)
             unit_time=self.unit_time,
         )
 
-    def serialize(self, inverter_model: Inv) -> dict[str, Any]:
-        return {}
+    def serialize(self, inverter_model: Inv) -> dict[str, Any] | None:
+        address_map = self._addresses_for_serialization(self.models, inverter_model)
+        if address_map is None:
+            return None
+
+        return {
+            "type": "integration-sensor",
+            "key": self.key,
+            "name": self.name,
+            "register_types": address_map.keys(),
+            "method": self.integration_method,
+            "source": self.source_entity,
+            "unit_time": self.unit_time,
+        }
 
 
 class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):

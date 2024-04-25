@@ -45,8 +45,17 @@ class ModbusBinarySensorDescription(BinarySensorEntityDescription, EntityFactory
         address = self._address_for_inverter_model(self.address, inverter_model, register_type)
         return ModbusBinarySensor(controller, self, address) if address is not None else None
 
-    def serialize(self, inverter_model: Inv) -> dict[str, Any]:
-        return {}
+    def serialize(self, inverter_model: Inv) -> dict[str, Any] | None:
+        address_map = self._addresses_for_serialization(self.address, inverter_model)
+        if address_map is None:
+            return None
+
+        return {
+            "type": "binary-sensor",
+            "key": self.key,
+            "name": self.name,
+            "addresses": address_map,
+        }
 
 
 class ModbusBinarySensor(ModbusEntityMixin, BinarySensorEntity):

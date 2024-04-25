@@ -58,8 +58,8 @@ class ModbusRemoteControlNumberDescription(NumberEntityDescription, EntityFactor
         )
         return ModbusRemoteControlNumber(controller, self, max_value_address)
 
-    def serialize(self, inverter_model: Inv) -> dict[str, Any]:
-        return {}
+    def serialize(self, _inverter_model: Inv) -> dict[str, Any] | None:
+        return None
 
 
 class ModbusRemoteControlNumber(ModbusEntityMixin, RestoreNumber, NumberEntity):

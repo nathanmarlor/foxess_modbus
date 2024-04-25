@@ -39,8 +39,8 @@ class ModbusRemoteControlSelectDescription(SelectEntityDescription, EntityFactor
             return None
         return ModbusRemoteControlSelect(controller, self)
 
-    def serialize(self, inverter_model: Inv) -> dict[str, Any]:
-        return {}
+    def serialize(self, _inverter_model: Inv) -> dict[str, Any] | None:
+        return None
 
 
 class ModbusRemoteControlSelect(ModbusEntityMixin, SelectEntity):

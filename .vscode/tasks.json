@@ -12,6 +12,12 @@
       "type": "shell",
       "command": "pre-commit run --all-files --color=always",
       "problemMatcher": []
+    },
+    {
+      "label": "Update snapshots",
+      "type": "shell",
+      "command": "pytest --snapshot-update",
+      "problemMatcher": []
     }
   ]
 }
