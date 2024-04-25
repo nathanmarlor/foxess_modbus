@@ -124,8 +124,8 @@ class EntityFactory(ABC, metaclass=_METACLASS):  # type: ignore
 
     def _addresses_for_serialization(
         self, address_specs: Sequence[InverterModelSpec], inverter_model: Inv
-    ) -> dict[str, list[int]] | None:
-        result: dict[str, list[int]] | None = None
+    ) -> dict[str, list[int] | None] | None:
+        result: dict[str, list[int] | None] | None = None
         for spec in address_specs:
             address_type_map = spec.address_type_map_for_inverter_model(inverter_model)
             for k, v in address_type_map.items():
