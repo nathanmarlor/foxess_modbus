@@ -16,7 +16,7 @@
     {
       "label": "Update snapshots",
       "type": "shell",
-      "command": "pytest --snapshot-update && pytest --snapshot-update",
+      "command": "pytest --snapshot-update",
       "problemMatcher": []
     }
   ]
