@@ -872,9 +872,9 @@ def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
             validate=[Range(0, 100)],
         )
 
-    yield _eps_rcurrent("R", addresses=[ModbusAddressesSpec(holding=[39205, 39204], modbus=Inv.H3_PRO)])
-    yield _eps_rcurrent("S", addresses=[ModbusAddressesSpec(holding=[39207, 39206], modbus=Inv.H3_PRO)])
-    yield _eps_rcurrent("T", addresses=[ModbusAddressesSpec(holding=[39209, 39208], modbus=Inv.H3_PRO)])
+    yield _eps_rcurrent("R", addresses=[ModbusAddressesSpec(holding=[39205, 39204], models=Inv.H3_PRO)])
+    yield _eps_rcurrent("S", addresses=[ModbusAddressesSpec(holding=[39207, 39206], models=Inv.H3_PRO)])
+    yield _eps_rcurrent("T", addresses=[ModbusAddressesSpec(holding=[39209, 39208], models=Inv.H3_PRO)])
 
     def _eps_power(phase: str, addresses: list[ModbusAddressesSpec]) -> EntityFactory:
         return ModbusSensorDescription(
@@ -1131,9 +1131,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         index=2, scale=0.001, addresses=[ModbusAddressesSpec(holding=[39234, 39233], models=Inv.H3_PRO)]
     )
 
-    def _invbatpower(
-        index: int | None, addresses: list[ModbusAddressesSpec], scale: float
-    ) -> Iterable[ModbusSensorDescription]:
+    def _invbatpower(index: int | None, addresses: list[ModbusAddressesSpec]) -> Iterable[ModbusSensorDescription]:
         key_suffix = f"_{index}" if index is not None else ""
         name_infix = f" {index}" if index is not None else ""
         yield ModbusSensorDescription(
@@ -1143,7 +1141,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
             native_unit_of_measurement="kW",
-            scale=scale,
+            scale=0.001,
             round_to=0.01,
             validate=[Range(-100, 100)],
         )
@@ -1155,7 +1153,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             state_class=SensorStateClass.MEASUREMENT,
             native_unit_of_measurement="kW",
             icon="mdi:battery-arrow-down-outline",
-            scale=scale,
+            scale=0.001,
             round_to=0.01,
             post_process=lambda v: v if v > 0 else 0,
             validate=[Range(0, 100)],
@@ -1168,7 +1166,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             state_class=SensorStateClass.MEASUREMENT,
             native_unit_of_measurement="kW",
             icon="mdi:battery-arrow-up-outline",
-            scale=scale,
+            scale=0.001,
             round_to=0.01,
             post_process=lambda v: abs(v) if v < 0 else 0,
             validate=[Range(0, 100)],
@@ -1180,29 +1178,20 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             ModbusAddressesSpec(input=[11008], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31022], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2 | Inv.KH_119),
             ModbusAddressesSpec(holding=[31036], models=Inv.H3_SET),
-        ],
-        scale=0.01,
-    )
-    yield from _invbatpower(
-        index=None,
-        addresses=[
             ModbusAddressesSpec(holding=[39238, 39237], models=Inv.H3_PRO),
         ],
-        scale=0.001,
     )
     yield from _invbatpower(
         index=1,
         addresses=[
             ModbusAddressesSpec(holding=[39231, 39230], models=Inv.H3_PRO),
         ],
-        scale=0.001,
     )
     yield from _invbatpower(
         index=2,
         addresses=[
             ModbusAddressesSpec(holding=[39236, 39235], models=Inv.H3_PRO),
         ],
-        scale=0.001,
     )
 
     yield ModbusSensorDescription(
@@ -2042,7 +2031,7 @@ def _bms_entities() -> Iterable[EntityFactory]:
             key=f"bms_kwh_remaining{key_suffix}",
             addresses=bms_kwh_remaining,
             bms_connect_state_address=bms_connect_state_address,
-            name=f"BMS {name_infix} kWh Remaining",
+            name=f"BMS{name_infix} kWh Remaining",
             device_class=SensorDeviceClass.ENERGY,
             state_class=SensorStateClass.TOTAL,
             native_unit_of_measurement="kWh",
