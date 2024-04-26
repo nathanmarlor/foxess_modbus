@@ -6,8 +6,6 @@ pytest-homeassistant-custom-component==0.13.42  # Matching version for 2023.7.0
 psutil-home-assistant  # Not sure why this is needed?
 fnv_hash_fast  # Or this?
 pytest-asyncio
-# The current HA version relies on 4.0.2, but json files don't work properly before 4.0.4
-syrupy==4.0.4
 
 colorlog==6.7.0
 pre-commit==3.3.3
