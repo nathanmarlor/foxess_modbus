@@ -2,6 +2,7 @@
 
 import logging
 from dataclasses import dataclass
+from typing import Any
 from typing import Callable
 from typing import cast
 
@@ -56,6 +57,9 @@ class ModbusRemoteControlNumberDescription(NumberEntityDescription, EntityFactor
             else None
         )
         return ModbusRemoteControlNumber(controller, self, max_value_address)
+
+    def serialize(self, _inverter_model: Inv) -> dict[str, Any] | None:
+        return None
 
 
 class ModbusRemoteControlNumber(ModbusEntityMixin, RestoreNumber, NumberEntity):
