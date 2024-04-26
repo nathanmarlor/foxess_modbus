@@ -11,6 +11,13 @@ class InverterModelSpec(ABC):
     """Base class for specifications which describe which inverter models an entity supports"""
 
     @abstractmethod
+    def address_type_map_for_inverter_model(self, models: Inv) -> dict[RegisterType, list[int] | None]:
+        """
+        If this spec supports the given inverter model (e.g. "H1", return the dict of register type -> addresses)
+        which it cares about (or an empty dict if it doesn't rely on any addresses).
+        """
+
+    @abstractmethod
     def addresses_for_inverter_model(self, *, register_type: RegisterType, models: Inv) -> list[int] | None:
         """
         If this spec supports the given inverter model (e.g. "H1") and register type (e.g. "holding"), return the list
@@ -31,6 +38,11 @@ class ModbusAddressSpecBase(InverterModelSpec):
     def __init__(self, addresses: dict[RegisterType, list[int] | None], models: Inv) -> None:
         self._addresses = addresses
         self._models = models
+
+    def address_type_map_for_inverter_model(self, models: Inv) -> dict[RegisterType, list[int] | None]:
+        if models not in self._models:
+            return {}
+        return self._addresses
 
     def addresses_for_inverter_model(self, *, register_type: RegisterType, models: Inv) -> list[int] | None:
         if models not in self._models:
@@ -80,6 +92,11 @@ class EntitySpec(InverterModelSpec):
     def __init__(self, register_types: list[RegisterType], models: Inv) -> None:
         self._register_types = register_types
         self._models = models
+
+    def address_type_map_for_inverter_model(self, models: Inv) -> dict[RegisterType, list[int] | None]:
+        if models not in self._models:
+            return {}
+        return {x: None for x in self._register_types}
 
     def addresses_for_inverter_model(self, register_type: RegisterType, models: Inv) -> list[int] | None:
         return [] if register_type in self._register_types and models in self._models else None
