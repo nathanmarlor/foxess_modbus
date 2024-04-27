@@ -318,7 +318,7 @@ INVERTER_PROFILES = {
             special_registers=H3_REGISTERS,
         ),
         # E.g. H3-Pro-20.0
-        InverterModelProfile(InverterModel.H3_PRO, r"^H3-Pro-([\d\.])+)").add_connection_type(
+        InverterModelProfile(InverterModel.H3_PRO, r"^H3-Pro-([\d\.]+)").add_connection_type(
             Inv.H3_PRO,
             ConnectionType.AUX,
             RegisterType.HOLDING,
