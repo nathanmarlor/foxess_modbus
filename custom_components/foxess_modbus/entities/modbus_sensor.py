@@ -78,6 +78,7 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
         controller: EntityController,
         entity_description: ModbusSensorDescription,
         # Array of registers which this value is split over, from lower-order bits to higher-order bits
+        # (usually high address, low address)
         addresses: list[int],
         round_to: float | None,
     ) -> None:

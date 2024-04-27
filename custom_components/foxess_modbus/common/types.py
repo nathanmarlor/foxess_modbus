@@ -52,6 +52,8 @@ class InverterModel(StrEnum):
     STAR_H3 = "STAR-H3"
     SOLAVITA_SP = "SOLAVITA-SP"
 
+    H3_PRO = "H3_PRO"
+
 
 class Inv(Flag):
     """
@@ -73,7 +75,9 @@ class Inv(Flag):
     KUARA_H3 = auto()
     H3_SET = H3 | AIO_H3 | KUARA_H3
 
-    ALL = H1_LAN | H1_G1 | H1_G2 | KH_SET | H3_SET
+    H3_PRO = auto()
+
+    ALL = H1_LAN | H1_G1 | H1_G2 | KH_SET | H3_SET | H3_PRO
 
 
 class RegisterPollType(IntEnum):
