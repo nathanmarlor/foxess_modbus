@@ -42,7 +42,6 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             self._addresses.work_mode,
             self._addresses.max_soc,
             self._addresses.invbatpower,
-            self._addresses.ac_power_limit_down,
             self._addresses.pwr_limit_bat_up,
             *self._addresses.pv_voltages,
         ]
@@ -117,12 +116,6 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
                 return True
         return False
 
-    def _inverter_capacity(self) -> int | None:
-        value = self._read(self._addresses.ac_power_limit_down, signed=True)
-        if value is None or value >= 0:
-            return None
-        return -value
-
     async def _write_active_power(self, export_power: int) -> None:
         values = []
         for i in range(len(self._addresses.active_power)):
@@ -173,21 +166,9 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         # it can take and still clip PV: I suspect this is to do with losses somewhere, but I'm not quite sure where.
 
         max_import_power = self._charge_power
-        # This isn't available on H1 LAN. But in that case we can't intelligently control anyway, so it's OK if this we
-        # specify a power which is far too large.
-        inverter_capacity = self._inverter_capacity()
+        inverter_capacity = self._controller.inverter_capacity
 
-        if max_import_power is None:
-            if inverter_capacity is not None:
-                max_import_power = inverter_capacity
-            else:
-                _LOGGER.warn(
-                    "Remote control: max charge power has not been set and inverter capacity not available, so not "
-                    "charging"
-                )
-                await self._disable_remote_control()
-                return
-        elif inverter_capacity is not None and max_import_power > inverter_capacity:
+        if max_import_power is None or max_import_power > inverter_capacity:
             max_import_power = inverter_capacity
 
         # If there's no sun, don't try and do any control.
@@ -276,19 +257,9 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         # Max Discharge Current.
 
         export_power = self._discharge_power
-        inverter_capacity = self._inverter_capacity()
+        inverter_capacity = self._controller.inverter_capacity
 
-        if export_power is None:
-            if inverter_capacity is not None:
-                export_power = inverter_capacity
-            else:
-                _LOGGER.warn(
-                    "Remote control: max discharge power has not been set and inverter capacity not available, so not "
-                    "discharging"
-                )
-                await self._disable_remote_control()
-                return
-        elif inverter_capacity is not None and export_power > inverter_capacity:
+        if export_power is None or export_power > inverter_capacity:
             export_power = inverter_capacity
 
         # If remote control stops, we still want to feed in as much as possible

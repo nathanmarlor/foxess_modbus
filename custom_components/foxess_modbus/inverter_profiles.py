@@ -2,7 +2,9 @@
 
 import logging
 import re
+from dataclasses import dataclass
 from typing import Any
+from typing import ClassVar
 
 from homeassistant.helpers.entity import Entity
 
@@ -53,6 +55,33 @@ KH_REGISTERS = SpecialRegisterConfig(
 H1_G2_REGISTERS = SpecialRegisterConfig(
     individual_read_register_ranges=[(41000, 41999)],
 )
+
+
+@dataclass(kw_only=True)
+class CapacityParser:
+    capacity_map: dict[str, int] | None
+    fallback_to_kw: bool
+
+    DEFAULT: ClassVar["CapacityParser"]
+    H1: ClassVar["CapacityParser"]
+
+    def parse(self, capacity_str: str, inverter_model: str) -> int:
+        if self.capacity_map is not None:
+            capacity = self.capacity_map.get(capacity_str)
+            if capacity is not None:
+                return capacity
+            if not self.fallback_to_kw:
+                raise Exception(f"Unknown capacity '{capacity_str}' for inverter model '{inverter_model}'")
+
+        try:
+            capacity = int(float(capacity_str) * 1000)
+            return capacity
+        except ValueError as ex:
+            raise Exception(f"Unable parse capacity '{capacity_str}' of inverter '{inverter_model}'") from ex
+
+
+CapacityParser.DEFAULT = CapacityParser(capacity_map=None, fallback_to_kw=True)
+CapacityParser.H1 = CapacityParser(capacity_map={"3.7": 3680}, fallback_to_kw=True)
 
 
 class InverterModelConnectionTypeProfile:
@@ -123,10 +152,10 @@ class InverterModelConnectionTypeProfile:
 class InverterModelProfile:
     """Describes the capabilities of an inverter model"""
 
-    def __init__(self, model: InverterModel, model_pattern: str, capacity_map: dict[str, int] | None = None) -> None:
+    def __init__(self, model: InverterModel, model_pattern: str, capacity_parser: CapacityParser | None = None) -> None:
         self.model = model
         self.model_pattern = model_pattern
-        self._capacity_map = capacity_map
+        self._capacity_parser = capacity_parser if capacity_parser is not None else CapacityParser.DEFAULT
         self.connection_types: dict[ConnectionType, InverterModelConnectionTypeProfile] = {}
 
     def add_connection_type(
@@ -156,32 +185,24 @@ class InverterModelProfile:
         if match is None:
             raise Exception(f"Unable to determine capacity of inverter '{inverter_model}'")
 
-        # Some inverters don't put their power into their model, so we have to have a separate map
-        if self._capacity_map is not None:
-            capacity = self._capacity_map.get(match.group(1))
-            if capacity is None:
-                raise Exception(f"Unknown capacity '{match.group(1)}' for inverter model '{inverter_model}'")
-            return capacity
-
-        try:
-            capacity = int(float(match.group(1)) * 1000)
-            return capacity
-        except ValueError as ex:
-            raise Exception(f"Unable parse capacity '{match.group(1)}' of inverter '{inverter_model}'") from ex
+        capacity = self._capacity_parser.parse(match.group(1), inverter_model)
+        return capacity
 
 
 INVERTER_PROFILES = {
     x.model: x
     for x in [
         # E.g. H1-5.0-E-G2. Has to appear before H1_G1.
-        InverterModelProfile(InverterModel.H1_G2, r"^H1-([\d\.]+)-E-G2").add_connection_type(
+        InverterModelProfile(
+            InverterModel.H1_G2, r"^H1-([\d\.]+)-E-G2", capacity_parser=CapacityParser.H1
+        ).add_connection_type(
             Inv.H1_G2,
             ConnectionType.AUX,
             RegisterType.HOLDING,
             special_registers=H1_G2_REGISTERS,
         ),
         # Can be both e.g. H1-5.0 and H1-5.0-E, but not H1-5.0-E-G2
-        InverterModelProfile(InverterModel.H1_G1, r"^H1-([\d\.]+)")
+        InverterModelProfile(InverterModel.H1_G1, r"^H1-([\d\.]+)", capacity_parser=CapacityParser.H1)
         .add_connection_type(
             Inv.H1_G1,
             ConnectionType.AUX,
@@ -193,7 +214,7 @@ INVERTER_PROFILES = {
             ConnectionType.LAN,
             RegisterType.HOLDING,
         ),
-        InverterModelProfile(InverterModel.AC1, r"^AC1-([\d\.]+)")
+        InverterModelProfile(InverterModel.AC1, r"^AC1-([\d\.]+)", capacity_parser=CapacityParser.H1)
         .add_connection_type(
             Inv.H1_G1,
             ConnectionType.AUX,
@@ -205,7 +226,7 @@ INVERTER_PROFILES = {
             ConnectionType.LAN,
             RegisterType.HOLDING,
         ),
-        InverterModelProfile(InverterModel.AIO_H1, r"^AIO-H1-([\d\.]+)")
+        InverterModelProfile(InverterModel.AIO_H1, r"^AIO-H1-([\d\.]+)", capacity_parser=CapacityParser.H1)
         .add_connection_type(
             Inv.H1_G1,
             ConnectionType.AUX,
@@ -217,7 +238,9 @@ INVERTER_PROFILES = {
             ConnectionType.LAN,
             RegisterType.HOLDING,
         ),
-        InverterModelProfile(InverterModel.AIO_AC1, r"^AIO-AC1-([\d\.]+)").add_connection_type(
+        InverterModelProfile(
+            InverterModel.AIO_AC1, r"^AIO-AC1-([\d\.]+)", capacity_parser=CapacityParser.H1
+        ).add_connection_type(
             Inv.H1_G1,
             ConnectionType.AUX,
             RegisterType.INPUT,
@@ -306,11 +329,14 @@ INVERTER_PROFILES = {
         InverterModelProfile(
             InverterModel.SOLAVITA_SP,
             r"^SP R(\d+)KH3",
-            capacity_map={
-                "8": 10400,
-                "10": 13000,
-                "12": 15600,
-            },
+            capacity_parser=CapacityParser(
+                capacity_map={
+                    "8": 10400,
+                    "10": 13000,
+                    "12": 15600,
+                },
+                fallback_to_kw=False,
+            ),
         ).add_connection_type(
             Inv.H3,
             ConnectionType.AUX,

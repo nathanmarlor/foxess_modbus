@@ -35,13 +35,6 @@ class ModbusRemoteControlAddressConfig:
     """Configured Max SoC"""
     invbatpower: int
     """Current battery charge (negative) / discharge (positive) power"""
-    ac_power_limit_down: int | None
-    """
-    Pwr_limit Ac_P_Dn, maximum active power provided by the inverter. NOTE this is negative!
-
-    It seems that Pwr_lmit_Ac_P_Up takes the export limit into account, whereas this doesn't.
-
-    TODO: Read only once, when we have this ability"""
     pwr_limit_bat_up: int | None
     """Prw_limit Bat_up, maximum power that the battery can accept"""
     pv_voltages: list[int]
@@ -87,11 +80,6 @@ class RemoteControlAddressSpec:
             register_types=[k for k, v in self.register_types.items() if v.max_soc is None], models=self.models
         )
 
-    def get_ac_power_limit_down_address(self) -> InverterModelSpec:
-        """Gets a InverterModelSpec instance to describe Ac power limit down address"""
-
-        return self._get_address(lambda x: x.ac_power_limit_down)
-
     def _get_address(self, accessor: Callable[[ModbusRemoteControlAddressConfig], int | None]) -> InverterModelSpec:
         addresses = {}
         for register_type, address_config in self.register_types.items():
@@ -114,7 +102,6 @@ class ModbusRemoteControlFactory:
         self.address_specs = addresses
 
         all_models = [x.get_all_models() for x in addresses]
-        ac_power_limit_down_address = [x.get_ac_power_limit_down_address() for x in addresses]
 
         def _set_charge_power(manager: EntityRemoteControlManager, value: int) -> None:
             manager.charge_power = -value
@@ -123,8 +110,7 @@ class ModbusRemoteControlFactory:
             key="force_charge_power",
             name="Force Charge Power",
             models=all_models,
-            max_value_address=ac_power_limit_down_address,
-            fallback_native_max_value=lambda x: -x.inverter_capacity,  # - to counteract -ve scale
+            native_max_value_callback=lambda x: -x.inverter_capacity,  # - to counteract -ve scale
             mode=NumberMode.BOX,
             device_class=NumberDeviceClass.POWER,
             native_min_value=0.0,
@@ -145,8 +131,7 @@ class ModbusRemoteControlFactory:
             key="force_discharge_power",
             name="Force Discharge Power",
             models=all_models,
-            max_value_address=ac_power_limit_down_address,
-            fallback_native_max_value=lambda x: -x.inverter_capacity,  # - to counteract -ve scale
+            native_max_value_callback=lambda x: -x.inverter_capacity,  # - to counteract -ve scale
             mode=NumberMode.BOX,
             device_class=NumberDeviceClass.POWER,
             native_min_value=0.0,
@@ -173,9 +158,8 @@ class ModbusRemoteControlFactory:
             key="force_charge_max_soc",
             name="Force Charge Max SoC",
             models=[x.get_models_without_max_soc() for x in self.address_specs],
-            max_value_address=None,
             native_min_value=0.0,
-            fallback_native_max_value=lambda _x: 100,
+            native_max_value_callback=lambda _x: 100,
             mode=NumberMode.BOX,
             device_class=NumberDeviceClass.BATTERY,
             # Max value is read from the inverter
