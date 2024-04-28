@@ -2111,7 +2111,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         key="work_mode",
         address=[
             ModbusAddressSpec(input=41000, models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressSpec(holding=41000, models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET & ~Inv.AIO_H3),
+            ModbusAddressSpec(holding=41000, models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET),
         ],
         name="Work Mode",
         options_map={0: "Self Use", 1: "Feed-in First", 2: "Back-up"},
@@ -2138,7 +2138,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         key="max_charge_current",
         addresses=[
             ModbusAddressesSpec(input=[41007], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(holding=[41007], models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET & ~Inv.AIO_H3),
+            ModbusAddressesSpec(holding=[41007], models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET),
             ModbusAddressesSpec(holding=[46607], models=Inv.H3_PRO),
         ],
         name="Max Charge Current",
@@ -2152,7 +2152,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         key="max_charge_current",
         address=[
             ModbusAddressSpec(input=41007, models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressSpec(holding=41007, models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET & ~Inv.AIO_H3),
+            ModbusAddressSpec(holding=41007, models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET),
             ModbusAddressSpec(holding=46607, models=Inv.H3_PRO),
         ],
         name="Max Charge Current",
@@ -2170,7 +2170,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         key="max_discharge_current",
         addresses=[
             ModbusAddressesSpec(input=[41008], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(holding=[41008], models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET & ~Inv.AIO_H3),
+            ModbusAddressesSpec(holding=[41008], models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET),
             ModbusAddressesSpec(holding=[46608], models=Inv.H3_PRO),
         ],
         name="Max Discharge Current",
@@ -2184,7 +2184,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         key="max_discharge_current",
         address=[
             ModbusAddressSpec(input=41008, models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressSpec(holding=41008, models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET & ~Inv.AIO_H3),
+            ModbusAddressSpec(holding=41008, models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET),
             ModbusAddressSpec(holding=46608, models=Inv.H3_PRO),
         ],
         name="Max Discharge Current",
@@ -2203,7 +2203,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         key="min_soc",
         addresses=[
             ModbusAddressesSpec(input=[41009], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(holding=[41009], models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET & ~Inv.AIO_H3),
+            ModbusAddressesSpec(holding=[41009], models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET),
             ModbusAddressesSpec(holding=[46609], models=Inv.H3_PRO),
         ],
         name="Min SoC",
@@ -2217,7 +2217,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         key="min_soc",
         address=[
             ModbusAddressSpec(input=41009, models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressSpec(holding=41009, models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET & ~Inv.AIO_H3),
+            ModbusAddressSpec(holding=41009, models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET),
             ModbusAddressSpec(holding=46609, models=Inv.H3_PRO),
         ],
         name="Min SoC",
@@ -2236,7 +2236,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         key="max_soc",
         addresses=[
             ModbusAddressesSpec(input=[41010], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(holding=[41010], models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET & ~Inv.AIO_H3),
+            ModbusAddressesSpec(holding=[41010], models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET),
             ModbusAddressesSpec(holding=[46610], models=Inv.H3_PRO),
         ],
         name="Max SoC",
@@ -2250,7 +2250,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         key="max_soc",
         address=[
             ModbusAddressSpec(input=41010, models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressSpec(holding=41010, models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET & ~Inv.AIO_H3),
+            ModbusAddressSpec(holding=41010, models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET),
             ModbusAddressSpec(holding=46610, models=Inv.H3_PRO),
         ],
         name="Max SoC",
@@ -2269,7 +2269,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         key="min_soc_on_grid",
         addresses=[
             ModbusAddressesSpec(input=[41011], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(holding=[41011], models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET & ~Inv.AIO_H3),
+            ModbusAddressesSpec(holding=[41011], models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET),
             ModbusAddressesSpec(holding=[46611], models=Inv.H3_PRO),
         ],
         name="Min SoC (On Grid)",
@@ -2283,7 +2283,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         key="min_soc_on_grid",
         address=[
             ModbusAddressSpec(input=41011, models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressSpec(holding=41011, models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET & ~Inv.AIO_H3),
+            ModbusAddressSpec(holding=41011, models=Inv.H1_G1 | Inv.H1_G2 | Inv.KH_119 | Inv.H3_SET),
             ModbusAddressSpec(holding=46611, models=Inv.H3_PRO),
         ],
         name="Min SoC (On Grid)",

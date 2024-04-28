@@ -726,6 +726,121 @@
   {
     "addresses": {
       "holding": [
+        41007
+      ]
+    },
+    "key": "max_charge_current",
+    "name": "Max Charge Current",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": {
+      "holding": [
+        41007
+      ]
+    },
+    "key": "max_charge_current",
+    "name": "Max Charge Current",
+    "scale": 0.1,
+    "type": "number"
+  },
+  {
+    "addresses": {
+      "holding": [
+        41008
+      ]
+    },
+    "key": "max_discharge_current",
+    "name": "Max Discharge Current",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": {
+      "holding": [
+        41008
+      ]
+    },
+    "key": "max_discharge_current",
+    "name": "Max Discharge Current",
+    "scale": 0.1,
+    "type": "number"
+  },
+  {
+    "addresses": {
+      "holding": [
+        41010
+      ]
+    },
+    "key": "max_soc",
+    "name": "Max SoC",
+    "scale": null,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": {
+      "holding": [
+        41010
+      ]
+    },
+    "key": "max_soc",
+    "name": "Max SoC",
+    "scale": null,
+    "type": "number"
+  },
+  {
+    "addresses": {
+      "holding": [
+        41009
+      ]
+    },
+    "key": "min_soc",
+    "name": "Min SoC",
+    "scale": null,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": {
+      "holding": [
+        41009
+      ]
+    },
+    "key": "min_soc",
+    "name": "Min SoC",
+    "scale": null,
+    "type": "number"
+  },
+  {
+    "addresses": {
+      "holding": [
+        41011
+      ]
+    },
+    "key": "min_soc_on_grid",
+    "name": "Min SoC (On Grid)",
+    "scale": null,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": {
+      "holding": [
+        41011
+      ]
+    },
+    "key": "min_soc_on_grid",
+    "name": "Min SoC (On Grid)",
+    "scale": null,
+    "type": "number"
+  },
+  {
+    "addresses": {
+      "holding": [
         31001
       ]
     },
@@ -907,5 +1022,20 @@
     "scale": 0.1,
     "signed": false,
     "type": "sensor"
+  },
+  {
+    "addresses": {
+      "holding": [
+        41000
+      ]
+    },
+    "key": "work_mode",
+    "name": "Work Mode",
+    "type": "select",
+    "values": {
+      "0": "Self Use",
+      "1": "Feed-in First",
+      "2": "Back-up"
+    }
   }
 ]
