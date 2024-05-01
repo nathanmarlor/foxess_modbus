@@ -746,7 +746,7 @@ def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
         r_addresses=[ModbusAddressesSpec(holding=[39127, 39126], models=Inv.H3_PRO)],
         s_addresses=[ModbusAddressesSpec(holding=[39129, 39128], models=Inv.H3_PRO)],
         t_addresses=[ModbusAddressesSpec(holding=[39131, 39130], models=Inv.H3_PRO)],
-        scale=000.1,
+        scale=0.001,
     )
 
     def _inv_power(phase: str | None, addresses: list[ModbusAddressesSpec]) -> EntityFactory:
@@ -867,7 +867,7 @@ def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
             native_unit_of_measurement="A",
-            scale=000.1,
+            scale=0.001,
             round_to=1,
             validate=[Range(0, 100)],
         )

@@ -445,7 +445,7 @@
     },
     "key": "eps_rcurrent_R",
     "name": "EPS Current R",
-    "scale": 0.1,
+    "scale": 0.001,
     "signed": true,
     "type": "sensor"
   },
@@ -458,7 +458,7 @@
     },
     "key": "eps_rcurrent_S",
     "name": "EPS Current S",
-    "scale": 0.1,
+    "scale": 0.001,
     "signed": true,
     "type": "sensor"
   },
@@ -471,7 +471,7 @@
     },
     "key": "eps_rcurrent_T",
     "name": "EPS Current T",
-    "scale": 0.1,
+    "scale": 0.001,
     "signed": true,
     "type": "sensor"
   },
@@ -803,7 +803,7 @@
     },
     "key": "inv_current_R",
     "name": "Inverter Current R",
-    "scale": 0.1,
+    "scale": 0.001,
     "signed": true,
     "type": "sensor"
   },
@@ -816,7 +816,7 @@
     },
     "key": "inv_current_S",
     "name": "Inverter Current S",
-    "scale": 0.1,
+    "scale": 0.001,
     "signed": true,
     "type": "sensor"
   },
@@ -829,7 +829,7 @@
     },
     "key": "inv_current_T",
     "name": "Inverter Current T",
-    "scale": 0.1,
+    "scale": 0.001,
     "signed": true,
     "type": "sensor"
   },
