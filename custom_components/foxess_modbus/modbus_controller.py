@@ -116,8 +116,9 @@ class ModbusController(EntityController, UnloadController):
         self.charge_periods = connection_type_profile.create_charge_periods(self)
         # This will call back into us to register its addresses
         remote_control_config = connection_type_profile.create_remote_control_config(self)
-        if remote_control_config is not None:
-            self._remote_control_manager = RemoteControlManager(self, remote_control_config, poll_rate)
+        self._remote_control_manager = (
+            RemoteControlManager(self, remote_control_config, poll_rate) if remote_control_config is not None else None
+        )
 
         if self._hass is not None:
             refresh = async_track_time_interval(
