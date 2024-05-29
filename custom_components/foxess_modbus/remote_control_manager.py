@@ -1,21 +1,13 @@
 import logging
-from enum import IntEnum
 
 from .common.entity_controller import EntityController
 from .common.entity_controller import EntityRemoteControlManager
 from .common.entity_controller import ModbusControllerEntity
 from .common.entity_controller import RemoteControlMode
 from .entities.modbus_remote_control_config import ModbusRemoteControlAddressConfig
+from .entities.modbus_remote_control_config import WorkMode
 
 _LOGGER = logging.getLogger(__package__)
-
-
-# Currently these are the same across all models
-class WorkMode(IntEnum):
-    SELF_USE = 0
-    FEED_IN_FIRST = 1
-    BACK_UP = 2
-
 
 # If the PV voltage is below this value, count it as no sun
 _PV_VOLTAGE_THRESHOLD = 70
@@ -41,8 +33,8 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             self._addresses.battery_soc,
             self._addresses.work_mode,
             self._addresses.max_soc,
-            self._addresses.invbatpower,
-            self._addresses.pwr_limit_bat_up,
+            *self._addresses.invbatpower,
+            *(self._addresses.pwr_limit_bat_up if self._addresses.pwr_limit_bat_up is not None else []),
             *self._addresses.pv_voltages,
         ]
         self._modbus_addresses = [x for x in modbus_addresses if x is not None]
@@ -270,9 +262,12 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
     async def _enable_remote_control(self, fallback_work_mode: WorkMode) -> None:
         # We set a fallback work mode so that the inverter still does "roughly" the right thing if we disconnect
         # (This might not be available, e.g. on H1 LAN)
+        assert self._addresses.work_mode_map is not None
+        fallback_work_mode_value = self._addresses.work_mode_map[fallback_work_mode]
+
         current_work_mode = self._read(self._addresses.work_mode, signed=False)
-        if current_work_mode != fallback_work_mode and self._addresses.work_mode is not None:
-            await self._controller.write_register(self._addresses.work_mode, int(fallback_work_mode))
+        if current_work_mode != fallback_work_mode_value and self._addresses.work_mode is not None:
+            await self._controller.write_register(self._addresses.work_mode, fallback_work_mode_value)
 
         if not self._remote_control_enabled:
             self._remote_control_enabled = True
@@ -293,12 +288,17 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             await self._controller.write_register(self._addresses.remote_enable, 0)
 
         # This might not be available, e.g. on H1 LAN
-        if work_mode is not None and self._addresses.work_mode is not None:
+        if (
+            work_mode is not None
+            and self._addresses.work_mode is not None
+            and self._addresses.work_mode_map is not None
+        ):
             current_work_mode = self._read(self._addresses.work_mode, signed=False)
-            if current_work_mode != work_mode:
-                await self._controller.write_register(self._addresses.work_mode, int(work_mode))
+            work_mode_value = self._addresses.work_mode_map[work_mode]
+            if current_work_mode != work_mode_value:
+                await self._controller.write_register(self._addresses.work_mode, work_mode_value)
 
-    def _read(self, address: int | None, signed: bool) -> int | None:
+    def _read(self, address: list[int] | int | None, signed: bool) -> int | None:
         if address is None:
             return None
         return self._controller.read(address, signed=signed)

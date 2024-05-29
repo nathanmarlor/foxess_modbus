@@ -2,6 +2,13 @@ from ..common.types import Inv
 from .modbus_remote_control_config import ModbusRemoteControlAddressConfig
 from .modbus_remote_control_config import ModbusRemoteControlFactory
 from .modbus_remote_control_config import RemoteControlAddressSpec
+from .modbus_remote_control_config import WorkMode
+
+_NORMAL_WORK_MODE_MAP = {
+    WorkMode.SELF_USE: 0,
+    WorkMode.FEED_IN_FIRST: 1,
+    WorkMode.BACK_UP: 2,
+}
 
 REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
     addresses=[
@@ -11,10 +18,11 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 timeout_set=44001,
                 active_power=[44002],
                 work_mode=41000,
+                work_mode_map=_NORMAL_WORK_MODE_MAP,
                 max_soc=41010,
-                invbatpower=11008,
+                invbatpower=[11008],
                 battery_soc=11036,
-                pwr_limit_bat_up=44012,
+                pwr_limit_bat_up=[44012],
                 pv_voltages=[11000, 11003],
             ),
             models=Inv.H1_G1,
@@ -26,8 +34,9 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 timeout_set=44001,
                 active_power=[44002],
                 work_mode=None,
+                work_mode_map=None,
                 max_soc=None,
-                invbatpower=31022,
+                invbatpower=[31022],
                 battery_soc=31024,
                 pwr_limit_bat_up=None,
                 pv_voltages=[31000, 31003],
@@ -40,10 +49,11 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 timeout_set=44001,
                 active_power=[44002],
                 work_mode=41000,
+                work_mode_map=_NORMAL_WORK_MODE_MAP,
                 max_soc=41010,
-                invbatpower=31022,
+                invbatpower=[31022],
                 battery_soc=31024,
-                pwr_limit_bat_up=44012,
+                pwr_limit_bat_up=[44012],
                 pv_voltages=[39070, 39072],
             ),
             models=Inv.H1_G2,
@@ -55,8 +65,9 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 timeout_set=44001,
                 active_power=[44002],
                 work_mode=41000,
+                work_mode_map=_NORMAL_WORK_MODE_MAP,
                 max_soc=41010,
-                invbatpower=11008,
+                invbatpower=[11008],
                 battery_soc=11036,
                 pwr_limit_bat_up=None,
                 pv_voltages=[11000, 11003, 11096, 11099],
@@ -69,8 +80,9 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 timeout_set=44001,
                 active_power=[44002],
                 work_mode=41000,
+                work_mode_map=_NORMAL_WORK_MODE_MAP,
                 max_soc=41010,
-                invbatpower=31022,
+                invbatpower=[31022],
                 battery_soc=31024,
                 pwr_limit_bat_up=None,
                 pv_voltages=[31000, 31003, 31039, 31042],
@@ -85,14 +97,35 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 timeout_set=44001,
                 active_power=[44003, 44002],
                 work_mode=41000,
+                work_mode_map=_NORMAL_WORK_MODE_MAP,
                 max_soc=41010,
-                invbatpower=31022,
+                invbatpower=[31022],
                 battery_soc=31038,
                 pwr_limit_bat_up=None,
                 pv_voltages=[31000, 31003],
             ),
             models=Inv.H3_SET & ~Inv.KUARA_H3 & ~Inv.AIO_H3,
         ),
-        # The H3 Pro has its own Force Charge / Discharge work modes
+        RemoteControlAddressSpec(
+            # The H3 doesn't support anything above 44005, and the active/reactive power regisers are 2 values
+            # The Kuara H3 doesn't support this, see https://github.com/nathanmarlor/foxess_modbus/issues/532
+            holding=ModbusRemoteControlAddressConfig(
+                remote_enable=46001,
+                timeout_set=46002,
+                active_power=[46004, 46003],
+                work_mode=49203,
+                work_mode_map={
+                    WorkMode.SELF_USE: 1,
+                    WorkMode.FEED_IN_FIRST: 2,
+                    WorkMode.BACK_UP: 3,
+                },
+                max_soc=46610,
+                invbatpower=[39238, 39237],
+                battery_soc=31038,
+                pwr_limit_bat_up=[46019, 46018],
+                pv_voltages=[39070, 39072, 39074, 39076],
+            ),
+            models=Inv.H3_PRO,
+        ),
     ]
 )
