@@ -2022,12 +2022,10 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         ],
         name="Work Mode",
         options_map={
-            0: "Self Use",
-            1: "Feed-in First",
-            2: "Back-up",
+            1: "Self Use",
+            2: "Feed-in First",
+            3: "Back-up",
             4: "Peak Shaving",
-            6: "Force Charge",
-            7: "Force Discharge",
         },
     )
 

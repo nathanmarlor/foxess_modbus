@@ -154,28 +154,43 @@ class ModbusController(EntityController, UnloadController):
     def inverter_details(self) -> dict[str, Any]:
         return self._inverter_details
 
-    def read(self, address: int, *, signed: bool) -> int | None:
+    def read(self, address: int | list[int], *, signed: bool) -> int | None:
         # There can be a delay between writing a register, and actually reading that value back (presumably the delay
         # is on the inverter somewhere). If we've recently written a value, use that value, rather than the latest-read
         # value
-        register_value = self._data.get(address)
-        if register_value is None:
-            return None
-
         now = time.monotonic()
-        value: int | None
-        if (
-            register_value.written_value is not None
-            and register_value.written_at is not None
-            and now - register_value.written_at < _INVERTER_WRITE_DELAY_SECS
-        ):
-            value = register_value.written_value
-        else:
-            value = register_value.read_value
 
-        if signed and value is not None:
-            sign_bit = 1 << (16 - 1)
+        def _read_value(address: int) -> int | None:
+            register_value = self._data.get(address)
+            if register_value is None:
+                return None
+
+            value: int | None
+            if (
+                register_value.written_value is not None
+                and register_value.written_at is not None
+                and now - register_value.written_at < _INVERTER_WRITE_DELAY_SECS
+            ):
+                value = register_value.written_value
+            else:
+                value = register_value.read_value
+
+            return value
+
+        if isinstance(address, int):
+            address = [address]
+
+        value = 0
+        for i, a in enumerate(address):
+            val = _read_value(a)
+            if val is None:
+                return None
+            value |= (val & 0xFFFF) << (i * 16)
+
+        if signed:
+            sign_bit = 1 << (len(address) * 16 - 1)
             value = (value & (sign_bit - 1)) - (value & sign_bit)
+
         return value
 
     async def read_registers(self, start_address: int, num_registers: int, register_type: RegisterType) -> list[int]:

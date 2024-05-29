@@ -1124,8 +1124,8 @@
         39225
       ]
     },
-    "key": "load_powerNone",
-    "name": "Load PowerNone",
+    "key": "load_power",
+    "name": "Load Power",
     "scale": 0.001,
     "signed": true,
     "type": "sensor"
@@ -1640,11 +1640,8 @@
     "name": "Work Mode",
     "type": "select",
     "values": {
-      "0": "Self Use",
-      "1": "Feed-in First",
-      "2": "Back-up",
-      "4": "Peak Shaving",
-      "6": "Force Charge"
+      "1": "Self Use",
+      "2": "Feed-in First"
     }
   }
 ]

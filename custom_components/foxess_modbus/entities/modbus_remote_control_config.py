@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from enum import Enum
+from enum import auto
 from typing import Callable
 
 from homeassistant.components.number import NumberDeviceClass
@@ -16,6 +18,12 @@ from .modbus_remote_control_number import ModbusRemoteControlNumberDescription
 from .modbus_remote_control_select import ModbusRemoteControlSelectDescription
 
 
+class WorkMode(Enum):
+    SELF_USE = auto()
+    FEED_IN_FIRST = auto()
+    BACK_UP = auto()
+
+
 @dataclass(frozen=True)
 class ModbusRemoteControlAddressConfig:
     """Defines the set of registers used for remote control"""
@@ -28,14 +36,16 @@ class ModbusRemoteControlAddressConfig:
     """Remote control-Active power command, sets the output power (+ve) or input power (-ve) of the inverter"""
     work_mode: int | None
     """Work mode control"""
+    work_mode_map: dict[WorkMode, int] | None
+    """Map of work mode ->value"""
 
     battery_soc: int
     """Current battery SoC"""
     max_soc: int | None
     """Configured Max SoC"""
-    invbatpower: int
+    invbatpower: list[int]
     """Current battery charge (negative) / discharge (positive) power"""
-    pwr_limit_bat_up: int | None
+    pwr_limit_bat_up: list[int] | None
     """Prw_limit Bat_up, maximum power that the battery can accept"""
     pv_voltages: list[int]
     """Array of pvx_voltage addresses for PV strings"""

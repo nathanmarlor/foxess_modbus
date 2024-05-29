@@ -93,18 +93,11 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
 
     def _calculate_native_value(self) -> int | float | None:
         """Return the value reported by the sensor."""
-        original = 0
-        for i, address in enumerate(self._addresses):
-            register_value = self._controller.read(address, signed=False)
-            if register_value is None:
-                return None
-            original |= (register_value & 0xFFFF) << (i * 16)
-
         entity_description = cast(ModbusSensorDescription, self.entity_description)
+        original = self._controller.read(self._addresses, signed=entity_description.signed)
 
-        if entity_description.signed:
-            sign_bit = 1 << (len(self._addresses) * 16 - 1)
-            original = (original & (sign_bit - 1)) - (original & sign_bit)
+        if original is None:
+            return None
 
         value: float | int = original
 
