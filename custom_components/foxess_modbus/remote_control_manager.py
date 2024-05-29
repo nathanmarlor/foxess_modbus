@@ -30,7 +30,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         self._max_soc_override: int | None = None
 
         modbus_addresses = [
-            self._addresses.battery_soc,
+            *self._addresses.battery_soc,
             self._addresses.work_mode,
             self._addresses.max_soc,
             *self._addresses.invbatpower,
@@ -121,8 +121,15 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         # The inverter doesn't respect Max Soc. Therefore if the SoC >= Max SoC, turn off remote control.
         # We don't let the user configure charge power: they can't figure it with normal charge periods, so why bother?
         # They can set the max charge current if they want, which has the same effect.
+        # If there are multiple batteries, then we'll take the max. That doesn't stop the inverter charging the other
+        # of course, but it's probably the best we can do.
 
-        soc = self._read(self._addresses.battery_soc, signed=False)
+        soc: int | None = None
+        for address in self._addresses.battery_soc:
+            value = self._read(address, signed=False)
+            if value is not None and (soc is None or value > soc):
+                soc = value
+
         # max_soc might not be available, e.g. on H1 LAN. In this case, we use an override, controlled from a sensor
         if self._max_soc_override is not None:
             max_soc: int | None = self._max_soc_override

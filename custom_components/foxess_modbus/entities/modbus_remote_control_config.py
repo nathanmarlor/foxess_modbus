@@ -39,8 +39,8 @@ class ModbusRemoteControlAddressConfig:
     work_mode_map: dict[WorkMode, int] | None
     """Map of work mode ->value"""
 
-    battery_soc: int
-    """Current battery SoC"""
+    battery_soc: list[int]
+    """Current battery SoC. If multiple values, these are the socs of the different batteries"""
     max_soc: int | None
     """Configured Max SoC"""
     invbatpower: list[int]
