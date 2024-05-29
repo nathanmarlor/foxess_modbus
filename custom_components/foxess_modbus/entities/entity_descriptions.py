@@ -1036,8 +1036,8 @@ def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
     yield _ct2_meter("T", scale=0.0001, addresses=[ModbusAddressesSpec(holding=[38921, 38920], models=Inv.H3_PRO)])
 
     def _load_power(phase: str | None, *, addresses: list[ModbusAddressesSpec]) -> EntityFactory:
-        key_suffix = f"_{phase}" if phase is not None else None
-        name_suffix = f" {phase}" if phase is not None else None
+        key_suffix = f"_{phase}" if phase is not None else ""
+        name_suffix = f" {phase}" if phase is not None else ""
         return ModbusSensorDescription(
             key=f"load_power{key_suffix}",
             addresses=addresses,
