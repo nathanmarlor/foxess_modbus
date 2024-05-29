@@ -115,7 +115,8 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             if i > 0:
                 assert self._addresses.active_power[i] == self._addresses.active_power[i - 1] - 1
             values.append((export_power >> (i * 16)) & 0xFFFF)
-        await self._controller.write_registers(self._addresses.active_power[0], values)
+        # Last register is the lowest address
+        await self._controller.write_registers(self._addresses.active_power[-1], values)
 
     async def _update_charge(self) -> None:
         # The inverter doesn't respect Max Soc. Therefore if the SoC >= Max SoC, turn off remote control.
