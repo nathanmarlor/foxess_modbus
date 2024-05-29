@@ -52,8 +52,8 @@
   {
     "addresses": {
       "holding": [
-        39236,
-        39235
+        39235,
+        39236
       ]
     },
     "key": "battery_charge_2",
@@ -117,8 +117,8 @@
   {
     "addresses": {
       "holding": [
-        39236,
-        39235
+        39235,
+        39236
       ]
     },
     "key": "battery_discharge_2",
@@ -829,7 +829,7 @@
     },
     "key": "inv_power",
     "name": "Inverter Power",
-    "scale": 0.001,
+    "scale": 1e-06,
     "signed": true,
     "type": "sensor"
   },
@@ -979,8 +979,8 @@
   {
     "addresses": {
       "holding": [
-        39236,
-        39235
+        39235,
+        39236
       ]
     },
     "key": "invbatpower_2",

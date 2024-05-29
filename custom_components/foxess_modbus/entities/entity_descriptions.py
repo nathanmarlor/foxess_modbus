@@ -749,7 +749,7 @@ def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
         scale=0.001,
     )
 
-    def _inv_power(phase: str | None, addresses: list[ModbusAddressesSpec]) -> EntityFactory:
+    def _inv_power(phase: str | None, addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
         key_suffix = f"_{phase}" if phase is not None else ""
         name_suffix = f" {phase}" if phase is not None else ""
         return ModbusSensorDescription(
@@ -759,7 +759,7 @@ def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
             native_unit_of_measurement="kW",
-            scale=0.001,
+            scale=scale,
             round_to=0.01,
             validate=[Range(-100, 100)],
         )
@@ -769,6 +769,8 @@ def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(holding=[39135, 39134], models=Inv.H3_PRO),
         ],
+        # This one appears to be in mW, despite what the spec says
+        scale=0.000001,
     )
     yield _inv_power(
         "R",
@@ -776,6 +778,7 @@ def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
             ModbusAddressesSpec(holding=[31012], models=Inv.H3_SET),
             ModbusAddressesSpec(holding=[39249, 39248], models=Inv.H3_PRO),
         ],
+        scale=0.001,
     )
     yield _inv_power(
         "S",
@@ -783,6 +786,7 @@ def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
             ModbusAddressesSpec(holding=[31013], models=Inv.H3_SET),
             ModbusAddressesSpec(holding=[39251, 39250], models=Inv.H3_PRO),
         ],
+        scale=0.001,
     )
     yield _inv_power(
         "T",
@@ -790,6 +794,7 @@ def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
             ModbusAddressesSpec(holding=[31014], models=Inv.H3_SET),
             ModbusAddressesSpec(holding=[39253, 39252], models=Inv.H3_PRO),
         ],
+        scale=0.001,
     )
 
     def _inv_power_reactive(phase: str | None, addresses: list[ModbusAddressesSpec]) -> EntityFactory:
@@ -1190,7 +1195,9 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield from _invbatpower(
         index=2,
         addresses=[
-            ModbusAddressesSpec(holding=[39236, 39235], models=Inv.H3_PRO),
+            # It does genuinely look like these two are the wrong way around, see
+            # https://github.com/nathanmarlor/foxess_modbus/discussions/516#discussioncomment-9569558
+            ModbusAddressesSpec(holding=[39235, 39236], models=Inv.H3_PRO),
         ],
     )
 
