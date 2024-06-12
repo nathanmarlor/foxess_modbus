@@ -197,13 +197,20 @@ class ModbusClient:
 
     async def _async_pymodbus_call(self, call: Callable[..., T], *args: Any, auto_connect: bool = True) -> T:
         """Convert async to sync pymodbus call."""
-        async with self._lock:
+
+        def _call() -> T:
             # pymodbus 3.4.1 removes automatic reconnections for the sync modbus client.
             # However, in versions prior to 4.3.0, the ModbusUdpClient didn't have a connected property.
+            # When using pollserial://, connected calls into serial.serial_for_url, which calls importlib.import_module,
+            # which HA doesn't like (see https://github.com/nathanmarlor/foxess_modbus/issues/618).
+            # Therefore we need to do this check inside the executor job
             if auto_connect and hasattr(self._client, "connected") and not self._client.connected:
-                await self._hass.async_add_executor_job(self._client.connect)
+                self._client.connect()
             # If the connection failed, this call will throw an appropriate error
-            result = await self._hass.async_add_executor_job(call, *args)
+            return call(*args)
+
+        async with self._lock:
+            result = await self._hass.async_add_executor_job(_call)
             # This seems to be required for serial devices, otherwise subsequent reads fail
             # The HA modbus integration does the same
             if self._poll_delay > 0:
