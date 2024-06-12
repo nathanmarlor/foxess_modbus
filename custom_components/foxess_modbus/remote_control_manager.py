@@ -112,10 +112,12 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         values = []
         for i in range(len(self._addresses.active_power)):
             # If there are multiple registers, they must be contiguous and descending
+            # (Low-order bits are in the higher register)
             if i > 0:
                 assert self._addresses.active_power[i] == self._addresses.active_power[i - 1] - 1
             values.append((export_power >> (i * 16)) & 0xFFFF)
         # Last register is the lowest address
+        values.reverse()
         await self._controller.write_registers(self._addresses.active_power[-1], values)
 
     async def _update_charge(self) -> None:
