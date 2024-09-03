@@ -275,7 +275,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         if fallback_work_mode is not None and self._addresses.work_mode_map is not None:
             fallback_work_mode_value = self._addresses.work_mode_map[fallback_work_mode]
             current_work_mode = self._read(self._addresses.work_mode, signed=False)
-            if current_work_mode != fallback_work_mode_value:
+            if current_work_mode != fallback_work_mode_value and self._addresses.work_mode is not None:
                 await self._controller.write_register(self._addresses.work_mode, fallback_work_mode_value)
 
         if not self._remote_control_enabled:
