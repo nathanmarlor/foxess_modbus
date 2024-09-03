@@ -272,10 +272,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
     async def _enable_remote_control(self, fallback_work_mode: WorkMode) -> None:
         # We set a fallback work mode so that the inverter still does "roughly" the right thing if we disconnect
         # (This might not be available, e.g. on H1 LAN)
-        if (
-            fallback_work_mode is not None
-            and self._addresses.work_mode_map is not None
-        ):
+        if fallback_work_mode is not None and self._addresses.work_mode_map is not None:
             assert self._addresses.work_mode_map is not None
             fallback_work_mode_value = self._addresses.work_mode_map[fallback_work_mode]
 
