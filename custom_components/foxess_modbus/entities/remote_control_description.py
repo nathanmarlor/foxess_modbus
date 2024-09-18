@@ -70,6 +70,7 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 invbatpower=[11008],
                 battery_soc=[11036],
                 pwr_limit_bat_up=None,
+                # Exists, but see https://github.com/nathanmarlor/foxess_modbus/discussions/666
                 pv_voltages=[11000, 11003, 11096, 11099],
             ),
             models=Inv.KH_PRE119,
