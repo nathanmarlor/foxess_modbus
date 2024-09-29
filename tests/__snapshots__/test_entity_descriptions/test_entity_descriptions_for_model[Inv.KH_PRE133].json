@@ -312,6 +312,32 @@
   {
     "addresses": {
       "holding": [
+        39135,
+        39134
+      ]
+    },
+    "key": "inv_power",
+    "name": "Inverter Power",
+    "scale": 1e-06,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": {
+      "holding": [
+        39137,
+        39136
+      ]
+    },
+    "key": "inv_power_Q",
+    "name": "Inverter Power (Reactive)",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": {
+      "holding": [
         31021
       ]
     },
