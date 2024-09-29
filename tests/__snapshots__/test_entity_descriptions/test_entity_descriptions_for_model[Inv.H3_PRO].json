@@ -1069,7 +1069,7 @@
         null,
         null,
         "Meter Lost Fault",
-        null,
+        "BMS Lost Fault",
         null,
         null,
         null,
@@ -1482,7 +1482,7 @@
     "addresses": {
       "holding": [
         39286,
-        39284
+        39285
       ]
     },
     "key": "pv4_power",
@@ -1570,7 +1570,7 @@
   {
     "addresses": {
       "holding": [
-        36001
+        36002
       ]
     },
     "is_hex": false,

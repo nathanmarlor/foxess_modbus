@@ -249,7 +249,7 @@ INVERTER_PROFILES = {
         # The KH doesn't have a LAN port. It supports both input and holding over RS485
         # Some models start with KH-, but some are just e.g. KH10.5
         InverterModelProfile(InverterModel.KH, r"^KH([\d\.]+)").add_connection_type(
-            Inv.KH_119,
+            Inv.KH_133,
             ConnectionType.AUX,
             RegisterType.HOLDING,
             special_registers=KH_REGISTERS,
