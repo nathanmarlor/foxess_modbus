@@ -1197,7 +1197,11 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         addresses=[
             # It does genuinely look like these two are the wrong way around, see
             # https://github.com/nathanmarlor/foxess_modbus/discussions/516#discussioncomment-9569558
-            ModbusAddressesSpec(holding=[39235, 39236], models=Inv.H3_PRO),
+            # ^^^^ Following on from this previous comment,
+            # the H3 Pro firmware from Master 1.53, Manager 1.22 has corrected the endian for this
+            # batpower2 register; it now matches the Fox modbus definition V1.05.00.00
+            # see https://github.com/nathanmarlor/foxess_modbus/discussions/685#discussioncomment-10811413
+            ModbusAddressesSpec(holding=[39236, 39235], models=Inv.H3_PRO),
         ],
     )
 
