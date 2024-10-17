@@ -1482,7 +1482,7 @@
     "addresses": {
       "holding": [
         39286,
-        39284
+        39285
       ]
     },
     "key": "pv4_power",
@@ -1504,6 +1504,98 @@
     "type": "sensor"
   },
   {
+    "addresses": {
+      "holding": [
+        39079
+      ]
+    },
+    "key": "pv5_current",
+    "name": "PV5 Current",
+    "scale": 0.01,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "key": "pv5_energy_total",
+    "method": "left",
+    "name": "PV5 Power Total",
+    "register_types": "dict_keys(['input', 'holding'])",
+    "source": "pv5_power",
+    "type": "integration-sensor",
+    "unit_time": "h"
+  },
+  {
+    "addresses": {
+      "holding": [
+        39288,
+        39287
+      ]
+    },
+    "key": "pv5_power",
+    "name": "PV5 Power",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": {
+      "holding": [
+        39078
+      ]
+    },
+    "key": "pv5_voltage",
+    "name": "PV5 Voltage",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": {
+      "holding": [
+        39081
+      ]
+    },
+    "key": "pv6_current",
+    "name": "PV6 Current",
+    "scale": 0.01,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "key": "pv6_energy_total",
+    "method": "left",
+    "name": "PV6 Power Total",
+    "register_types": "dict_keys(['input', 'holding'])",
+    "source": "pv6_power",
+    "type": "integration-sensor",
+    "unit_time": "h"
+  },
+  {
+    "addresses": {
+      "holding": [
+        39290,
+        39289
+      ]
+    },
+    "key": "pv6_power",
+    "name": "PV6 Power",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": {
+      "holding": [
+        39080
+      ]
+    },
+    "key": "pv6_voltage",
+    "name": "PV6 Voltage",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
     "key": "pv_power_now",
     "name": "PV Power",
     "register_types": "dict_keys(['input', 'holding'])",
@@ -1511,7 +1603,9 @@
       "pv1_power",
       "pv2_power",
       "pv3_power",
-      "pv4_power"
+      "pv4_power",
+      "pv5_power",
+      "pv6_power"
     ],
     "type": "lambda"
   },
