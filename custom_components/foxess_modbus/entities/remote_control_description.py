@@ -124,7 +124,7 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 invbatpower=[39238, 39237],
                 battery_soc=[37612, 38310],
                 pwr_limit_bat_up=[46019, 46018],
-                pv_voltages=[39070, 39072, 39074, 39076],
+                pv_voltages=[39070, 39072, 39074, 39076, 39078, 39080],
             ),
             models=Inv.H3_PRO,
         ),
