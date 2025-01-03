@@ -13,7 +13,7 @@ import serial
 from homeassistant.core import HomeAssistant
 from pymodbus.client import ModbusSerialClient
 from pymodbus.client import ModbusUdpClient
-from pymodbus.pdu import ModbusResponse
+from pymodbus.pdu import ModbusPDU
 from pymodbus.register_read_message import ReadHoldingRegistersResponse
 from pymodbus.register_read_message import ReadInputRegistersResponse
 from pymodbus.register_write_message import WriteMultipleRegistersResponse
@@ -226,7 +226,7 @@ class ModbusClient:
 class ModbusClientFailedError(Exception):
     """Raised when the ModbusClient fails to read/write"""
 
-    def __init__(self, message: str, client: ModbusClient, response: ModbusResponse | Exception) -> None:
+    def __init__(self, message: str, client: ModbusClient, response: ModbusPDU | Exception) -> None:
         super().__init__(f"{message} from {client}: {response}")
         self.message = message
         self.client = client
