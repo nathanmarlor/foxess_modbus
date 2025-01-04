@@ -9,11 +9,11 @@ pytest-asyncio
 
 colorlog==6.7.0
 pre-commit==3.3.3
-black==23.3.0
+black==23.9.0
 ruff==0.0.275
 # These are duplicated in .pre-commit-config.yaml
 reorder-python-imports==3.10.0
-mypy==1.4.1
+mypy==1.5.1
 # Currently not avaiable, see https://github.com/KapJI/homeassistant-stubs/issues/510
 # homeassistant-stubs==2025.1.0 # Matching HA version
 types-python-slugify==8.0.0.2
