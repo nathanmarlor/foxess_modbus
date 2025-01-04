@@ -13,27 +13,22 @@ from ..common.types import Inv
 from ..common.types import RegisterType
 from .inverter_model_spec import InverterModelSpec
 
+
 # HA introduced a FrozenOrThawed metaclass which is used by EntityDescription.
 # This conflicts with ABC's metaclass.
-# If EntityDescription has a metaclass (FrozenOrThawed), we need to combine that with
-# ABC's metaclass, see https://github.com/nathanmarlor/foxess_modbus/issues/480.
-# This is to allow HA to move to frozen entity descriptions (to aid caching), and will
-# start logging deprecation warnings in 2024.x.
-if type(EntityDescription) == type(type):  # type: ignore
-    _METACLASS = type(ABC)
-    ENTITY_DESCRIPTION_KWARGS = {}
-else:
-
-    class EntityFactoryMetaclass(type(EntityDescription), type(ABC)):  # type: ignore
-        """
-        Metaclass to use for EntityFactory.
-        """
-
-    _METACLASS = EntityFactoryMetaclass
-    ENTITY_DESCRIPTION_KWARGS = {"frozen": True}
+# We need to combine EntityDescription's metaclass with ABC's metaclass, see
+# https://github.com/nathanmarlor/foxess_modbus/issues/480. This is to allow HA to move to frozen entity descriptions
+# (to aid caching), and will start logging deprecation warnings in 2024.x.
+class EntityFactoryMetaclass(type(EntityDescription), type(ABC)):  # type: ignore
+    """
+    Metaclass to use for EntityFactory.
+    """
 
 
-class EntityFactory(ABC, metaclass=_METACLASS):  # type: ignore
+ENTITY_DESCRIPTION_KWARGS = {"frozen": True}
+
+
+class EntityFactory(ABC, metaclass=EntityFactoryMetaclass):  # type: ignore
     """Factory which can create entities"""
 
     @property

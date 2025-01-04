@@ -1,6 +1,5 @@
 """Sensor"""
 
-import inspect
 import logging
 from dataclasses import dataclass
 from datetime import timedelta
@@ -26,18 +25,7 @@ from .modbus_entity_mixin import get_entity_id
 
 _LOGGER = logging.getLogger(__name__)
 
-
-def _make_integration_sensor_kwargs() -> dict[str, Any]:
-    # HA 2024.7 introduced a new non-optional max_sub_interval parameter
-    kwargs: dict[str, Any] = {}
-    args = inspect.signature(IntegrationSensor.__init__)
-    if "max_sub_interval" in args.parameters:
-        kwargs["max_sub_interval"] = timedelta(minutes=1)  # Default used by integration sensor config
-
-    return kwargs
-
-
-_INTEGRATION_SENSOR_KWARGS = _make_integration_sensor_kwargs()
+MAX_SUB_INTERVAL = timedelta(minutes=1)  # Default used by integration sensor config
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
@@ -121,7 +109,7 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
             unique_id=None,
             unit_prefix=None,
             unit_time=unit_time,
-            **_INTEGRATION_SENSOR_KWARGS,
+            max_sub_interval=MAX_SUB_INTERVAL,
         )
 
         # Use the icon from entity_description

@@ -1,23 +1,24 @@
-pip>=21.0,<23.2
-homeassistant==2023.7.0
+# pip>=21.0,<23.2
+homeassistant==2025.1.0
 
 # Testing
-pytest-homeassistant-custom-component==0.13.42  # Matching version for 2023.7.0
+pytest-homeassistant-custom-component==0.13.201  # Matching version for 2025.1.0
 psutil-home-assistant  # Not sure why this is needed?
 fnv_hash_fast  # Or this?
 pytest-asyncio
 
 colorlog==6.7.0
 pre-commit==3.3.3
-black==23.3.0
+black==23.9.0
 ruff==0.0.275
 # These are duplicated in .pre-commit-config.yaml
 reorder-python-imports==3.10.0
-mypy==1.4.1
-homeassistant-stubs==2023.7.0 # Matching HA version
+mypy==1.5.1
+# Currently not avaiable, see https://github.com/KapJI/homeassistant-stubs/issues/510
+# homeassistant-stubs==2025.1.0 # Matching HA version
 types-python-slugify==8.0.0.2
 voluptuous-stubs==0.1.1
 # For mypy. Keep in sync with manifest.json and https://github.com/home-assistant/core/blob/master/requirements_all.txt.
 # If changed, make sure subclasses in modbus_client are still valid!
-pymodbus==3.5.4
+pymodbus==3.7.4
 pyserial==3.5

@@ -23,14 +23,16 @@ repos:
     rev: v0.0.275
     hooks:
       - id: ruff
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.4.1
-    hooks:
-      - id: mypy
-        # These are duplicated from requirements.txt
-        additional_dependencies:
-          [
-            homeassistant-stubs==2023.7.0,
-            types-python-slugify==8.0.0.2,
-            voluptuous-stubs==0.1.1,
-          ]
+# Temporarily disabled due to crash, probably caused by us having to use HA stubs which are out of date?
+# See https://github.com/nathanmarlor/foxess_modbus/actions/runs/12610946302/job/35146070831?pr=720
+#  - repo: https://github.com/pre-commit/mirrors-mypy
+#    rev: v1.5.1
+#    hooks:
+#      - id: mypy
+#        # These are duplicated from requirements.txt
+#        additional_dependencies:
+#          [
+#            homeassistant-stubs==2024.12.5,
+#            types-python-slugify==8.0.0.2,
+#            voluptuous-stubs==0.1.1,
+#          ]
