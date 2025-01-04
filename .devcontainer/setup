@@ -5,8 +5,5 @@ set -e
 cd "$(dirname "$0")/.."
 
 python3 -m pip install -r requirements.txt
-# json files on syrupy are broken before 4.0.4, but pytest-homeassistant-custom-component for our current HA version
-# relies on 4.0.2
-python3 -m pip install --no-deps syrupy==4.0.4
 
 git config --global --fixed-value --replace-all safe.directory "${PWD}" "${PWD}"

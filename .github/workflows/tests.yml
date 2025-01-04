@@ -29,9 +29,6 @@ jobs:
       - name: Install Python modules
         run: |
           pip install --no-cache-dir -r requirements.txt
-          # json files on syrupy are broken before 4.0.4, but pytest-homeassistant-custom-component for our current HA
-          # version relies on 4.0.2
-          pip install --no-deps syrupy==4.0.4
 
       - name: Run pre-commit on all files
         run: |
