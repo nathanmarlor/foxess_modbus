@@ -13,13 +13,12 @@ import serial
 from homeassistant.core import HomeAssistant
 from pymodbus.client import ModbusSerialClient
 from pymodbus.client import ModbusUdpClient
-from pymodbus.pdu import ModbusResponse
-from pymodbus.register_read_message import ReadHoldingRegistersResponse
-from pymodbus.register_read_message import ReadInputRegistersResponse
-from pymodbus.register_write_message import WriteMultipleRegistersResponse
-from pymodbus.register_write_message import WriteSingleRegisterResponse
-from pymodbus.transaction import ModbusRtuFramer
-from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.framer import FramerType
+from pymodbus.pdu import ModbusPDU
+from pymodbus.pdu.register_read_message import ReadHoldingRegistersResponse
+from pymodbus.pdu.register_read_message import ReadInputRegistersResponse
+from pymodbus.pdu.register_write_message import WriteMultipleRegistersResponse
+from pymodbus.pdu.register_write_message import WriteSingleRegisterResponse
 
 from .. import client
 from ..common.types import ConnectionType
@@ -39,19 +38,19 @@ T = TypeVar("T")
 _CLIENTS: dict[str, dict[str, Any]] = {
     SERIAL: {
         "client": ModbusSerialClient,
-        "framer": ModbusRtuFramer,
+        "framer": FramerType.RTU,
     },
     TCP: {
         "client": CustomModbusTcpClient,
-        "framer": ModbusSocketFramer,
+        "framer": FramerType.SOCKET,
     },
     UDP: {
         "client": ModbusUdpClient,
-        "framer": ModbusSocketFramer,
+        "framer": FramerType.SOCKET,
     },
     RTU_OVER_TCP: {
         "client": CustomModbusTcpClient,
-        "framer": ModbusRtuFramer,
+        "framer": FramerType.RTU,
     },
 }
 
@@ -70,13 +69,15 @@ class ModbusClient:
 
         client = _CLIENTS[protocol]
 
-        # Delaying for a second after establishing a connection seems to help the inverter stability,
-        # see https://github.com/nathanmarlor/foxess_modbus/discussions/132
         config = {
             **config,
             "framer": client["framer"],
-            "delay_on_connect": 1 if adapter.connection_type == ConnectionType.LAN else None,
         }
+
+        # Delaying for a second after establishing a connection seems to help the inverter stability,
+        # see https://github.com/nathanmarlor/foxess_modbus/discussions/132
+        if adapter.connection_type == ConnectionType.LAN:
+            config["delay_on_connect"] = 1
 
         # If our custom PosixPollSerial hack is supported, use that. This uses poll rather than select, which means we
         # don't break when there are more than 1024 fds. See #457.
@@ -226,7 +227,7 @@ class ModbusClient:
 class ModbusClientFailedError(Exception):
     """Raised when the ModbusClient fails to read/write"""
 
-    def __init__(self, message: str, client: ModbusClient, response: ModbusResponse | Exception) -> None:
+    def __init__(self, message: str, client: ModbusClient, response: ModbusPDU | Exception) -> None:
         super().__init__(f"{message} from {client}: {response}")
         self.message = message
         self.client = client
