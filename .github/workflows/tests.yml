@@ -36,7 +36,7 @@ jobs:
 
       - name: Run pytest
         run: |
-          python -m pytest
+          pytest --snapshot-update
 
   hacs:
     runs-on: "ubuntu-latest"
