@@ -1293,7 +1293,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             ModbusAddressesSpec(input=[11014], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31009], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2 | Inv.KH_119),
             ModbusAddressesSpec(holding=[31015], models=Inv.H3_SET),
-            ModbusAddressesSpec(holding=[38847, 38846], models=Inv.H3_PRO),
+            ModbusAddressesSpec(holding=[39139], models=Inv.H3_PRO),
         ],
         entity_registry_enabled_default=False,
         name="Grid Frequency",
