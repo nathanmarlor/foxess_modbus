@@ -215,8 +215,9 @@ INVERTER_PROFILES = {
             RegisterType.HOLDING,
         ),
         # AC1-5.0-E-G2. Has to appear before AC1 G1 see https://github.com/nathanmarlor/foxess_modbus/discussions/715
-        InverterModelProfile(InverterModel.AC1, r"^AC1-([\d\.]+)-E-G2", capacity_parser=CapacityParser.H1)
-        .add_connection_type(
+        InverterModelProfile(
+            InverterModel.AC1, r"^AC1-([\d\.]+)-E-G2", capacity_parser=CapacityParser.H1
+        ).add_connection_type(
             Inv.H1_G2,
             ConnectionType.AUX,
             RegisterType.HOLDING,
