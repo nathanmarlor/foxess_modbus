@@ -2104,7 +2104,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     yield ModbusWorkModeSelectDescription(
         key="work_mode",
         address=[
-            ModbusAddressSpec(holding=41000, models=Inv.H3_SET),
+            ModbusAddressSpec(holding=41000, models=Inv.H1_G2 | Inv.H3_SET),
         ],
         name="Work Mode",
         options_map={
