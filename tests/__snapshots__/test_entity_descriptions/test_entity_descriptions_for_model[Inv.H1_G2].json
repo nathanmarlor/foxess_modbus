@@ -879,8 +879,7 @@
     "type": "select",
     "values": {
       "0": "Self Use",
-      "1": "Feed-in First",
-      "2": "Back-up"
+      "1": "Feed-in First"
     }
   }
 ]
