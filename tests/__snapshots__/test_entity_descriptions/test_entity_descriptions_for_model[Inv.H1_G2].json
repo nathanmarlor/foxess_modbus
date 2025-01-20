@@ -879,7 +879,9 @@
     "type": "select",
     "values": {
       "0": "Self Use",
-      "1": "Feed-in First"
+      "1": "Feed-in First",
+      "2": "Back-up",
+      "4": "Peak Shaving"
     }
   }
 ]
