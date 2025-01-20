@@ -54,7 +54,7 @@ def test_entity_descriptions_for_model(model: Inv, snapshot_json: SnapshotAssert
     # syrupy doesn't like keys which aren't strings
     def _process(d: Any) -> None:
         if isinstance(d, dict):
-            for k, v in d.items():
+            for k, v in d.copy().items():
                 if not isinstance(k, str):
                     del d[k]
                     d[str(k)] = v
