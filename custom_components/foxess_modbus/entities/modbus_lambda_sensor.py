@@ -25,7 +25,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
-class ModbusLambdaSensorDescription(SensorEntityDescription, EntityFactory):
+class ModbusLambdaSensorDescription(SensorEntityDescription, EntityFactory):  # type: ignore[misc, override]
     """Entity description for ModbusLambdaSensors"""
 
     models: list[EntitySpec]

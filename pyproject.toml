@@ -11,7 +11,7 @@ namespace_packages = true
 explicit_package_bases = true
 
 [[tool.mypy.overrides]]
-module = 'pymodbus.*'
+module = 'serial.*'
 ignore_missing_imports = true
 
 [tool.ruff]

@@ -24,7 +24,7 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
-class ModbusSelectDescription(SelectEntityDescription, EntityFactory):
+class ModbusSelectDescription(SelectEntityDescription, EntityFactory):  # type: ignore[misc]
     """Custom select entity description"""
 
     address: list[ModbusAddressSpec]
