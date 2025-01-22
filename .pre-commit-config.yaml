@@ -19,9 +19,10 @@ repos:
       - id: ruff-format
         args: [--check]
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.5.1
+    rev: v1.14.1
     hooks:
       - id: mypy
+        args: [--show-traceback]
         # These are duplicated from requirements.txt
         additional_dependencies:
           [
