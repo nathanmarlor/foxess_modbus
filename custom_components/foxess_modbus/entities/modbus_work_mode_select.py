@@ -15,7 +15,7 @@ _FORCE_DISCHARGE = "Force Discharge"
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
-class ModbusWorkModeSelectDescription(ModbusSelectDescription):
+class ModbusWorkModeSelectDescription(ModbusSelectDescription):  # type: ignore[misc, override]
     def create_entity_if_supported(
         self,
         controller: EntityController,

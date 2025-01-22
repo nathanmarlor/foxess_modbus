@@ -55,7 +55,7 @@ def _is_force_charge_enabled(
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
-class ModbusChargePeriodStartEndSensorDescription(SensorEntityDescription, EntityFactory):
+class ModbusChargePeriodStartEndSensorDescription(SensorEntityDescription, EntityFactory):  # type: ignore[misc, override]
     """Entity description for ModbusChargePeriodStartEndSensor"""
 
     address: list[InverterModelSpec]
@@ -187,7 +187,9 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
-class ModbusEnableForceChargeSensorDescription(BinarySensorEntityDescription, EntityFactory):
+class ModbusEnableForceChargeSensorDescription(  # type ignore[misc, override]
+    BinarySensorEntityDescription, EntityFactory
+):
     """Entity description for ModbusEnableForceChargeSensor"""
 
     period_start_address: list[InverterModelSpec]

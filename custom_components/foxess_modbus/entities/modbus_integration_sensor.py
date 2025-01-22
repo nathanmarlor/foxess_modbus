@@ -29,7 +29,7 @@ MAX_SUB_INTERVAL = timedelta(minutes=1)  # Default used by integration sensor co
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
-class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory):
+class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory):  # type: ignore[misc, override]
     """Custom sensor description"""
 
     models: list[EntitySpec]

@@ -18,7 +18,7 @@ from .modbus_sensor import ModbusSensorDescription
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
-class ModbusBatterySensorDescription(ModbusSensorDescription):
+class ModbusBatterySensorDescription(ModbusSensorDescription):  # type: ignore[misc]
     """Description for ModbusBatterySensor"""
 
     bms_connect_state_address: list[ModbusAddressSpec]

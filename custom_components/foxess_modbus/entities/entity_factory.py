@@ -6,7 +6,7 @@ from typing import Any
 from typing import Sequence
 
 from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.entity import EntityDescription
+from homeassistant.util.frozen_dataclass_compat import FrozenOrThawed
 
 from ..common.entity_controller import EntityController
 from ..common.types import Inv
@@ -19,7 +19,7 @@ from .inverter_model_spec import InverterModelSpec
 # We need to combine EntityDescription's metaclass with ABC's metaclass, see
 # https://github.com/nathanmarlor/foxess_modbus/issues/480. This is to allow HA to move to frozen entity descriptions
 # (to aid caching), and will start logging deprecation warnings in 2024.x.
-class EntityFactoryMetaclass(type(EntityDescription), type(ABC)):  # type: ignore
+class EntityFactoryMetaclass(FrozenOrThawed, type(ABC)):  # type: ignore
     """
     Metaclass to use for EntityFactory.
     """
