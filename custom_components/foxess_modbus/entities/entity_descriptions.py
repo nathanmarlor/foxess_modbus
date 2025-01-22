@@ -199,7 +199,7 @@ def _pv_entities() -> Iterable[EntityFactory]:
             ModbusAddressesSpec(holding=[31001], models=Inv.H1_G1 | Inv.H1_LAN | Inv.KH_PRE133 | Inv.H3_SET),
         ],
         name="PV1 Current",
-        scale=0.01,
+        scale=0.1,
     )
     yield _pv_current(
         key="pv1_current",
@@ -248,7 +248,7 @@ def _pv_entities() -> Iterable[EntityFactory]:
             ModbusAddressesSpec(holding=[31004], models=Inv.H1_G1 | Inv.H1_LAN | Inv.KH_PRE133 | Inv.H3_SET),
         ],
         name="PV2 Current",
-        scale=0.01,
+        scale=0.1,
     )
     yield _pv_current(
         key="pv2_current",
@@ -295,15 +295,14 @@ def _pv_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[11097], models=Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31040], models=Inv.KH_PRE133),
-            ModbusAddressesSpec(holding=[39075], models=Inv.KH_133),
         ],
         name="PV3 Current",
-        scale=0.01,
+        scale=0.1,
     )
     yield _pv_current(
         key="pv3_current",
         addresses=[
-            ModbusAddressesSpec(holding=[39075], models=Inv.H3_PRO),
+            ModbusAddressesSpec(holding=[39075], models=Inv.H3_PRO | Inv.KH_133),
         ],
         name="PV3 Current",
         scale=0.01,
@@ -343,15 +342,14 @@ def _pv_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[11100], models=Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31043], models=Inv.KH_PRE133),
-            ModbusAddressesSpec(holding=[39077], models=Inv.KH_133),
         ],
         name="PV4 Current",
-        scale=0.01,
+        scale=0.1,
     )
     yield _pv_current(
         key="pv4_current",
         addresses=[
-            ModbusAddressesSpec(holding=[39077], models=Inv.H3_PRO),
+            ModbusAddressesSpec(holding=[39077], models=Inv.H3_PRO | Inv.KH_133),
         ],
         name="PV4 Current",
         scale=0.01,
@@ -707,8 +705,7 @@ def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
             icon="mdi:transmission-tower-import",
             scale=scale,
             round_to=0.01,
-            # On KH133 negative grid_ct is feed-in / grid export
-            post_process=lambda v: abs(v) if v < 0 else 0,
+            post_process=lambda v: v if v > 0 else 0,
             validate=[Range(0, 100)],
         )
         yield ModbusSensorDescription(
@@ -721,8 +718,7 @@ def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
             icon="mdi:transmission-tower-export",
             scale=scale,
             round_to=0.01,
-            # On KH133 positive grid_ct is grid consumption / grid import
-            post_process=lambda v: v if v > 0 else 0,
+            post_process=lambda v: abs(v) if v < 0 else 0,
             validate=[Range(0, 100)],
         )
 
@@ -730,6 +726,7 @@ def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[11021], models=Inv.H1_G1),
             ModbusAddressesSpec(holding=[31014], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2),
+            ModbusAddressesSpec(holding=[39169, 39168], models=Inv.KH_133),
         ],
         scale=0.001,
     )
@@ -737,7 +734,6 @@ def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[11021], models=Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31050, 31049], models=Inv.KH_PRE133),
-            ModbusAddressesSpec(holding=[39169, 39168], models=Inv.KH_133),
         ],
         scale=-0.001,
     )
@@ -2120,7 +2116,7 @@ def _bms_entities() -> Iterable[EntityFactory]:
         ],
         battery_soh=[
             ModbusAddressesSpec(input=[11104], models=Inv.KH_PRE119),
-            ModbusAddressesSpec(holding=[37624], models=Inv.H1_G2 | Inv.KH_119),
+            ModbusAddressesSpec(holding=[37624], models=Inv.H1_G2 | Inv.KH_PRE133 | Inv.KH_133),
             ModbusAddressesSpec(holding=[31090], models=Inv.H3_SET),
         ],
         battery_temp=[
