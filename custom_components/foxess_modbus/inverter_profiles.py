@@ -1,5 +1,6 @@
 """Defines the different inverter models and connection types"""
 
+import functools
 import logging
 import re
 from dataclasses import dataclass
@@ -15,6 +16,7 @@ from .common.types import InverterModel
 from .common.types import RegisterType
 from .const import INVERTER_BASE
 from .const import INVERTER_CONN
+from .const import INVERTER_VERSION
 from .entities.charge_period_descriptions import CHARGE_PERIODS
 from .entities.entity_descriptions import ENTITIES
 from .entities.modbus_charge_period_config import ModbusChargePeriodInfo
@@ -22,6 +24,40 @@ from .entities.modbus_remote_control_config import ModbusRemoteControlAddressCon
 from .entities.remote_control_description import REMOTE_CONTROL_DESCRIPTION
 
 _LOGGER = logging.getLogger(__package__)
+
+
+@functools.total_ordering
+class Version:
+    def __init__(self, major: int, minor: int) -> None:
+        self.major = major
+        self.minor = minor
+
+    @staticmethod
+    def parse(version: str) -> "Version":
+        match = re.fullmatch(r"(\d+)\.(\d+)", version)
+        if match is None:
+            raise ValueError(f"Version {version} is not a valid version")
+        return Version(int(match[1]), int(match[2]))
+
+    def __eq__(self, other: Any) -> bool:
+        return isinstance(other, Version) and self.major == other.major and self.minor == other.minor
+
+    def __hash__(self) -> int:
+        return hash((self.major, self.minor))
+
+    def __lt__(self, other: Any) -> bool:
+        # None means "the latest", and so sorts higher than anything (except None)
+        if other is None:
+            return True
+        if self.major != other.major:
+            return self.major < other.major
+        return self.minor < other.minor
+
+    def __str__(self) -> str:
+        return f"{self.major}.{self.minor}"
+
+    def __repr__(self) -> str:
+        return f"Version({self.major}, {self.minor})"
 
 
 class SpecialRegisterConfig:
@@ -90,16 +126,30 @@ class InverterModelConnectionTypeProfile:
     def __init__(
         self,
         inverter_model_profile: "InverterModelProfile",
-        inv: Inv,
         connection_type: ConnectionType,
         register_type: RegisterType,
+        versions: dict[Version | None, Inv],
         special_registers: SpecialRegisterConfig,
     ) -> None:
-        self._inv = inv
         self.inverter_model_profile = inverter_model_profile
         self.connection_type = connection_type
         self.register_type = register_type
+        self.versions = versions
         self.special_registers = special_registers
+
+        assert None in versions
+
+    def _get_inv(self, controller: EntityController) -> Inv:
+        version_from_config = controller.inverter_details.get(INVERTER_VERSION)
+        # Remember that self._versions is a map of maximum supported manager version (or None to support the max
+        # firmware version) -> Inv for that version
+        if version_from_config is None:
+            return self.versions[None]
+
+        inverter_version = Version.parse(version_from_config)
+        versions = sorted(self.versions.items(), reverse=True)
+        matched_version = next((x for x in versions if x[0] <= inverter_version), versions[0])
+        return matched_version[1]
 
     def overlaps_invalid_range(self, start_address: int, end_address: int) -> bool:
         """Determines whether the given inclusive address range overlaps any invalid address ranges"""
@@ -122,9 +172,7 @@ class InverterModelConnectionTypeProfile:
         for entity_factory in ENTITIES:
             if entity_factory.entity_type == entity_type:
                 entity = entity_factory.create_entity_if_supported(
-                    controller,
-                    self._inv,
-                    self.register_type,
+                    controller, self._get_inv(controller), self.register_type
                 )
                 if entity is not None:
                     result.append(entity)
@@ -138,7 +186,7 @@ class InverterModelConnectionTypeProfile:
 
         for charge_period_factory in CHARGE_PERIODS:
             charge_period = charge_period_factory.create_charge_period_config_if_supported(
-                controller, self._inv, self.register_type
+                controller, self._get_inv(controller), self.register_type
             )
             if charge_period is not None:
                 result.append(charge_period)
@@ -146,7 +194,7 @@ class InverterModelConnectionTypeProfile:
         return result
 
     def create_remote_control_config(self, controller: EntityController) -> ModbusRemoteControlAddressConfig | None:
-        return REMOTE_CONTROL_DESCRIPTION.create_if_supported(controller, self._inv, self.register_type)
+        return REMOTE_CONTROL_DESCRIPTION.create_if_supported(controller, self._get_inv(controller), self.register_type)
 
 
 class InverterModelProfile:
@@ -160,9 +208,9 @@ class InverterModelProfile:
 
     def add_connection_type(
         self,
-        inv: Inv,
         connection_type: ConnectionType,
         register_type: RegisterType,
+        versions: dict[Version | None, Inv],  # Map of maximum supported manager versions -> Inv for that
         special_registers: SpecialRegisterConfig | None = None,
     ) -> "InverterModelProfile":
         """Add the given connection type to the profile"""
@@ -173,9 +221,9 @@ class InverterModelProfile:
 
         self.connection_types[connection_type] = InverterModelConnectionTypeProfile(
             self,
-            inv,
             connection_type,
             register_type,
+            versions,
             special_registers,
         )
         return self
@@ -196,111 +244,111 @@ INVERTER_PROFILES = {
         InverterModelProfile(
             InverterModel.H1_G2, r"^H1-([\d\.]+)-E-G2", capacity_parser=CapacityParser.H1
         ).add_connection_type(
-            Inv.H1_G2,
             ConnectionType.AUX,
             RegisterType.HOLDING,
+            versions={None: Inv.H1_G2},
             special_registers=H1_G2_REGISTERS,
         ),
         # Can be both e.g. H1-5.0 and H1-5.0-E, but not H1-5.0-E-G2
         InverterModelProfile(InverterModel.H1_G1, r"^H1-([\d\.]+)", capacity_parser=CapacityParser.H1)
         .add_connection_type(
-            Inv.H1_G1,
             ConnectionType.AUX,
             RegisterType.INPUT,
+            versions={None: Inv.H1_G1},
             special_registers=H1_AC1_REGISTERS,
         )
         .add_connection_type(
-            Inv.H1_LAN,
             ConnectionType.LAN,
             RegisterType.HOLDING,
+            versions={None: Inv.H1_LAN},
         ),
         # AC1-5.0-E-G2. Has to appear before AC1 G1 see https://github.com/nathanmarlor/foxess_modbus/discussions/715
         InverterModelProfile(
             InverterModel.AC1, r"^AC1-([\d\.]+)-E-G2", capacity_parser=CapacityParser.H1
         ).add_connection_type(
-            Inv.H1_G2,
             ConnectionType.AUX,
             RegisterType.HOLDING,
+            versions={None: Inv.H1_G2},
             special_registers=H1_G2_REGISTERS,
         ),
         InverterModelProfile(InverterModel.AC1, r"^AC1-([\d\.]+)", capacity_parser=CapacityParser.H1)
         .add_connection_type(
-            Inv.H1_G1,
             ConnectionType.AUX,
             RegisterType.INPUT,
+            versions={None: Inv.H1_G1},
             special_registers=H1_AC1_REGISTERS,
         )
         .add_connection_type(
-            Inv.H1_LAN,
             ConnectionType.LAN,
             RegisterType.HOLDING,
+            versions={None: Inv.H1_LAN},
         ),
         InverterModelProfile(InverterModel.AIO_H1, r"^AIO-H1-([\d\.]+)", capacity_parser=CapacityParser.H1)
         .add_connection_type(
-            Inv.H1_G1,
             ConnectionType.AUX,
             RegisterType.INPUT,
+            versions={None: Inv.H1_G1},
             special_registers=H1_AC1_REGISTERS,
         )
         .add_connection_type(
-            Inv.H1_LAN,
             ConnectionType.LAN,
             RegisterType.HOLDING,
+            versions={None: Inv.H1_LAN},
         ),
         InverterModelProfile(
             InverterModel.AIO_AC1, r"^AIO-AC1-([\d\.]+)", capacity_parser=CapacityParser.H1
         ).add_connection_type(
-            Inv.H1_G1,
             ConnectionType.AUX,
             RegisterType.INPUT,
+            versions={None: Inv.H1_G1},
             special_registers=H1_AC1_REGISTERS,
         ),
         # The KH doesn't have a LAN port. It supports both input and holding over RS485
         # Some models start with KH-, but some are just e.g. KH10.5
         InverterModelProfile(InverterModel.KH, r"^KH([\d\.]+)").add_connection_type(
-            Inv.KH_119,
             ConnectionType.AUX,
             RegisterType.HOLDING,
+            versions={Version(1, 19): Inv.KH_PRE119, None: Inv.KH_119},
             special_registers=KH_REGISTERS,
         ),
         # The H3 seems to use holding registers for everything
         InverterModelProfile(InverterModel.H3, r"^H3-([\d\.]+)")
         .add_connection_type(
-            Inv.H3,
             ConnectionType.LAN,
             RegisterType.HOLDING,
+            versions={None: Inv.H3},
             special_registers=H3_REGISTERS,
         )
         .add_connection_type(
-            Inv.H3,
             ConnectionType.AUX,
             RegisterType.HOLDING,
+            versions={None: Inv.H3},
             special_registers=H3_REGISTERS,
         ),
         InverterModelProfile(InverterModel.AC3, r"^AC3-([\d\.]+)")
         .add_connection_type(
-            Inv.H3,
             ConnectionType.LAN,
             RegisterType.HOLDING,
+            versions={None: Inv.H3},
             special_registers=H3_REGISTERS,
         )
         .add_connection_type(
-            Inv.H3,
             ConnectionType.AUX,
             RegisterType.HOLDING,
+            versions={None: Inv.H3},
             special_registers=H3_REGISTERS,
         ),
         InverterModelProfile(InverterModel.AIO_H3, r"^AIO-H3-([\d\.]+)")
         .add_connection_type(
-            Inv.AIO_H3,
             ConnectionType.AUX,
             RegisterType.HOLDING,
+            versions={None: Inv.AIO_H3},
             special_registers=H3_REGISTERS,
         )
         .add_connection_type(
-            Inv.H3,
             ConnectionType.LAN,
             RegisterType.HOLDING,
+            versions={None: Inv.AIO_H3},
             special_registers=H3_REGISTERS,
         ),
         # Kuara 6.0-3-H: H3-6.0-E
@@ -309,27 +357,27 @@ INVERTER_PROFILES = {
         # Kuara 12.0-3-H: H3-12.0-E
         # I haven't seen any indication that these support a direct LAN connection
         InverterModelProfile(InverterModel.KUARA_H3, r"^Kuara ([\d\.]+)-3-H$").add_connection_type(
-            Inv.KUARA_H3,
             ConnectionType.AUX,
             RegisterType.HOLDING,
+            versions={None: Inv.KUARA_H3},
             special_registers=H3_REGISTERS,
         ),
         # Sonnenkraft:
         # SK-HWR-8: H3-8.0-E
         # (presumably there are other sizes also)
         InverterModelProfile(InverterModel.SK_HWR, r"^SK-HWR-([\d\.]+)").add_connection_type(
-            Inv.H3,
             ConnectionType.AUX,
             RegisterType.HOLDING,
+            versions={None: Inv.H3},
             special_registers=H3_REGISTERS,
         ),
         # STAR
         # STAR-H3-12.0-E: H3-12.0-E
         # (presumably there are other sizes also)
         InverterModelProfile(InverterModel.STAR_H3, r"^STAR-H3-([\d\.]+)").add_connection_type(
-            Inv.H3,
             ConnectionType.AUX,
             RegisterType.HOLDING,
+            versions={None: Inv.H3},
             special_registers=H3_REGISTERS,
         ),
         # Solavita SP
@@ -347,26 +395,23 @@ INVERTER_PROFILES = {
                 fallback_to_kw=False,
             ),
         ).add_connection_type(
-            Inv.H3,
             ConnectionType.AUX,
             RegisterType.HOLDING,
+            versions={None: Inv.H3},
             special_registers=H3_REGISTERS,
         ),
         # E.g. H3-Pro-20.0
         InverterModelProfile(InverterModel.H3_PRO, r"^H3-Pro-([\d\.]+)").add_connection_type(
-            Inv.H3_PRO,
             ConnectionType.AUX,
             RegisterType.HOLDING,
+            versions={None: Inv.H3_PRO},
             special_registers=H3_REGISTERS,
         ),
     ]
 }
 
 
-def create_entities(
-    entity_type: type[Entity],
-    controller: EntityController,
-) -> list[Entity]:
+def create_entities(entity_type: type[Entity], controller: EntityController) -> list[Entity]:
     """Create all of the entities which support the inverter described by the given configuration object"""
 
     return inverter_connection_type_profile_from_config(controller.inverter_details).create_entities(

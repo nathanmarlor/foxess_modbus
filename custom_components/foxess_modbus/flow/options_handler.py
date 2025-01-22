@@ -8,12 +8,14 @@ from homeassistant.helpers.selector import selector
 
 from ..const import ADAPTER_ID
 from ..const import CONFIG_ENTRY_TITLE
+from ..const import INVERTER_VERSION
 from ..const import INVERTERS
 from ..const import MAX_READ
 from ..const import MODBUS_TYPE
 from ..const import POLL_RATE
 from ..const import ROUND_SENSOR_VALUES
 from ..inverter_adapters import ADAPTERS
+from ..inverter_profiles import inverter_connection_type_profile_from_config
 from .adapter_flow_segment import AdapterFlowSegment
 from .flow_handler_mixin import FlowHandlerMixin
 
@@ -117,15 +119,23 @@ class OptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
         current_adapter = ADAPTERS[combined_config_options[ADAPTER_ID]]
 
         async def body(user_input: dict[str, Any]) -> FlowResult:
+            version = user_input.get("version")
+            if version is None or version == "latest":
+                options.pop(INVERTER_VERSION, None)
+            else:
+                options[INVERTER_VERSION] = version
+
             poll_rate = user_input.get("poll_rate")
             if poll_rate is not None:
                 options[POLL_RATE] = poll_rate
             else:
                 options.pop(POLL_RATE, None)
+
             if user_input.get("round_sensor_values", False):
                 options[ROUND_SENSOR_VALUES] = True
             else:
                 options.pop(ROUND_SENSOR_VALUES, None)
+
             max_read = user_input.get("max_read")
             if max_read is not None:
                 options[MAX_READ] = max_read
@@ -135,6 +145,28 @@ class OptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
             return self._save_selected_inverter_options(options)
 
         schema_parts: dict[Any, Any] = {}
+
+        versions = sorted(inverter_connection_type_profile_from_config(combined_config_options).versions.keys())
+        if len(versions) > 1:
+            version_options = []
+            prev_version = None
+            # The last element will be None, which means "latest"
+            for version in versions[:-1]:
+                label = f"Up to {version}" if prev_version is None else f"{prev_version} - {version}"
+                version_options.append({"label": label, "value": str(version)})
+                prev_version = version
+            version_options.append(
+                {"label": f"{versions[-2]} and higher", "value": "latest"}
+            )  # hass can't cope with None
+
+            schema_parts[vol.Required("version", default=options.get(INVERTER_VERSION, "latest"))] = selector(
+                {
+                    "select": {
+                        "options": list(reversed(version_options)),
+                        "mode": "dropdown",
+                    }
+                }
+            )
 
         schema_parts[vol.Required("round_sensor_values", default=options.get(ROUND_SENSOR_VALUES, False))] = selector(
             {"boolean": {}}
