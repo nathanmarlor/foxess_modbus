@@ -166,7 +166,7 @@ STANDARD_FAULTS = FaultSet(
     masks={"Grid Lost Fault": ["Grid Voltage Fault", "Grid Frequency Fault"]},
 )
 
-H3_PRO_FAULTS = FaultSet(
+H3_PRO_KH_133_FAULTS = FaultSet(
     faults=[
         [
             "PV Over-voltage",
@@ -215,7 +215,7 @@ H3_PRO_FAULTS = FaultSet(
             None,
             None,
             "Meter Lost Fault",
-            None,
+            "BMS Lost Fault",  # KH_133 only,
             None,
             None,
             None,

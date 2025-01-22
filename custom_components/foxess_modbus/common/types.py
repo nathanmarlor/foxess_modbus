@@ -67,8 +67,9 @@ class Inv(Flag):
     H1_G2 = auto()
 
     KH_PRE119 = auto()
-    KH_119 = auto()
-    KH_SET = KH_PRE119 | KH_119
+    KH_PRE133 = auto()
+    KH_133 = auto()
+    KH_SET = KH_PRE119 | KH_PRE133 | KH_133
 
     H3 = auto()
     AIO_H3 = auto()
