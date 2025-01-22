@@ -11,7 +11,6 @@ import logging
 import uuid
 from typing import Any
 
-from homeassistant.components.energy import data
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import UNDEFINED
@@ -135,21 +134,25 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
 
     _LOGGER.debug("Migrating from version %s", config_entry.version)
 
-    if config_entry.version == 1:
+    data = copy.deepcopy(dict(config_entry.data))
+    version = config_entry.version
+    new_options = UNDEFINED
+
+    if version == 1:
         # Introduce adapter selection
         new_data = {
             INVERTERS: {},
-            CONFIG_SAVE_TIME: config_entry.data[CONFIG_SAVE_TIME],
+            CONFIG_SAVE_TIME: data[CONFIG_SAVE_TIME],
         }
         if config_entry.options:
             inverter_options = {
                 POLL_RATE: config_entry.options[POLL_RATE],
                 MAX_READ: config_entry.options[MAX_READ],
             }
-            options: dict[str, Any] = {INVERTERS: {}}
+            new_options: dict[str, Any] = {INVERTERS: {}}
         else:
             inverter_options = {}
-            options = UNDEFINED
+            new_options = UNDEFINED
 
         for modbus_type, modbus_type_inverters in config_entry.data.items():
             if modbus_type in [TCP, UDP, SERIAL]:  # Didn't have RTU_OVER_TCP then
@@ -176,12 +179,12 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                         inverter_id = str(uuid.uuid4())
                         new_data[INVERTERS][inverter_id] = inverter
                         if inverter_options:
-                            options[INVERTERS][inverter_id] = inverter_options
+                            new_options[INVERTERS][inverter_id] = inverter_options
 
-        hass.config_entries.async_update_entry(config_entry, data=new_data, options=options)
-        config_entry.version = 2
+        data = new_data
+        version = 2
 
-    if config_entry.version == 2:
+    if version == 2:
         # Fix a badly-set-up energy dashboard
         energy_manager = await data.async_get_manager(hass)
         if energy_manager.data is not None:
@@ -199,45 +202,51 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                         flow_to.setdefault("entity_energy_price", None)
                         flow_to.setdefault("number_energy_price", None)
             await energy_manager.async_update(energy_data)
-        config_entry.version = 3
 
-    if config_entry.version == 3:
+        version = 3
+
+    if version == 3:
         # Add entity ID prefix
-        for inverter in config_entry.data.get(INVERTERS, {}).values():
+        for inverter in data.get(INVERTERS, {}).values():
             inverter[ENTITY_ID_PREFIX] = inverter[FRIENDLY_NAME]
-        config_entry.version = 4
 
-    if config_entry.version == 4:
+        version = 4
+
+    if version == 4:
         # Old versions accidentally mutated ConfigEntry.data
-        for inverter in config_entry.data.get(INVERTERS, {}).values():
+        for inverter in data.get(INVERTERS, {}).values():
             inverter.pop(POLL_RATE, None)
             inverter.pop(MAX_READ, None)
             if inverter[FRIENDLY_NAME] is None:
                 inverter[FRIENDLY_NAME] = ""
             if inverter[ENTITY_ID_PREFIX] is None:
                 inverter[ENTITY_ID_PREFIX] = ""
-        config_entry.version = 5
 
-    if config_entry.version == 5:
+        version = 5
+
+    if version == 5:
         # Having "TCP" / "UDP" / "SERIAL" in all-caps is annoying for translations in the config flow
         # Also change "TCP+RTU" to "rtu_over_tcp" (to remove "+", which makes translations annoying)
-        for inverter in config_entry.data.get(INVERTERS, {}).values():
+        for inverter in data.get(INVERTERS, {}).values():
             if inverter[MODBUS_TYPE] == "TCP+RTU":
                 inverter[MODBUS_TYPE] = "rtu_over_tcp"
             else:
                 inverter[MODBUS_TYPE] = inverter[MODBUS_TYPE].lower()
-        config_entry.version = 6
 
-    if config_entry.version == 6:
+        version = 6
+
+    if version == 6:
         # We still have users with entity ID prefixes which aren't valid in entity IDs. HA will automatically convert
         # them, but this causes the charge period card to complain. Fix them once and for all.
-        for inverter in config_entry.data.get(INVERTERS, {}).values():
+        for inverter in data.get(INVERTERS, {}).values():
             inverter[UNIQUE_ID_PREFIX] = inverter[ENTITY_ID_PREFIX]
             if inverter[ENTITY_ID_PREFIX]:
                 inverter[ENTITY_ID_PREFIX] = slugify(inverter[ENTITY_ID_PREFIX], separator="_").rstrip("_")
-        config_entry.version = 7
 
-    _LOGGER.info("Migration to version %s successful", config_entry.version)
+        version = 7
+
+    _LOGGER.info("Migration from version %s to version %s successful", config_entry.version, version)
+    hass.config_entries.async_update_entry(entry=config_entry, data=data, options=new_options, version=version)
     return True
 
 
