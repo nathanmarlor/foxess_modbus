@@ -47,6 +47,9 @@ ADAPTER_WAS_MIGRATED = "adapter_was_migrated"
 INVERTER_MODEL = "inverter_model"
 INVERTER_BASE = "inverter_base"
 INVERTER_CONN = "inverter_conn"
+# The inverter manager version to use. This is the version corresponding to InverterModelConnectionTypeProfile.versions,
+# i.e. the upper bound of a range of versions we support. None means use the latest.
+INVERTER_VERSION = "inverter_version"
 INVERTERS = "inverters"
 
 CONFIG_SAVE_TIME = "save_time"
