@@ -39,7 +39,7 @@ class Version:
             raise ValueError(f"Version {version} is not a valid version")
         return Version(int(match[1]), int(match[2]))
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, Version) and self.major == other.major and self.minor == other.minor
 
     def __hash__(self) -> int:
@@ -246,7 +246,7 @@ INVERTER_PROFILES = {
         ).add_connection_type(
             ConnectionType.AUX,
             RegisterType.HOLDING,
-            versions={None: Inv.H1_G2},
+            versions={Version(1, 44): Inv.H1_G2_PRE144, None: Inv.H1_G2_144},
             special_registers=H1_G2_REGISTERS,
         ),
         # Can be both e.g. H1-5.0 and H1-5.0-E, but not H1-5.0-E-G2
@@ -268,7 +268,7 @@ INVERTER_PROFILES = {
         ).add_connection_type(
             ConnectionType.AUX,
             RegisterType.HOLDING,
-            versions={None: Inv.H1_G2},
+            versions={Version(1, 44): Inv.H1_G2_PRE144, None: Inv.H1_G2_144},
             special_registers=H1_G2_REGISTERS,
         ),
         InverterModelProfile(InverterModel.AC1, r"^AC1-([\d\.]+)", capacity_parser=CapacityParser.H1)

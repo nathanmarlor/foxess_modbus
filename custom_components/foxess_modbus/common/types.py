@@ -64,7 +64,9 @@ class Inv(Flag):
 
     H1_LAN = auto()
     H1_G1 = auto()
-    H1_G2 = auto()
+    H1_G2_PRE144 = auto()
+    H1_G2_144 = auto()
+    H1_G2 = H1_G2_PRE144 | H1_G2_144
 
     KH_PRE119 = auto()
     KH_119 = auto()

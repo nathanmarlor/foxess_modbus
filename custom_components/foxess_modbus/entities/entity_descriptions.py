@@ -1438,7 +1438,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
 
     yield _inverter_fault_code(
         addresses=[
-            ModbusAddressesSpec(holding=[39067, 39068, 39069], models=Inv.H3_PRO | Inv.H1_G2),
+            ModbusAddressesSpec(holding=[39067, 39068, 39069], models=Inv.H3_PRO | Inv.H1_G2_144),
         ],
         fault_set=H3_PRO_FAULTS,
     )
@@ -2041,12 +2041,12 @@ def _bms_entities() -> Iterable[EntityFactory]:
         bms_connect_state_address=BMS_CONNECT_STATE_ADDRESS,
         batvolt=[
             ModbusAddressesSpec(input=[11034], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(holding=[37609], models=Inv.H1_G2),
+            ModbusAddressesSpec(holding=[37609], models=Inv.H1_G2_144),
             ModbusAddressesSpec(holding=[31034], models=Inv.H3_SET),
         ],
         bat_current=[
             ModbusAddressesSpec(input=[11035], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(holding=[37610], models=Inv.H1_G2),
+            ModbusAddressesSpec(holding=[37610], models=Inv.H1_G2_144),
             ModbusAddressesSpec(holding=[31035], models=Inv.H3_SET),
         ],
         battery_soc=[
@@ -2066,23 +2066,23 @@ def _bms_entities() -> Iterable[EntityFactory]:
         ],
         bms_cell_temp_high=[
             ModbusAddressesSpec(input=[11043], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(holding=[37617], models=Inv.H1_G2),
+            ModbusAddressesSpec(holding=[37617], models=Inv.H1_G2_144 | Inv.KH_119),
         ],
         bms_cell_temp_low=[
             ModbusAddressesSpec(input=[11044], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(holding=[37618], models=Inv.H1_G2),
+            ModbusAddressesSpec(holding=[37618], models=Inv.H1_G2_144 | Inv.KH_119),
         ],
         bms_cell_mv_high=[
             ModbusAddressesSpec(input=[11045], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(holding=[37619], models=Inv.H1_G2),
+            ModbusAddressesSpec(holding=[37619], models=Inv.H1_G2_144 | Inv.KH_119),
         ],
         bms_cell_mv_low=[
             ModbusAddressesSpec(input=[11046], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(holding=[37620], models=Inv.H1_G2),
+            ModbusAddressesSpec(holding=[37620], models=Inv.H1_G2_144 | Inv.KH_119),
         ],
         bms_kwh_remaining=[
             ModbusAddressesSpec(input=[11037], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(holding=[37632], models=Inv.H1_G2),
+            ModbusAddressesSpec(holding=[37632], models=Inv.H1_G2 | Inv.KH_119),
         ],
     )
     yield from _inner(
