@@ -112,6 +112,18 @@
   {
     "addresses": {
       "holding": [
+        37624
+      ]
+    },
+    "key": "battery_soh",
+    "name": "Battery SoH",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": {
+      "holding": [
         31023
       ]
     },
@@ -1020,7 +1032,8 @@
     "values": {
       "0": "Self Use",
       "1": "Feed-in First",
-      "2": "Back-up"
+      "2": "Back-up",
+      "4": "Peak Shaving"
     }
   }
 ]
