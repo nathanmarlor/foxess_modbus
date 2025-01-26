@@ -56,7 +56,7 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 pwr_limit_bat_up=None,
                 pv_voltages=[39070, 39072],
             ),
-            models=Inv.H1_G2_SET,
+            models=Inv.H1_G2,
         ),
         # The KH doesn't support anything above 44003
         RemoteControlAddressSpec(
