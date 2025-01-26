@@ -14,18 +14,6 @@
   {
     "addresses": {
       "holding": [
-        37610
-      ]
-    },
-    "key": "bat_current",
-    "name": "Battery Current",
-    "scale": 0.1,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": {
-      "holding": [
         31022
       ]
     },
@@ -136,66 +124,6 @@
   {
     "addresses": {
       "holding": [
-        37609
-      ]
-    },
-    "key": "batvolt",
-    "name": "Battery Voltage",
-    "scale": 0.1,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": {
-      "holding": [
-        37619
-      ]
-    },
-    "key": "bms_cell_mv_high",
-    "name": "BMS Cell mV High",
-    "scale": null,
-    "signed": false,
-    "type": "sensor"
-  },
-  {
-    "addresses": {
-      "holding": [
-        37620
-      ]
-    },
-    "key": "bms_cell_mv_low",
-    "name": "BMS Cell mV Low",
-    "scale": null,
-    "signed": false,
-    "type": "sensor"
-  },
-  {
-    "addresses": {
-      "holding": [
-        37617
-      ]
-    },
-    "key": "bms_cell_temp_high",
-    "name": "BMS Cell Temp High",
-    "scale": 0.1,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": {
-      "holding": [
-        37618
-      ]
-    },
-    "key": "bms_cell_temp_low",
-    "name": "BMS Cell Temp Low",
-    "scale": 0.1,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": {
-      "holding": [
         31025
       ]
     },
@@ -220,24 +148,12 @@
   {
     "addresses": {
       "holding": [
-        37632
-      ]
-    },
-    "key": "bms_kwh_remaining",
-    "name": "BMS kWh Remaining",
-    "scale": 0.01,
-    "signed": false,
-    "type": "sensor"
-  },
-  {
-    "addresses": {
-      "holding": [
         31015
       ]
     },
     "key": "ct2_meter",
     "name": "CT2 Meter",
-    "scale": 0.001,
+    "scale": -0.001,
     "signed": true,
     "type": "sensor"
   },
@@ -292,7 +208,8 @@
   {
     "addresses": {
       "holding": [
-        31014
+        39169,
+        39168
       ]
     },
     "key": "feed_in",
@@ -329,7 +246,8 @@
   {
     "addresses": {
       "holding": [
-        31014
+        39169,
+        39168
       ]
     },
     "key": "grid_consumption",
@@ -366,7 +284,8 @@
   {
     "addresses": {
       "holding": [
-        31014
+        39169,
+        39168
       ]
     },
     "key": "grid_ct",
@@ -507,12 +426,20 @@
   {
     "addresses": {
       "holding": [
-        39063,
-        39065
+        31027
       ]
     },
     "key": "inverter_state",
     "name": "Inverter State",
+    "states": [
+      "Self Test",
+      "Waiting",
+      "Checking",
+      "On Grid",
+      "Off Grid / EPS",
+      "Recoverable Fault",
+      "Unrecoverable Fault"
+    ],
     "type": "inverter-state-sensor"
   },
   {
@@ -725,7 +652,8 @@
   {
     "addresses": {
       "holding": [
-        39280
+        39280,
+        39279
       ]
     },
     "key": "pv1_power",
@@ -770,7 +698,8 @@
   {
     "addresses": {
       "holding": [
-        39282
+        39282,
+        39281
       ]
     },
     "key": "pv2_power",
@@ -792,12 +721,106 @@
     "type": "sensor"
   },
   {
+    "addresses": {
+      "holding": [
+        39075
+      ]
+    },
+    "key": "pv3_current",
+    "name": "PV3 Current",
+    "scale": 0.01,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "key": "pv3_energy_total",
+    "method": "left",
+    "name": "PV3 Power Total",
+    "register_types": "dict_keys(['input', 'holding'])",
+    "source": "pv3_power",
+    "type": "integration-sensor",
+    "unit_time": "h"
+  },
+  {
+    "addresses": {
+      "holding": [
+        39284,
+        39283
+      ]
+    },
+    "key": "pv3_power",
+    "name": "PV3 Power",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": {
+      "holding": [
+        39074
+      ]
+    },
+    "key": "pv3_voltage",
+    "name": "PV3 Voltage",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": {
+      "holding": [
+        39077
+      ]
+    },
+    "key": "pv4_current",
+    "name": "PV4 Current",
+    "scale": 0.01,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "key": "pv4_energy_total",
+    "method": "left",
+    "name": "PV4 Power Total",
+    "register_types": "dict_keys(['input', 'holding'])",
+    "source": "pv4_power",
+    "type": "integration-sensor",
+    "unit_time": "h"
+  },
+  {
+    "addresses": {
+      "holding": [
+        39286,
+        39285
+      ]
+    },
+    "key": "pv4_power",
+    "name": "PV4 Power",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": {
+      "holding": [
+        39076
+      ]
+    },
+    "key": "pv4_voltage",
+    "name": "PV4 Voltage",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
     "key": "pv_power_now",
     "name": "PV Power",
     "register_types": "dict_keys(['input', 'holding'])",
     "sources": [
       "pv1_power",
-      "pv2_power"
+      "pv2_power",
+      "pv3_power",
+      "pv4_power"
     ],
     "type": "lambda"
   },
@@ -888,116 +911,6 @@
   {
     "addresses": {
       "holding": [
-        41001
-      ]
-    },
-    "key": "time_period_1_enable_charge_from_grid",
-    "name": "Period 1 - Enable Charge from Grid",
-    "type": "binary-sensor"
-  },
-  {
-    "end_addresses": {
-      "holding": [
-        41003
-      ]
-    },
-    "key": "time_period_1_enable_force_charge",
-    "name": "Period 1 - Enable Force Charge",
-    "start_addresses": {
-      "holding": [
-        41002
-      ]
-    },
-    "type": "charge-period-enabled"
-  },
-  {
-    "addresses": {
-      "holding": [
-        41003
-      ]
-    },
-    "key": "time_period_1_end",
-    "name": "Period 1 - End",
-    "other_addresses": {
-      "holding": [
-        41002
-      ]
-    },
-    "type": "charge-period-time"
-  },
-  {
-    "addresses": {
-      "holding": [
-        41002
-      ]
-    },
-    "key": "time_period_1_start",
-    "name": "Period 1 - Start",
-    "other_addresses": {
-      "holding": [
-        41003
-      ]
-    },
-    "type": "charge-period-time"
-  },
-  {
-    "addresses": {
-      "holding": [
-        41004
-      ]
-    },
-    "key": "time_period_2_enable_charge_from_grid",
-    "name": "Period 2 - Enable Charge from Grid",
-    "type": "binary-sensor"
-  },
-  {
-    "end_addresses": {
-      "holding": [
-        41006
-      ]
-    },
-    "key": "time_period_2_enable_force_charge",
-    "name": "Period 2 - Enable Force Charge",
-    "start_addresses": {
-      "holding": [
-        41005
-      ]
-    },
-    "type": "charge-period-enabled"
-  },
-  {
-    "addresses": {
-      "holding": [
-        41006
-      ]
-    },
-    "key": "time_period_2_end",
-    "name": "Period 2 - End",
-    "other_addresses": {
-      "holding": [
-        41005
-      ]
-    },
-    "type": "charge-period-time"
-  },
-  {
-    "addresses": {
-      "holding": [
-        41005
-      ]
-    },
-    "key": "time_period_2_start",
-    "name": "Period 2 - Start",
-    "other_addresses": {
-      "holding": [
-        41006
-      ]
-    },
-    "type": "charge-period-time"
-  },
-  {
-    "addresses": {
-      "holding": [
         32017
       ]
     },
@@ -1032,8 +945,7 @@
     "values": {
       "0": "Self Use",
       "1": "Feed-in First",
-      "2": "Back-up",
-      "4": "Peak Shaving"
+      "2": "Back-up"
     }
   }
 ]

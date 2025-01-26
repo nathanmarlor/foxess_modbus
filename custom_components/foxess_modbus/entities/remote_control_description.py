@@ -88,7 +88,7 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 pwr_limit_bat_up=None,
                 pv_voltages=[31000, 31003, 31039, 31042],
             ),
-            models=Inv.KH_119,
+            models=Inv.KH_PRE133 | Inv.KH_133,
         ),
         RemoteControlAddressSpec(
             # The H3 doesn't support anything above 44005, and the active/reactive power regisers are 2 values

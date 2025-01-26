@@ -84,7 +84,7 @@ H3_REGISTERS = SpecialRegisterConfig(
 )
 # See https://github.com/nathanmarlor/foxess_modbus/pull/512
 KH_REGISTERS = SpecialRegisterConfig(
-    invalid_register_ranges=[(41001, 41006), (41012, 41012), (41019, 43999)],
+    invalid_register_ranges=[(41001, 41006), (41012, 41012), (41019, 43999), (31045, 31999)],
     individual_read_register_ranges=[(41000, 41999)],
 )
 # See https://github.com/nathanmarlor/foxess_modbus/discussions/553
@@ -308,7 +308,7 @@ INVERTER_PROFILES = {
         InverterModelProfile(InverterModel.KH, r"^KH([\d\.]+)").add_connection_type(
             ConnectionType.AUX,
             RegisterType.HOLDING,
-            versions={Version(1, 19): Inv.KH_PRE119, None: Inv.KH_119},
+            versions={Version(1, 19): Inv.KH_PRE119, Version(1, 33): Inv.KH_PRE133, None: Inv.KH_133},
             special_registers=KH_REGISTERS,
         ),
         # The H3 seems to use holding registers for everything
