@@ -94,6 +94,7 @@
       "inverter_options_category": {
         "menu_options": {
           "select_adapter_type": "Network settings",
+          "version_settings": "Version settings",
           "inverter_advanced_options": "Advanced settings"
         }
       },
@@ -134,16 +135,23 @@
           "modbus_slave": "This can be set from Settings -> Communication in the inverter menu"
         }
       },
+      "version_settings": {
+        "description": "Version settings for \"{inverter}\"",
+        "data": {
+          "version": "Inverter's Manager Version"
+        },
+        "data_description": {
+          "version": "If you're running old inverter firmware, you may be able to select it here"
+        }
+      },
       "inverter_advanced_options": {
         "description": "Options for \"{inverter}\".",
         "data": {
-          "version": "Inverter Manager Version",
           "round_sensor_values": "Round sensor values",
           "poll_rate": "Poll rate (seconds)",
           "max_read": "Max read"
         },
         "data_description": {
-          "version": "If you're running old inverter firmware, you may be able to select it here",
           "round_sensor_values": "Reduces Home Assistant database size by rounding and filtering sensor values",
           "poll_rate": "The default for your adapter type is {default_poll_rate} seconds. Leave empty to use the default",
           "max_read": "The default for your adapter type is {default_max_read}. Leave empty to use the default. Warning: Look at the debug log for problems if you increase this!"

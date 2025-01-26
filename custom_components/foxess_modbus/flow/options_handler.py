@@ -15,6 +15,7 @@ from ..const import MODBUS_TYPE
 from ..const import POLL_RATE
 from ..const import ROUND_SENSOR_VALUES
 from ..inverter_adapters import ADAPTERS
+from ..inverter_profiles import Version
 from ..inverter_profiles import inverter_connection_type_profile_from_config
 from .adapter_flow_segment import AdapterFlowSegment
 from .flow_handler_mixin import FlowHandlerMixin
@@ -68,7 +69,14 @@ class OptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
     async def async_step_inverter_options_category(self, _user_input: dict[str, Any] | None = None) -> FlowResult:
         """Let the user choose what sort of inverter options to configure"""
 
-        options = ["select_adapter_type", "inverter_advanced_options"]
+        _, _, combined_config_options = self._config_for_inverter(self._selected_inverter_id)
+        versions = inverter_connection_type_profile_from_config(combined_config_options).versions
+
+        options = ["select_adapter_type"]
+        if len(versions) > 1:
+            options.append("version_settings")
+        options.append("inverter_advanced_options")
+
         return self.async_show_menu(step_id="inverter_options_category", menu_options=options)
 
     async def async_step_select_adapter_type(self, user_input: dict[str, Any] | None = None) -> FlowResult:
@@ -109,6 +117,65 @@ class OptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
         assert self._adapter_segment is not None
         return await self._adapter_segment.async_step_serial_adapter(user_input)
 
+    async def async_step_version_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+        """Let the user configure their inverter version"""
+        assert self._selected_inverter_id is not None
+
+        _, options, combined_config_options = self._config_for_inverter(self._selected_inverter_id)
+
+        async def body(user_input: dict[str, Any]) -> FlowResult:
+            version = user_input.get("version")
+            if version is None or version == "latest":
+                options.pop(INVERTER_VERSION, None)
+            else:
+                options[INVERTER_VERSION] = version
+
+            return self._save_selected_inverter_options(options)
+
+        schema_parts: dict[Any, Any] = {}
+
+        versions = sorted(inverter_connection_type_profile_from_config(combined_config_options).versions.keys())
+        assert len(versions) > 1
+
+        version_options = []
+        prev_version = None
+        # The last element will be None, which means "latest"
+        for version in versions[:-1]:
+            # For the sake of clarity, we'll shown an exclusive range as the version one minor version below
+            # (We don't know whether that version ever actually existed, but that doesn't matter here)
+            if prev_version is None:
+                label = f"Earlier than {version}"
+            else:
+                inclusive_end = Version(version.major, version.minor - 1)
+                label = f"{inclusive_end}" if inclusive_end == prev_version else f"{prev_version} - {inclusive_end}"
+
+            version_options.append({"label": label, "value": str(version)})
+            prev_version = version
+        version_options.append({"label": f"{versions[-2]} and higher", "value": "latest"})  # hass can't cope with None
+
+        schema_parts[vol.Required("version", default=options.get(INVERTER_VERSION, "latest"))] = selector(
+            {
+                "select": {
+                    "options": list(reversed(version_options)),
+                    "mode": "dropdown",
+                }
+            }
+        )
+
+        schema = vol.Schema(schema_parts)
+
+        description_placeholders = {
+            # TODO: Will need changing if we let them set the friendly name / host / port
+            "inverter": self._create_label_for_inverter(combined_config_options),
+        }
+        return await self.with_default_form(
+            body,
+            user_input,
+            "version_settings",
+            schema,
+            description_placeholders=description_placeholders,
+        )
+
     async def async_step_inverter_advanced_options(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Let the user set the selected inverter's advanced settings"""
 
@@ -119,12 +186,6 @@ class OptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
         current_adapter = ADAPTERS[combined_config_options[ADAPTER_ID]]
 
         async def body(user_input: dict[str, Any]) -> FlowResult:
-            version = user_input.get("version")
-            if version is None or version == "latest":
-                options.pop(INVERTER_VERSION, None)
-            else:
-                options[INVERTER_VERSION] = version
-
             poll_rate = user_input.get("poll_rate")
             if poll_rate is not None:
                 options[POLL_RATE] = poll_rate
@@ -145,28 +206,6 @@ class OptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
             return self._save_selected_inverter_options(options)
 
         schema_parts: dict[Any, Any] = {}
-
-        versions = sorted(inverter_connection_type_profile_from_config(combined_config_options).versions.keys())
-        if len(versions) > 1:
-            version_options = []
-            prev_version = None
-            # The last element will be None, which means "latest"
-            for version in versions[:-1]:
-                label = f"Up to {version}" if prev_version is None else f"{prev_version} - {version}"
-                version_options.append({"label": label, "value": str(version)})
-                prev_version = version
-            version_options.append(
-                {"label": f"{versions[-2]} and higher", "value": "latest"}
-            )  # hass can't cope with None
-
-            schema_parts[vol.Required("version", default=options.get(INVERTER_VERSION, "latest"))] = selector(
-                {
-                    "select": {
-                        "options": list(reversed(version_options)),
-                        "mode": "dropdown",
-                    }
-                }
-            )
 
         schema_parts[vol.Required("round_sensor_values", default=options.get(ROUND_SENSOR_VALUES, False))] = selector(
             {"boolean": {}}
