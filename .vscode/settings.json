@@ -26,7 +26,7 @@
     "editor.codeActionsOnSave": {
       "source.fixAll": "explicit"
     },
-    "editor.defaultFormatter": "ms-python.black-formatter"
+    "editor.defaultFormatter": "charliermarsh.ruff"
   },
   "python.analysis.extraPaths": [
     "./custom_components/foxess_modbus/vendor/pymodbus/pymodbus-3.6.9"

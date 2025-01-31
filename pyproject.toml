@@ -18,10 +18,9 @@ module = 'pymodbus.*'
 ignore_missing_imports = true
 
 [tool.ruff]
-select = ["E", "F", "I", "N", "ANN", "S", "B", "A", "COM", "C4", "DTZ", "ISC", "ICN", "G",
+lint.select = ["E", "F", "I", "N", "ANN", "S", "B", "A", "COM", "C4", "DTZ", "ISC", "ICN", "G",
     "PIE", "PYI", "RET", "SLF", "SIM", "ARG", "PTH", "PLE", "PLC", "PLW", "FLY", "RUF"]
-ignore = [
-    "ANN101", # missing-type-self
+lint.ignore = [
     "ANN401", # any-type
     "S101", # assert
     "SIM108", # if-else-block-instead-of-if-exp
@@ -29,7 +28,7 @@ ignore = [
     "PLW2901", # redefiend-loop-name
     "RET504", # unnecessary-assign
 ]
-unfixable = [
+lint.unfixable = [
     "F841", # unused-variable
 ]
 line-length = 120
@@ -37,12 +36,8 @@ extend-exclude = [
     'custom_components/foxess_modbus/vendor',
 ]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 force-single-line = true
-
-[tool.black]
-line-length = 120
-exclude = "scripts"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

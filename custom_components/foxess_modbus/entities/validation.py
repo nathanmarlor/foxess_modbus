@@ -11,7 +11,7 @@ class Range(BaseValidator):
         self._min = min_value
         self._max = max_value
 
-    def validate(self, data: int | float) -> bool:
+    def validate(self, data: float) -> bool:
         """Validate a value against a set of rules"""
 
         return self._min <= data <= self._max
@@ -24,7 +24,7 @@ class Min(BaseValidator):
         """Init"""
         self._min = min_value
 
-    def validate(self, data: int | float) -> bool:
+    def validate(self, data: float) -> bool:
         """Validate a value against a set of rules"""
 
         return data >= self._min
@@ -37,7 +37,7 @@ class Max(BaseValidator):
         """Init"""
         self._max = max_value
 
-    def validate(self, data: int | float) -> bool:
+    def validate(self, data: float) -> bool:
         """Validate a value against a set of rules"""
 
         return data <= self._max
@@ -46,6 +46,6 @@ class Max(BaseValidator):
 class Time(BaseValidator):
     """Time validator"""
 
-    def validate(self, data: int | float) -> bool:
+    def validate(self, data: float) -> bool:
         """Validate a value against a set of rules"""
         return isinstance(data, int) and is_time_value_valid(data)

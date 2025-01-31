@@ -9,8 +9,7 @@ pytest-asyncio
 
 colorlog==6.7.0
 pre-commit==3.3.3
-black==23.9.0
-ruff==0.0.275
+ruff==0.9.4
 # These are duplicated in .pre-commit-config.yaml
 reorder-python-imports==3.10.0
 mypy==1.5.1
