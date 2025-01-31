@@ -236,6 +236,7 @@ class InverterModelProfile:
         capacity = self._capacity_parser.parse(match.group(1), inverter_model)
         return capacity
 
+
 _INVERTER_PROFILES_LIST = [
     # E.g. H1-5.0-E-G2. Has to appear before H1_G1.
     InverterModelProfile(
@@ -406,8 +407,9 @@ _INVERTER_PROFILES_LIST = [
     ),
 ]
 
-INVERTER_PROFILES = { x.model: x for x in _INVERTER_PROFILES_LIST }
+INVERTER_PROFILES = {x.model: x for x in _INVERTER_PROFILES_LIST}
 assert len(INVERTER_PROFILES) == len(_INVERTER_PROFILES_LIST)
+
 
 def create_entities(entity_type: type[Entity], controller: EntityController) -> list[Entity]:
     """Create all of the entities which support the inverter described by the given configuration object"""
