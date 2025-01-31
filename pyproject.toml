@@ -9,6 +9,9 @@ warn_unused_configs = true
 warn_unused_ignores = true
 namespace_packages = true
 explicit_package_bases = true
+exclude = [
+    'custom_components/foxess_modbus/vendor',
+]
 
 [[tool.mypy.overrides]]
 module = 'pymodbus.*'
@@ -30,6 +33,9 @@ unfixable = [
     "F841", # unused-variable
 ]
 line-length = 120
+extend-exclude = [
+    'custom_components/foxess_modbus/vendor',
+]
 
 [tool.ruff.isort]
 force-single-line = true

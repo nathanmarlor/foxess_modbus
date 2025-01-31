@@ -18,7 +18,6 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.issue_registry import IssueSeverity
-from pymodbus.exceptions import ConnectionException
 
 from .client.modbus_client import ModbusClient
 from .client.modbus_client import ModbusClientFailedError
@@ -38,6 +37,7 @@ from .const import MAX_READ
 from .inverter_profiles import INVERTER_PROFILES
 from .inverter_profiles import InverterModelConnectionTypeProfile
 from .remote_control_manager import RemoteControlManager
+from .vendor.pymodbus import ConnectionException
 
 _LOGGER = logging.getLogger(__name__)
 

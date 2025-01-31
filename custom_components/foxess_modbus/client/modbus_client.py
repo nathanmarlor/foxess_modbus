@@ -11,14 +11,6 @@ from typing import cast
 
 import serial
 from homeassistant.core import HomeAssistant
-from pymodbus.client import ModbusSerialClient
-from pymodbus.client import ModbusUdpClient
-from pymodbus.framer import FramerType
-from pymodbus.pdu import ModbusPDU
-from pymodbus.pdu.register_read_message import ReadHoldingRegistersResponse
-from pymodbus.pdu.register_read_message import ReadInputRegistersResponse
-from pymodbus.pdu.register_write_message import WriteMultipleRegistersResponse
-from pymodbus.pdu.register_write_message import WriteSingleRegisterResponse
 
 from .. import client
 from ..common.types import ConnectionType
@@ -28,6 +20,15 @@ from ..const import SERIAL
 from ..const import TCP
 from ..const import UDP
 from ..inverter_adapters import InverterAdapter
+from ..vendor.pymodbus import ModbusResponse
+from ..vendor.pymodbus import ModbusRtuFramer
+from ..vendor.pymodbus import ModbusSerialClient
+from ..vendor.pymodbus import ModbusSocketFramer
+from ..vendor.pymodbus import ModbusUdpClient
+from ..vendor.pymodbus import ReadHoldingRegistersResponse
+from ..vendor.pymodbus import ReadInputRegistersResponse
+from ..vendor.pymodbus import WriteMultipleRegistersResponse
+from ..vendor.pymodbus import WriteSingleRegisterResponse
 from .custom_modbus_tcp_client import CustomModbusTcpClient
 
 _LOGGER = logging.getLogger(__name__)
@@ -38,19 +39,19 @@ T = TypeVar("T")
 _CLIENTS: dict[str, dict[str, Any]] = {
     SERIAL: {
         "client": ModbusSerialClient,
-        "framer": FramerType.RTU,
+        "framer": ModbusRtuFramer,
     },
     TCP: {
         "client": CustomModbusTcpClient,
-        "framer": FramerType.SOCKET,
+        "framer": ModbusSocketFramer,
     },
     UDP: {
         "client": ModbusUdpClient,
-        "framer": FramerType.SOCKET,
+        "framer": ModbusSocketFramer,
     },
     RTU_OVER_TCP: {
         "client": CustomModbusTcpClient,
-        "framer": FramerType.RTU,
+        "framer": ModbusRtuFramer,
     },
 }
 
@@ -69,15 +70,13 @@ class ModbusClient:
 
         client = _CLIENTS[protocol]
 
+        # Delaying for a second after establishing a connection seems to help the inverter stability,
+        # see https://github.com/nathanmarlor/foxess_modbus/discussions/132
         config = {
             **config,
             "framer": client["framer"],
+            "delay_on_connect": 1 if adapter.connection_type == ConnectionType.LAN else None,
         }
-
-        # Delaying for a second after establishing a connection seems to help the inverter stability,
-        # see https://github.com/nathanmarlor/foxess_modbus/discussions/132
-        if adapter.connection_type == ConnectionType.LAN:
-            config["delay_on_connect"] = 1
 
         # If our custom PosixPollSerial hack is supported, use that. This uses poll rather than select, which means we
         # don't break when there are more than 1024 fds. See #457.
@@ -225,7 +224,7 @@ class ModbusClient:
 class ModbusClientFailedError(Exception):
     """Raised when the ModbusClient fails to read/write"""
 
-    def __init__(self, message: str, client: ModbusClient, response: ModbusPDU | Exception) -> None:
+    def __init__(self, message: str, client: ModbusClient, response: ModbusResponse | Exception) -> None:
         super().__init__(f"{message} from {client}: {response}")
         self.message = message
         self.client = client

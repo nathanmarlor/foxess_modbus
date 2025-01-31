@@ -19,6 +19,4 @@ mypy==1.5.1
 types-python-slugify==8.0.0.2
 voluptuous-stubs==0.1.1
 # For mypy. Keep in sync with manifest.json and https://github.com/home-assistant/core/blob/master/requirements_all.txt.
-# If changed, make sure subclasses in modbus_client are still valid!
-pymodbus==3.7.4
 pyserial==3.5

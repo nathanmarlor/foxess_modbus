@@ -5,6 +5,7 @@ repos:
       - id: check-added-large-files
       - id: check-yaml
       - id: end-of-file-fixer
+        exclude: ^custom_components\/foxess_modbus\/vendor
       - id: trailing-whitespace
   - repo: local
     hooks:

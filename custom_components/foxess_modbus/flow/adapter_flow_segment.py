@@ -7,8 +7,6 @@ import voluptuous as vol
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.selector import selector
-from pymodbus.exceptions import ConnectionException
-from pymodbus.exceptions import ModbusIOException
 
 from ..client.modbus_client import ModbusClient
 from ..client.modbus_client import ModbusClientFailedError
@@ -23,6 +21,8 @@ from ..inverter_adapters import ADAPTERS
 from ..inverter_adapters import InverterAdapter
 from ..inverter_adapters import InverterAdapterType
 from ..modbus_controller import ModbusController
+from ..vendor.pymodbus import ConnectionException
+from ..vendor.pymodbus import ModbusIOException
 from .flow_handler_mixin import FlowHandlerMixin
 from .flow_handler_mixin import ValidationFailedError
 from .inverter_data import InverterData
