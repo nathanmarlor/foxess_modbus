@@ -1,4 +1,4 @@
-"""Sensor platform for foxess_modbus."""
+"""Sensor platform for foxess_modbus."""  # noqa: A005
 
 import logging
 

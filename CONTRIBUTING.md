@@ -15,9 +15,8 @@ Pull requests are the best way to propose changes to the codebase.
 
 1. Fork the repo and create your branch from `master`.
 2. If you've changed something, update the documentation.
-3. Make sure your code lints (using black).
-4. Test you contribution.
-5. Issue that pull request!
+3. Test you contribution.
+4. Issue that pull request!
 
 ## Any contributions you make will be under the MIT Software License
 
@@ -44,11 +43,7 @@ People _love_ thorough bug reports. I'm not even kidding.
 
 ## Use a Consistent Coding Style
 
-Use [black](https://github.com/ambv/black) and [prettier](https://prettier.io/)
-to make sure the code follows the style.
-
-Or use the `pre-commit` settings implemented in this repository
-(see deicated section below).
+Use the `pre-commit` settings implemented in this repository (see dedicated section below).
 
 ## Test your code modification
 

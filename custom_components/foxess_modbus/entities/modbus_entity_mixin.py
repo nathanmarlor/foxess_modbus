@@ -153,8 +153,8 @@ class ModbusEntityMixin(
     def _validate(
         self,
         rules: list[BaseValidator],
-        processed: float | int,
-        original: float | int | None = None,
+        processed: float,
+        original: float | None = None,
         address_override: int | None = None,
     ) -> bool:
         """Validate against a set of rules"""

@@ -11,7 +11,6 @@
       "extensions": [
         "ms-python.python",
         "charliermarsh.ruff",
-        "ms-python.black-formatter",
         "ms-python.vscode-pylance",
         "github.vscode-pull-request-github",
         "ryanluker.vscode-coverage-gutters",

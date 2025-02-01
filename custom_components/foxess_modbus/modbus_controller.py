@@ -18,7 +18,6 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.issue_registry import IssueSeverity
-from pymodbus.exceptions import ConnectionException
 
 from .client.modbus_client import ModbusClient
 from .client.modbus_client import ModbusClientFailedError
@@ -38,6 +37,7 @@ from .const import MAX_READ
 from .inverter_profiles import INVERTER_PROFILES
 from .inverter_profiles import InverterModelConnectionTypeProfile
 from .remote_control_manager import RemoteControlManager
+from .vendor.pymodbus import ConnectionException
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -234,7 +234,7 @@ class ModbusController(EntityController, UnloadController):
                 self._notify_update(changed_addresses)
         except Exception as ex:
             # Failed writes are always bad
-            _LOGGER.error("Failed to write registers", exc_info=True)
+            _LOGGER.exception("Failed to write registers")
             raise ex
 
     async def _refresh(self, _time: datetime) -> None:
@@ -538,7 +538,7 @@ class ModbusController(EntityController, UnloadController):
             _LOGGER.error("Did not recognise inverter model '%s' (%s)", full_model, register_values)
             raise UnsupportedInverterError(full_model)
         except Exception as ex:
-            _LOGGER.error("Autodetect: failed to connect to (%s)", client, exc_info=True)
+            _LOGGER.exceptino("Autodetect: failed to connect to (%s)", client)
             raise AutoconnectFailedError(spy_handler.records) from ex
         finally:
             pymodbus_logger.removeHandler(spy_handler)
