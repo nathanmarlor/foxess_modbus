@@ -1,4 +1,5 @@
 """Unload controller"""
+
 import logging
 from typing import Callable
 

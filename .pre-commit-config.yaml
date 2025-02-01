@@ -16,6 +16,8 @@ repos:
     rev: v0.9.4
     hooks:
       - id: ruff
+      - id: ruff-format
+        args: [--check]
 # Temporarily disabled due to crash, probably caused by us having to use HA stubs which are out of date?
 # See https://github.com/nathanmarlor/foxess_modbus/actions/runs/12610946302/job/35146070831?pr=720
 #  - repo: https://github.com/pre-commit/mirrors-mypy

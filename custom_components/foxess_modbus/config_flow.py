@@ -1,4 +1,5 @@
 """Adds config flow for foxess_modbus."""
+
 import logging
 
 from .const import DOMAIN
