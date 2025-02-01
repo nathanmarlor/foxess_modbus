@@ -18,7 +18,7 @@ from .modbus_entity_mixin import ModbusEntityMixin
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
-class ModbusVersionSensorDescription(SensorEntityDescription, EntityFactory):
+class ModbusVersionSensorDescription(SensorEntityDescription, EntityFactory):  # type: ignore[misc, override]
     """Description for ModbusVersionSensor"""
 
     address: list[ModbusAddressSpec]

@@ -22,7 +22,7 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
-class ModbusRemoteControlSelectDescription(SelectEntityDescription, EntityFactory):
+class ModbusRemoteControlSelectDescription(SelectEntityDescription, EntityFactory):  # type: ignore[misc]
     models: list[EntitySpec]
 
     @property
