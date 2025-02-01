@@ -1,4 +1,5 @@
-""""Unsupported inverter exception"""
+""" "Unsupported inverter exception"""
+
 import logging
 
 

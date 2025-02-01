@@ -1,4 +1,5 @@
 """Validation"""
+
 from .base_validator import BaseValidator
 from .modbus_charge_period_sensors import is_time_value_valid
 

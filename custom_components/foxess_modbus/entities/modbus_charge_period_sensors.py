@@ -77,14 +77,14 @@ class ModbusChargePeriodStartEndSensorDescription(SensorEntityDescription, Entit
         other_address = self._address_for_inverter_model(self.other_address, inverter_model, register_type)
 
         if address is None:
-            assert (
-                other_address is None
-            ), f"{self}: address is None but other_address is {other_address} for ({inverter_model}, {register_type})"
+            assert other_address is None, (
+                f"{self}: address is None but other_address is {other_address} for ({inverter_model}, {register_type})"
+            )
             return None
 
-        assert (
-            other_address is not None
-        ), f"{self}: address is {address} but other_address is None for ({inverter_model}, {register_type})"
+        assert other_address is not None, (
+            f"{self}: address is {address} but other_address is None for ({inverter_model}, {register_type})"
+        )
         return ModbusChargePeriodStartEndSensor(controller, self, address, other_address)
 
     def serialize(self, inverter_model: Inv) -> dict[str, Any] | None:

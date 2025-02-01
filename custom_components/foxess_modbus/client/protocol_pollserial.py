@@ -68,8 +68,7 @@ class Serial(serialposix.Serial):
                     result == _PollResult.TIMEOUT
                     or result == _PollResult.ABORT
                     or timeout.expired()
-                    or ((self._inter_byte_timeout is not None and self._inter_byte_timeout > 0)
-                    and not buf)
+                    or ((self._inter_byte_timeout is not None and self._inter_byte_timeout > 0) and not buf)
                 ):
                     break  # early abort on timeout
         return bytes(read)

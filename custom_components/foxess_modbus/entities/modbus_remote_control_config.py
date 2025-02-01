@@ -202,9 +202,9 @@ class ModbusRemoteControlFactory:
             if inverter_model in address_spec.models:
                 address_config = address_spec.register_types.get(register_type)
                 if address_config is not None:
-                    assert (
-                        result is None
-                    ), f"{self}: multiple remote control addresses defined for ({inverter_model}, {register_type})"
+                    assert result is None, (
+                        f"{self}: multiple remote control addresses defined for ({inverter_model}, {register_type})"
+                    )
 
                     result = address_config
         return result
