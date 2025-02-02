@@ -112,18 +112,6 @@
   {
     "addresses": {
       "holding": [
-        31090
-      ]
-    },
-    "key": "battery_soh",
-    "name": "Battery SoH",
-    "scale": null,
-    "signed": false,
-    "type": "sensor"
-  },
-  {
-    "addresses": {
-      "holding": [
         31037
       ]
     },
@@ -143,42 +131,6 @@
     "name": "Battery Voltage",
     "scale": 0.1,
     "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": {
-      "holding": [
-        31102
-      ]
-    },
-    "key": "bms_cell_temp_high",
-    "name": "BMS Cell Temp High",
-    "scale": 0.1,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": {
-      "holding": [
-        31103
-      ]
-    },
-    "key": "bms_cell_temp_low",
-    "name": "BMS Cell Temp Low",
-    "scale": 0.1,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": {
-      "holding": [
-        31123
-      ]
-    },
-    "key": "bms_kwh_remaining",
-    "name": "BMS kWh Remaining",
-    "scale": 0.01,
-    "signed": false,
     "type": "sensor"
   },
   {
