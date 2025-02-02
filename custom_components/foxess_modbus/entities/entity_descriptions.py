@@ -2116,11 +2116,13 @@ def _bms_entities() -> Iterable[EntityFactory]:
             ),
             ModbusAddressesSpec(holding=[31038], models=Inv.H3_SET),
         ],
-        battery_soh=[
-            ModbusAddressesSpec(input=[11104], models=Inv.KH_PRE119),
-            ModbusAddressesSpec(holding=[37624], models=Inv.H1_G2_SET | Inv.KH_PRE133 | Inv.KH_133),
-            ModbusAddressesSpec(holding=[31090], models=Inv.H3_SET),
-        ],
+        # Temporarily removed, see #756
+        battery_soh=[],
+        # battery_soh=[
+        #     ModbusAddressesSpec(input=[11104], models=Inv.KH_PRE119),
+        #     ModbusAddressesSpec(holding=[37624], models=Inv.H1_G2_SET | Inv.KH_PRE133 | Inv.KH_133),
+        #     ModbusAddressesSpec(holding=[31090], models=Inv.H3_SET),
+        # ],
         battery_temp=[
             ModbusAddressesSpec(input=[11038], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(
@@ -2131,12 +2133,14 @@ def _bms_entities() -> Iterable[EntityFactory]:
         bms_cell_temp_high=[
             ModbusAddressesSpec(input=[11043], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[37617], models=Inv.H1_G2_144 | Inv.KH_PRE133 | Inv.KH_133),
-            ModbusAddressesSpec(holding=[31102], models=Inv.H3_SET),
+            # Temporarily removed, see #756
+            # ModbusAddressesSpec(holding=[31102], models=Inv.H3_SET),
         ],
         bms_cell_temp_low=[
             ModbusAddressesSpec(input=[11044], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[37618], models=Inv.H1_G2_144 | Inv.KH_PRE133 | Inv.KH_133),
-            ModbusAddressesSpec(holding=[31103], models=Inv.H3_SET),
+            # Temporarily removed, see #756
+            # ModbusAddressesSpec(holding=[31103], models=Inv.H3_SET),
         ],
         bms_cell_mv_high=[
             ModbusAddressesSpec(input=[11045], models=Inv.H1_G1 | Inv.KH_PRE119),
@@ -2151,7 +2155,8 @@ def _bms_entities() -> Iterable[EntityFactory]:
         bms_kwh_remaining=[
             ModbusAddressesSpec(input=[11037], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[37632], models=Inv.H1_G2_SET | Inv.KH_PRE133 | Inv.KH_133),
-            ModbusAddressesSpec(holding=[31123], models=Inv.H3_SET),
+            # Temporarily removed, see #756
+            # ModbusAddressesSpec(holding=[31123], models=Inv.H3_SET),
         ],
     )
     yield from _inner(
@@ -2160,7 +2165,9 @@ def _bms_entities() -> Iterable[EntityFactory]:
         batvolt=[ModbusAddressesSpec(holding=[37609], models=Inv.H3_PRO)],
         bat_current=[ModbusAddressesSpec(holding=[37610], models=Inv.H3_PRO)],
         battery_soc=[ModbusAddressesSpec(holding=[37612], models=Inv.H3_PRO)],
-        battery_soh=[ModbusAddressesSpec(holding=[37624], models=Inv.H3_PRO)],
+        # Temporarily removed, see #756
+        battery_soh=[],
+        # battery_soh=[ModbusAddressesSpec(holding=[37624], models=Inv.H3_PRO)],
         battery_temp=[ModbusAddressesSpec(holding=[37611], models=Inv.H3_PRO)],
         bms_cell_temp_high=[ModbusAddressesSpec(holding=[37617], models=Inv.H3_PRO)],
         bms_cell_temp_low=[ModbusAddressesSpec(holding=[37618], models=Inv.H3_PRO)],
@@ -2174,7 +2181,9 @@ def _bms_entities() -> Iterable[EntityFactory]:
         batvolt=[ModbusAddressesSpec(holding=[38307], models=Inv.H3_PRO)],
         bat_current=[ModbusAddressesSpec(holding=[38308], models=Inv.H3_PRO)],
         battery_soc=[ModbusAddressesSpec(holding=[38310], models=Inv.H3_PRO)],
-        battery_soh=[ModbusAddressesSpec(holding=[38322], models=Inv.H3_PRO)],
+        # Temporarily removed, see #756
+        battery_soh=[],
+        # battery_soh=[ModbusAddressesSpec(holding=[38322], models=Inv.H3_PRO)],
         battery_temp=[ModbusAddressesSpec(holding=[38309], models=Inv.H3_PRO)],
         bms_cell_temp_high=[ModbusAddressesSpec(holding=[38315], models=Inv.H3_PRO)],
         bms_cell_temp_low=[ModbusAddressesSpec(holding=[38316], models=Inv.H3_PRO)],

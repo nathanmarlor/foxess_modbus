@@ -180,30 +180,6 @@
   {
     "addresses": {
       "holding": [
-        37624
-      ]
-    },
-    "key": "battery_soh_1",
-    "name": "Battery 1 SoH",
-    "scale": null,
-    "signed": false,
-    "type": "sensor"
-  },
-  {
-    "addresses": {
-      "holding": [
-        38322
-      ]
-    },
-    "key": "battery_soh_2",
-    "name": "Battery 2 SoH",
-    "scale": null,
-    "signed": false,
-    "type": "sensor"
-  },
-  {
-    "addresses": {
-      "holding": [
         37611
       ]
     },
