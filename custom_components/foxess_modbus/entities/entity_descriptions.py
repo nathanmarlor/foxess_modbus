@@ -70,8 +70,7 @@ def _version_entities() -> Iterable[EntityFactory]:
     yield _master_version(
         address=[
             ModbusAddressSpec(holding=30016, models=Inv.KH_PRE133),
-            ModbusAddressSpec(holding=36001, models=Inv.KH_133),
-            ModbusAddressSpec(holding=36001, models=Inv.H1_G2_SET),
+            ModbusAddressSpec(holding=36001, models=Inv.H1_G2_SET | Inv.KH_133),
         ],
         is_hex=True,
     )
@@ -89,7 +88,7 @@ def _version_entities() -> Iterable[EntityFactory]:
         address=[
             ModbusAddressSpec(input=10017, models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressSpec(holding=30017, models=Inv.H1_G1 | Inv.H1_LAN | Inv.H3_SET),
-            ModbusAddressSpec(holding=36001, models=Inv.H3_PRO),
+            ModbusAddressSpec(holding=36002, models=Inv.H3_PRO),
         ],
         is_hex=False,
     )

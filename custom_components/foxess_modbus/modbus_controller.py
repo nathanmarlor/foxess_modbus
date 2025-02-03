@@ -538,7 +538,7 @@ class ModbusController(EntityController, UnloadController):
             _LOGGER.error("Did not recognise inverter model '%s' (%s)", full_model, register_values)
             raise UnsupportedInverterError(full_model)
         except Exception as ex:
-            _LOGGER.exceptino("Autodetect: failed to connect to (%s)", client)
+            _LOGGER.exception("Autodetect: failed to connect to (%s)", client)
             raise AutoconnectFailedError(spy_handler.records) from ex
         finally:
             pymodbus_logger.removeHandler(spy_handler)
