@@ -1,0 +1,35 @@
+name: Create a release
+on:
+  push:
+    tags:
+      - "*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Create release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create release
+        id: create_release
+        uses: release-drafter/release-drafter@v6.1.0
+        with:
+          name: ${{ github.ref_name }}
+          tag: ${{ github.ref_name }}
+          version: ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v4
+      - name: Patch manifest and zip
+        run: |
+          TAG=${{ github.ref_NAME }}
+          cd custom_components/foxess_modbus/
+          jq ".version=\"${TAG#v}\"" manifest.json > manifest.json.tmp
+          mv manifest.json.tmp manifest.json
+          zip ../../foxess_modbus.zip -r ./
+      - name: Upload release asset
+        run: gh release upload "${{ github.ref_name }}" foxess_modbus.zip --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
