@@ -112,54 +112,6 @@
   {
     "addresses": {
       "holding": [
-        37619
-      ]
-    },
-    "key": "bms_cell_mv_high",
-    "name": "BMS Cell mV High",
-    "scale": null,
-    "signed": false,
-    "type": "sensor"
-  },
-  {
-    "addresses": {
-      "holding": [
-        37620
-      ]
-    },
-    "key": "bms_cell_mv_low",
-    "name": "BMS Cell mV Low",
-    "scale": null,
-    "signed": false,
-    "type": "sensor"
-  },
-  {
-    "addresses": {
-      "holding": [
-        37617
-      ]
-    },
-    "key": "bms_cell_temp_high",
-    "name": "BMS Cell Temp High",
-    "scale": 0.1,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": {
-      "holding": [
-        37618
-      ]
-    },
-    "key": "bms_cell_temp_low",
-    "name": "BMS Cell Temp Low",
-    "scale": 0.1,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": {
-      "holding": [
         31025
       ]
     },
@@ -178,18 +130,6 @@
     "key": "bms_discharge_rate",
     "name": "BMS Discharge Rate",
     "scale": 0.1,
-    "signed": false,
-    "type": "sensor"
-  },
-  {
-    "addresses": {
-      "holding": [
-        37632
-      ]
-    },
-    "key": "bms_kwh_remaining",
-    "name": "BMS kWh Remaining",
-    "scale": 0.01,
     "signed": false,
     "type": "sensor"
   },
