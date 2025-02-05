@@ -63,14 +63,15 @@ def _version_entities() -> Iterable[EntityFactory]:
         address=[
             ModbusAddressSpec(input=10016, models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressSpec(holding=30016, models=Inv.H1_G1 | Inv.H1_LAN | Inv.H3_SET),
-            ModbusAddressSpec(holding=36001, models=Inv.H3_PRO),
+            # For H3-Pro-15.0 Version_Master:1.56 Version_Slave:1.06, Version_Arm 1.17
+            # ModbusAddressSpec(holding=36001, models=Inv.H3_PRO),
         ],
         is_hex=False,
     )
     yield _master_version(
         address=[
             ModbusAddressSpec(holding=30016, models=Inv.KH_PRE133),
-            ModbusAddressSpec(holding=36001, models=Inv.H1_G2_SET | Inv.KH_133),
+            ModbusAddressSpec(holding=36001, models=Inv.H1_G2_SET | Inv.KH_133 | Inv.H3_PRO),
         ],
         is_hex=True,
     )
@@ -88,14 +89,15 @@ def _version_entities() -> Iterable[EntityFactory]:
         address=[
             ModbusAddressSpec(input=10017, models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressSpec(holding=30017, models=Inv.H1_G1 | Inv.H1_LAN | Inv.H3_SET),
-            ModbusAddressSpec(holding=36002, models=Inv.H3_PRO),
+            # For H3-Pro-15.0 Version_Master:1.56 Version_Slave:1.06, Version_Arm 1.17
+            # ModbusAddressSpec(holding=36002, models=Inv.H3_PRO),
         ],
         is_hex=False,
     )
     yield _slave_version(
         address=[
             ModbusAddressSpec(holding=30017, models=Inv.KH_PRE133),
-            ModbusAddressSpec(holding=36002, models=Inv.H1_G2_SET | Inv.KH_133),
+            ModbusAddressSpec(holding=36002, models=Inv.H1_G2_SET | Inv.KH_133 | Inv.H3_PRO),
         ],
         is_hex=True,
     )
@@ -1313,7 +1315,9 @@ def _inverter_entities() -> Iterable[EntityFactory]:
                 holding=[31009], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2_SET | Inv.KH_PRE133 | Inv.KH_133
             ),
             ModbusAddressesSpec(holding=[31015], models=Inv.H3_SET),
-            ModbusAddressesSpec(holding=[38847, 38846], models=Inv.H3_PRO),
+            # ModbusAddressesSpec(holding=[38847, 38846], models=Inv.H3_PRO),
+            # For H3-Pro-15.0 Version_Master:1.56 Version_Slave:1.06, Version_Arm 1.17
+            ModbusAddressesSpec(holding=[39139], models=Inv.H3_PRO),
         ],
         entity_registry_enabled_default=False,
         name="Grid Frequency",
