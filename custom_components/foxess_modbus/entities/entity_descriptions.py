@@ -2088,7 +2088,7 @@ def _bms_entities() -> Iterable[EntityFactory]:
             device_class=SensorDeviceClass.ENERGY,
             state_class=SensorStateClass.TOTAL,
             native_unit_of_measurement="kWh",
-            scale=0.01,
+            scale=0.001, # For H3-Pro-15.0 Version_Master:1.56 Version_Slave:1.06, Version_Manager 1.22
             signed=False,
             validate=[Min(0)],
         )
