@@ -314,26 +314,26 @@ _INVERTER_PROFILES_LIST = [
     .add_connection_type(
         ConnectionType.LAN,
         RegisterType.HOLDING,
-        versions={None: Inv.H3},
+        versions={Version(1, 80): Inv.H3_PRE180, None: Inv.H3_180},
         special_registers=H3_REGISTERS,
     )
     .add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
-        versions={None: Inv.H3},
+        versions={Version(1, 80): Inv.H3_PRE180, None: Inv.H3_180},
         special_registers=H3_REGISTERS,
     ),
     InverterModelProfile(InverterModel.AC3, r"^AC3-([\d\.]+)")
     .add_connection_type(
         ConnectionType.LAN,
         RegisterType.HOLDING,
-        versions={None: Inv.H3},
+        versions={Version(1, 80): Inv.H3_PRE180, None: Inv.H3_180},
         special_registers=H3_REGISTERS,
     )
     .add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
-        versions={None: Inv.H3},
+        versions={Version(1, 80): Inv.H3_PRE180, None: Inv.H3_180},
         special_registers=H3_REGISTERS,
     ),
     InverterModelProfile(InverterModel.AIO_H3, r"^AIO-H3-([\d\.]+)")
@@ -366,7 +366,7 @@ _INVERTER_PROFILES_LIST = [
     InverterModelProfile(InverterModel.SK_HWR, r"^SK-HWR-([\d\.]+)").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
-        versions={None: Inv.H3},
+        versions={None: Inv.H3_PRE180},
         special_registers=H3_REGISTERS,
     ),
     # STAR
@@ -375,7 +375,7 @@ _INVERTER_PROFILES_LIST = [
     InverterModelProfile(InverterModel.STAR_H3, r"^STAR-H3-([\d\.]+)").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
-        versions={None: Inv.H3},
+        versions={None: Inv.H3_PRE180},
         special_registers=H3_REGISTERS,
     ),
     # Solavita SP
@@ -395,7 +395,7 @@ _INVERTER_PROFILES_LIST = [
     ).add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
-        versions={None: Inv.H3},
+        versions={None: Inv.H3_PRE180},
         special_registers=H3_REGISTERS,
     ),
     # E.g. H3-Pro-20.0
