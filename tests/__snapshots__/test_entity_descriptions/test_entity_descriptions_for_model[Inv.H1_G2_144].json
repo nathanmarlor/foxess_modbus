@@ -112,6 +112,18 @@
   {
     "addresses": {
       "holding": [
+        37624
+      ]
+    },
+    "key": "battery_soh",
+    "name": "Battery SoH",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": {
+      "holding": [
         31023
       ]
     },
