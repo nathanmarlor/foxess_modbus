@@ -2163,7 +2163,8 @@ def _bms_entities() -> Iterable[EntityFactory]:
         batvolt=[ModbusAddressesSpec(holding=[37609], models=Inv.H3_PRO_SET)],
         bat_current=[ModbusAddressesSpec(holding=[37610], models=Inv.H3_PRO_SET)],
         battery_soc=[ModbusAddressesSpec(holding=[37612], models=Inv.H3_PRO_SET)],
-        # Temporarily removed, see #756
+        # Added in H3_PRO v1.25, which hasn't been released yet.
+        # See https://github.com/nathanmarlor/foxess_modbus/pull/775#issuecomment-2656447502
         battery_soh=[],
         # battery_soh=[ModbusAddressesSpec(holding=[37624], models=Inv.H3_PRO_122)],
         battery_temp=[ModbusAddressesSpec(holding=[37611], models=Inv.H3_PRO_SET)],
@@ -2179,7 +2180,8 @@ def _bms_entities() -> Iterable[EntityFactory]:
         batvolt=[ModbusAddressesSpec(holding=[38307], models=Inv.H3_PRO_SET)],
         bat_current=[ModbusAddressesSpec(holding=[38308], models=Inv.H3_PRO_SET)],
         battery_soc=[ModbusAddressesSpec(holding=[38310], models=Inv.H3_PRO_SET)],
-        # Temporarily removed, see #756
+        # Added in H3_PRO v1.25, which hasn't been released yet.
+        # See https://github.com/nathanmarlor/foxess_modbus/pull/775#issuecomment-2656447502
         battery_soh=[],
         # battery_soh=[ModbusAddressesSpec(holding=[38322], models=Inv.H3_PRO_122)],
         battery_temp=[ModbusAddressesSpec(holding=[38309], models=Inv.H3_PRO_SET)],
