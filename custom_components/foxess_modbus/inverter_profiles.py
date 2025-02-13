@@ -402,7 +402,7 @@ _INVERTER_PROFILES_LIST = [
     InverterModelProfile(InverterModel.H3_PRO, r"^H3-Pro-([\d\.]+)").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
-        versions={None: Inv.H3_PRO},
+        versions={Version(1, 22): Inv.H3_PRO_PRE122, None: Inv.H3_PRO_122},
         special_registers=H3_REGISTERS,
     ),
 ]

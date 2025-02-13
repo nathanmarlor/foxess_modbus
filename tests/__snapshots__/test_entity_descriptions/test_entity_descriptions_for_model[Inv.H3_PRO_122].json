@@ -1,0 +1,75 @@
+[
+  {
+    "addresses": {
+      "holding": [
+        36003
+      ]
+    },
+    "is_hex": true,
+    "key": "manager_version",
+    "name": "Version: Manager",
+    "type": "sensor"
+  },
+  {
+    "addresses": {
+      "holding": [
+        36001
+      ]
+    },
+    "is_hex": true,
+    "key": "master_version",
+    "name": "Version: Master",
+    "type": "sensor"
+  },
+  {
+    "key": "pv1_energy_total",
+    "method": "left",
+    "name": "PV1 Power Total",
+    "register_types": "dict_keys(['input', 'holding'])",
+    "source": "pv1_power",
+    "type": "integration-sensor",
+    "unit_time": "h"
+  },
+  {
+    "key": "pv2_energy_total",
+    "method": "left",
+    "name": "PV2 Power Total",
+    "register_types": "dict_keys(['input', 'holding'])",
+    "source": "pv2_power",
+    "type": "integration-sensor",
+    "unit_time": "h"
+  },
+  {
+    "key": "pv_power_now",
+    "name": "PV Power",
+    "register_types": "dict_keys(['input', 'holding'])",
+    "sources": [
+      "pv1_power",
+      "pv2_power"
+    ],
+    "type": "lambda"
+  },
+  {
+    "addresses": {
+      "holding": [
+        39139
+      ]
+    },
+    "key": "rfreq",
+    "name": "Grid Frequency",
+    "scale": 0.01,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": {
+      "holding": [
+        36002
+      ]
+    },
+    "is_hex": true,
+    "key": "slave_version",
+    "name": "Version: Slave",
+    "type": "sensor"
+  }
+]

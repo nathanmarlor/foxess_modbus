@@ -126,7 +126,7 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 pwr_limit_bat_up=[46019, 46018],
                 pv_voltages=[39070, 39072, 39074, 39076, 39078, 39080],
             ),
-            models=Inv.H3_PRO,
+            models=Inv.H3_PRO_SET,
         ),
     ]
 )
