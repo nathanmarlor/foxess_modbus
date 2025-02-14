@@ -340,13 +340,13 @@ _INVERTER_PROFILES_LIST = [
     .add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
-        versions={None: Inv.AIO_H3},
+        versions={Version(1, 1): Inv.AIO_H3_PRE101, None: Inv.AIO_H3_101},
         special_registers=H3_REGISTERS,
     )
     .add_connection_type(
         ConnectionType.LAN,
         RegisterType.HOLDING,
-        versions={None: Inv.AIO_H3},
+        versions={Version(1, 1): Inv.AIO_H3_PRE101, None: Inv.AIO_H3_101},
         special_registers=H3_REGISTERS,
     ),
     # Kuara 6.0-3-H: H3-6.0-E
