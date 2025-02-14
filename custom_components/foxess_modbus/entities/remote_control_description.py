@@ -105,7 +105,7 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 pwr_limit_bat_up=None,
                 pv_voltages=[31000, 31003],
             ),
-            models=Inv.H3_SET & ~Inv.KUARA_H3 & ~Inv.AIO_H3,
+            models=Inv.H3_SET & ~Inv.KUARA_H3 & ~Inv.AIO_H3_101 & ~Inv.AIO_H3_PRE101,
         ),
         RemoteControlAddressSpec(
             # The H3 doesn't support anything above 44005, and the active/reactive power regisers are 2 values

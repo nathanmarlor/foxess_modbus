@@ -76,9 +76,10 @@ class Inv(Flag):
 
     H3_PRE180 = auto()
     H3_180 = auto()
-    AIO_H3 = auto()
+    AIO_H3_PRE101 = auto()
+    AIO_H3_101 = auto()
     KUARA_H3 = auto()
-    H3_SET = H3_180 | H3_PRE180 | AIO_H3 | KUARA_H3
+    H3_SET = H3_180 | H3_PRE180 | AIO_H3_101 | AIO_H3_PRE101 | KUARA_H3
 
     H3_PRO_PRE122 = auto()
     H3_PRO_122 = auto()

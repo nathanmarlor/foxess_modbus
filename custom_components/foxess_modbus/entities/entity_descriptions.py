@@ -2221,7 +2221,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     yield ModbusWorkModeSelectDescription(
         key="work_mode",
         address=[
-            ModbusAddressSpec(holding=41000, models=Inv.H1_G2_SET | Inv.H3_SET),
+            ModbusAddressSpec(holding=41000, models=Inv.H1_G2_SET | Inv.H3_SET & ~Inv.AIO_H3_PRE101),
         ],
         name="Work Mode",
         options_map={0: "Self Use", 1: "Feed-in First", 2: "Back-up", 4: "Peak Shaving"},
@@ -2233,7 +2233,8 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[41007], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(
-                holding=[41007], models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
+                holding=[41007],
+                models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET & ~Inv.AIO_H3_PRE101 | Inv.KH_PRE133 | Inv.KH_133,
             ),
             ModbusAddressesSpec(holding=[46607], models=Inv.H3_PRO_SET),
         ],
@@ -2249,7 +2250,8 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         address=[
             ModbusAddressSpec(input=41007, models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressSpec(
-                holding=41007, models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
+                holding=41007,
+                models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET & ~Inv.AIO_H3_PRE101 | Inv.KH_PRE133 | Inv.KH_133,
             ),
             ModbusAddressSpec(holding=46607, models=Inv.H3_PRO_SET),
         ],
@@ -2269,7 +2271,8 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[41008], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(
-                holding=[41008], models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
+                holding=[41008],
+                models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET & ~Inv.AIO_H3_PRE101 | Inv.KH_PRE133 | Inv.KH_133,
             ),
             ModbusAddressesSpec(holding=[46608], models=Inv.H3_PRO_SET),
         ],
@@ -2285,7 +2288,8 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         address=[
             ModbusAddressSpec(input=41008, models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressSpec(
-                holding=41008, models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.KH_PRE133 | Inv.KH_133 | Inv.H3_SET
+                holding=41008,
+                models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.KH_PRE133 | Inv.KH_133 | Inv.H3_SET & ~Inv.AIO_H3_PRE101,
             ),
             ModbusAddressSpec(holding=46608, models=Inv.H3_PRO_SET),
         ],
@@ -2306,7 +2310,8 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[41009], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(
-                holding=[41009], models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
+                holding=[41009],
+                models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET & ~Inv.AIO_H3_PRE101 | Inv.KH_PRE133 | Inv.KH_133,
             ),
             ModbusAddressesSpec(holding=[46609], models=Inv.H3_PRO_SET),
         ],
@@ -2322,7 +2327,8 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         address=[
             ModbusAddressSpec(input=41009, models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressSpec(
-                holding=41009, models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
+                holding=41009,
+                models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET & ~Inv.AIO_H3_PRE101 | Inv.KH_PRE133 | Inv.KH_133,
             ),
             ModbusAddressSpec(holding=46609, models=Inv.H3_PRO_SET),
         ],
@@ -2343,7 +2349,8 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[41010], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(
-                holding=[41010], models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
+                holding=[41010],
+                models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET & ~Inv.AIO_H3_PRE101 | Inv.KH_PRE133 | Inv.KH_133,
             ),
             ModbusAddressesSpec(holding=[46610], models=Inv.H3_PRO_SET),
         ],
@@ -2359,7 +2366,8 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         address=[
             ModbusAddressSpec(input=41010, models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressSpec(
-                holding=41010, models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
+                holding=41010,
+                models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET & ~Inv.AIO_H3_PRE101 | Inv.KH_PRE133 | Inv.KH_133,
             ),
             ModbusAddressSpec(holding=46610, models=Inv.H3_PRO_SET),
         ],
@@ -2380,7 +2388,8 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[41011], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(
-                holding=[41011], models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
+                holding=[41011],
+                models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET & ~Inv.AIO_H3_PRE101 | Inv.KH_PRE133 | Inv.KH_133,
             ),
             ModbusAddressesSpec(holding=[46611], models=Inv.H3_PRO_SET),
         ],
@@ -2396,7 +2405,8 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         address=[
             ModbusAddressSpec(input=41011, models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressSpec(
-                holding=41011, models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
+                holding=41011,
+                models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET & ~Inv.AIO_H3_PRE101 | Inv.KH_PRE133 | Inv.KH_133,
             ),
             ModbusAddressSpec(holding=46611, models=Inv.H3_PRO_SET),
         ],
