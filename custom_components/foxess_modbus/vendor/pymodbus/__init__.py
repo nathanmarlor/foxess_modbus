@@ -37,7 +37,9 @@ with _load(Path(__file__).parent / "pymodbus-3.6.9", "pymodbus"):
     from pymodbus.register_read_message import ReadInputRegistersResponse
     from pymodbus.register_write_message import WriteMultipleRegistersResponse
     from pymodbus.register_write_message import WriteSingleRegisterResponse
+    from pymodbus.pdu import ModbusExceptions
     from pymodbus.pdu import ModbusResponse
+    from pymodbus.pdu import ExceptionResponse
     from pymodbus.transaction import ModbusRtuFramer
     from pymodbus.transaction import ModbusSocketFramer
 
@@ -53,7 +55,9 @@ __all__ = [
     "ReadInputRegistersResponse",
     "WriteMultipleRegistersResponse",
     "WriteSingleRegisterResponse",
+    "ModbusExceptions",
     "ModbusResponse",
+    "ExceptionResponse",
     "ModbusRtuFramer",
     "ModbusSocketFramer",
 ]

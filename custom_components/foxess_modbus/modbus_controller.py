@@ -38,6 +38,8 @@ from .inverter_profiles import INVERTER_PROFILES
 from .inverter_profiles import InverterModelConnectionTypeProfile
 from .remote_control_manager import RemoteControlManager
 from .vendor.pymodbus import ConnectionException
+from .vendor.pymodbus import ExceptionResponse
+from .vendor.pymodbus import ModbusExceptions
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -65,6 +67,37 @@ class ConnectionState(Enum):
     INITIAL = 0
     DISCONNECTED = 1
     CONNECTED = 2
+
+
+class InvalidRegisterRanges:
+    @dataclass
+    class Range:
+        start: int
+        count: int
+
+    def __init__(self) -> None:
+        self._ranges: list[InvalidRegisterRanges.Range] = []
+
+    @property
+    def is_empty(self) -> bool:
+        return len(self._ranges) == 0
+
+    def add(self, register: int) -> None:
+        # Does it fall in any other ranges, or sit at the end of any range?
+        for x in self._ranges:
+            if register >= x.start and register < (x.start + x.count):
+                # Already covered
+                return
+            if register == (x.start + x.count):
+                x.count += 1
+                return
+        self._ranges.append(self.Range(register, 1))
+
+    def __contains__(self, item: int) -> bool:
+        return any(item >= x.start and item < x.start + x.count for x in self._ranges)
+
+    def __str__(self) -> str:
+        return ", ".join(f"[{x.start, x.count}]" for x in self._ranges)
 
 
 @contextmanager
@@ -105,6 +138,9 @@ class ModbusController(EntityController, UnloadController):
         # To start, we're neither connected nor disconnected
         self._connection_state = ConnectionState.INITIAL
         self._current_connection_error: str | None = None
+        # Any ranges of registers which we've detected that we can't read
+        self._detected_invalid_ranges = InvalidRegisterRanges()
+
         self._inverter_capacity = connection_type_profile.inverter_model_profile.inverter_capacity(
             self.inverter_details[INVERTER_MODEL]
         )
@@ -251,28 +287,9 @@ class ModbusController(EntityController, UnloadController):
                 )
                 return
 
-            # List of (start address, [read values starting at that address])
-            read_values: list[tuple[int, list[int]]] = []
             exception: Exception | None = None
             try:
-                read_ranges = self._create_read_ranges(
-                    self._max_read, is_initial_connection=self._connection_state != ConnectionState.CONNECTED
-                )
-                for start_address, num_reads in read_ranges:
-                    _LOGGER.debug(
-                        "Reading addresses on %s %s: (%s, %s)",
-                        self._client,
-                        self._slave,
-                        start_address,
-                        num_reads,
-                    )
-                    reads = await self._client.read_registers(
-                        start_address,
-                        num_reads,
-                        self._connection_type_profile.register_type,
-                        self._slave,
-                    )
-                    read_values.append((start_address, reads))
+                read_values = await self._read_all_registers()
 
                 # If we made it to here, then all reads succeeded. Write them to _data and notify the sensors.
                 # This avoids recording reads if poll failed partway through (ensuring that we don't record potentially
@@ -369,6 +386,28 @@ class ModbusController(EntityController, UnloadController):
                     )
                     await self._notify_is_connected_changed(is_connected=False)
 
+            if not self._detected_invalid_ranges.is_empty:
+                issue_registry.async_create_issue(
+                    self._hass,
+                    domain=DOMAIN,
+                    issue_id=f"invalid_ranges_{self.inverter_details[ENTITY_ID_PREFIX]}",
+                    is_fixable=False,
+                    is_persistent=False,
+                    severity=IssueSeverity.ERROR,
+                    learn_more_url="https://github.com/nathanmarlor/foxess_modbus/wiki/Invalid-Registers",
+                    translation_key="invalid_ranges",
+                    translation_placeholders={
+                        "friendly_name": self.inverter_details[FRIENDLY_NAME],
+                        "ranges": str(self._detected_invalid_ranges),
+                    },
+                )
+            else:
+                issue_registry.async_delete_issue(
+                    self._hass,
+                    domain=DOMAIN,
+                    issue_id=f"invalid_ranges_{self.inverter_details[ENTITY_ID_PREFIX]}",
+                )
+
         if self._remote_control_manager is not None:
             await self._remote_control_manager.poll_complete_callback()
 
@@ -408,6 +447,10 @@ class ModbusController(EntityController, UnloadController):
             if register_value.poll_type == RegisterPollType.ON_CONNECTION and not is_initial_connection:
                 continue
 
+            # Have we found that we can't read this register? Don't try again.
+            if address in self._detected_invalid_ranges:
+                continue
+
             # This register must be read in a single individual read. Yield any ranges we've found so far,
             # and yield just this register on its own
             if self._connection_type_profile.is_individual_read(address):
@@ -438,6 +481,79 @@ class ModbusController(EntityController, UnloadController):
 
         if start_address is not None:
             yield (start_address, read_size)
+
+    # List of (start address, [read values starting at that address])
+    async def _read_all_registers(self) -> list[tuple[int, Iterable[int | None]]]:
+        def _is_illegal_address(ex: ModbusClientFailedError) -> bool:
+            return (
+                isinstance(ex.response, ExceptionResponse)
+                and ex.response.exception_code == ModbusExceptions.IllegalAddress
+            )
+
+        read_values: list[tuple[int, Iterable[int | None]]] = []
+
+        read_ranges = self._create_read_ranges(
+            self._max_read, is_initial_connection=self._connection_state != ConnectionState.CONNECTED
+        )
+        for start_address, num_reads in read_ranges:
+            _LOGGER.debug(
+                "Reading addresses on %s %s: (%s, %s)",
+                self._client,
+                self._slave,
+                start_address,
+                num_reads,
+            )
+            try:
+                reads = await self._client.read_registers(
+                    start_address,
+                    num_reads,
+                    self._connection_type_profile.register_type,
+                    self._slave,
+                )
+                read_values.append((start_address, reads))
+
+            except ModbusClientFailedError as ex:
+                if not _is_illegal_address(ex):
+                    raise
+
+                _LOGGER.debug(
+                    "IllegalAddress when polling %s %s: %s. Trying each register individually...",
+                    self._client,
+                    self._slave,
+                    ex.response,
+                )
+
+                # Right, at least one of this range failed. Find out what it wasn't happy with, and read the others
+                for i in range(num_reads):
+                    address = start_address + i
+
+                    _LOGGER.debug(
+                        "Reading single address on %s %s: (%s)",
+                        self._client,
+                        self._slave,
+                        address,
+                    )
+                    try:
+                        read = await self._client.read_registers(
+                            address, 1, self._connection_type_profile.register_type, self._slave
+                        )
+                        assert len(read) == 1
+                        read_values.append((address, read))
+                    except ModbusClientFailedError as ex:
+                        if not _is_illegal_address(ex):
+                            raise
+
+                        _LOGGER.warning(
+                            "%s %s: register %s is invalid",
+                            self._client,
+                            self._slave,
+                            address,
+                        )
+                        self._detected_invalid_ranges.add(address)
+                        # Record None at this address, so the sensor gets an 'Unavailable' value
+                        read_values.append((address, [None]))
+
+        return read_values
 
     def register_modbus_entity(self, listener: ModbusControllerEntity) -> None:
         self._update_listeners.add(listener)
