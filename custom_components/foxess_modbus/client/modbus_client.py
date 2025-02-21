@@ -7,6 +7,7 @@ from typing import Any
 from typing import Callable
 from typing import Type
 from typing import TypeVar
+from typing import cast
 
 import serial
 from homeassistant.core import HomeAssistant
@@ -155,7 +156,7 @@ class ModbusClient:
                 response,
             )
 
-        return response.registers
+        return cast(list[int], response.registers)
 
     async def write_registers(self, register_address: int, register_values: list[int], slave: int) -> None:
         """Write registers"""
@@ -202,7 +203,7 @@ class ModbusClient:
     async def _async_pymodbus_call(self, call: Callable[..., T], *args: Any, auto_connect: bool = True) -> T:
         """Convert async to sync pymodbus call."""
 
-        def _call(_: Any) -> T:
+        def _call() -> T:
             # When using pollserial://, connected calls into serial.serial_for_url, which calls importlib.import_module,
             # which HA doesn't like (see https://github.com/nathanmarlor/foxess_modbus/issues/618).
             # Therefore we need to do this check inside the executor job
