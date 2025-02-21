@@ -1,5 +1,5 @@
 {
-  "image": "mcr.microsoft.com/vscode/devcontainers/python:3.13-bullseye",
+  "image": "mcr.microsoft.com/vscode/devcontainers/python:3.13-bookworm",
   "name": "Foxess Modbus Container",
   "appPort": ["9123:8123"],
   "postCreateCommand": ".devcontainer/setup",
