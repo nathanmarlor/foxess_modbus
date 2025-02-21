@@ -407,6 +407,15 @@ _INVERTER_PROFILES_LIST = [
         versions={None: Inv.H3_PRE180},
         special_registers=H3_REGISTERS,
     ),
+    # Enpal I-X range
+    # These have the form 'I-X5', with powers 5, 6, 8, 9.9, 10, 12, 15kW
+    # See https://github.com/nathanmarlor/foxess_modbus/issues/785
+    InverterModelProfile(InverterModel.ENPAL_IX, r"^I-X([\d\.]+)").add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={None: Inv.H3_PRE180},
+        special_registers=H3_REGISTERS,
+    ),
     # E.g. H3-Pro-20.0
     InverterModelProfile(InverterModel.H3_PRO, r"^H3-Pro-([\d\.]+)").add_connection_type(
         ConnectionType.AUX,
