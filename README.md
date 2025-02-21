@@ -18,12 +18,16 @@ See [Supported Features](https://github.com/nathanmarlor/foxess_modbus/wiki/Supp
 
 Supported models:
 
-- FoxESS H1 (including AC1 and AIO-H1)
+- FoxESS H1 (including AC1, AIO-H1 and G2)
 - FoxESS H3 (including AC3 and AOI-H3)
+- FoxESS H3 PRO
 - FoxESS KH
-- Sonnenkraft SK-HWR
 - Kuara H3
+- Sonnenkraft SK-HWR
+- STAR
 - Solavita SP
+- a-TroniX AX
+- Enpal
 
 You will need a direct connection to your inverter.
 In most cases, this means buying a modbus to ethernet/USB adapter and wiring this to a port on your inverter.
