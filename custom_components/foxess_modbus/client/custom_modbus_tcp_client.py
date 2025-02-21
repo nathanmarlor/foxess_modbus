@@ -34,7 +34,7 @@ class CustomModbusTcpClient(ModbusTcpClient):
 
     # Replacement of ModbusTcpClient to use poll rather than select, see
     # https://github.com/nathanmarlor/foxess_modbus/issues/275
-    def recv(self, size: int) -> bytes:
+    def recv(self, size: int) -> Any:
         """Read data from the underlying descriptor."""
         super(ModbusTcpClient, self).recv(size)  # type: ignore
         if not self.socket:

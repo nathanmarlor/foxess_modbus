@@ -15,8 +15,8 @@ from homeassistant.components.energy.data import FlowFromGridSourceType
 from homeassistant.components.energy.data import FlowToGridSourceType
 from homeassistant.components.energy.data import GridSourceType
 from homeassistant.components.energy.data import SolarSourceType
+from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.core import callback
-from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.selector import selector
 from slugify import slugify
@@ -47,7 +47,7 @@ class FlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMAIN):
 
         self._adapter_segment: AdapterFlowSegment | None = None
 
-    async def async_step_user(self, _user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_user(self, _user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle a flow initialized by the user."""
 
         await self.async_set_unique_id(DOMAIN)
@@ -55,8 +55,8 @@ class FlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMAIN):
 
         return await self.async_step_select_adapter_type()
 
-    async def async_step_select_adapter_type(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        async def adapter_segment_complete() -> FlowResult:
+    async def async_step_select_adapter_type(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        async def adapter_segment_complete() -> ConfigFlowResult:
             self._adapter_segment = None
             return await self.async_step_friendly_name()
 
@@ -66,19 +66,19 @@ class FlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMAIN):
             )
         return await self._adapter_segment.async_step_select_adapter_type(user_input)
 
-    async def async_step_select_adapter_model(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_select_adapter_model(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         assert self._adapter_segment is not None
         return await self._adapter_segment.async_step_select_adapter_model(user_input)
 
-    async def async_step_tcp_adapter(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_tcp_adapter(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         assert self._adapter_segment is not None
         return await self._adapter_segment.async_step_tcp_adapter(user_input)
 
-    async def async_step_serial_adapter(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_serial_adapter(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         assert self._adapter_segment is not None
         return await self._adapter_segment.async_step_serial_adapter(user_input)
 
-    async def async_step_friendly_name(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_friendly_name(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Let the user enter a friendly name for their inverter"""
 
         # This is a bit involved, so we'll avoid _with_default_form
@@ -163,16 +163,16 @@ class FlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    async def async_step_add_another_inverter(self, _user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_add_another_inverter(self, _user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Let the user choose whether to add another inverter"""
 
         options = ["select_adapter_type", "energy"]
         return self.async_show_menu(step_id="add_another_inverter", menu_options=options)
 
-    async def async_step_energy(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_energy(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Let the user choose whether to set up the energy dashboard"""
 
-        async def body(user_input: dict[str, Any]) -> FlowResult:
+        async def body(user_input: dict[str, Any]) -> ConfigFlowResult:
             if user_input["energy_dashboard"]:
                 await self._setup_energy_dashboard()
             return self.async_create_entry(title=CONFIG_ENTRY_TITLE, data=self._create_entry_data())
@@ -200,12 +200,12 @@ class FlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMAIN):
         step_id: str,
         user_input: dict[str, Any] | None,
         adapter_type: InverterAdapterType,
-        complete_callback: Callable[[InverterAdapter], Awaitable[FlowResult]],
+        complete_callback: Callable[[InverterAdapter], Awaitable[ConfigFlowResult]],
         description_placeholders: dict[str, str] | None = None,
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Helper used in the steps which let the user select their adapter model"""
 
-        async def body(user_input: dict[str, Any]) -> FlowResult:
+        async def body(user_input: dict[str, Any]) -> ConfigFlowResult:
             return await complete_callback(ADAPTERS[user_input["adapter_id"]])
 
         adapters = [x for x in ADAPTERS.values() if x.adapter_type == adapter_type]
