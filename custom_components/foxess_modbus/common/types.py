@@ -52,6 +52,7 @@ class InverterModel(StrEnum):
     SK_HWR = "SK-HWR"
     STAR_H3 = "STAR-H3"
     SOLAVITA_SP = "SOLAVITA-SP"
+    ATRONIX_AX = "ATRONIX_AX"
 
     H3_PRO = "H3_PRO"
 
