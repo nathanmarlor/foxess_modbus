@@ -3,7 +3,10 @@
 import logging
 from dataclasses import dataclass
 from dataclasses import field
+from datetime import date
+from datetime import datetime
 from datetime import time
+from decimal import Decimal
 from typing import Any
 from typing import cast
 
@@ -17,6 +20,7 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.restore_state import ExtraStoredData
 from homeassistant.helpers.restore_state import RestoredExtraData
 from homeassistant.helpers.restore_state import RestoreEntity
+from homeassistant.helpers.typing import StateType
 
 from ..common.entity_controller import EntityController
 from ..common.types import Inv
@@ -55,7 +59,7 @@ def _is_force_charge_enabled(
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
-class ModbusChargePeriodStartEndSensorDescription(SensorEntityDescription, EntityFactory):
+class ModbusChargePeriodStartEndSensorDescription(SensorEntityDescription, EntityFactory):  # type: ignore[misc, override]
     """Entity description for ModbusChargePeriodStartEndSensor"""
 
     address: list[InverterModelSpec]
@@ -120,7 +124,7 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
         self._last_enabled_value: int | None = None
 
     @property
-    def native_value(self) -> time | None:
+    def native_value(self) -> StateType | date | datetime | Decimal:
         """Return the value reported by the sensor."""
         value = self._controller.read(self._address, signed=False)
 
@@ -187,7 +191,9 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
-class ModbusEnableForceChargeSensorDescription(BinarySensorEntityDescription, EntityFactory):
+class ModbusEnableForceChargeSensorDescription(  # type ignore[misc, override]
+    BinarySensorEntityDescription, EntityFactory
+):
     """Entity description for ModbusEnableForceChargeSensor"""
 
     period_start_address: list[InverterModelSpec]

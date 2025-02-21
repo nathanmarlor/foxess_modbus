@@ -4,8 +4,8 @@ from typing import Awaitable
 from typing import Callable
 
 import voluptuous as vol
-from homeassistant import data_entry_flow
-from homeassistant.data_entry_flow import FlowResult
+from homeassistant import config_entries
+from homeassistant.config_entries import ConfigFlowResult
 
 from ..const import ADAPTER_ID
 from ..const import ENTITY_ID_PREFIX
@@ -21,7 +21,7 @@ from ..inverter_adapters import ADAPTERS
 from .inverter_data import InverterData
 
 if TYPE_CHECKING:
-    _FlowHandlerMixinBase = data_entry_flow.FlowHandler
+    _FlowHandlerMixinBase = config_entries.ConfigFlow
 else:
     _FlowHandlerMixinBase = object
 
@@ -31,14 +31,14 @@ class FlowHandlerMixin(_FlowHandlerMixinBase):
 
     async def with_default_form(
         self,
-        body: Callable[[dict[str, Any]], Awaitable[FlowResult | None]],
+        body: Callable[[dict[str, Any]], Awaitable[ConfigFlowResult | None]],
         user_input: dict[str, Any] | None,
         step_id: str,
         data_schema: vol.Schema,
         *,
         suggested_values: dict[str, Any] | None = None,
         description_placeholders: dict[str, str] | None = None,
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """
         If user_input is not None, call body() and return the result.
         If body throws a ValidationFailedException, or returns None, or user_input is None,

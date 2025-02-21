@@ -3,7 +3,7 @@ from typing import Any
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.data_entry_flow import FlowResult
+from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.helpers.selector import selector
 
 from ..const import ADAPTER_ID
@@ -30,7 +30,7 @@ class OptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
 
         self._adapter_segment: AdapterFlowSegment | None = None
 
-    async def async_step_init(self, _user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_init(self, _user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Start the config flow"""
 
         if len(self._config.data[INVERTERS]) == 1:
@@ -39,10 +39,10 @@ class OptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
 
         return await self.async_step_select_inverter()
 
-    async def async_step_select_inverter(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_select_inverter(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Let the user select their inverter, if they have multiple inverters"""
 
-        async def body(user_input: dict[str, Any]) -> FlowResult:
+        async def body(user_input: dict[str, Any]) -> ConfigFlowResult:
             self._selected_inverter_id = user_input["inverter"]
             return await self.async_step_inverter_options_category()
 
@@ -66,7 +66,7 @@ class OptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
 
         return await self.with_default_form(body, user_input, "select_inverter", schema)
 
-    async def async_step_inverter_options_category(self, _user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_inverter_options_category(self, _user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Let the user choose what sort of inverter options to configure"""
 
         _, _, combined_config_options = self._config_for_inverter(self._selected_inverter_id)
@@ -79,8 +79,8 @@ class OptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
 
         return self.async_show_menu(step_id="inverter_options_category", menu_options=options)
 
-    async def async_step_select_adapter_type(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        async def adapter_segment_complete() -> FlowResult:
+    async def async_step_select_adapter_type(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        async def adapter_segment_complete() -> ConfigFlowResult:
             assert self._adapter_segment is not None
             assert self._selected_inverter_id is not None
 
@@ -105,25 +105,25 @@ class OptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
 
         return await self._adapter_segment.async_step_select_adapter_type(user_input)
 
-    async def async_step_select_adapter_model(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_select_adapter_model(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         assert self._adapter_segment is not None
         return await self._adapter_segment.async_step_select_adapter_model(user_input)
 
-    async def async_step_tcp_adapter(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_tcp_adapter(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         assert self._adapter_segment is not None
         return await self._adapter_segment.async_step_tcp_adapter(user_input)
 
-    async def async_step_serial_adapter(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_serial_adapter(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         assert self._adapter_segment is not None
         return await self._adapter_segment.async_step_serial_adapter(user_input)
 
-    async def async_step_version_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_version_settings(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Let the user configure their inverter version"""
         assert self._selected_inverter_id is not None
 
         _, options, combined_config_options = self._config_for_inverter(self._selected_inverter_id)
 
-        async def body(user_input: dict[str, Any]) -> FlowResult:
+        async def body(user_input: dict[str, Any]) -> ConfigFlowResult:
             version = user_input.get("version")
             if version is None or version == "latest":
                 options.pop(INVERTER_VERSION, None)
@@ -176,7 +176,7 @@ class OptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
             description_placeholders=description_placeholders,
         )
 
-    async def async_step_inverter_advanced_options(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_inverter_advanced_options(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Let the user set the selected inverter's advanced settings"""
 
         assert self._selected_inverter_id is not None
@@ -185,7 +185,7 @@ class OptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
 
         current_adapter = ADAPTERS[combined_config_options[ADAPTER_ID]]
 
-        async def body(user_input: dict[str, Any]) -> FlowResult:
+        async def body(user_input: dict[str, Any]) -> ConfigFlowResult:
             poll_rate = user_input.get("poll_rate")
             if poll_rate is not None:
                 options[POLL_RATE] = poll_rate
@@ -238,7 +238,7 @@ class OptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
             description_placeholders=description_placeholders,
         )
 
-    def _save_selected_inverter_options(self, inverter_options: dict[str, Any]) -> FlowResult:
+    def _save_selected_inverter_options(self, inverter_options: dict[str, Any]) -> ConfigFlowResult:
         # We must not mutate any part of self._config.options, otherwise HA thinks we haven't changed the options
         options = copy.deepcopy(dict(self._config.options))
         options.setdefault(INVERTERS, {})[self._selected_inverter_id] = inverter_options
