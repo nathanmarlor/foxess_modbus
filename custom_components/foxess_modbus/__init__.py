@@ -11,6 +11,7 @@ import logging
 import uuid
 from typing import Any
 
+from homeassistant.components.energy.data import async_get_manager
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import UNDEFINED
@@ -149,7 +150,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                 POLL_RATE: config_entry.options[POLL_RATE],
                 MAX_READ: config_entry.options[MAX_READ],
             }
-            new_options: dict[str, Any] = {INVERTERS: {}}
+            new_options = {INVERTERS: {}}
         else:
             inverter_options = {}
             new_options = UNDEFINED
@@ -186,7 +187,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
 
     if version == 2:
         # Fix a badly-set-up energy dashboard
-        energy_manager = await data.async_get_manager(hass)
+        energy_manager = await async_get_manager(hass)
         if energy_manager.data is not None:
             energy_data = copy.deepcopy(energy_manager.data)
             for energy_source in energy_data.get("energy_sources", []):
