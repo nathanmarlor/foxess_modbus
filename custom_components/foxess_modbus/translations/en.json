@@ -204,6 +204,10 @@
     "connection_error": {
       "title": "Connection Error",
       "description": "Error connecting to inverter (friendly name: \"{friendly_name}\"). {error}"
+    },
+    "invalid_ranges": {
+      "title": "Invalid registers detected",
+      "description": "Inverter (friendly name: \"{friendly_name}\") has some registers which we expect to read, but can't. Details: {ranges}. Please visit https://github.com/nathanmarlor/foxess_modbus/wiki/Invalid-Registers."
     }
   }
 }
