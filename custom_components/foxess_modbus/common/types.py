@@ -83,9 +83,11 @@ class Inv(Flag):
     KUARA_H3 = auto()
     H3_SET = H3_180 | H3_PRE180 | AIO_H3_101 | AIO_H3_PRE101 | KUARA_H3
 
+    H3_SMART = auto()
+
     H3_PRO_PRE122 = auto()
     H3_PRO_122 = auto()
-    H3_PRO_SET = H3_PRO_PRE122 | H3_PRO_122
+    H3_PRO_SET = H3_PRO_PRE122 | H3_PRO_122 | H3_SMART
 
     ALL = H1_LAN | H1_G1 | H1_G2_SET | KH_SET | H3_SET | H3_PRO_SET
 

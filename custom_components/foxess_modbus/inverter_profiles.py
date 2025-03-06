@@ -92,6 +92,17 @@ H1_G2_REGISTERS = SpecialRegisterConfig(
     individual_read_register_ranges=[(41000, 41999)],
 )
 
+# See https://github.com/nathanmarlor/foxess_modbus/discussions/792
+#
+# Additional information to the individual read:
+# - 37609 allows only to read 28 instead of 92 registers.
+# - 37632 allows only to read  5 instead of 69 registers.
+#
+# All the 410xx register are not specified within the document version V1.05.03.00
+H3_SMART_REGISTERS = SpecialRegisterConfig(
+    invalid_register_ranges=[(41001, 41006), (41012, 41013), (41015, 41015)],
+    individual_read_register_ranges=[(37609, 37620), (37632, 37636)]
+)
 
 @dataclass(kw_only=True)
 class CapacityParser:
@@ -413,8 +424,8 @@ _INVERTER_PROFILES_LIST = [
     InverterModelProfile(InverterModel.ENPAL_IX, r"^I-X([\d\.]+)").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
-        versions={None: Inv.H3_PRE180},
-        special_registers=H3_REGISTERS,
+        versions={None: Inv.H3_SMART},
+        special_registers=H3_SMART_REGISTERS,
     ),
     # E.g. H3-Pro-20.0
     InverterModelProfile(InverterModel.H3_PRO, r"^H3-Pro-([\d\.]+)").add_connection_type(
