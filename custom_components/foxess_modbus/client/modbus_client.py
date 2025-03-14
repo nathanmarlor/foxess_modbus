@@ -126,6 +126,17 @@ class ModbusClient:
             raise AssertionError()
 
         if response.isError():
+            for i in range(10):
+                _LOGGER.info(f"Some error ({response}), now try {i+1} / 10.. ")
+                response = await self._async_pymodbus_call(
+                    self._client.read_holding_registers,
+                    start_address,
+                    num_registers,
+                    slave,
+                )
+                if not response.isError():
+                    _LOGGER.info(f"... puh, got it. :-) ")
+                    return cast(list[int], response.registers)
             message = (
                 f"Error reading registers. Type: {register_type}; start: {start_address}; count: {num_registers}; "
                 f"slave: {slave}"
