@@ -156,14 +156,19 @@ class ModbusController(EntityController, UnloadController):
             RemoteControlManager(self, remote_control_config, poll_rate) if remote_control_config is not None else None
         )
 
-        if self._hass is not None:
-            refresh = async_track_time_interval(
+        issue_registry.async_delete_issue(
+            self._hass,
+            domain=DOMAIN,
+            issue_id=f"invalid_ranges_{self.inverter_details[ENTITY_ID_PREFIX]}",
+        )
+
+        self._unload_listeners.append(
+            async_track_time_interval(
                 self._hass,
                 self._refresh,
                 timedelta(seconds=self._poll_rate),
             )
-
-            self._unload_listeners.append(refresh)
+        )
 
     @property
     def hass(self) -> HomeAssistant:
@@ -387,6 +392,7 @@ class ModbusController(EntityController, UnloadController):
                     await self._notify_is_connected_changed(is_connected=False)
 
             if not self._detected_invalid_ranges.is_empty:
+                # This will update the issue if anything has changed, otherwise it's cheap
                 issue_registry.async_create_issue(
                     self._hass,
                     domain=DOMAIN,
@@ -400,12 +406,6 @@ class ModbusController(EntityController, UnloadController):
                         "friendly_name": self.inverter_details[FRIENDLY_NAME],
                         "ranges": str(self._detected_invalid_ranges),
                     },
-                )
-            else:
-                issue_registry.async_delete_issue(
-                    self._hass,
-                    domain=DOMAIN,
-                    issue_id=f"invalid_ranges_{self.inverter_details[ENTITY_ID_PREFIX]}",
                 )
 
         if self._remote_control_manager is not None:
