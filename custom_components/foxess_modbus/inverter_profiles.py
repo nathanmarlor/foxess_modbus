@@ -316,10 +316,12 @@ _INVERTER_PROFILES_LIST = [
     ),
     # The KH doesn't have a LAN port. It supports both input and holding over RS485
     # Some models start with KH-, but some are just e.g. KH10.5
+    # TODO: Inv.KH_PRE119 requires RegisterType.INPUT, but we don't currently support using different register types
+    # for different versions (it's determined solely by the connection type, which is just based on the old H1)
     InverterModelProfile(InverterModel.KH, r"^KH([\d\.]+)").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
-        versions={Version(1, 19): Inv.KH_PRE119, Version(1, 33): Inv.KH_PRE133, None: Inv.KH_133},
+        versions={Version(1, 33): Inv.KH_PRE133, None: Inv.KH_133},
         special_registers=KH_REGISTERS,
     ),
     # The H3 seems to use holding registers for everything
