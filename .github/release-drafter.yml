@@ -1,28 +1,16 @@
 categories:
-  - title: ":boom: Breaking Changes"
+  - title: "💥 Breaking Changes"
     label: "breaking"
-  - title: ":rocket: Features"
+  - title: "🚀 Features"
     label: "enhancement"
-  - title: ":fire: Removals and Deprecations"
+  - title: "🔥 Removals and Deprecations"
     label: "removal"
-  - title: ":beetle: Fixes"
+  - title: "🐞 Fixes"
     label: "bug"
-  - title: ":racehorse: Performance"
-    label: "performance"
-  - title: ":rotating_light: Testing"
-    label: "testing"
-  - title: ":construction_worker: Continuous Integration"
-    label: "ci"
-  - title: ":books: Documentation"
+  - title: "📚 Documentation"
     label: "documentation"
-  - title: ":hammer: Refactoring"
-    label: "refactoring"
-  - title: ":lipstick: Style"
-    label: "style"
-  - title: ":package: Dependencies"
-    labels:
-      - "dependencies"
-      - "build"
+  - title: "📦 Dependencies"
+    label: "dependencies"
 header: |
   If your inverter is not running the latest manager version, you may need to select your manager version in the integration settings. See [the wiki](https://github.com/nathanmarlor/foxess_modbus/wiki/Supported-Versions) for details.
 
@@ -34,6 +22,7 @@ header: |
   | AIO-H3 | v1.01 | All |
   | H3 Pro | v1.22 | All |
   | KH / KA | v1.33 | All |
+
 template: |
   ## Changes
 
