@@ -431,6 +431,15 @@ _INVERTER_PROFILES_LIST = [
         versions={None: Inv.H3_PRE180},
         special_registers=ENPAX_IX_REGISTERS,
     ),
+    # 1KOMMA5 range
+    # These have the form '1K5-HI-15-V1', with powers 5, 8, 10, 12, 15kW
+    # See https://github.com/nathanmarlor/foxess_modbus/issues/807
+    InverterModelProfile(InverterModel.ONE_KOMMA_FIVE, r"^1K5-HI-(\d+)-V1").add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={None: Inv.H3_PRE180},
+        special_registers=H3_REGISTERS,
+    ),
     # E.g. H3-Pro-20.0
     InverterModelProfile(InverterModel.H3_PRO, r"^H3-Pro-([\d\.]+)").add_connection_type(
         ConnectionType.AUX,
