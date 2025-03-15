@@ -82,6 +82,12 @@ H3_REGISTERS = SpecialRegisterConfig(
     invalid_register_ranges=[(41001, 41006), (41012, 41013), (41015, 41015)],
     individual_read_register_ranges=[(41000, 41999)],
 )
+# See https://github.com/nathanmarlor/foxess_modbus/discussions/792
+# All the 410xx register are not specified within the document version V1.05.03.00
+ENPAX_IX_REGISTERS = SpecialRegisterConfig(
+    invalid_register_ranges=[(41001, 41006), (41012, 41013), (41015, 41015)],
+    individual_read_register_ranges=[(37609, 37620), (37632, 37636)],
+)
 # See https://github.com/nathanmarlor/foxess_modbus/pull/512
 KH_REGISTERS = SpecialRegisterConfig(
     invalid_register_ranges=[(41001, 41006), (41012, 41012), (41019, 43999), (31055, 31999)],
@@ -414,7 +420,7 @@ _INVERTER_PROFILES_LIST = [
         ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={None: Inv.H3_PRE180},
-        special_registers=H3_REGISTERS,
+        special_registers=ENPAX_IX_REGISTERS,
     ),
     # E.g. H3-Pro-20.0
     InverterModelProfile(InverterModel.H3_PRO, r"^H3-Pro-([\d\.]+)").add_connection_type(
