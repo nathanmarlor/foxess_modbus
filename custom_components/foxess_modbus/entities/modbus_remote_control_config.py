@@ -116,7 +116,7 @@ class ModbusRemoteControlFactory:
         def _set_charge_power(manager: EntityRemoteControlManager, value: int) -> None:
             manager.charge_power = -value
 
-        charge_power = ModbusRemoteControlNumberDescription(  # type: ignore
+        charge_power = ModbusRemoteControlNumberDescription(
             key="force_charge_power",
             name="Force Charge Power",
             models=all_models,
@@ -137,7 +137,7 @@ class ModbusRemoteControlFactory:
             manager.discharge_power = -value
 
         # hass type hints are messed up, and mypy doesn't see inherited dataclass properties on the EntityDescriptions
-        discharge_power = ModbusRemoteControlNumberDescription(  # type: ignore
+        discharge_power = ModbusRemoteControlNumberDescription(
             key="force_discharge_power",
             name="Force Discharge Power",
             models=all_models,
@@ -154,7 +154,7 @@ class ModbusRemoteControlFactory:
         )
 
         # Models without a work_mode address get one of these
-        remote_control_select = ModbusRemoteControlSelectDescription(  # type: ignore
+        remote_control_select = ModbusRemoteControlSelectDescription(
             key="force_charge_mode",
             name="Force Charge Mode",
             models=[x.get_models_without_work_mode() for x in self.address_specs],
@@ -164,7 +164,7 @@ class ModbusRemoteControlFactory:
             manager.max_soc = value
 
         # Models without max_soc get one of these
-        force_charge_max_soc = ModbusRemoteControlNumberDescription(  # type: ignore
+        force_charge_max_soc = ModbusRemoteControlNumberDescription(
             key="force_charge_max_soc",
             name="Force Charge Max SoC",
             models=[x.get_models_without_max_soc() for x in self.address_specs],

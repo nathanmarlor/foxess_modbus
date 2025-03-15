@@ -25,7 +25,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
-class ModbusBinarySensorDescription(BinarySensorEntityDescription, EntityFactory):
+class ModbusBinarySensorDescription(BinarySensorEntityDescription, EntityFactory):  # type: ignore[misc]
     """Description for ModbusBinarySensor"""
 
     address: list[InverterModelSpec]

@@ -11,7 +11,7 @@ class ConnectionStatusSensor(ModbusEntityMixin, SensorEntity):
         self,
         controller: EntityController,
     ) -> None:
-        self.entity_description = SensorEntityDescription(  # type: ignore
+        self.entity_description = SensorEntityDescription(
             key="connection_status",
             name="Connection Status",
         )

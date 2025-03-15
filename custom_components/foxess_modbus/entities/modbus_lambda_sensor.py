@@ -9,6 +9,7 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.const import Platform
 from homeassistant.core import Event
+from homeassistant.core import EventStateChangedData
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.event import async_track_state_change_event
 
@@ -25,7 +26,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
-class ModbusLambdaSensorDescription(SensorEntityDescription, EntityFactory):
+class ModbusLambdaSensorDescription(SensorEntityDescription, EntityFactory):  # type: ignore[misc]
     """Entity description for ModbusLambdaSensors"""
 
     models: list[EntitySpec]
@@ -92,7 +93,7 @@ class ModbusLambdaSensor(ModbusEntityMixin, SensorEntity):
 
         self._update_value()
 
-    def _handle_event(self, _event: Event) -> None:
+    def _handle_event(self, _event: Event[EventStateChangedData]) -> None:
         self._update_value()
 
     def _update_value(self) -> None:

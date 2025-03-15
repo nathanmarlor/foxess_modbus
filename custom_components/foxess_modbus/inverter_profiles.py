@@ -6,6 +6,7 @@ import re
 from dataclasses import dataclass
 from typing import Any
 from typing import ClassVar
+from typing import Self
 
 from homeassistant.helpers.entity import Entity
 
@@ -45,7 +46,7 @@ class Version:
     def __hash__(self) -> int:
         return hash((self.major, self.minor))
 
-    def __lt__(self, other: Any) -> bool:
+    def __lt__(self, other: Self | None) -> bool:
         # None means "the latest", and so sorts higher than anything (except None)
         if other is None:
             return True
@@ -154,7 +155,7 @@ class InverterModelConnectionTypeProfile:
 
         inverter_version = Version.parse(version_from_config)
         versions = sorted(self.versions.items(), reverse=True)
-        matched_version = next((x for x in versions if x[0] <= inverter_version), versions[0])
+        matched_version = next((x for x in versions if x[0] <= inverter_version), versions[0])  # type: ignore[operator]
         return matched_version[1]
 
     def overlaps_invalid_range(self, start_address: int, end_address: int) -> bool:

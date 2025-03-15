@@ -34,7 +34,7 @@ class CustomModbusTcpClient(ModbusTcpClient):
 
     # Replacement of ModbusTcpClient to use poll rather than select, see
     # https://github.com/nathanmarlor/foxess_modbus/issues/275
-    def recv(self, size: int) -> bytes:
+    def recv(self, size: int) -> Any:
         """Read data from the underlying descriptor."""
         super(ModbusTcpClient, self).recv(size)
         if not self.socket:
@@ -73,9 +73,7 @@ class CustomModbusTcpClient(ModbusTcpClient):
             # We expect a single-element list if this succeeds, or an empty list if it timed out
             if len(poll_res) > 0:
                 if (recv_data := self.socket.recv(recv_size)) == b"":
-                    return self._handle_abrupt_socket_close(  # type: ignore[no-any-return]
-                        size, data, time.time() - time_
-                    )
+                    return self._handle_abrupt_socket_close(size, data, time.time() - time_)
                 data.append(recv_data)
                 data_length += len(recv_data)
             time_ = time.time()

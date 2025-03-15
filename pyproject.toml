@@ -14,8 +14,12 @@ exclude = [
 ]
 
 [[tool.mypy.overrides]]
-module = 'pymodbus.*'
+module = 'serial.*'
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = 'custom_components.foxess_modbus.vendor.*'
+follow_imports = 'skip'
 
 [tool.ruff]
 lint.select = ["E", "F", "I", "N", "ANN", "S", "B", "A", "COM", "C4", "DTZ", "ISC", "ICN", "G",
@@ -41,3 +45,4 @@ force-single-line = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

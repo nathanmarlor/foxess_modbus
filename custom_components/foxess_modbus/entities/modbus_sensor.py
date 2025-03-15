@@ -31,7 +31,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
-class ModbusSensorDescription(SensorEntityDescription, EntityFactory):
+class ModbusSensorDescription(SensorEntityDescription, EntityFactory):  # type: ignore[misc]
     """Custom sensor description"""
 
     addresses: list[ModbusAddressesSpec]

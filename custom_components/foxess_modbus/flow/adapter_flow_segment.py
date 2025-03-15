@@ -4,7 +4,7 @@ from typing import Awaitable
 from typing import Callable
 
 import voluptuous as vol
-from homeassistant.data_entry_flow import FlowResult
+from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.selector import selector
 
@@ -37,7 +37,7 @@ class AdapterFlowSegment:
         flow: FlowHandlerMixin,
         inverter_data: InverterData,
         other_inverters: list[InverterData],
-        on_complete: Callable[[], Awaitable[FlowResult]],
+        on_complete: Callable[[], Awaitable[ConfigFlowResult]],
     ) -> None:
         self._flow = flow
         self._on_complete = on_complete
@@ -51,10 +51,10 @@ class AdapterFlowSegment:
             InverterAdapterType.NETWORK: self.async_step_tcp_adapter,
         }
 
-    async def async_step_select_adapter_type(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_select_adapter_type(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Let the user select their adapter type"""
 
-        async def body(user_input: dict[str, Any]) -> FlowResult:
+        async def body(user_input: dict[str, Any]) -> ConfigFlowResult:
             adapter_type = InverterAdapterType(user_input["adapter_type"])
             self.inverter_data.adapter_type = adapter_type
 
@@ -87,10 +87,10 @@ class AdapterFlowSegment:
             body, user_input, "select_adapter_type", schema, suggested_values=suggested_values
         )
 
-    async def async_step_select_adapter_model(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_select_adapter_model(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Let the user select their adapter model"""
 
-        async def body(user_input: dict[str, Any]) -> FlowResult:
+        async def body(user_input: dict[str, Any]) -> ConfigFlowResult:
             self.inverter_data.adapter = ADAPTERS[user_input["adapter_model"]]
             assert self.inverter_data.adapter_type is not None
             return await self._adapter_type_to_step[self.inverter_data.adapter_type]()
@@ -122,12 +122,12 @@ class AdapterFlowSegment:
             suggested_values=suggested_values,
         )
 
-    async def async_step_tcp_adapter(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_tcp_adapter(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Let the user enter connection details for their TCP/UDP/RTU_OVER_TCP adapter"""
 
         adapter = self.inverter_data.adapter
 
-        async def body(user_input: dict[str, Any]) -> FlowResult:
+        async def body(user_input: dict[str, Any]) -> ConfigFlowResult:
             assert adapter is not None
             assert adapter.network_protocols is not None
             protocol = user_input.get(
@@ -209,12 +209,12 @@ class AdapterFlowSegment:
             description_placeholders=description_placeholders,
         )
 
-    async def async_step_serial_adapter(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_serial_adapter(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Let the user enter connection details for their serial adapter"""
 
         adapter = self.inverter_data.adapter
 
-        async def body(user_input: dict[str, Any]) -> FlowResult:
+        async def body(user_input: dict[str, Any]) -> ConfigFlowResult:
             assert adapter is not None
             device = user_input["serial_device"]
             slave = user_input.get("modbus_slave", _DEFAULT_SLAVE)

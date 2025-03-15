@@ -228,7 +228,7 @@ H3_PRO_KH_133_FAULTS = FaultSet(
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
-class ModbusFaultSensorDescription(SensorEntityDescription, EntityFactory):
+class ModbusFaultSensorDescription(SensorEntityDescription, EntityFactory):  # type: ignore[misc]
     """Description for ModbusFaultSensor"""
 
     addresses: list[ModbusAddressesSpec]

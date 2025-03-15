@@ -8,8 +8,10 @@ from typing import cast
 
 from homeassistant.const import Platform
 from homeassistant.helpers import entity_registry
+from homeassistant.helpers.entity import ABCCachedProperties
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity import Entity
+from propcache import cached_property
 
 from ..common.entity_controller import EntityController
 from ..common.entity_controller import ModbusControllerEntity
@@ -67,16 +69,16 @@ class ModbusEntityProtocol(Protocol):
     _controller: EntityController
 
 
+# HA introduced a ABCCachedProperties metaclass which is used by Entity, and which derives from ABCMeta.
+# This conflicts with Protocol's metaclass (from ModbusEntityProtocol).
+class ModbusEntityMixinMetaclass(ABCCachedProperties, type(Protocol)):  # type: ignore
+    pass
+
+
 if TYPE_CHECKING:
     _ModbusEntityMixinBase = Entity
 else:
     _ModbusEntityMixinBase = object
-
-
-# HA introduced a ABCCachedProperties metaclass which is used by Entity, and which derives from ABCMeta.
-# This conflicts with Protocol's metaclass (from ModbusEntityProtocol).
-class ModbusEntityMixinMetaclass(type(Entity), type(Protocol)):  # type: ignore
-    pass
 
 
 class ModbusEntityMixin(
@@ -88,7 +90,7 @@ class ModbusEntityMixin(
     This provides properties which are common to all FoxESS entities.
     """
 
-    @property
+    @cached_property
     def unique_id(self) -> str:
         """Return a unique ID."""
         return _create_unique_id(self.entity_description.key, self._controller.inverter_details)
