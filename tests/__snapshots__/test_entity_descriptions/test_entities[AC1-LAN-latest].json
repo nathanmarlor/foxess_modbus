@@ -1,10 +1,8 @@
 [
   {
-    "addresses": {
-      "holding": [
-        31019
-      ]
-    },
+    "addresses": [
+      31019
+    ],
     "key": "ambtemp",
     "name": "Ambient Temp",
     "scale": 0.1,
@@ -12,11 +10,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31022
-      ]
-    },
+    "addresses": [
+      31022
+    ],
     "key": "battery_charge",
     "name": "Battery Charge",
     "scale": 0.001,
@@ -27,17 +23,14 @@
     "key": "battery_charge_total",
     "method": "left",
     "name": "Battery Charge Total",
-    "register_types": "dict_keys(['holding'])",
     "source": "battery_charge",
     "type": "integration-sensor",
     "unit_time": "h"
   },
   {
-    "addresses": {
-      "holding": [
-        31022
-      ]
-    },
+    "addresses": [
+      31022
+    ],
     "key": "battery_discharge",
     "name": "Battery Discharge",
     "scale": 0.001,
@@ -48,17 +41,14 @@
     "key": "battery_discharge_total",
     "method": "left",
     "name": "Battery Discharge Total",
-    "register_types": "dict_keys(['holding'])",
     "source": "battery_discharge",
     "type": "integration-sensor",
     "unit_time": "h"
   },
   {
-    "addresses": {
-      "holding": [
-        31024
-      ]
-    },
+    "addresses": [
+      31024
+    ],
     "key": "battery_soc",
     "name": "Battery SoC",
     "scale": null,
@@ -66,11 +56,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31023
-      ]
-    },
+    "addresses": [
+      31023
+    ],
     "key": "battery_temp",
     "name": "Battery Temp",
     "scale": 0.1,
@@ -78,11 +66,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31025
-      ]
-    },
+    "addresses": [
+      31025
+    ],
     "key": "bms_charge_rate",
     "name": "BMS Charge Rate",
     "scale": 0.1,
@@ -90,11 +76,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31026
-      ]
-    },
+    "addresses": [
+      31026
+    ],
     "key": "bms_discharge_rate",
     "name": "BMS Discharge Rate",
     "scale": 0.1,
@@ -102,11 +86,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31015
-      ]
-    },
+    "addresses": [
+      31015
+    ],
     "key": "ct2_meter",
     "name": "CT2 Meter",
     "scale": 0.001,
@@ -114,11 +96,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31013
-      ]
-    },
+    "addresses": [
+      31013
+    ],
     "key": "eps_frequency",
     "name": "EPS Frequency",
     "scale": 0.01,
@@ -126,11 +106,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31011
-      ]
-    },
+    "addresses": [
+      31011
+    ],
     "key": "eps_rcurrent",
     "name": "EPS Current",
     "scale": 0.1,
@@ -138,11 +116,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31012
-      ]
-    },
+    "addresses": [
+      31012
+    ],
     "key": "eps_rpower",
     "name": "EPS Power",
     "scale": 0.001,
@@ -150,11 +126,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31010
-      ]
-    },
+    "addresses": [
+      31010
+    ],
     "key": "eps_rvolt",
     "name": "EPS Voltage",
     "scale": 0.1,
@@ -162,11 +136,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31014
-      ]
-    },
+    "addresses": [
+      31014
+    ],
     "key": "feed_in",
     "name": "Feed-in",
     "scale": 0.001,
@@ -177,17 +149,14 @@
     "key": "feed_in_energy_total",
     "method": "left",
     "name": "Feed-in Total",
-    "register_types": "dict_keys(['holding'])",
     "source": "feed_in",
     "type": "integration-sensor",
     "unit_time": "h"
   },
   {
-    "addresses": {
-      "holding": [
-        31014
-      ]
-    },
+    "addresses": [
+      31014
+    ],
     "key": "grid_consumption",
     "name": "Grid Consumption",
     "scale": 0.001,
@@ -198,17 +167,14 @@
     "key": "grid_consumption_energy_total",
     "method": "left",
     "name": "Grid Consumption Total",
-    "register_types": "dict_keys(['holding'])",
     "source": "grid_consumption",
     "type": "integration-sensor",
     "unit_time": "h"
   },
   {
-    "addresses": {
-      "holding": [
-        31014
-      ]
-    },
+    "addresses": [
+      31014
+    ],
     "key": "grid_ct",
     "name": "Grid CT",
     "scale": 0.001,
@@ -216,11 +182,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31021
-      ]
-    },
+    "addresses": [
+      31021
+    ],
     "key": "invbatcurrent",
     "name": "Inverter Battery Current",
     "scale": 0.1,
@@ -228,11 +192,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31022
-      ]
-    },
+    "addresses": [
+      31022
+    ],
     "key": "invbatpower",
     "name": "Inverter Battery Power",
     "scale": 0.001,
@@ -240,11 +202,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31020
-      ]
-    },
+    "addresses": [
+      31020
+    ],
     "key": "invbatvolt",
     "name": "Inverter Battery Voltage",
     "scale": 0.1,
@@ -252,17 +212,15 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31031,
-        31032,
-        31034,
-        31035,
-        31036,
-        31037,
-        31038
-      ]
-    },
+    "addresses": [
+      31031,
+      31032,
+      31034,
+      31035,
+      31036,
+      31037,
+      31038
+    ],
     "faults": [
       [
         "Grid Lost Fault",
@@ -396,11 +354,9 @@
     "type": "fault-sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31027
-      ]
-    },
+    "addresses": [
+      31027
+    ],
     "key": "inverter_state",
     "name": "Inverter State",
     "states": [
@@ -414,11 +370,9 @@
     "type": "inverter-state-sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31018
-      ]
-    },
+    "addresses": [
+      31018
+    ],
     "key": "invtemp",
     "name": "Inverter Temp",
     "scale": 0.1,
@@ -426,11 +380,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31016
-      ]
-    },
+    "addresses": [
+      31016
+    ],
     "key": "load_power",
     "name": "Load Power",
     "scale": 0.001,
@@ -441,39 +393,32 @@
     "key": "load_power_total",
     "method": "left",
     "name": "Load Energy Total",
-    "register_types": "dict_keys(['input', 'holding'])",
     "source": "load_power",
     "type": "integration-sensor",
     "unit_time": "h"
   },
   {
-    "addresses": {
-      "holding": [
-        30018
-      ]
-    },
+    "addresses": [
+      30018
+    ],
     "is_hex": false,
     "key": "manager_version",
     "name": "Version: Manager",
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        30016
-      ]
-    },
+    "addresses": [
+      30016
+    ],
     "is_hex": false,
     "key": "master_version",
     "name": "Version: Master",
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31001
-      ]
-    },
+    "addresses": [
+      31001
+    ],
     "key": "pv1_current",
     "name": "PV1 Current",
     "scale": 0.1,
@@ -484,17 +429,14 @@
     "key": "pv1_energy_total",
     "method": "left",
     "name": "PV1 Power Total",
-    "register_types": "dict_keys(['input', 'holding'])",
     "source": "pv1_power",
     "type": "integration-sensor",
     "unit_time": "h"
   },
   {
-    "addresses": {
-      "holding": [
-        31002
-      ]
-    },
+    "addresses": [
+      31002
+    ],
     "key": "pv1_power",
     "name": "PV1 Power",
     "scale": 0.001,
@@ -502,11 +444,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31000
-      ]
-    },
+    "addresses": [
+      31000
+    ],
     "key": "pv1_voltage",
     "name": "PV1 Voltage",
     "scale": 0.1,
@@ -514,11 +454,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31004
-      ]
-    },
+    "addresses": [
+      31004
+    ],
     "key": "pv2_current",
     "name": "PV2 Current",
     "scale": 0.1,
@@ -529,17 +467,14 @@
     "key": "pv2_energy_total",
     "method": "left",
     "name": "PV2 Power Total",
-    "register_types": "dict_keys(['input', 'holding'])",
     "source": "pv2_power",
     "type": "integration-sensor",
     "unit_time": "h"
   },
   {
-    "addresses": {
-      "holding": [
-        31005
-      ]
-    },
+    "addresses": [
+      31005
+    ],
     "key": "pv2_power",
     "name": "PV2 Power",
     "scale": 0.001,
@@ -547,11 +482,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31003
-      ]
-    },
+    "addresses": [
+      31003
+    ],
     "key": "pv2_voltage",
     "name": "PV2 Voltage",
     "scale": 0.1,
@@ -561,7 +494,6 @@
   {
     "key": "pv_power_now",
     "name": "PV Power",
-    "register_types": "dict_keys(['input', 'holding'])",
     "sources": [
       "pv1_power",
       "pv2_power"
@@ -569,11 +501,9 @@
     "type": "lambda"
   },
   {
-    "addresses": {
-      "holding": [
-        31007
-      ]
-    },
+    "addresses": [
+      31007
+    ],
     "key": "rcurrent",
     "name": "Inverter Current",
     "scale": 0.1,
@@ -581,11 +511,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31009
-      ]
-    },
+    "addresses": [
+      31009
+    ],
     "key": "rfreq",
     "name": "Grid Frequency",
     "scale": 0.01,
@@ -593,11 +521,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31008
-      ]
-    },
+    "addresses": [
+      31008
+    ],
     "key": "rpower",
     "name": "Inverter Power",
     "scale": 0.001,
@@ -605,11 +531,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        31006
-      ]
-    },
+    "addresses": [
+      31006
+    ],
     "key": "rvolt",
     "name": "Grid Voltage",
     "scale": 0.1,
@@ -617,11 +541,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        30017
-      ]
-    },
+    "addresses": [
+      30017
+    ],
     "is_hex": false,
     "key": "slave_version",
     "name": "Version: Slave",

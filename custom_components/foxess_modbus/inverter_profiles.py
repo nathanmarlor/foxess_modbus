@@ -148,14 +148,20 @@ class InverterModelConnectionTypeProfile:
 
     def _get_inv(self, controller: EntityController) -> Inv:
         version_from_config = controller.inverter_details.get(INVERTER_VERSION)
+
+        inverter_version = Version.parse(version_from_config) if version_from_config is not None else None
+        return self.get_inv_for_version(inverter_version)
+
+    def get_inv_for_version(self, version: Version | None) -> Inv:
+        # Used for pytests
+
         # Remember that self._versions is a map of maximum supported manager version (or None to support the max
         # firmware version) -> Inv for that version
-        if version_from_config is None:
+        if version is None:
             return self.versions[None]
 
-        inverter_version = Version.parse(version_from_config)
         versions = sorted(self.versions.items(), reverse=True)
-        matched_version = next((x for x in versions if x[0] <= inverter_version), versions[0])  # type: ignore[operator]
+        matched_version = next((x for x in versions if x[0] <= version), versions[0])  # type: ignore[operator]
         return matched_version[1]
 
     def overlaps_invalid_range(self, start_address: int, end_address: int) -> bool:

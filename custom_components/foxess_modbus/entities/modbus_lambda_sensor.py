@@ -56,8 +56,8 @@ class ModbusLambdaSensorDescription(SensorEntityDescription, EntityFactory):  # 
             method=self.method,
         )
 
-    def serialize(self, inverter_model: Inv) -> dict[str, Any] | None:
-        address_map = self._addresses_for_serialization(self.models, inverter_model)
+    def serialize(self, inverter_model: Inv, register_type: RegisterType) -> dict[str, Any] | None:
+        address_map = self._addresses_for_inverter_model(self.models, inverter_model, register_type)
         if address_map is None:
             return None
 
@@ -65,7 +65,6 @@ class ModbusLambdaSensorDescription(SensorEntityDescription, EntityFactory):  # 
             "type": "lambda",
             "key": self.key,
             "name": self.name,
-            "register_types": address_map.keys(),
             "sources": self.sources,
         }
 

@@ -37,16 +37,16 @@ class ModbusVersionSensorDescription(SensorEntityDescription, EntityFactory):  #
         address = self._address_for_inverter_model(self.address, inverter_model, register_type)
         return ModbusVersionSensor(controller, self, address) if address is not None else None
 
-    def serialize(self, inverter_model: Inv) -> dict[str, Any] | None:
-        address_map = self._addresses_for_serialization(self.address, inverter_model)
-        if address_map is None:
+    def serialize(self, inverter_model: Inv, register_type: RegisterType) -> dict[str, Any] | None:
+        addresses = self._addresses_for_inverter_model(self.address, inverter_model, register_type)
+        if addresses is None:
             return None
 
         return {
             "type": "sensor",
             "key": self.key,
             "name": self.name,
-            "addresses": address_map,
+            "addresses": addresses,
             "is_hex": self.is_hex,
         }
 

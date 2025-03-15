@@ -51,7 +51,7 @@ class ModbusRemoteControlNumberDescription(NumberEntityDescription, EntityFactor
             return None
         return ModbusRemoteControlNumber(controller, self)
 
-    def serialize(self, _inverter_model: Inv) -> dict[str, Any] | None:
+    def serialize(self, _inverter_model: Inv, _register_type: RegisterType) -> dict[str, Any] | None:
         return None
 
 
