@@ -55,6 +55,8 @@ _CLIENTS: dict[str, dict[str, Any]] = {
     },
 }
 
+_NUM_RETRIES = 3
+
 serial.protocol_handler_packages.append(client.__name__)
 
 
@@ -76,6 +78,9 @@ class ModbusClient:
             **config,
             "framer": client["framer"],
             "delay_on_connect": 1 if adapter.connection_type == ConnectionType.LAN else None,
+            "retries": _NUM_RETRIES,
+            # See https://github.com/nathanmarlor/foxess_modbus/discussions/792
+            "retry_on_empty": True,
         }
 
         # If our custom PosixPollSerial hack is supported, use that. This uses poll rather than select, which means we
