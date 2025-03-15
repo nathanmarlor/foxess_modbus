@@ -44,16 +44,16 @@ class ModbusSelectDescription(SelectEntityDescription, EntityFactory):  # type: 
         address = self._address_for_inverter_model(self.address, inverter_model, register_type)
         return ModbusSelect(controller, self, address) if address is not None else None
 
-    def serialize(self, inverter_model: Inv) -> dict[str, Any] | None:
-        address_map = self._addresses_for_serialization(self.address, inverter_model)
-        if address_map is None:
+    def serialize(self, inverter_model: Inv, register_type: RegisterType) -> dict[str, Any] | None:
+        addresses = self._addresses_for_inverter_model(self.address, inverter_model, register_type)
+        if addresses is None:
             return None
 
         return {
             "type": "select",
             "key": self.key,
             "name": self.name,
-            "addresses": address_map,
+            "addresses": addresses,
             "values": self.options_map,
         }
 

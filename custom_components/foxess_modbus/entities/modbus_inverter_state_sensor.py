@@ -59,16 +59,16 @@ class ModbusInverterStateSensorDescription(SensorEntityDescription, EntityFactor
         address = self._address_for_inverter_model(self.address, inverter_model, register_type)
         return ModbusInverterStateSensor(controller, self, address) if address is not None else None
 
-    def serialize(self, inverter_model: Inv) -> dict[str, Any] | None:
-        address_map = self._addresses_for_serialization(self.address, inverter_model)
-        if address_map is None:
+    def serialize(self, inverter_model: Inv, register_type: RegisterType) -> dict[str, Any] | None:
+        addresses = self._addresses_for_inverter_model(self.address, inverter_model, register_type)
+        if addresses is None:
             return None
 
         return {
             "type": "inverter-state-sensor",
             "key": self.key,
             "name": self.name,
-            "addresses": address_map,
+            "addresses": addresses,
             "states": self.states,
         }
 
@@ -123,16 +123,16 @@ class ModbusG2InverterStateSensorDescription(SensorEntityDescription, EntityFact
         addresses = self._addresses_for_inverter_model(self.addresses, inverter_model, register_type)
         return ModbusG2InverterStateSensor(controller, self, addresses) if addresses is not None else None
 
-    def serialize(self, inverter_model: Inv) -> dict[str, Any] | None:
-        address_map = self._addresses_for_serialization(self.addresses, inverter_model)
-        if address_map is None:
+    def serialize(self, inverter_model: Inv, register_type: RegisterType) -> dict[str, Any] | None:
+        addresses = self._addresses_for_inverter_model(self.addresses, inverter_model, register_type)
+        if addresses is None:
             return None
 
         return {
             "type": "inverter-state-sensor",
             "key": self.key,
             "name": self.name,
-            "addresses": address_map,
+            "addresses": addresses,
         }
 
 

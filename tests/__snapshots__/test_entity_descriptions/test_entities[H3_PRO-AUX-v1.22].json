@@ -1,10 +1,8 @@
 [
   {
-    "addresses": {
-      "holding": [
-        37610
-      ]
-    },
+    "addresses": [
+      37610
+    ],
     "key": "bat_current_1",
     "name": "Battery 1 Current",
     "scale": 0.1,
@@ -12,11 +10,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38308
-      ]
-    },
+    "addresses": [
+      38308
+    ],
     "key": "bat_current_2",
     "name": "Battery 2 Current",
     "scale": 0.1,
@@ -24,12 +20,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39238,
-        39237
-      ]
-    },
+    "addresses": [
+      39238,
+      39237
+    ],
     "key": "battery_charge",
     "name": "Battery Charge",
     "scale": 0.001,
@@ -37,12 +31,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39231,
-        39230
-      ]
-    },
+    "addresses": [
+      39231,
+      39230
+    ],
     "key": "battery_charge_1",
     "name": "Battery 1 Charge",
     "scale": 0.001,
@@ -50,12 +42,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39236,
-        39235
-      ]
-    },
+    "addresses": [
+      39236,
+      39235
+    ],
     "key": "battery_charge_2",
     "name": "Battery 2 Charge",
     "scale": 0.001,
@@ -63,12 +53,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39608,
-        39607
-      ]
-    },
+    "addresses": [
+      39608,
+      39607
+    ],
     "key": "battery_charge_today",
     "name": "Battery Charge Today",
     "scale": 0.1,
@@ -76,12 +64,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39606,
-        39605
-      ]
-    },
+    "addresses": [
+      39606,
+      39605
+    ],
     "key": "battery_charge_total",
     "name": "Battery Charge Total",
     "scale": 0.1,
@@ -89,12 +75,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39238,
-        39237
-      ]
-    },
+    "addresses": [
+      39238,
+      39237
+    ],
     "key": "battery_discharge",
     "name": "Battery Discharge",
     "scale": 0.001,
@@ -102,12 +86,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39231,
-        39230
-      ]
-    },
+    "addresses": [
+      39231,
+      39230
+    ],
     "key": "battery_discharge_1",
     "name": "Battery 1 Discharge",
     "scale": 0.001,
@@ -115,12 +97,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39236,
-        39235
-      ]
-    },
+    "addresses": [
+      39236,
+      39235
+    ],
     "key": "battery_discharge_2",
     "name": "Battery 2 Discharge",
     "scale": 0.001,
@@ -128,12 +108,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39612,
-        39611
-      ]
-    },
+    "addresses": [
+      39612,
+      39611
+    ],
     "key": "battery_discharge_today",
     "name": "Battery Discharge Today",
     "scale": 0.1,
@@ -141,12 +119,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39610,
-        39609
-      ]
-    },
+    "addresses": [
+      39610,
+      39609
+    ],
     "key": "battery_discharge_total",
     "name": "Battery Discharge Total",
     "scale": 0.1,
@@ -154,11 +130,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        37612
-      ]
-    },
+    "addresses": [
+      37612
+    ],
     "key": "battery_soc_1",
     "name": "Battery 1 SoC",
     "scale": null,
@@ -166,11 +140,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38310
-      ]
-    },
+    "addresses": [
+      38310
+    ],
     "key": "battery_soc_2",
     "name": "Battery 2 SoC",
     "scale": null,
@@ -178,11 +150,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        37611
-      ]
-    },
+    "addresses": [
+      37611
+    ],
     "key": "battery_temp_1",
     "name": "Battery 1 Temp",
     "scale": 0.1,
@@ -190,11 +160,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38309
-      ]
-    },
+    "addresses": [
+      38309
+    ],
     "key": "battery_temp_2",
     "name": "Battery 2 Temp",
     "scale": 0.1,
@@ -202,11 +170,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        37609
-      ]
-    },
+    "addresses": [
+      37609
+    ],
     "key": "batvolt_1",
     "name": "Battery 1 Voltage",
     "scale": 0.1,
@@ -214,11 +180,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38307
-      ]
-    },
+    "addresses": [
+      38307
+    ],
     "key": "batvolt_2",
     "name": "Battery 2 Voltage",
     "scale": 0.1,
@@ -226,11 +190,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        37619
-      ]
-    },
+    "addresses": [
+      37619
+    ],
     "key": "bms_cell_mv_high_1",
     "name": "BMS 1 Cell mV High",
     "scale": null,
@@ -238,11 +200,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38317
-      ]
-    },
+    "addresses": [
+      38317
+    ],
     "key": "bms_cell_mv_high_2",
     "name": "BMS 2 Cell mV High",
     "scale": null,
@@ -250,11 +210,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        37610
-      ]
-    },
+    "addresses": [
+      37610
+    ],
     "key": "bms_cell_mv_low_1",
     "name": "BMS 1 Cell mV Low",
     "scale": null,
@@ -262,11 +220,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38318
-      ]
-    },
+    "addresses": [
+      38318
+    ],
     "key": "bms_cell_mv_low_2",
     "name": "BMS 2 Cell mV Low",
     "scale": null,
@@ -274,11 +230,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        37617
-      ]
-    },
+    "addresses": [
+      37617
+    ],
     "key": "bms_cell_temp_high_1",
     "name": "BMS 1 Cell Temp High",
     "scale": 0.1,
@@ -286,11 +240,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38315
-      ]
-    },
+    "addresses": [
+      38315
+    ],
     "key": "bms_cell_temp_high_2",
     "name": "BMS 2 Cell Temp High",
     "scale": 0.1,
@@ -298,11 +250,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        37618
-      ]
-    },
+    "addresses": [
+      37618
+    ],
     "key": "bms_cell_temp_low_1",
     "name": "BMS 1 Cell Temp Low",
     "scale": 0.1,
@@ -310,11 +260,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38316
-      ]
-    },
+    "addresses": [
+      38316
+    ],
     "key": "bms_cell_temp_low_2",
     "name": "BMS 2 Cell Temp Low",
     "scale": 0.1,
@@ -322,11 +270,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        37632
-      ]
-    },
+    "addresses": [
+      37632
+    ],
     "key": "bms_kwh_remaining_1",
     "name": "BMS 1 kWh Remaining",
     "scale": 0.01,
@@ -334,11 +280,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38330
-      ]
-    },
+    "addresses": [
+      38330
+    ],
     "key": "bms_kwh_remaining_2",
     "name": "BMS 2 kWh Remaining",
     "scale": 0.01,
@@ -346,12 +290,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38915,
-        38914
-      ]
-    },
+    "addresses": [
+      38915,
+      38914
+    ],
     "key": "ct2_meter",
     "name": "CT2 Meter",
     "scale": 0.0001,
@@ -359,12 +301,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38917,
-        38916
-      ]
-    },
+    "addresses": [
+      38917,
+      38916
+    ],
     "key": "ct2_meter_R",
     "name": "CT2 Meter R",
     "scale": 0.0001,
@@ -372,12 +312,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38919,
-        38918
-      ]
-    },
+    "addresses": [
+      38919,
+      38918
+    ],
     "key": "ct2_meter_S",
     "name": "CT2 Meter S",
     "scale": 0.0001,
@@ -385,12 +323,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38921,
-        38920
-      ]
-    },
+    "addresses": [
+      38921,
+      38920
+    ],
     "key": "ct2_meter_T",
     "name": "CT2 Meter T",
     "scale": 0.0001,
@@ -398,12 +334,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39213,
-        39212
-      ]
-    },
+    "addresses": [
+      39213,
+      39212
+    ],
     "key": "eps_power_R",
     "name": "EPS Power R",
     "scale": 0.001,
@@ -411,12 +345,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39215,
-        39214
-      ]
-    },
+    "addresses": [
+      39215,
+      39214
+    ],
     "key": "eps_power_S",
     "name": "EPS Power S",
     "scale": 0.001,
@@ -424,12 +356,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39217,
-        39216
-      ]
-    },
+    "addresses": [
+      39217,
+      39216
+    ],
     "key": "eps_power_T",
     "name": "EPS Power T",
     "scale": 0.001,
@@ -437,12 +367,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39205,
-        39204
-      ]
-    },
+    "addresses": [
+      39205,
+      39204
+    ],
     "key": "eps_rcurrent_R",
     "name": "EPS Current R",
     "scale": 0.001,
@@ -450,12 +378,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39207,
-        39206
-      ]
-    },
+    "addresses": [
+      39207,
+      39206
+    ],
     "key": "eps_rcurrent_S",
     "name": "EPS Current S",
     "scale": 0.001,
@@ -463,12 +389,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39209,
-        39208
-      ]
-    },
+    "addresses": [
+      39209,
+      39208
+    ],
     "key": "eps_rcurrent_T",
     "name": "EPS Current T",
     "scale": 0.001,
@@ -476,11 +400,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39201
-      ]
-    },
+    "addresses": [
+      39201
+    ],
     "key": "eps_rvolt_R",
     "name": "EPS Voltage_R",
     "scale": 0.1,
@@ -488,11 +410,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39202
-      ]
-    },
+    "addresses": [
+      39202
+    ],
     "key": "eps_rvolt_S",
     "name": "EPS Voltage_S",
     "scale": 0.1,
@@ -500,11 +420,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39203
-      ]
-    },
+    "addresses": [
+      39203
+    ],
     "key": "eps_rvolt_T",
     "name": "EPS Voltage_T",
     "scale": 0.1,
@@ -512,12 +430,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38815,
-        38814
-      ]
-    },
+    "addresses": [
+      38815,
+      38814
+    ],
     "key": "feed_in",
     "name": "Feed-in",
     "scale": 0.0001,
@@ -525,12 +441,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38817,
-        38816
-      ]
-    },
+    "addresses": [
+      38817,
+      38816
+    ],
     "key": "feed_in_R",
     "name": "Feed-in R",
     "scale": 0.0001,
@@ -538,12 +452,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38819,
-        38818
-      ]
-    },
+    "addresses": [
+      38819,
+      38818
+    ],
     "key": "feed_in_S",
     "name": "Feed-in S",
     "scale": 0.0001,
@@ -551,12 +463,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38821,
-        38820
-      ]
-    },
+    "addresses": [
+      38821,
+      38820
+    ],
     "key": "feed_in_T",
     "name": "Feed-in T",
     "scale": 0.0001,
@@ -564,12 +474,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39616,
-        39615
-      ]
-    },
+    "addresses": [
+      39616,
+      39615
+    ],
     "key": "feed_in_energy_today",
     "name": "Feed-in Today",
     "scale": 0.1,
@@ -577,12 +485,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39614,
-        39613
-      ]
-    },
+    "addresses": [
+      39614,
+      39613
+    ],
     "key": "feed_in_energy_total",
     "name": "Feed-in Total",
     "scale": 0.1,
@@ -590,12 +496,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38815,
-        38814
-      ]
-    },
+    "addresses": [
+      38815,
+      38814
+    ],
     "key": "grid_consumption",
     "name": "Grid Consumption",
     "scale": 0.0001,
@@ -603,12 +507,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38817,
-        38816
-      ]
-    },
+    "addresses": [
+      38817,
+      38816
+    ],
     "key": "grid_consumption_R",
     "name": "Grid Consumption R",
     "scale": 0.0001,
@@ -616,12 +518,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38819,
-        38818
-      ]
-    },
+    "addresses": [
+      38819,
+      38818
+    ],
     "key": "grid_consumption_S",
     "name": "Grid Consumption S",
     "scale": 0.0001,
@@ -629,12 +529,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38821,
-        38820
-      ]
-    },
+    "addresses": [
+      38821,
+      38820
+    ],
     "key": "grid_consumption_T",
     "name": "Grid Consumption T",
     "scale": 0.0001,
@@ -642,12 +540,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39620,
-        39619
-      ]
-    },
+    "addresses": [
+      39620,
+      39619
+    ],
     "key": "grid_consumption_energy_today",
     "name": "Grid Consumption Today",
     "scale": 0.1,
@@ -655,12 +551,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39618,
-        39617
-      ]
-    },
+    "addresses": [
+      39618,
+      39617
+    ],
     "key": "grid_consumption_energy_total",
     "name": "Grid Consumption Total",
     "scale": 0.1,
@@ -668,12 +562,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38815,
-        38814
-      ]
-    },
+    "addresses": [
+      38815,
+      38814
+    ],
     "key": "grid_ct",
     "name": "Grid CT",
     "scale": 0.0001,
@@ -681,12 +573,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38817,
-        38816
-      ]
-    },
+    "addresses": [
+      38817,
+      38816
+    ],
     "key": "grid_ct_R",
     "name": "Grid CT R",
     "scale": 0.0001,
@@ -694,12 +584,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38819,
-        38818
-      ]
-    },
+    "addresses": [
+      38819,
+      38818
+    ],
     "key": "grid_ct_S",
     "name": "Grid CT S",
     "scale": 0.0001,
@@ -707,12 +595,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        38821,
-        38820
-      ]
-    },
+    "addresses": [
+      38821,
+      38820
+    ],
     "key": "grid_ct_T",
     "name": "Grid CT T",
     "scale": 0.0001,
@@ -720,11 +606,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39123
-      ]
-    },
+    "addresses": [
+      39123
+    ],
     "key": "grid_voltage_R",
     "name": "Grid Voltage R",
     "scale": 0.1,
@@ -732,11 +616,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39124
-      ]
-    },
+    "addresses": [
+      39124
+    ],
     "key": "grid_voltage_S",
     "name": "Grid Voltage S",
     "scale": 0.1,
@@ -744,11 +626,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39125
-      ]
-    },
+    "addresses": [
+      39125
+    ],
     "key": "grid_voltage_T",
     "name": "Grid Voltage T",
     "scale": 0.1,
@@ -756,12 +636,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39628,
-        39627
-      ]
-    },
+    "addresses": [
+      39628,
+      39627
+    ],
     "key": "input_energy_today",
     "name": "Input Energy Today",
     "scale": 0.1,
@@ -769,12 +647,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39626,
-        39625
-      ]
-    },
+    "addresses": [
+      39626,
+      39625
+    ],
     "key": "input_energy_total",
     "name": "Input Energy Total",
     "scale": 0.1,
@@ -782,12 +658,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39127,
-        39126
-      ]
-    },
+    "addresses": [
+      39127,
+      39126
+    ],
     "key": "inv_current_R",
     "name": "Inverter Current R",
     "scale": 0.001,
@@ -795,12 +669,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39129,
-        39128
-      ]
-    },
+    "addresses": [
+      39129,
+      39128
+    ],
     "key": "inv_current_S",
     "name": "Inverter Current S",
     "scale": 0.001,
@@ -808,12 +680,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39131,
-        39130
-      ]
-    },
+    "addresses": [
+      39131,
+      39130
+    ],
     "key": "inv_current_T",
     "name": "Inverter Current T",
     "scale": 0.001,
@@ -821,12 +691,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39135,
-        39134
-      ]
-    },
+    "addresses": [
+      39135,
+      39134
+    ],
     "key": "inv_power",
     "name": "Inverter Power",
     "scale": 1e-06,
@@ -834,12 +702,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39137,
-        39136
-      ]
-    },
+    "addresses": [
+      39137,
+      39136
+    ],
     "key": "inv_power_Q",
     "name": "Inverter Power (Reactive)",
     "scale": 0.001,
@@ -847,12 +713,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39257,
-        39256
-      ]
-    },
+    "addresses": [
+      39257,
+      39256
+    ],
     "key": "inv_power_Q_R",
     "name": "Inverter Power (Reactive) R",
     "scale": 0.001,
@@ -860,12 +724,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39259,
-        39258
-      ]
-    },
+    "addresses": [
+      39259,
+      39258
+    ],
     "key": "inv_power_Q_S",
     "name": "Inverter Power (Reactive) S",
     "scale": 0.001,
@@ -873,12 +735,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39261,
-        39260
-      ]
-    },
+    "addresses": [
+      39261,
+      39260
+    ],
     "key": "inv_power_Q_T",
     "name": "Inverter Power (Reactive) T",
     "scale": 0.001,
@@ -886,12 +746,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39249,
-        39248
-      ]
-    },
+    "addresses": [
+      39249,
+      39248
+    ],
     "key": "inv_power_R",
     "name": "Inverter Power R",
     "scale": 0.001,
@@ -899,12 +757,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39251,
-        39250
-      ]
-    },
+    "addresses": [
+      39251,
+      39250
+    ],
     "key": "inv_power_S",
     "name": "Inverter Power S",
     "scale": 0.001,
@@ -912,12 +768,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39253,
-        39252
-      ]
-    },
+    "addresses": [
+      39253,
+      39252
+    ],
     "key": "inv_power_T",
     "name": "Inverter Power T",
     "scale": 0.001,
@@ -925,12 +779,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39229,
-        39228
-      ]
-    },
+    "addresses": [
+      39229,
+      39228
+    ],
     "key": "invbatcurrent_1",
     "name": "Inverter Battery 1 Current",
     "scale": 0.001,
@@ -938,12 +790,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39234,
-        39233
-      ]
-    },
+    "addresses": [
+      39234,
+      39233
+    ],
     "key": "invbatcurrent_2",
     "name": "Inverter Battery 2 Current",
     "scale": 0.001,
@@ -951,12 +801,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39238,
-        39237
-      ]
-    },
+    "addresses": [
+      39238,
+      39237
+    ],
     "key": "invbatpower",
     "name": "Inverter Battery Power",
     "scale": 0.001,
@@ -964,12 +812,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39231,
-        39230
-      ]
-    },
+    "addresses": [
+      39231,
+      39230
+    ],
     "key": "invbatpower_1",
     "name": "Inverter Battery 1 Power",
     "scale": 0.001,
@@ -977,12 +823,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39236,
-        39235
-      ]
-    },
+    "addresses": [
+      39236,
+      39235
+    ],
     "key": "invbatpower_2",
     "name": "Inverter Battery 2 Power",
     "scale": 0.001,
@@ -990,11 +834,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39227
-      ]
-    },
+    "addresses": [
+      39227
+    ],
     "key": "invbatvolt_1",
     "name": "Inverter Battery 1 Voltage",
     "scale": 0.1,
@@ -1002,11 +844,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39232
-      ]
-    },
+    "addresses": [
+      39232
+    ],
     "key": "invbatvolt_2",
     "name": "Inverter Battery 2 Voltage",
     "scale": 0.1,
@@ -1014,13 +854,11 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39067,
-        39068,
-        39069
-      ]
-    },
+    "addresses": [
+      39067,
+      39068,
+      39069
+    ],
     "faults": [
       [
         "PV Over-voltage",
@@ -1082,22 +920,18 @@
     "type": "fault-sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39063,
-        39065
-      ]
-    },
+    "addresses": [
+      39063,
+      39065
+    ],
     "key": "inverter_state",
     "name": "Inverter State",
     "type": "inverter-state-sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39141
-      ]
-    },
+    "addresses": [
+      39141
+    ],
     "key": "invtemp",
     "name": "Inverter Temp",
     "scale": 0.1,
@@ -1105,12 +939,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39632,
-        39631
-      ]
-    },
+    "addresses": [
+      39632,
+      39631
+    ],
     "key": "load_energy_today",
     "name": "Load Energy Today",
     "scale": 0.1,
@@ -1118,12 +950,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39226,
-        39225
-      ]
-    },
+    "addresses": [
+      39226,
+      39225
+    ],
     "key": "load_power",
     "name": "Load Power",
     "scale": 0.001,
@@ -1131,12 +961,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39220,
-        39219
-      ]
-    },
+    "addresses": [
+      39220,
+      39219
+    ],
     "key": "load_power_R",
     "name": "Load Power R",
     "scale": 0.001,
@@ -1144,12 +972,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39222,
-        39221
-      ]
-    },
+    "addresses": [
+      39222,
+      39221
+    ],
     "key": "load_power_S",
     "name": "Load Power S",
     "scale": 0.001,
@@ -1157,12 +983,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39224,
-        39223
-      ]
-    },
+    "addresses": [
+      39224,
+      39223
+    ],
     "key": "load_power_T",
     "name": "Load Power T",
     "scale": 0.001,
@@ -1170,12 +994,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39630,
-        39629
-      ]
-    },
+    "addresses": [
+      39630,
+      39629
+    ],
     "key": "load_power_total",
     "name": "Load Energy Total",
     "scale": 0.1,
@@ -1183,33 +1005,27 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        36003
-      ]
-    },
+    "addresses": [
+      36003
+    ],
     "is_hex": true,
     "key": "manager_version",
     "name": "Version: Manager",
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        36001
-      ]
-    },
-    "is_hex": true,
+    "addresses": [
+      36001
+    ],
+    "is_hex": false,
     "key": "master_version",
     "name": "Version: Master",
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        46607
-      ]
-    },
+    "addresses": [
+      46607
+    ],
     "key": "max_charge_current",
     "name": "Max Charge Current",
     "scale": 0.1,
@@ -1217,22 +1033,18 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        46607
-      ]
-    },
+    "addresses": [
+      46607
+    ],
     "key": "max_charge_current",
     "name": "Max Charge Current",
     "scale": 0.1,
     "type": "number"
   },
   {
-    "addresses": {
-      "holding": [
-        46608
-      ]
-    },
+    "addresses": [
+      46608
+    ],
     "key": "max_discharge_current",
     "name": "Max Discharge Current",
     "scale": 0.1,
@@ -1240,22 +1052,18 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        46608
-      ]
-    },
+    "addresses": [
+      46608
+    ],
     "key": "max_discharge_current",
     "name": "Max Discharge Current",
     "scale": 0.1,
     "type": "number"
   },
   {
-    "addresses": {
-      "holding": [
-        46610
-      ]
-    },
+    "addresses": [
+      46610
+    ],
     "key": "max_soc",
     "name": "Max SoC",
     "scale": null,
@@ -1263,22 +1071,18 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        46610
-      ]
-    },
+    "addresses": [
+      46610
+    ],
     "key": "max_soc",
     "name": "Max SoC",
     "scale": null,
     "type": "number"
   },
   {
-    "addresses": {
-      "holding": [
-        46609
-      ]
-    },
+    "addresses": [
+      46609
+    ],
     "key": "min_soc",
     "name": "Min SoC",
     "scale": null,
@@ -1286,22 +1090,18 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        46609
-      ]
-    },
+    "addresses": [
+      46609
+    ],
     "key": "min_soc",
     "name": "Min SoC",
     "scale": null,
     "type": "number"
   },
   {
-    "addresses": {
-      "holding": [
-        46611
-      ]
-    },
+    "addresses": [
+      46611
+    ],
     "key": "min_soc_on_grid",
     "name": "Min SoC (On Grid)",
     "scale": null,
@@ -1309,22 +1109,18 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        46611
-      ]
-    },
+    "addresses": [
+      46611
+    ],
     "key": "min_soc_on_grid",
     "name": "Min SoC (On Grid)",
     "scale": null,
     "type": "number"
   },
   {
-    "addresses": {
-      "holding": [
-        39071
-      ]
-    },
+    "addresses": [
+      39071
+    ],
     "key": "pv1_current",
     "name": "PV1 Current",
     "scale": 0.01,
@@ -1335,18 +1131,15 @@
     "key": "pv1_energy_total",
     "method": "left",
     "name": "PV1 Power Total",
-    "register_types": "dict_keys(['input', 'holding'])",
     "source": "pv1_power",
     "type": "integration-sensor",
     "unit_time": "h"
   },
   {
-    "addresses": {
-      "holding": [
-        39280,
-        39279
-      ]
-    },
+    "addresses": [
+      39280,
+      39279
+    ],
     "key": "pv1_power",
     "name": "PV1 Power",
     "scale": 0.001,
@@ -1354,11 +1147,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39070
-      ]
-    },
+    "addresses": [
+      39070
+    ],
     "key": "pv1_voltage",
     "name": "PV1 Voltage",
     "scale": 0.1,
@@ -1366,11 +1157,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39073
-      ]
-    },
+    "addresses": [
+      39073
+    ],
     "key": "pv2_current",
     "name": "PV2 Current",
     "scale": 0.01,
@@ -1381,18 +1170,15 @@
     "key": "pv2_energy_total",
     "method": "left",
     "name": "PV2 Power Total",
-    "register_types": "dict_keys(['input', 'holding'])",
     "source": "pv2_power",
     "type": "integration-sensor",
     "unit_time": "h"
   },
   {
-    "addresses": {
-      "holding": [
-        39282,
-        39281
-      ]
-    },
+    "addresses": [
+      39282,
+      39281
+    ],
     "key": "pv2_power",
     "name": "PV2 Power",
     "scale": 0.001,
@@ -1400,11 +1186,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39072
-      ]
-    },
+    "addresses": [
+      39072
+    ],
     "key": "pv2_voltage",
     "name": "PV2 Voltage",
     "scale": 0.1,
@@ -1412,11 +1196,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39075
-      ]
-    },
+    "addresses": [
+      39075
+    ],
     "key": "pv3_current",
     "name": "PV3 Current",
     "scale": 0.01,
@@ -1427,18 +1209,15 @@
     "key": "pv3_energy_total",
     "method": "left",
     "name": "PV3 Power Total",
-    "register_types": "dict_keys(['input', 'holding'])",
     "source": "pv3_power",
     "type": "integration-sensor",
     "unit_time": "h"
   },
   {
-    "addresses": {
-      "holding": [
-        39284,
-        39283
-      ]
-    },
+    "addresses": [
+      39284,
+      39283
+    ],
     "key": "pv3_power",
     "name": "PV3 Power",
     "scale": 0.001,
@@ -1446,11 +1225,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39074
-      ]
-    },
+    "addresses": [
+      39074
+    ],
     "key": "pv3_voltage",
     "name": "PV3 Voltage",
     "scale": 0.1,
@@ -1458,11 +1235,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39077
-      ]
-    },
+    "addresses": [
+      39077
+    ],
     "key": "pv4_current",
     "name": "PV4 Current",
     "scale": 0.01,
@@ -1473,18 +1248,15 @@
     "key": "pv4_energy_total",
     "method": "left",
     "name": "PV4 Power Total",
-    "register_types": "dict_keys(['input', 'holding'])",
     "source": "pv4_power",
     "type": "integration-sensor",
     "unit_time": "h"
   },
   {
-    "addresses": {
-      "holding": [
-        39286,
-        39285
-      ]
-    },
+    "addresses": [
+      39286,
+      39285
+    ],
     "key": "pv4_power",
     "name": "PV4 Power",
     "scale": 0.001,
@@ -1492,11 +1264,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39076
-      ]
-    },
+    "addresses": [
+      39076
+    ],
     "key": "pv4_voltage",
     "name": "PV4 Voltage",
     "scale": 0.1,
@@ -1504,11 +1274,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39079
-      ]
-    },
+    "addresses": [
+      39079
+    ],
     "key": "pv5_current",
     "name": "PV5 Current",
     "scale": 0.01,
@@ -1519,18 +1287,15 @@
     "key": "pv5_energy_total",
     "method": "left",
     "name": "PV5 Power Total",
-    "register_types": "dict_keys(['input', 'holding'])",
     "source": "pv5_power",
     "type": "integration-sensor",
     "unit_time": "h"
   },
   {
-    "addresses": {
-      "holding": [
-        39288,
-        39287
-      ]
-    },
+    "addresses": [
+      39288,
+      39287
+    ],
     "key": "pv5_power",
     "name": "PV5 Power",
     "scale": 0.001,
@@ -1538,11 +1303,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39078
-      ]
-    },
+    "addresses": [
+      39078
+    ],
     "key": "pv5_voltage",
     "name": "PV5 Voltage",
     "scale": 0.1,
@@ -1550,11 +1313,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39081
-      ]
-    },
+    "addresses": [
+      39081
+    ],
     "key": "pv6_current",
     "name": "PV6 Current",
     "scale": 0.01,
@@ -1565,18 +1326,15 @@
     "key": "pv6_energy_total",
     "method": "left",
     "name": "PV6 Power Total",
-    "register_types": "dict_keys(['input', 'holding'])",
     "source": "pv6_power",
     "type": "integration-sensor",
     "unit_time": "h"
   },
   {
-    "addresses": {
-      "holding": [
-        39290,
-        39289
-      ]
-    },
+    "addresses": [
+      39290,
+      39289
+    ],
     "key": "pv6_power",
     "name": "PV6 Power",
     "scale": 0.001,
@@ -1584,11 +1342,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39080
-      ]
-    },
+    "addresses": [
+      39080
+    ],
     "key": "pv6_voltage",
     "name": "PV6 Voltage",
     "scale": 0.1,
@@ -1598,7 +1354,6 @@
   {
     "key": "pv_power_now",
     "name": "PV Power",
-    "register_types": "dict_keys(['input', 'holding'])",
     "sources": [
       "pv1_power",
       "pv2_power",
@@ -1610,11 +1365,10 @@
     "type": "lambda"
   },
   {
-    "addresses": {
-      "holding": [
-        39139
-      ]
-    },
+    "addresses": [
+      38847,
+      38846
+    ],
     "key": "rfreq",
     "name": "Grid Frequency",
     "scale": 0.01,
@@ -1622,12 +1376,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39265,
-        39264
-      ]
-    },
+    "addresses": [
+      39265,
+      39264
+    ],
     "key": "rpower_S_R",
     "name": "Inverter Power (Apparent) R",
     "scale": 0.001,
@@ -1635,12 +1387,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39267,
-        39266
-      ]
-    },
+    "addresses": [
+      39267,
+      39266
+    ],
     "key": "rpower_S_S",
     "name": "Inverter Power (Apparent) S",
     "scale": 0.001,
@@ -1648,12 +1398,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39269,
-        39268
-      ]
-    },
+    "addresses": [
+      39269,
+      39268
+    ],
     "key": "rpower_S_T",
     "name": "Inverter Power (Apparent) T",
     "scale": 0.001,
@@ -1661,23 +1409,19 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        36002
-      ]
-    },
-    "is_hex": true,
+    "addresses": [
+      36002
+    ],
+    "is_hex": false,
     "key": "slave_version",
     "name": "Version: Slave",
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39604,
-        39603
-      ]
-    },
+    "addresses": [
+      39604,
+      39603
+    ],
     "key": "solar_energy_today",
     "name": "Solar Generation Today",
     "scale": 0.1,
@@ -1685,12 +1429,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39602,
-        39601
-      ]
-    },
+    "addresses": [
+      39602,
+      39601
+    ],
     "key": "solar_energy_total",
     "name": "Solar Generation Total",
     "scale": 0.1,
@@ -1698,12 +1440,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39624,
-        39623
-      ]
-    },
+    "addresses": [
+      39624,
+      39623
+    ],
     "key": "total_yield_today",
     "name": "Yield Today",
     "scale": 0.1,
@@ -1711,12 +1451,10 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        39622,
-        39621
-      ]
-    },
+    "addresses": [
+      39622,
+      39621
+    ],
     "key": "total_yield_total",
     "name": "Yield Total",
     "scale": 0.1,
@@ -1724,11 +1462,9 @@
     "type": "sensor"
   },
   {
-    "addresses": {
-      "holding": [
-        49203
-      ]
-    },
+    "addresses": [
+      49203
+    ],
     "key": "work_mode",
     "name": "Work Mode",
     "type": "select",

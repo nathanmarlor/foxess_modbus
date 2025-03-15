@@ -11,13 +11,15 @@ from homeassistant.core import HomeAssistant
 from syrupy.assertion import SnapshotAssertion
 from syrupy.extensions.json import JSONSnapshotExtension
 
-from custom_components.foxess_modbus.common.types import Inv
+from custom_components.foxess_modbus.common.types import ConnectionType
+from custom_components.foxess_modbus.common.types import InverterModel
 from custom_components.foxess_modbus.const import ENTITY_ID_PREFIX
 from custom_components.foxess_modbus.const import INVERTER_BASE
 from custom_components.foxess_modbus.const import INVERTER_CONN
 from custom_components.foxess_modbus.const import UNIQUE_ID_PREFIX
 from custom_components.foxess_modbus.entities.entity_descriptions import ENTITIES
 from custom_components.foxess_modbus.inverter_profiles import INVERTER_PROFILES
+from custom_components.foxess_modbus.inverter_profiles import Version
 from custom_components.foxess_modbus.inverter_profiles import create_entities
 
 
@@ -29,8 +31,6 @@ def snapshot_json(snapshot: SnapshotAssertion) -> SnapshotAssertion:
 async def test_creates_all_entities(hass: HomeAssistant) -> None:
     controller = MagicMock()
     controller.hass = hass
-
-    # config_entry = MockConfigEntry()
 
     for profile in INVERTER_PROFILES.values():
         for connection_type in profile.connection_types:
@@ -45,12 +45,21 @@ async def test_creates_all_entities(hass: HomeAssistant) -> None:
                 create_entities(entity_type, controller)
 
 
-def pytest_generate_tests(metafunc: Any) -> None:
+def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
     if "model" in metafunc.fixturenames:
-        metafunc.parametrize("model", Inv)
+        inputs = []
+        for model, profile in INVERTER_PROFILES.items():
+            for connection_type, connection_type_profile in profile.connection_types.items():
+                for version in connection_type_profile.versions:
+                    v = "latest" if version is None else f"v{version}"
+                    inputs.append((model, connection_type, v))
+
+        metafunc.parametrize(("model", "connection_type", "version"), inputs)
 
 
-def test_entity_descriptions_for_model(model: Inv, snapshot_json: SnapshotAssertion) -> None:
+def test_entities(
+    model: InverterModel, connection_type: ConnectionType, version: str, snapshot_json: SnapshotAssertion
+) -> None:
     # syrupy doesn't like keys which aren't strings
     def _process(d: Any) -> None:
         if isinstance(d, dict):
@@ -65,9 +74,13 @@ def test_entity_descriptions_for_model(model: Inv, snapshot_json: SnapshotAssert
             for v in d:
                 _process(v)
 
+    connection_type_profile = INVERTER_PROFILES[model].connection_types[connection_type]
+    v = None if version == "latest" else Version.parse(version.lstrip("v"))
+    inv = connection_type_profile.get_inv_for_version(v)
+
     entities = []
     for entity_factory in ENTITIES:
-        serialized = entity_factory.serialize(model)
+        serialized = entity_factory.serialize(inv, connection_type_profile.register_type)
         if serialized is not None:
             _process(serialized)
             entities.append(serialized)

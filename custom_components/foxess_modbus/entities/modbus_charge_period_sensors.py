@@ -91,17 +91,17 @@ class ModbusChargePeriodStartEndSensorDescription(SensorEntityDescription, Entit
         )
         return ModbusChargePeriodStartEndSensor(controller, self, address, other_address)
 
-    def serialize(self, inverter_model: Inv) -> dict[str, Any] | None:
-        address_map = self._addresses_for_serialization(self.address, inverter_model)
-        if address_map is None:
+    def serialize(self, inverter_model: Inv, register_type: RegisterType) -> dict[str, Any] | None:
+        addresses = self._addresses_for_inverter_model(self.address, inverter_model, register_type)
+        if addresses is None:
             return None
 
         return {
             "type": "charge-period-time",
             "key": self.key,
             "name": self.name,
-            "addresses": address_map,
-            "other_addresses": self._addresses_for_serialization(self.other_address, inverter_model),
+            "addresses": addresses,
+            "other_addresses": self._address_for_inverter_model(self.other_address, inverter_model, register_type),
         }
 
 
@@ -230,18 +230,18 @@ class ModbusEnableForceChargeSensorDescription(BinarySensorEntityDescription, En
             period_end_address,
         )
 
-    def serialize(self, inverter_model: Inv) -> dict[str, Any] | None:
-        start_address_map = self._addresses_for_serialization(self.period_start_address, inverter_model)
-        end_address_map = self._addresses_for_serialization(self.period_end_address, inverter_model)
-        if start_address_map is None or end_address_map is None:
+    def serialize(self, inverter_model: Inv, register_type: RegisterType) -> dict[str, Any] | None:
+        start_addresses = self._addresses_for_inverter_model(self.period_start_address, inverter_model, register_type)
+        end_addresses = self._addresses_for_inverter_model(self.period_end_address, inverter_model, register_type)
+        if start_addresses is None or end_addresses is None:
             return None
 
         return {
             "type": "charge-period-enabled",
             "key": self.key,
             "name": self.name,
-            "start_addresses": start_address_map,
-            "end_addresses": end_address_map,
+            "start_addresses": start_addresses,
+            "end_addresses": end_addresses,
         }
 
 

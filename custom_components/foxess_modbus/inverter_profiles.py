@@ -148,14 +148,20 @@ class InverterModelConnectionTypeProfile:
 
     def _get_inv(self, controller: EntityController) -> Inv:
         version_from_config = controller.inverter_details.get(INVERTER_VERSION)
+
+        inverter_version = Version.parse(version_from_config) if version_from_config is not None else None
+        return self.get_inv_for_version(inverter_version)
+
+    def get_inv_for_version(self, version: Version | None) -> Inv:
+        # Used for pytests
+
         # Remember that self._versions is a map of maximum supported manager version (or None to support the max
         # firmware version) -> Inv for that version
-        if version_from_config is None:
+        if version is None:
             return self.versions[None]
 
-        inverter_version = Version.parse(version_from_config)
         versions = sorted(self.versions.items(), reverse=True)
-        matched_version = next((x for x in versions if x[0] <= inverter_version), versions[0])  # type: ignore[operator]
+        matched_version = next((x for x in versions if x[0] <= version), versions[0])  # type: ignore[operator]
         return matched_version[1]
 
     def overlaps_invalid_range(self, start_address: int, end_address: int) -> bool:
@@ -310,10 +316,12 @@ _INVERTER_PROFILES_LIST = [
     ),
     # The KH doesn't have a LAN port. It supports both input and holding over RS485
     # Some models start with KH-, but some are just e.g. KH10.5
+    # TODO: Inv.KH_PRE119 requires RegisterType.INPUT, but we don't currently support using different register types
+    # for different versions (it's determined solely by the connection type, which is just based on the old H1)
     InverterModelProfile(InverterModel.KH, r"^KH([\d\.]+)").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
-        versions={Version(1, 19): Inv.KH_PRE119, Version(1, 33): Inv.KH_PRE133, None: Inv.KH_133},
+        versions={Version(1, 33): Inv.KH_PRE133, None: Inv.KH_133},
         special_registers=KH_REGISTERS,
     ),
     # The H3 seems to use holding registers for everything
