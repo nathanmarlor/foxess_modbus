@@ -40,7 +40,7 @@ KH_INVERTER_STATES = [
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
-class ModbusInverterStateSensorDescription(SensorEntityDescription, EntityFactory):  # type: ignore[misc, override]
+class ModbusInverterStateSensorDescription(SensorEntityDescription, EntityFactory):  # type: ignore[misc]
     """Description for ModbusInverterStateSensor"""
 
     address: list[ModbusAddressSpec]
@@ -104,7 +104,7 @@ class ModbusInverterStateSensor(ModbusEntityMixin, SensorEntity):
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
-class ModbusG2InverterStateSensorDescription(SensorEntityDescription, EntityFactory):  # type ignore[override]
+class ModbusG2InverterStateSensorDescription(SensorEntityDescription, EntityFactory):  # type: ignore[misc]
     """Description for ModbusInverterStateSensor"""
 
     # Fault 1 code, fault 3 code

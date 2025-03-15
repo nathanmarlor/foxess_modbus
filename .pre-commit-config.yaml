@@ -1,3 +1,4 @@
+exclude: ^custom_components\/foxess_modbus\/vendor
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.3.0
@@ -5,14 +6,12 @@ repos:
       - id: check-added-large-files
       - id: check-yaml
       - id: end-of-file-fixer
-        exclude: ^custom_components\/foxess_modbus\/vendor
       - id: trailing-whitespace
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.2.1
     hooks:
       - id: prettier
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    # Ruff version.
     rev: v0.9.4
     hooks:
       - id: ruff
@@ -22,11 +21,6 @@ repos:
     rev: v1.15.0
     hooks:
       - id: mypy
+        # Use the main venv's mypy installation, and stubs etc
+        language: system
         args: [--show-traceback]
-        # These are duplicated from requirements.txt
-        additional_dependencies:
-          [
-            homeassistant-stubs==2025.1.1,
-            types-python-slugify==8.0.0.2,
-            voluptuous-stubs==0.1.1,
-          ]

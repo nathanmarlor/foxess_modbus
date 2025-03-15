@@ -36,7 +36,7 @@ class CustomModbusTcpClient(ModbusTcpClient):
     # https://github.com/nathanmarlor/foxess_modbus/issues/275
     def recv(self, size: int) -> Any:
         """Read data from the underlying descriptor."""
-        super(ModbusTcpClient, self).recv(size)  # type: ignore
+        super(ModbusTcpClient, self).recv(size)
         if not self.socket:
             raise ConnectionException(str(self))
 

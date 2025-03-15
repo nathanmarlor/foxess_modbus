@@ -69,6 +69,8 @@ class OptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
     async def async_step_inverter_options_category(self, _user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Let the user choose what sort of inverter options to configure"""
 
+        assert self._selected_inverter_id is not None
+
         _, _, combined_config_options = self._config_for_inverter(self._selected_inverter_id)
         versions = inverter_connection_type_profile_from_config(combined_config_options).versions
 
@@ -134,13 +136,16 @@ class OptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
 
         schema_parts: dict[Any, Any] = {}
 
-        versions = sorted(inverter_connection_type_profile_from_config(combined_config_options).versions.keys())
+        versions: list[Version | None] = sorted(  # type: ignore[type-var]
+            inverter_connection_type_profile_from_config(combined_config_options).versions.keys()
+        )
         assert len(versions) > 1
 
         version_options = []
         prev_version = None
         # The last element will be None, which means "latest"
         for version in versions[:-1]:
+            assert version is not None
             # For the sake of clarity, we'll shown an exclusive range as the version one minor version below
             # (We don't know whether that version ever actually existed, but that doesn't matter here)
             if prev_version is None:

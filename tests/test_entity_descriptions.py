@@ -21,7 +21,7 @@ from custom_components.foxess_modbus.inverter_profiles import INVERTER_PROFILES
 from custom_components.foxess_modbus.inverter_profiles import create_entities
 
 
-@pytest.fixture  # type: ignore
+@pytest.fixture
 def snapshot_json(snapshot: SnapshotAssertion) -> SnapshotAssertion:
     return snapshot.use_extension(extension_class=JSONSnapshotExtension)
 

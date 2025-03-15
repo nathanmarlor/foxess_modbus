@@ -59,7 +59,7 @@ def _is_force_charge_enabled(
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
-class ModbusChargePeriodStartEndSensorDescription(SensorEntityDescription, EntityFactory):  # type: ignore[misc, override]
+class ModbusChargePeriodStartEndSensorDescription(SensorEntityDescription, EntityFactory):  # type: ignore[misc]
     """Entity description for ModbusChargePeriodStartEndSensor"""
 
     address: list[InverterModelSpec]
@@ -150,7 +150,7 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
 
         parsed_value = parse_time_value(value)
 
-        return parsed_value
+        return parsed_value  # type: ignore
 
     async def async_added_to_hass(self) -> None:
         """Add update callback after being added to hass."""
@@ -191,9 +191,7 @@ class ModbusChargePeriodStartEndSensor(ModbusEntityMixin, RestoreEntity, SensorE
 
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
-class ModbusEnableForceChargeSensorDescription(  # type ignore[misc, override]
-    BinarySensorEntityDescription, EntityFactory
-):
+class ModbusEnableForceChargeSensorDescription(BinarySensorEntityDescription, EntityFactory):  # type: ignore[misc]
     """Entity description for ModbusEnableForceChargeSensor"""
 
     period_start_address: list[InverterModelSpec]
