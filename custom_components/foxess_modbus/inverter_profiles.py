@@ -85,7 +85,7 @@ H3_REGISTERS = SpecialRegisterConfig(
 )
 # See https://github.com/nathanmarlor/foxess_modbus/discussions/792
 # All the 410xx register are not specified within the document version V1.05.03.00
-ENPAX_IX_REGISTERS = SpecialRegisterConfig(
+H3_SMART_REGISTERS = SpecialRegisterConfig(
     invalid_register_ranges=[(41001, 41006), (41012, 41013), (41015, 41015)],
     individual_read_register_ranges=[(37609, 37620), (37632, 37636)],
 )
@@ -422,30 +422,44 @@ _INVERTER_PROFILES_LIST = [
         versions={None: Inv.H3_PRE180},
         special_registers=H3_REGISTERS,
     ),
-    # Enpal I-X range
-    # These have the form 'I-X5', with powers 5, 6, 8, 9.9, 10, 12, 15kW
-    # See https://github.com/nathanmarlor/foxess_modbus/issues/785
-    InverterModelProfile(InverterModel.ENPAL_IX, r"^I-X([\d\.]+)").add_connection_type(
-        ConnectionType.AUX,
-        RegisterType.HOLDING,
-        versions={None: Inv.H3_PRE180},
-        special_registers=ENPAX_IX_REGISTERS,
-    ),
-    # 1KOMMA5 range
-    # These have the form '1K5-HI-15-V1', with powers 5, 8, 10, 12, 15kW
-    # See https://github.com/nathanmarlor/foxess_modbus/issues/807
-    InverterModelProfile(InverterModel.ONE_KOMMA_FIVE, r"^1K5-HI-(\d+)-V1").add_connection_type(
-        ConnectionType.AUX,
-        RegisterType.HOLDING,
-        versions={None: Inv.H3_PRE180},
-        special_registers=H3_REGISTERS,
-    ),
     # E.g. H3-Pro-20.0
     InverterModelProfile(InverterModel.H3_PRO, r"^H3-Pro-([\d\.]+)").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={Version(1, 22): Inv.H3_PRO_PRE122, None: Inv.H3_PRO_122},
         special_registers=H3_REGISTERS,
+    ),
+    # Enpal I-X range
+    # These have the form 'I-X5', with powers 5, 6, 8, 9.9, 10, 12, 15kW
+    # See https://github.com/nathanmarlor/foxess_modbus/issues/785
+    InverterModelProfile(InverterModel.ENPAL_IX, r"^I-X([\d\.]+)")
+    .add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={None: Inv.H3_SMART},
+        special_registers=H3_SMART_REGISTERS,
+    )
+    .add_connection_type(
+        ConnectionType.LAN,
+        RegisterType.HOLDING,
+        versions={None: Inv.H3_SMART},
+        special_registers=H3_SMART_REGISTERS,
+    ),
+    # 1KzMMA5 range
+    # These have the form '1K5-HI-15-V1', with powers 5, 8, 10, 12, 15kW
+    # See https://github.com/nathanmarlor/foxess_modbus/issues/807
+    InverterModelProfile(InverterModel.ONE_KOMMA_FIVE, r"^1K5-HI-(\d+)-V1")
+    .add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={None: Inv.H3_SMART},
+        special_registers=H3_SMART_REGISTERS,
+    )
+    .add_connection_type(
+        ConnectionType.LAN,
+        RegisterType.HOLDING,
+        versions={None: Inv.H3_SMART},
+        special_registers=H3_SMART_REGISTERS,
     ),
 ]
 
