@@ -7,7 +7,8 @@ body:
       description: Please search to see if an issue already exists for the bug you encountered.
       options:
         - label: I have searched the existing issues
-          required: true
+    validations:
+      required: true
   - type: input
     attributes:
       label: FoxESS - Modbus version
@@ -34,5 +35,5 @@ body:
         which made you think that something was wrong? Please provide logs if appropriate: to enable debug logging,
         visit [Devices & services -> FoxESS - Modbus](https://my.home-assistant.io/redirect/integration/?domain=foxess_modbus)
         and click "Enable debug logging".
-      validations:
-        required: true
+    validations:
+      required: true
