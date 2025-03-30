@@ -250,6 +250,7 @@ class InverterModelProfile:
         return capacity
 
 
+# NOTE: If the inverter support LAN and AUX identically, just specify AUX
 _INVERTER_PROFILES_LIST = [
     # E.g. H1-5.0-E-G2. Has to appear before H1_G1.
     InverterModelProfile(
@@ -325,41 +326,20 @@ _INVERTER_PROFILES_LIST = [
         special_registers=KH_REGISTERS,
     ),
     # The H3 seems to use holding registers for everything
-    InverterModelProfile(InverterModel.H3, r"^H3-([\d\.]+)")
-    .add_connection_type(
-        ConnectionType.LAN,
-        RegisterType.HOLDING,
-        versions={Version(1, 80): Inv.H3_PRE180, None: Inv.H3_180},
-        special_registers=H3_REGISTERS,
-    )
-    .add_connection_type(
+    InverterModelProfile(InverterModel.H3, r"^H3-([\d\.]+)").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={Version(1, 80): Inv.H3_PRE180, None: Inv.H3_180},
         special_registers=H3_REGISTERS,
     ),
-    InverterModelProfile(InverterModel.AC3, r"^AC3-([\d\.]+)")
-    .add_connection_type(
-        ConnectionType.LAN,
-        RegisterType.HOLDING,
-        versions={Version(1, 80): Inv.H3_PRE180, None: Inv.H3_180},
-        special_registers=H3_REGISTERS,
-    )
-    .add_connection_type(
+    InverterModelProfile(InverterModel.AC3, r"^AC3-([\d\.]+)").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={Version(1, 80): Inv.H3_PRE180, None: Inv.H3_180},
         special_registers=H3_REGISTERS,
     ),
-    InverterModelProfile(InverterModel.AIO_H3, r"^AIO-H3-([\d\.]+)")
-    .add_connection_type(
+    InverterModelProfile(InverterModel.AIO_H3, r"^AIO-H3-([\d\.]+)").add_connection_type(
         ConnectionType.AUX,
-        RegisterType.HOLDING,
-        versions={Version(1, 1): Inv.AIO_H3_PRE101, None: Inv.AIO_H3_101},
-        special_registers=H3_REGISTERS,
-    )
-    .add_connection_type(
-        ConnectionType.LAN,
         RegisterType.HOLDING,
         versions={Version(1, 1): Inv.AIO_H3_PRE101, None: Inv.AIO_H3_101},
         special_registers=H3_REGISTERS,
@@ -432,15 +412,8 @@ _INVERTER_PROFILES_LIST = [
     # Enpal I-X range
     # These have the form 'I-X5', with powers 5, 6, 8, 9.9, 10, 12, 15kW
     # See https://github.com/nathanmarlor/foxess_modbus/issues/785
-    InverterModelProfile(InverterModel.ENPAL_IX, r"^I-X([\d\.]+)")
-    .add_connection_type(
+    InverterModelProfile(InverterModel.ENPAL_IX, r"^I-X([\d\.]+)").add_connection_type(
         ConnectionType.AUX,
-        RegisterType.HOLDING,
-        versions={None: Inv.H3_SMART},
-        special_registers=H3_SMART_REGISTERS,
-    )
-    .add_connection_type(
-        ConnectionType.LAN,
         RegisterType.HOLDING,
         versions={None: Inv.H3_SMART},
         special_registers=H3_SMART_REGISTERS,
@@ -448,15 +421,8 @@ _INVERTER_PROFILES_LIST = [
     # 1KzMMA5 range
     # These have the form '1K5-HI-15-V1', with powers 5, 8, 10, 12, 15kW
     # See https://github.com/nathanmarlor/foxess_modbus/issues/807
-    InverterModelProfile(InverterModel.ONE_KOMMA_FIVE, r"^1K5-HI-(\d+)-V1")
-    .add_connection_type(
+    InverterModelProfile(InverterModel.ONE_KOMMA_FIVE, r"^1K5-HI-(\d+)-V1").add_connection_type(
         ConnectionType.AUX,
-        RegisterType.HOLDING,
-        versions={None: Inv.H3_SMART},
-        special_registers=H3_SMART_REGISTERS,
-    )
-    .add_connection_type(
-        ConnectionType.LAN,
         RegisterType.HOLDING,
         versions={None: Inv.H3_SMART},
         special_registers=H3_SMART_REGISTERS,
@@ -465,6 +431,7 @@ _INVERTER_PROFILES_LIST = [
 
 INVERTER_PROFILES = {x.model: x for x in _INVERTER_PROFILES_LIST}
 assert len(INVERTER_PROFILES) == len(_INVERTER_PROFILES_LIST)
+assert all(ConnectionType.AUX in x.connection_types for x in _INVERTER_PROFILES_LIST)
 
 
 def create_entities(entity_type: type[Entity], controller: EntityController) -> list[Entity]:
@@ -477,5 +444,18 @@ def create_entities(entity_type: type[Entity], controller: EntityController) -> 
 
 def inverter_connection_type_profile_from_config(inverter_config: dict[str, Any]) -> InverterModelConnectionTypeProfile:
     """Fetches a InverterConnectionTypeProfile for a given configuration object"""
+    inverter_model = inverter_config[INVERTER_BASE]
+    connection_type = inverter_config[INVERTER_CONN]
 
-    return INVERTER_PROFILES[inverter_config[INVERTER_BASE]].connection_types[inverter_config[INVERTER_CONN]]
+    model_profile = INVERTER_PROFILES[inverter_model]
+
+    connection_type_profile = model_profile.connection_types.get(connection_type, None)
+    # Some models support AUX and LAN identically, and we only list AUX in the profiles. In this case, try AUX
+    if connection_type_profile is None and connection_type != ConnectionType.AUX:
+        connection_type_profile = model_profile.connection_types.get(ConnectionType.AUX, None)
+
+    assert connection_type_profile is not None, (
+        f"Model {inverter_model} does not support connection type {connection_type} (or AUX)"
+    )
+
+    return connection_type_profile
