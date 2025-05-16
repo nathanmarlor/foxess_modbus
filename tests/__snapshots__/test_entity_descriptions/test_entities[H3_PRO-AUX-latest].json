@@ -607,6 +607,138 @@
   },
   {
     "addresses": [
+      38823,
+      38822
+    ],
+    "key": "grid_ct_reactive  ",
+    "name": "Grid CT (Reactive)",
+    "scale": 0.0001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38825,
+      38824
+    ],
+    "key": "grid_ct_reactive_R",
+    "name": "Grid CT (Reactive) R",
+    "scale": 0.0001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38827,
+      38826
+    ],
+    "key": "grid_ct_reactive_S",
+    "name": "Grid CT (Reactive) S",
+    "scale": 0.0001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38829,
+      38828
+    ],
+    "key": "grid_ct_reactive_T",
+    "name": "Grid CT (Reactive) T",
+    "scale": 0.0001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38831,
+      38830
+    ],
+    "key": "grid_ct_apparent",
+    "name": "Grid CT (Apparent)",
+    "scale": 0.0001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38833,
+      38832
+    ],
+    "key": "grid_ct_apparent_R",
+    "name": "Grid CT (Apparent) R",
+    "scale": 0.0001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38835,
+      38834
+    ],
+    "key": "grid_ct_apparent_S",
+    "name": "Grid CT (Apparent) S",
+    "scale": 0.0001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38837,
+      38836
+    ],
+    "key": "grid_ct_apparent_T",
+    "name": "Grid CT (Apparent) T",
+    "scale": 0.0001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38839,
+      38838
+    ],
+    "key": "grid_ct_pf",
+    "name": "Grid CT Power Factor",
+    "scale": 0.00001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38841,
+      38840
+    ],
+    "key": "grid_ct_pf_R",
+    "name": "Grid CT Power Factor R",
+    "scale": 0.100001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38843,
+      38842
+    ],
+    "key": "grid_ct_pf_S",
+    "name": "Grid CT Power Factor S",
+    "scale": 0.00001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38845,
+      38844
+    ],
+    "key": "grid_ct_pf_T",
+    "name": "Grid CT Power Factor T",
+    "scale": 0.00001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
       39123
     ],
     "key": "grid_voltage_R",
