@@ -610,7 +610,7 @@
       38823,
       38822
     ],
-    "key": "grid_ct_reactive  ",
+    "key": "grid_ct_reactive",
     "name": "Grid CT (Reactive)",
     "scale": 0.0001,
     "signed": true,
