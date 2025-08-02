@@ -1,5 +1,6 @@
 """Sensor"""
 
+import inspect
 import logging
 from dataclasses import dataclass
 from datetime import timedelta
@@ -12,6 +13,7 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.const import Platform
 from homeassistant.const import UnitOfTime
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
 from ..common.entity_controller import EntityController
@@ -55,6 +57,7 @@ class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory)
 
         # this piggybacks on the existing factory to create IntegrationSensors
         return ModbusIntegrationSensor(
+            hass=controller.hass,
             controller=controller,
             entity_description=self,
             integration_method=self.integration_method,
@@ -83,6 +86,7 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
 
     def __init__(
         self,
+        hass: HomeAssistant,
         controller: EntityController,
         entity_description: ModbusIntegrationSensorDescription,
         integration_method: str,
@@ -99,17 +103,23 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
         self.entity_description = entity_description
         self.entity_id = self._get_entity_id(Platform.SENSOR)
 
-        IntegrationSensor.__init__(
-            self=self,
-            integration_method=integration_method,
-            name=cast(str, entity_description.name),
-            round_digits=round_digits,
-            source_entity=source_entity,
-            unique_id=None,
-            unit_prefix=None,
-            unit_time=unit_time,
-            max_sub_interval=MAX_SUB_INTERVAL,
-        )
+        # HA 2025.8 added 'hass' as a parameter
+        signature = inspect.signature(IntegrationSensor.__init__)
+        positional: list[Any] = [self]
+        if "hass" in signature.parameters:
+            positional.append(hass)
+        kwargs = {
+            "integration_method": integration_method,
+            "name": cast(str, entity_description.name),
+            "round_digits": round_digits,
+            "source_entity": source_entity,
+            "unique_id": None,
+            "unit_prefix": None,
+            "unit_time": unit_time,
+            "max_sub_interval": MAX_SUB_INTERVAL,
+        }
+
+        IntegrationSensor.__init__(*positional, **kwargs)  # type: ignore[arg-type]
 
         # Use the icon from entity_description
         delattr(self, "_attr_icon")
