@@ -2299,12 +2299,12 @@ def _bms_entities() -> Iterable[EntityFactory]:
         bms_cell_mv_high=[
             ModbusAddressesSpec(input=[11045], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[37619], models=Inv.H1_G2_144 | Inv.KH_133),
-            ModbusAddressesSpec(holding=[31100], models=Inv.H3_180),
+            ModbusAddressesSpec(holding=[31134], models=Inv.H3_180),
         ],
         bms_cell_mv_low=[
             ModbusAddressesSpec(input=[11046], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[37620], models=Inv.H1_G2_144 | Inv.KH_133),
-            ModbusAddressesSpec(holding=[31101], models=Inv.H3_180),
+            ModbusAddressesSpec(holding=[31135], models=Inv.H3_180),
         ],
         bms_kwh_remaining=[
             ModbusAddressesSpec(input=[11037], models=Inv.H1_G1 | Inv.KH_PRE119),

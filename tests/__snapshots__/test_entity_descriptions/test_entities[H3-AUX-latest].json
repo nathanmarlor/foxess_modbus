@@ -123,7 +123,7 @@
   },
   {
     "addresses": [
-      31100
+      31134
     ],
     "key": "bms_cell_mv_high",
     "name": "BMS Cell mV High",
@@ -133,7 +133,7 @@
   },
   {
     "addresses": [
-      31101
+      31135
     ],
     "key": "bms_cell_mv_low",
     "name": "BMS Cell mV Low",
