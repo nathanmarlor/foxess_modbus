@@ -36,6 +36,11 @@ class EntityFactory(ABC, metaclass=EntityFactoryMetaclass):  # type: ignore
     def entity_type(self) -> type[Entity]:
         """Fetch the type of entity that this factory creates"""
 
+    @property
+    def depends_on_other_entities(self) -> bool:
+        """Return true if this entity depends on other entities, and so should be constructed last."""
+        return False
+
     @abstractmethod
     def create_entity_if_supported(
         self,

@@ -23,4 +23,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_d
 
     for controller in controllers:
         async_add_devices([ConnectionStatusSensor(controller)])
-        async_add_devices(create_entities(SensorEntity, controller))
+        # We have to add sensors which don't depend on other sensors, before we add the sensors which *do* depend on
+        # other sensors (like the integration sensors), otherwise HA crashes when trying to create the IntegrationSensor
+        # because it can't find the sensor it depends on. See https://github.com/nathanmarlor/foxess_modbus/issues/886
+        async_add_devices(create_entities(SensorEntity, controller, filter_depends_on_other_entites=False))
+        async_add_devices(create_entities(SensorEntity, controller, filter_depends_on_other_entites=True))
