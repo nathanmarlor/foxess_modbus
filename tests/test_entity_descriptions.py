@@ -41,8 +41,11 @@ async def test_creates_all_entities(hass: HomeAssistant) -> None:
                     ENTITY_ID_PREFIX: "",
                     UNIQUE_ID_PREFIX: "",
                 }
+
                 # Asserts if e.g. the ModbusAddressSpecs match
-                create_entities(entity_type, controller)
+                # We can't test IntegrationSensors (which have depends_on_other_entities=True), as HA throws up saying
+                # that the entity it depends on doesn't exist (as we're not actually creating entities).
+                create_entities(entity_type, controller, filter_depends_on_other_entites=False)
 
 
 def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:

@@ -177,18 +177,26 @@ class InverterModelConnectionTypeProfile:
         self,
         entity_type: type[Entity],
         controller: EntityController,
+        filter_depends_on_other_entites: bool | None = None,
     ) -> list[Entity]:
         """Create all of the entities of the given type which support this inverter/connection combination"""
 
         result = []
 
         for entity_factory in ENTITIES:
-            if entity_factory.entity_type == entity_type:
-                entity = entity_factory.create_entity_if_supported(
-                    controller, self._get_inv(controller), self.register_type
-                )
-                if entity is not None:
-                    result.append(entity)
+            if (
+                filter_depends_on_other_entites is not None
+                and filter_depends_on_other_entites != entity_factory.depends_on_other_entities
+            ):
+                continue
+            if entity_factory.entity_type != entity_type:
+                continue
+
+            entity = entity_factory.create_entity_if_supported(
+                controller, self._get_inv(controller), self.register_type
+            )
+            if entity is not None:
+                result.append(entity)
 
         return result
 
@@ -434,11 +442,13 @@ assert len(INVERTER_PROFILES) == len(_INVERTER_PROFILES_LIST)
 assert all(ConnectionType.AUX in x.connection_types for x in _INVERTER_PROFILES_LIST)
 
 
-def create_entities(entity_type: type[Entity], controller: EntityController) -> list[Entity]:
+def create_entities(
+    entity_type: type[Entity], controller: EntityController, filter_depends_on_other_entites: bool | None = None
+) -> list[Entity]:
     """Create all of the entities which support the inverter described by the given configuration object"""
 
     return inverter_connection_type_profile_from_config(controller.inverter_details).create_entities(
-        entity_type, controller
+        entity_type, controller, filter_depends_on_other_entites
     )
 
 

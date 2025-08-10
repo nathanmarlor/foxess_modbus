@@ -44,6 +44,10 @@ class ModbusIntegrationSensorDescription(SensorEntityDescription, EntityFactory)
     def entity_type(self) -> type[Entity]:
         return SensorEntity
 
+    @property
+    def depends_on_other_entities(self) -> bool:
+        return True
+
     def create_entity_if_supported(
         self,
         controller: EntityController,

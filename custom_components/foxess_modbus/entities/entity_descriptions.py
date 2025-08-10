@@ -2575,7 +2575,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     )
 
 
-ENTITIES: list[EntityFactory] = list(
+ENTITIES: list[EntityFactory] = sorted(
     itertools.chain(
         _version_entities(),
         _pv_entities(),
@@ -2586,5 +2586,6 @@ ENTITIES: list[EntityFactory] = list(
         _configuration_entities(),
         (description for x in CHARGE_PERIODS for description in x.entity_descriptions),
         REMOTE_CONTROL_DESCRIPTION.entity_descriptions,
-    )
+    ),
+    key=lambda x: x.depends_on_other_entities,
 )
