@@ -9,6 +9,8 @@ from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorStateClass
 from homeassistant.const import UnitOfTime
 
+from custom_components.foxess_modbus.entities.base_validator import BaseValidator
+
 from ..common.types import Inv
 from ..common.types import RegisterType
 from .charge_period_descriptions import CHARGE_PERIODS
@@ -1690,7 +1692,11 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         scale=0.01,
     )
 
-    def _solar_energy_today(addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
+    def _solar_energy_today(
+        addresses: list[ModbusAddressesSpec], scale: float, validate: list[BaseValidator] | None = None
+    ) -> EntityFactory:
+        if validate is None:
+            validate = [Range(0, 1000)]
         return ModbusSensorDescription(
             key="solar_energy_today",
             addresses=addresses,
@@ -1701,12 +1707,23 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             icon="mdi:solar-power",
             scale=scale,
             signed=False,
-            validate=[Range(0, 1000)],
+            validate=validate,
         )
+
+    # We've seen H1s producing garbage values on power-on, see
+    # https://github.com/nathanmarlor/foxess_modbus/issues/884. The largest H1 is 6kW, over 24h that could generate
+    # 144kWh, so we'll put a limit of 150. (The false values we were seeing were all 600kWh plus)
+    yield _solar_energy_today(
+        addresses=[
+            ModbusAddressesSpec(input=[11071], holding=[32002], models=Inv.H1_G1),
+        ],
+        scale=0.1,
+        validate=[Range(0, 150)],
+    )
 
     yield _solar_energy_today(
         addresses=[
-            ModbusAddressesSpec(input=[11071], models=Inv.H1_G1 | Inv.KH_PRE119),
+            ModbusAddressesSpec(input=[11071], models=Inv.KH_PRE119),
             ModbusAddressesSpec(
                 holding=[32002], models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
             ),
