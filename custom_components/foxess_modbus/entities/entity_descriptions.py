@@ -1151,16 +1151,16 @@ def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
         t_addresses: list[ModbusAddressesSpec],
         scale: float,
     ) -> Iterable[EntityFactory]:
-        yield _grid_ct_reactive(phase=None, addresses=addresses,   scale=scale)
-        yield _grid_ct_reactive(phase="R",  addresses=r_addresses, scale=scale)
-        yield _grid_ct_reactive(phase="S",  addresses=s_addresses, scale=scale)
-        yield _grid_ct_reactive(phase="T",  addresses=t_addresses, scale=scale)
+        yield _grid_ct_reactive(phase=None, addresses=addresses, scale=scale)
+        yield _grid_ct_reactive(phase="R", addresses=r_addresses, scale=scale)
+        yield _grid_ct_reactive(phase="S", addresses=s_addresses, scale=scale)
+        yield _grid_ct_reactive(phase="T", addresses=t_addresses, scale=scale)
 
     yield from _grid_ct_reactive_set(
-        addresses=[ModbusAddressesSpec(holding=[38823, 38822], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        r_addresses=[ModbusAddressesSpec(holding=[38825, 38824], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        s_addresses=[ModbusAddressesSpec(holding=[38827, 38826], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        t_addresses=[ModbusAddressesSpec(holding=[38829, 38828], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
+        addresses=[ModbusAddressesSpec(holding=[38823, 38822], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
+        r_addresses=[ModbusAddressesSpec(holding=[38825, 38824], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
+        s_addresses=[ModbusAddressesSpec(holding=[38827, 38826], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
+        t_addresses=[ModbusAddressesSpec(holding=[38829, 38828], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
         scale=0.0001,
     )
 
@@ -1190,16 +1190,16 @@ def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
         t_addresses: list[ModbusAddressesSpec],
         scale: float,
     ) -> Iterable[EntityFactory]:
-        yield _grid_ct_apparent(phase=None, addresses=addresses,   scale=scale)
-        yield _grid_ct_apparent(phase="R",  addresses=r_addresses, scale=scale)
-        yield _grid_ct_apparent(phase="S",  addresses=s_addresses, scale=scale)
-        yield _grid_ct_apparent(phase="T",  addresses=t_addresses, scale=scale)
+        yield _grid_ct_apparent(phase=None, addresses=addresses, scale=scale)
+        yield _grid_ct_apparent(phase="R", addresses=r_addresses, scale=scale)
+        yield _grid_ct_apparent(phase="S", addresses=s_addresses, scale=scale)
+        yield _grid_ct_apparent(phase="T", addresses=t_addresses, scale=scale)
 
     yield from _grid_ct_apparent_set(
-        addresses=[ModbusAddressesSpec(holding=[38831, 38830], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        r_addresses=[ModbusAddressesSpec(holding=[38833, 38832], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        s_addresses=[ModbusAddressesSpec(holding=[38835, 38834], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        t_addresses=[ModbusAddressesSpec(holding=[38837, 38836], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
+        addresses=[ModbusAddressesSpec(holding=[38831, 38830], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
+        r_addresses=[ModbusAddressesSpec(holding=[38833, 38832], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
+        s_addresses=[ModbusAddressesSpec(holding=[38835, 38834], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
+        t_addresses=[ModbusAddressesSpec(holding=[38837, 38836], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
         scale=0.0001,
     )
 
@@ -1228,16 +1228,16 @@ def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
         t_addresses: list[ModbusAddressesSpec],
         scale: float,
     ) -> Iterable[EntityFactory]:
-        yield _grid_ct_power_factor(phase=None, addresses=addresses,   scale=scale)
-        yield _grid_ct_power_factor(phase="R",  addresses=r_addresses, scale=scale)
-        yield _grid_ct_power_factor(phase="S",  addresses=s_addresses, scale=scale)
-        yield _grid_ct_power_factor(phase="T",  addresses=t_addresses, scale=scale)
+        yield _grid_ct_power_factor(phase=None, addresses=addresses, scale=scale)
+        yield _grid_ct_power_factor(phase="R", addresses=r_addresses, scale=scale)
+        yield _grid_ct_power_factor(phase="S", addresses=s_addresses, scale=scale)
+        yield _grid_ct_power_factor(phase="T", addresses=t_addresses, scale=scale)
 
     yield from _grid_ct_power_factor_set(
-        addresses=[ModbusAddressesSpec(holding=[38839, 38838], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        r_addresses=[ModbusAddressesSpec(holding=[38841, 38840], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        s_addresses=[ModbusAddressesSpec(holding=[38843, 38842], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        t_addresses=[ModbusAddressesSpec(holding=[38845, 38844], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
+        addresses=[ModbusAddressesSpec(holding=[38839, 38838], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
+        r_addresses=[ModbusAddressesSpec(holding=[38841, 38840], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
+        s_addresses=[ModbusAddressesSpec(holding=[38843, 38842], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
+        t_addresses=[ModbusAddressesSpec(holding=[38845, 38844], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
         scale=0.00001,
     )
 
