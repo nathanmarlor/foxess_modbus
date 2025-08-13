@@ -1125,6 +1125,122 @@ def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
         ],
     )
 
+    def _grid_ct_reactive(phase: str | None, scale: float, addresses: list[ModbusAddressesSpec]) -> EntityFactory:
+        key_suffix = f"_{phase}" if phase is not None else ""
+        name_suffix = f" {phase}" if phase is not None else ""
+
+        return ModbusSensorDescription(
+            key=f"grid_ct_reactive{key_suffix}",
+            addresses=addresses,
+            name=f"Grid CT (Reactive){name_suffix}",
+            entity_registry_enabled_default=False,
+            # REACTIVE_POWER only supports var, not kvar
+            # device_class=SensorDeviceClass.REACTIVE_POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement="kvar",
+            icon="mdi:meter-electric-outline",
+            scale=scale,
+            round_to=0.01,
+            validate=[Range(-100, 100)],
+        )
+
+    def _grid_ct_reactive_set(
+        addresses: list[ModbusAddressesSpec],
+        r_addresses: list[ModbusAddressesSpec],
+        s_addresses: list[ModbusAddressesSpec],
+        t_addresses: list[ModbusAddressesSpec],
+        scale: float,
+    ) -> Iterable[EntityFactory]:
+        yield _grid_ct_reactive(phase=None, addresses=addresses, scale=scale)
+        yield _grid_ct_reactive(phase="R", addresses=r_addresses, scale=scale)
+        yield _grid_ct_reactive(phase="S", addresses=s_addresses, scale=scale)
+        yield _grid_ct_reactive(phase="T", addresses=t_addresses, scale=scale)
+
+    yield from _grid_ct_reactive_set(
+        addresses=[ModbusAddressesSpec(holding=[38823, 38822], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
+        r_addresses=[ModbusAddressesSpec(holding=[38825, 38824], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
+        s_addresses=[ModbusAddressesSpec(holding=[38827, 38826], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
+        t_addresses=[ModbusAddressesSpec(holding=[38829, 38828], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
+        scale=0.0001,
+    )
+
+    def _grid_ct_apparent(phase: str | None, scale: float, addresses: list[ModbusAddressesSpec]) -> EntityFactory:
+        key_suffix = f"_{phase}" if phase is not None else ""
+        name_suffix = f" {phase}" if phase is not None else ""
+
+        return ModbusSensorDescription(
+            key=f"grid_ct_apparent{key_suffix}",
+            addresses=addresses,
+            name=f"Grid CT (Apparent){name_suffix}",
+            entity_registry_enabled_default=False,
+            # APPARENT_POWER only supports VA, not kVA
+            # device_class=SensorDeviceClass.APPARENT_POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement="kVA",
+            icon="mdi:meter-electric-outline",
+            scale=scale,
+            round_to=0.01,
+            validate=[Range(-100, 100)],
+        )
+
+    def _grid_ct_apparent_set(
+        addresses: list[ModbusAddressesSpec],
+        r_addresses: list[ModbusAddressesSpec],
+        s_addresses: list[ModbusAddressesSpec],
+        t_addresses: list[ModbusAddressesSpec],
+        scale: float,
+    ) -> Iterable[EntityFactory]:
+        yield _grid_ct_apparent(phase=None, addresses=addresses, scale=scale)
+        yield _grid_ct_apparent(phase="R", addresses=r_addresses, scale=scale)
+        yield _grid_ct_apparent(phase="S", addresses=s_addresses, scale=scale)
+        yield _grid_ct_apparent(phase="T", addresses=t_addresses, scale=scale)
+
+    yield from _grid_ct_apparent_set(
+        addresses=[ModbusAddressesSpec(holding=[38831, 38830], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
+        r_addresses=[ModbusAddressesSpec(holding=[38833, 38832], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
+        s_addresses=[ModbusAddressesSpec(holding=[38835, 38834], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
+        t_addresses=[ModbusAddressesSpec(holding=[38837, 38836], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
+        scale=0.0001,
+    )
+
+    def _grid_ct_power_factor(phase: str | None, scale: float, addresses: list[ModbusAddressesSpec]) -> EntityFactory:
+        key_suffix = f"_{phase}" if phase is not None else ""
+        name_suffix = f" {phase}" if phase is not None else ""
+
+        return ModbusSensorDescription(
+            key=f"grid_ct_pf{key_suffix}",
+            addresses=addresses,
+            name=f"Grid CT Power Factor{name_suffix}",
+            entity_registry_enabled_default=False,
+            # device_class=SensorDeviceClass.POWER_FACTOR,
+            state_class=SensorStateClass.MEASUREMENT,
+            # Power factor is a ratio with no unit. Supposedly gain 1000, but comes out as .01
+            icon="mdi:meter-electric-outline",
+            scale=scale,
+            round_to=0.001,
+            validate=[Range(-1, 1)],
+        )
+
+    def _grid_ct_power_factor_set(
+        addresses: list[ModbusAddressesSpec],
+        r_addresses: list[ModbusAddressesSpec],
+        s_addresses: list[ModbusAddressesSpec],
+        t_addresses: list[ModbusAddressesSpec],
+        scale: float,
+    ) -> Iterable[EntityFactory]:
+        yield _grid_ct_power_factor(phase=None, addresses=addresses, scale=scale)
+        yield _grid_ct_power_factor(phase="R", addresses=r_addresses, scale=scale)
+        yield _grid_ct_power_factor(phase="S", addresses=s_addresses, scale=scale)
+        yield _grid_ct_power_factor(phase="T", addresses=t_addresses, scale=scale)
+
+    yield from _grid_ct_power_factor_set(
+        addresses=[ModbusAddressesSpec(holding=[38839, 38838], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
+        r_addresses=[ModbusAddressesSpec(holding=[38841, 38840], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
+        s_addresses=[ModbusAddressesSpec(holding=[38843, 38842], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
+        t_addresses=[ModbusAddressesSpec(holding=[38845, 38844], models=Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122)],
+        scale=0.00001,
+    )
+
     def _ct2_meter(phase: str | None, scale: float, addresses: list[ModbusAddressesSpec]) -> ModbusSensorDescription:
         key_suffix = f"_{phase}" if phase is not None else ""
         name_suffix = f" {phase}" if phase is not None else ""
