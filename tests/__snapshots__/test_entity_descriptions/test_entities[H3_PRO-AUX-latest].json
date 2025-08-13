@@ -607,50 +607,6 @@
   },
   {
     "addresses": [
-      38823,
-      38822
-    ],
-    "key": "grid_ct_reactive",
-    "name": "Grid CT (Reactive)",
-    "scale": 0.0001,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      38825,
-      38824
-    ],
-    "key": "grid_ct_reactive_R",
-    "name": "Grid CT (Reactive) R",
-    "scale": 0.0001,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      38827,
-      38826
-    ],
-    "key": "grid_ct_reactive_S",
-    "name": "Grid CT (Reactive) S",
-    "scale": 0.0001,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      38829,
-      38828
-    ],
-    "key": "grid_ct_reactive_T",
-    "name": "Grid CT (Reactive) T",
-    "scale": 0.0001,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
       38831,
       38830
     ],
@@ -700,7 +656,7 @@
     ],
     "key": "grid_ct_pf",
     "name": "Grid CT Power Factor",
-    "scale": 0.00001,
+    "scale": 1e-05,
     "signed": true,
     "type": "sensor"
   },
@@ -711,7 +667,7 @@
     ],
     "key": "grid_ct_pf_R",
     "name": "Grid CT Power Factor R",
-    "scale": 0.100001,
+    "scale": 1e-05,
     "signed": true,
     "type": "sensor"
   },
@@ -722,7 +678,7 @@
     ],
     "key": "grid_ct_pf_S",
     "name": "Grid CT Power Factor S",
-    "scale": 0.00001,
+    "scale": 1e-05,
     "signed": true,
     "type": "sensor"
   },
@@ -733,7 +689,51 @@
     ],
     "key": "grid_ct_pf_T",
     "name": "Grid CT Power Factor T",
-    "scale": 0.00001,
+    "scale": 1e-05,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38823,
+      38822
+    ],
+    "key": "grid_ct_reactive",
+    "name": "Grid CT (Reactive)",
+    "scale": 0.0001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38825,
+      38824
+    ],
+    "key": "grid_ct_reactive_R",
+    "name": "Grid CT (Reactive) R",
+    "scale": 0.0001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38827,
+      38826
+    ],
+    "key": "grid_ct_reactive_S",
+    "name": "Grid CT (Reactive) S",
+    "scale": 0.0001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38829,
+      38828
+    ],
+    "key": "grid_ct_reactive_T",
+    "name": "Grid CT (Reactive) T",
+    "scale": 0.0001,
     "signed": true,
     "type": "sensor"
   },
