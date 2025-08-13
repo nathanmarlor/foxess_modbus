@@ -83,6 +83,11 @@ H3_REGISTERS = SpecialRegisterConfig(
     invalid_register_ranges=[(41001, 41006), (41012, 41013), (41015, 41015)],
     individual_read_register_ranges=[(41000, 41999)],
 )
+# H3_REGISTERS with an extra range, see https://github.com/nathanmarlor/foxess_modbus/issues/692
+H3_PRO_REGISTERS = SpecialRegisterConfig(
+    invalid_register_ranges=[(37633, 37700), (41001, 41006), (41012, 41013), (41015, 41015)],
+    individual_read_register_ranges=[(41000, 41999)],
+)
 # See https://github.com/nathanmarlor/foxess_modbus/discussions/792
 # All the 410xx register are not specified within the document version V1.05.03.00
 H3_SMART_REGISTERS = SpecialRegisterConfig(
@@ -422,7 +427,7 @@ _INVERTER_PROFILES_LIST = [
         ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={Version(1, 22): Inv.H3_PRO_PRE122, None: Inv.H3_PRO_122},
-        special_registers=H3_REGISTERS,
+        special_registers=H3_PRO_REGISTERS,
     ),
     # Enpal I-X range
     # These have the form 'I-X5', with powers 5, 6, 8, 9.9, 10, 12, 15kW
