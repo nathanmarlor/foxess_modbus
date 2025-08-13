@@ -4,13 +4,13 @@
       "select_adapter_type": {
         "description": "How do you connect to your inverter?",
         "data": {
-          "adapter_type": ""
+          "adapter_type": "Adapter Type"
         }
       },
       "select_adapter_model": {
         "description": "Choose your adapter model. This lets us use settings tailored to your adapter. If you don't see your model, choose \"Other\" and let us know: https://github.com/nathanmarlor/foxess_modbus/discussions/new.",
         "data": {
-          "adapter_id": ""
+          "adapter_model": "Adapter Model"
         }
       },
       "tcp_adapter": {
@@ -65,6 +65,7 @@
       }
     },
     "error": {
+      "already_in_progress": "Configuration flow is already in progress",
       "invalid_hostname": "Hostname / IP address \"{hostname}\" is not valid. Use an IP address (e.g. '192.168.0.10') or a hostname (e.g. 'mydevice' / 'mydevice.local')",
       "duplicate_connection_details": "You have already set up an inverter with this address",
       "duplicate_friendly_name": "One of your other inverters has this friendly name. Please specify another",
