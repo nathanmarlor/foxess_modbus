@@ -59,7 +59,7 @@
     ],
     "key": "battery_charge_today",
     "name": "Battery Charge Today",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": true,
     "type": "sensor"
   },
@@ -70,7 +70,7 @@
     ],
     "key": "battery_charge_total",
     "name": "Battery Charge Total",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": false,
     "type": "sensor"
   },
@@ -114,7 +114,7 @@
     ],
     "key": "battery_discharge_today",
     "name": "Battery Discharge Today",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": true,
     "type": "sensor"
   },
@@ -125,7 +125,7 @@
     ],
     "key": "battery_discharge_total",
     "name": "Battery Discharge Total",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": false,
     "type": "sensor"
   },
@@ -480,7 +480,7 @@
     ],
     "key": "feed_in_energy_today",
     "name": "Feed-in Today",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": true,
     "type": "sensor"
   },
@@ -491,7 +491,7 @@
     ],
     "key": "feed_in_energy_total",
     "name": "Feed-in Total",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": false,
     "type": "sensor"
   },
@@ -546,7 +546,7 @@
     ],
     "key": "grid_consumption_energy_today",
     "name": "Grid Consumption Today",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": true,
     "type": "sensor"
   },
@@ -557,7 +557,7 @@
     ],
     "key": "grid_consumption_energy_total",
     "name": "Grid Consumption Total",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": false,
     "type": "sensor"
   },
@@ -642,7 +642,7 @@
     ],
     "key": "input_energy_today",
     "name": "Input Energy Today",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": true,
     "type": "sensor"
   },
@@ -653,7 +653,7 @@
     ],
     "key": "input_energy_total",
     "name": "Input Energy Total",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": false,
     "type": "sensor"
   },
@@ -945,7 +945,7 @@
     ],
     "key": "load_energy_today",
     "name": "Load Energy Today",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": true,
     "type": "sensor"
   },
@@ -1000,7 +1000,7 @@
     ],
     "key": "load_power_total",
     "name": "Load Energy Total",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": false,
     "type": "sensor"
   },
@@ -1423,7 +1423,7 @@
     ],
     "key": "solar_energy_today",
     "name": "Solar Generation Today",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": false,
     "type": "sensor"
   },
@@ -1434,7 +1434,7 @@
     ],
     "key": "solar_energy_total",
     "name": "Solar Generation Total",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": false,
     "type": "sensor"
   },
@@ -1445,7 +1445,7 @@
     ],
     "key": "total_yield_today",
     "name": "Yield Today",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": true,
     "type": "sensor"
   },
@@ -1456,7 +1456,7 @@
     ],
     "key": "total_yield_total",
     "name": "Yield Total",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": false,
     "type": "sensor"
   },
