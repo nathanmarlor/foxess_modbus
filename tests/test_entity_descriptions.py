@@ -1,5 +1,6 @@
 from typing import Any
 from typing import Iterable
+from typing import cast
 from unittest.mock import MagicMock
 
 import pytest
@@ -11,6 +12,7 @@ from homeassistant.core import HomeAssistant
 from syrupy.assertion import SnapshotAssertion
 from syrupy.extensions.json import JSONSnapshotExtension
 
+from custom_components.foxess_modbus.common.entity_controller import ModbusControllerEntity
 from custom_components.foxess_modbus.common.types import ConnectionType
 from custom_components.foxess_modbus.common.types import InverterModel
 from custom_components.foxess_modbus.const import ENTITY_ID_PREFIX
@@ -33,7 +35,7 @@ async def test_creates_all_entities(hass: HomeAssistant) -> None:
     controller.hass = hass
 
     for profile in INVERTER_PROFILES.values():
-        for connection_type in profile.connection_types:
+        for connection_type, connection_type_profile in profile.connection_types.items():
             for entity_type in [SensorEntity, BinarySensorEntity, SelectEntity, NumberEntity]:
                 controller.inverter_details = {
                     INVERTER_BASE: profile.model,
@@ -45,7 +47,16 @@ async def test_creates_all_entities(hass: HomeAssistant) -> None:
                 # Asserts if e.g. the ModbusAddressSpecs match
                 # We can't test IntegrationSensors (which have depends_on_other_entities=True), as HA throws up saying
                 # that the entity it depends on doesn't exist (as we're not actually creating entities).
-                create_entities(entity_type, controller, filter_depends_on_other_entites=False)
+                entities = create_entities(entity_type, controller, filter_depends_on_other_entites=False)
+
+                for entity in entities:
+                    for address in cast(ModbusControllerEntity, entity).addresses:
+                        for start, end in connection_type_profile.special_registers.invalid_register_ranges:
+                            if start <= address <= end:
+                                raise AssertionError(
+                                    f"Profile {profile.model} Entity {entity.unique_id} address {address} lies in "
+                                    f"range ({start}, {end})"
+                                )
 
 
 def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
