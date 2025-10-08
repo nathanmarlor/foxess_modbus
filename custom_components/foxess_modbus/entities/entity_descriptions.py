@@ -632,7 +632,8 @@ def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
         key="eps_rpower",
         addresses=[
             ModbusAddressesSpec(input=[11017], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(holding=[31012], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2_SET | Inv.KH_133),
+            ModbusAddressesSpec(holding=[31012], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2_PRE144 | Inv.KH_133),
+            ModbusAddressesSpec(holding=[39217, 39216], models=Inv.H1_G2_144),
             ModbusAddressesSpec(holding=[31048, 31047], models=Inv.KH_PRE133),
         ],
         entity_registry_enabled_default=False,
