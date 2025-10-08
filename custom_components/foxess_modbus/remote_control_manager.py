@@ -28,6 +28,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         self._discharge_power: int | None = None
         self._charge_power: int | None = None
         self._max_soc_override: int | None = None
+        self._export_limit: int | None = None
 
         modbus_addresses = [
             *self._addresses.battery_soc,
@@ -73,6 +74,21 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
     @max_soc.setter
     def max_soc(self, value: int | None) -> None:
         self._max_soc_override = value
+
+    @property
+    def export_limit(self) -> int | None:
+        return self._export_limit
+
+    @export_limit.setter
+    def export_limit(self, value: int | None) -> None:
+        self._export_limit = value
+        # Export limit writes to register 41012 (H1, H3, KH series) or 46616 (other models)
+        if value is not None:
+            # Schedule the async write operation using Home Assistant's event loop
+            self._controller.hass.async_create_task(
+                self._controller.write_register(41012, value)
+            )
+
 
     async def _update(self) -> None:
         if not self._controller.is_connected:
