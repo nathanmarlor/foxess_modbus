@@ -223,16 +223,6 @@
   },
   {
     "addresses": [
-      31012
-    ],
-    "key": "eps_rpower",
-    "name": "EPS Power",
-    "scale": 0.001,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
       31010
     ],
     "key": "eps_rvolt",
@@ -617,6 +607,17 @@
     ],
     "key": "pv1_power",
     "name": "PV1 Power",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+        39216,
+        39217
+    ],
+    "key": "eps_rpower",
+    "name": "EPS Power",
     "scale": 0.001,
     "signed": true,
     "type": "sensor"

@@ -233,7 +233,8 @@
   },
   {
     "addresses": [
-      11017
+      39216,
+      39217
     ],
     "key": "eps_rpower",
     "name": "EPS Power",
