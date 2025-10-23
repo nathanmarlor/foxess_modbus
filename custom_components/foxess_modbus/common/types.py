@@ -50,6 +50,7 @@ class InverterModel(StrEnum):
     AIO_H3 = "AIO-H3"
     KUARA_H3 = "KUARA-H3"
     SK_HWR = "SK-HWR"
+    SK_HWR_SMART = "SK-HWR-SMART"
     STAR_H3 = "STAR-H3"
     SOLAVITA_SP = "SOLAVITA-SP"
     ATRONIX_AX = "ATRONIX_AX"
