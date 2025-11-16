@@ -865,8 +865,7 @@ def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(holding=[39135, 39134], models=Inv.H3_PRO_SET | Inv.H3_SMART),
         ],
-        # This one appears to be in mW, despite what the spec says
-        scale=0.000001,
+        scale=0.001,
     )
     yield _inv_power(
         "R",
