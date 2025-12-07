@@ -55,6 +55,8 @@ class InverterModel(StrEnum):
     ATRONIX_AX = "ATRONIX_AX"
     ENPAL_IX = "ENPAL_IX"
     ONE_KOMMA_FIVE = "1KOMMA5"
+    SOLARWATT_IVO = "VSN_ONE"
+    SOLARWATT_IVT = "VSN_THREE"
 
     H3_PRO = "H3_PRO"
     H3_SMART = "H3_SMART"
