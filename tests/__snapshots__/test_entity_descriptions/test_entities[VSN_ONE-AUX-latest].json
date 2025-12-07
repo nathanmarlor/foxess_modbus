@@ -1,16 +1,6 @@
 [
   {
     "addresses": [
-      31019
-    ],
-    "key": "ambtemp",
-    "name": "Ambient Temp",
-    "scale": 0.1,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
       37610
     ],
     "key": "bat_current",
@@ -21,7 +11,8 @@
   },
   {
     "addresses": [
-      31022
+      39606,
+      39605
     ],
     "key": "battery_charge",
     "name": "Battery Charge",
@@ -31,7 +22,8 @@
   },
   {
     "addresses": [
-      32005
+      39608,
+      39607
     ],
     "key": "battery_charge_today",
     "name": "Battery Charge Today",
@@ -41,8 +33,8 @@
   },
   {
     "addresses": [
-      32004,
-      32003
+      39606,
+      39605
     ],
     "key": "battery_charge_total",
     "name": "Battery Charge Total",
@@ -52,7 +44,8 @@
   },
   {
     "addresses": [
-      31022
+      39610,
+      39609
     ],
     "key": "battery_discharge",
     "name": "Battery Discharge",
@@ -62,7 +55,8 @@
   },
   {
     "addresses": [
-      32008
+      39612,
+      39611
     ],
     "key": "battery_discharge_today",
     "name": "Battery Discharge Today",
@@ -72,8 +66,8 @@
   },
   {
     "addresses": [
-      32007,
-      32006
+      39610,
+      39609
     ],
     "key": "battery_discharge_total",
     "name": "Battery Discharge Total",
@@ -83,7 +77,7 @@
   },
   {
     "addresses": [
-      31024
+      37612
     ],
     "key": "battery_soc",
     "name": "Battery SoC",
@@ -103,7 +97,7 @@
   },
   {
     "addresses": [
-      31023
+      37611
     ],
     "key": "battery_temp",
     "name": "Battery Temp",
@@ -163,26 +157,6 @@
   },
   {
     "addresses": [
-      31025
-    ],
-    "key": "bms_charge_rate",
-    "name": "BMS Charge Rate",
-    "scale": 0.1,
-    "signed": false,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      31026
-    ],
-    "key": "bms_discharge_rate",
-    "name": "BMS Discharge Rate",
-    "scale": 0.1,
-    "signed": false,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
       37632
     ],
     "key": "bms_kwh_remaining",
@@ -193,27 +167,8 @@
   },
   {
     "addresses": [
-      31015
-    ],
-    "key": "ct2_meter",
-    "name": "CT2 Meter",
-    "scale": 0.001,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      31013
-    ],
-    "key": "eps_frequency",
-    "name": "EPS Frequency",
-    "scale": 0.01,
-    "signed": false,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      31011
+      39205,
+      39204
     ],
     "key": "eps_rcurrent",
     "name": "EPS Current",
@@ -223,7 +178,8 @@
   },
   {
     "addresses": [
-      31012
+      39213,
+      39212
     ],
     "key": "eps_rpower",
     "name": "EPS Power",
@@ -233,7 +189,7 @@
   },
   {
     "addresses": [
-      31010
+      39201
     ],
     "key": "eps_rvolt",
     "name": "EPS Voltage",
@@ -243,7 +199,8 @@
   },
   {
     "addresses": [
-      31014
+      38817,
+      38816
     ],
     "key": "feed_in",
     "name": "Feed-in",
@@ -253,7 +210,8 @@
   },
   {
     "addresses": [
-      32011
+      39616,
+      39615
     ],
     "key": "feed_in_energy_today",
     "name": "Feed-in Today",
@@ -263,8 +221,8 @@
   },
   {
     "addresses": [
-      32010,
-      32009
+      39614,
+      39613
     ],
     "key": "feed_in_energy_total",
     "name": "Feed-in Total",
@@ -274,7 +232,8 @@
   },
   {
     "addresses": [
-      31014
+      38817,
+      38816
     ],
     "key": "grid_consumption",
     "name": "Grid Consumption",
@@ -284,7 +243,8 @@
   },
   {
     "addresses": [
-      32014
+      39620,
+      39619
     ],
     "key": "grid_consumption_energy_today",
     "name": "Grid Consumption Today",
@@ -294,8 +254,8 @@
   },
   {
     "addresses": [
-      32013,
-      32012
+      39618,
+      39617
     ],
     "key": "grid_consumption_energy_total",
     "name": "Grid Consumption Total",
@@ -305,7 +265,8 @@
   },
   {
     "addresses": [
-      31014
+      38817,
+      38816
     ],
     "key": "grid_ct",
     "name": "Grid CT",
@@ -315,7 +276,8 @@
   },
   {
     "addresses": [
-      32020
+      39628,
+      39627
     ],
     "key": "input_energy_today",
     "name": "Input Energy Today",
@@ -325,8 +287,8 @@
   },
   {
     "addresses": [
-      32019,
-      32018
+      39626,
+      39625
     ],
     "key": "input_energy_total",
     "name": "Input Energy Total",
@@ -336,7 +298,8 @@
   },
   {
     "addresses": [
-      31021
+      39229,
+      39228
     ],
     "key": "invbatcurrent",
     "name": "Inverter Battery Current",
@@ -346,7 +309,8 @@
   },
   {
     "addresses": [
-      31022
+      39231,
+      39230
     ],
     "key": "invbatpower",
     "name": "Inverter Battery Power",
@@ -356,7 +320,7 @@
   },
   {
     "addresses": [
-      31020
+      39227
     ],
     "key": "invbatvolt",
     "name": "Inverter Battery Voltage",
@@ -441,7 +405,7 @@
   },
   {
     "addresses": [
-      31018
+      39141
     ],
     "key": "invtemp",
     "name": "Inverter Temp",
@@ -451,7 +415,8 @@
   },
   {
     "addresses": [
-      32023
+      39632,
+      39631
     ],
     "key": "load_energy_today",
     "name": "Load Energy Today",
@@ -461,7 +426,8 @@
   },
   {
     "addresses": [
-      31016
+      39220,
+      39219
     ],
     "key": "load_power",
     "name": "Load Power",
@@ -471,8 +437,8 @@
   },
   {
     "addresses": [
-      32022,
-      32021
+      39630,
+      39629
     ],
     "key": "load_power_total",
     "name": "Load Energy Total",
@@ -500,7 +466,7 @@
   },
   {
     "addresses": [
-      41007
+      46607
     ],
     "key": "max_charge_current",
     "name": "Max Charge Current",
@@ -510,7 +476,7 @@
   },
   {
     "addresses": [
-      41007
+      46607
     ],
     "key": "max_charge_current",
     "name": "Max Charge Current",
@@ -519,7 +485,7 @@
   },
   {
     "addresses": [
-      41008
+      46608
     ],
     "key": "max_discharge_current",
     "name": "Max Discharge Current",
@@ -529,7 +495,7 @@
   },
   {
     "addresses": [
-      41008
+      46608
     ],
     "key": "max_discharge_current",
     "name": "Max Discharge Current",
@@ -538,7 +504,7 @@
   },
   {
     "addresses": [
-      41010
+      46610
     ],
     "key": "max_soc",
     "name": "Max SoC",
@@ -548,7 +514,7 @@
   },
   {
     "addresses": [
-      41010
+      46610
     ],
     "key": "max_soc",
     "name": "Max SoC",
@@ -557,7 +523,7 @@
   },
   {
     "addresses": [
-      41009
+      46609
     ],
     "key": "min_soc",
     "name": "Min SoC",
@@ -567,7 +533,7 @@
   },
   {
     "addresses": [
-      41009
+      46609
     ],
     "key": "min_soc",
     "name": "Min SoC",
@@ -576,7 +542,7 @@
   },
   {
     "addresses": [
-      41011
+      46611
     ],
     "key": "min_soc_on_grid",
     "name": "Min SoC (On Grid)",
@@ -586,7 +552,7 @@
   },
   {
     "addresses": [
-      41011
+      46611
     ],
     "key": "min_soc_on_grid",
     "name": "Min SoC (On Grid)",
@@ -613,7 +579,8 @@
   },
   {
     "addresses": [
-      39280
+      39280,
+      39279
     ],
     "key": "pv1_power",
     "name": "PV1 Power",
@@ -651,7 +618,8 @@
   },
   {
     "addresses": [
-      39282
+      39282,
+      39281
     ],
     "key": "pv2_power",
     "name": "PV2 Power",
@@ -680,7 +648,8 @@
   },
   {
     "addresses": [
-      31007
+      39127,
+      39126
     ],
     "key": "rcurrent",
     "name": "Inverter Current",
@@ -690,17 +659,8 @@
   },
   {
     "addresses": [
-      31009
-    ],
-    "key": "rfreq",
-    "name": "Grid Frequency",
-    "scale": 0.01,
-    "signed": false,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      31008
+      39249,
+      39248
     ],
     "key": "rpower",
     "name": "Inverter Power",
@@ -710,7 +670,7 @@
   },
   {
     "addresses": [
-      31006
+      39123
     ],
     "key": "rvolt",
     "name": "Grid Voltage",
@@ -729,7 +689,8 @@
   },
   {
     "addresses": [
-      32002
+      39604,
+      39603
     ],
     "key": "solar_energy_today",
     "name": "Solar Generation Today",
@@ -739,8 +700,8 @@
   },
   {
     "addresses": [
-      32001,
-      32000
+      39602,
+      39601
     ],
     "key": "solar_energy_total",
     "name": "Solar Generation Total",
@@ -750,81 +711,8 @@
   },
   {
     "addresses": [
-      41001
-    ],
-    "key": "time_period_1_enable_charge_from_grid",
-    "name": "Period 1 - Enable Charge from Grid",
-    "type": "binary-sensor"
-  },
-  {
-    "end_addresses": [
-      41003
-    ],
-    "key": "time_period_1_enable_force_charge",
-    "name": "Period 1 - Enable Force Charge",
-    "start_addresses": [
-      41002
-    ],
-    "type": "charge-period-enabled"
-  },
-  {
-    "addresses": [
-      41003
-    ],
-    "key": "time_period_1_end",
-    "name": "Period 1 - End",
-    "other_addresses": 41002,
-    "type": "charge-period-time"
-  },
-  {
-    "addresses": [
-      41002
-    ],
-    "key": "time_period_1_start",
-    "name": "Period 1 - Start",
-    "other_addresses": 41003,
-    "type": "charge-period-time"
-  },
-  {
-    "addresses": [
-      41004
-    ],
-    "key": "time_period_2_enable_charge_from_grid",
-    "name": "Period 2 - Enable Charge from Grid",
-    "type": "binary-sensor"
-  },
-  {
-    "end_addresses": [
-      41006
-    ],
-    "key": "time_period_2_enable_force_charge",
-    "name": "Period 2 - Enable Force Charge",
-    "start_addresses": [
-      41005
-    ],
-    "type": "charge-period-enabled"
-  },
-  {
-    "addresses": [
-      41006
-    ],
-    "key": "time_period_2_end",
-    "name": "Period 2 - End",
-    "other_addresses": 41005,
-    "type": "charge-period-time"
-  },
-  {
-    "addresses": [
-      41005
-    ],
-    "key": "time_period_2_start",
-    "name": "Period 2 - Start",
-    "other_addresses": 41006,
-    "type": "charge-period-time"
-  },
-  {
-    "addresses": [
-      32017
+      39624,
+      39623
     ],
     "key": "total_yield_today",
     "name": "Yield Today",
@@ -834,8 +722,8 @@
   },
   {
     "addresses": [
-      32016,
-      32015
+      39622,
+      39621
     ],
     "key": "total_yield_total",
     "name": "Yield Total",
@@ -845,7 +733,7 @@
   },
   {
     "addresses": [
-      41000
+      49203
     ],
     "key": "work_mode",
     "name": "Work Mode",

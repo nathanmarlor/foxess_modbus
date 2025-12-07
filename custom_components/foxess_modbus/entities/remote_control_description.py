@@ -128,5 +128,25 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
             ),
             models=Inv.H3_PRO_SET | Inv.H3_SMART,
         ),
+        RemoteControlAddressSpec(
+            # SOLARWATT Inverter vision one 1.0 uses H3-SMART's registers for single phase (e.g. R/S/T only R is used)
+            holding=ModbusRemoteControlAddressConfig(
+                remote_enable=46001,
+                timeout_set=46002,
+                active_power=[46004, 46003],
+                work_mode=49203,
+                work_mode_map={
+                    WorkMode.SELF_USE: 1,
+                    WorkMode.FEED_IN_FIRST: 2,
+                    WorkMode.BACK_UP: 3,
+                },
+                max_soc=46610,
+                invbatpower=[39238, 39237],
+                battery_soc=[37612, 38310],
+                pwr_limit_bat_up=[46019, 46018],
+                pv_voltages=[39070, 39072, 39074, 39076], # only two MPPTs so 39078, 39080 are unused
+            ),
+            models=Inv.SWTT_IVO,
+        ),
     ]
 )
