@@ -11,8 +11,8 @@
   },
   {
     "addresses": [
-      39606,
-      39605
+      39238,
+      39237
     ],
     "key": "battery_charge",
     "name": "Battery Charge",
@@ -27,7 +27,7 @@
     ],
     "key": "battery_charge_today",
     "name": "Battery Charge Today",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": true,
     "type": "sensor"
   },
@@ -38,14 +38,14 @@
     ],
     "key": "battery_charge_total",
     "name": "Battery Charge Total",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": false,
     "type": "sensor"
   },
   {
     "addresses": [
-      39610,
-      39609
+      39238,
+      39237
     ],
     "key": "battery_discharge",
     "name": "Battery Discharge",
@@ -60,7 +60,7 @@
     ],
     "key": "battery_discharge_today",
     "name": "Battery Discharge Today",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": true,
     "type": "sensor"
   },
@@ -71,7 +71,7 @@
     ],
     "key": "battery_discharge_total",
     "name": "Battery Discharge Total",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": false,
     "type": "sensor"
   },
@@ -215,7 +215,7 @@
     ],
     "key": "feed_in_energy_today",
     "name": "Feed-in Today",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": true,
     "type": "sensor"
   },
@@ -226,7 +226,7 @@
     ],
     "key": "feed_in_energy_total",
     "name": "Feed-in Total",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": false,
     "type": "sensor"
   },
@@ -248,7 +248,7 @@
     ],
     "key": "grid_consumption_energy_today",
     "name": "Grid Consumption Today",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": true,
     "type": "sensor"
   },
@@ -259,7 +259,7 @@
     ],
     "key": "grid_consumption_energy_total",
     "name": "Grid Consumption Total",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": false,
     "type": "sensor"
   },
@@ -281,7 +281,7 @@
     ],
     "key": "input_energy_today",
     "name": "Input Energy Today",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": true,
     "type": "sensor"
   },
@@ -292,7 +292,7 @@
     ],
     "key": "input_energy_total",
     "name": "Input Energy Total",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": false,
     "type": "sensor"
   },
@@ -309,8 +309,8 @@
   },
   {
     "addresses": [
-      39231,
-      39230
+      39238,
+      39237
     ],
     "key": "invbatpower",
     "name": "Inverter Battery Power",
@@ -420,7 +420,7 @@
     ],
     "key": "load_energy_today",
     "name": "Load Energy Today",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": true,
     "type": "sensor"
   },
@@ -442,7 +442,7 @@
     ],
     "key": "load_power_total",
     "name": "Load Energy Total",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": false,
     "type": "sensor"
   },
@@ -670,6 +670,28 @@
   },
   {
     "addresses": [
+      39257,
+      39256
+    ],
+    "key": "rpower_Q",
+    "name": "Inverter Power (Reactive)",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39265,
+      39264
+    ],
+    "key": "rpower_S",
+    "name": "Inverter Power (Apparent)",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
       39123
     ],
     "key": "rvolt",
@@ -694,7 +716,7 @@
     ],
     "key": "solar_energy_today",
     "name": "Solar Generation Today",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": false,
     "type": "sensor"
   },
@@ -705,7 +727,7 @@
     ],
     "key": "solar_energy_total",
     "name": "Solar Generation Total",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": false,
     "type": "sensor"
   },
@@ -716,7 +738,7 @@
     ],
     "key": "total_yield_today",
     "name": "Yield Today",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": true,
     "type": "sensor"
   },
@@ -727,7 +749,7 @@
     ],
     "key": "total_yield_total",
     "name": "Yield Total",
-    "scale": 0.1,
+    "scale": 0.01,
     "signed": false,
     "type": "sensor"
   },
@@ -739,9 +761,9 @@
     "name": "Work Mode",
     "type": "select",
     "values": {
-      "0": "Self Use",
-      "1": "Feed-in First",
-      "2": "Back-up",
+      "1": "Self Use",
+      "2": "Feed-in First",
+      "3": "Back-up",
       "4": "Peak Shaving"
     }
   }
