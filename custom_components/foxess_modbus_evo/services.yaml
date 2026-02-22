@@ -12,7 +12,7 @@ read_registers:
       example: "''"
       selector:
         device:
-          integration: foxess_modbus
+          integration: foxess_modbus_evo
     start_address:
       name: Start Address
       description: Start address to write to
@@ -54,7 +54,7 @@ write_registers:
       example: "''"
       selector:
         device:
-          integration: foxess_modbus
+          integration: foxess_modbus_evo
     start_address:
       name: Start Address
       description: Start address to write to
@@ -85,7 +85,7 @@ update_charge_period:
       example: "''"
       selector:
         device:
-          integration: foxess_modbus
+          integration: foxess_modbus_evo
           entity:
             # Only charge periods provide binary_sensors with class power, for charge period on/off
             domain: "binary_sensor"
@@ -150,7 +150,7 @@ update_all_charge_periods:
       example: "''"
       selector:
         device:
-          integration: foxess_modbus
+          integration: foxess_modbus_evo
           entity:
             # Only charge periods provide binary_sensors with class power, for charge period on/off
             domain: "binary_sensor"

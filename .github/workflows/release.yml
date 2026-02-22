@@ -25,11 +25,11 @@ jobs:
       - name: Patch manifest and zip
         run: |
           TAG=${{ github.ref_NAME }}
-          cd custom_components/foxess_modbus/
+          cd custom_components/foxess_modbus_evo/
           jq ".version=\"${TAG#v}\"" manifest.json > manifest.json.tmp
           mv manifest.json.tmp manifest.json
-          zip ../../foxess_modbus.zip -r ./
+          zip ../../foxess_modbus_evo.zip -r ./
       - name: Upload release asset
-        run: gh release upload "${{ github.ref_name }}" foxess_modbus.zip --clobber
+        run: gh release upload "${{ github.ref_name }}" foxess_modbus_evo.zip --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

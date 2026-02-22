@@ -146,7 +146,7 @@ class ModbusClient:
                 f"Error reading registers. Type: {register_type}; start: {start_address}; count: {num_registers}; "
                 f"slave: {slave}. Received incorrect response type {response}. Please ensure that your adapter is "
                 "correctly configured to allow multiple connections, see the instructions at "
-                "https://github.com/nathanmarlor/foxess_modbus/wiki"
+                "https://github.com/nathanmarlor/foxess_modbus/wiki"  # upstream wiki — adapter setup guides
             )
             # ModbusController only logs this as debug. Make this a bit clearer so people spot and fix this
             _LOGGER.warning(message)
@@ -192,7 +192,7 @@ class ModbusClient:
                 f"Error writing registers. Start: {register_address}; values: {register_values}; slave: {slave}. "
                 f"Received incorrect response type {response}. Please ensure that your adapter is correctly "
                 "configured to allow multiple connections, see the instructions at "
-                "https://github.com/nathanmarlor/foxess_modbus/wiki"
+                "https://github.com/nathanmarlor/foxess_modbus/wiki"  # upstream wiki — adapter setup guides
             )
             raise ModbusClientFailedError(
                 message,

@@ -400,7 +400,7 @@ class ModbusController(EntityController, UnloadController):
                     is_fixable=False,
                     is_persistent=False,
                     severity=IssueSeverity.ERROR,
-                    learn_more_url="https://github.com/nathanmarlor/foxess_modbus/wiki/Invalid-Registers",
+                    learn_more_url="https://github.com/AdamNewberry/foxess_modbus_EVO/wiki/Invalid-Registers",
                     translation_key="invalid_ranges",
                     translation_placeholders={
                         "friendly_name": self.inverter_details[FRIENDLY_NAME],

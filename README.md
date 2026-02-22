@@ -1,71 +1,67 @@
-# FoxESS - Modbus
+# FoxESS - Modbus (EVO)
 
 [![GitHub Release][releases-shield]][releases]
-[![BuyMeCoffee][buymecoffeebadge]][buymecoffee]
-[![Community Forum][forum-shield]][forum]
+[![HACS Custom][hacs-shield]][hacs]
 
 \*\* **This project is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by FoxESS** \*\*
 
-## Introduction
+## About
 
-A Home Assistant custom component which communicates with FoxESS H-series inverters and derivatives without using FoxESS's cloud.
+This is a fork of [nathanmarlor/foxess_modbus](https://github.com/nathanmarlor/foxess_modbus) — a Home Assistant custom component for communicating with FoxESS inverters locally via Modbus, without relying on FoxESS's cloud.
 
-This means that you're not reliant on FoxESS's cloud infrastructure, so HA keeps working when the cloud goes down.
-You can also read solar production etc in real-time, rather than once every 5 minutes.
+This fork adds support for the **FoxESS EVO** series of inverters, which are not yet supported upstream.
 
-Depending on your inverter model, you can also set charge periods, work mode, min/max SoC.
-See [Supported Features](https://github.com/nathanmarlor/foxess_modbus/wiki/Supported-Features).
+> **Credit:** Huge thanks to [nathanmarlor](https://github.com/nathanmarlor) and all contributors to the original [foxess_modbus](https://github.com/nathanmarlor/foxess_modbus) project. This fork builds on their excellent work.
 
-Supported models:
+## Supported Models
 
+All models from the original project, plus:
+
+- **FoxESS EVO 10-H** (new in this fork)
 - FoxESS H1 (including AC1, AIO-H1 and G2)
-- FoxESS H3 (including AC3 and AOI-H3)
+- FoxESS H3 (including AC3 and AIO-H3)
 - FoxESS H3 PRO
 - FoxESS KH
-- Kuara H3
-- Sonnenkraft SK-HWR
-- STAR
-- Solavita SP
-- a-TroniX AX
-- Enpal
-- 1KOMMA5°
+- Kuara H3, Sonnenkraft SK-HWR, STAR, Solavita SP, a-TroniX AX, Enpal, 1KOMMA5
 
-You will need a direct connection to your inverter.
-In most cases, this means buying a modbus to ethernet/USB adapter and wiring this to a port on your inverter.
-See the documentation for details.
+## Features
 
-**[See the wiki](https://github.com/nathanmarlor/foxess_modbus/wiki) for how-to articles and FAQs.**
+- Direct local communication — no cloud dependency
+- Real-time solar production readings (vs. cloud's 5-minute delay)
+- Set charge periods, work mode, min/max SoC (model-dependent)
+- Multiple connection types: Modbus TCP/UDP/Serial via AUX or LAN port
+
+You will need a direct connection to your inverter. In most cases, this means buying a modbus to ethernet/USB adapter and wiring it to a port on your inverter. See the [upstream wiki](https://github.com/nathanmarlor/foxess_modbus/wiki) for adapter guides and setup instructions.
 
 ## Installation
 
-[![Quick installation link](https://my.home-assistant.io/badges/hacs_repository.svg)][my-hacs]
+This integration is installed as a **HACS custom repository** (it is not in the default HACS store).
 
-Migrating from StealthChesnut's HA-FoxESS-Modbus? [Read this](https://github.com/nathanmarlor/foxess_modbus/wiki/Migrating-from-HA-FoxESS-Modbus).
+1. Open HACS in Home Assistant
+2. Click the three dots menu (top right) > **Custom repositories**
+3. Add this URL: `https://github.com/AdamNewberry/foxess_modbus_EVO`
+4. Category: **Integration**
+5. Click **Add**, then find "FoxESS - Modbus (EVO)" and download it
+6. Restart Home Assistant
+7. Go to **Settings > Devices & Services > Add Integration**
+8. Search for "FoxESS - Modbus (EVO)"
+9. Follow the configuration wizard
 
-Recommended installation is through [HACS][hacs]:
-
-1. Either [use this link][my-hacs], or navigate to HACS integration and:
-   - 'Explore & Download Repositories'
-   - Search for 'FoxESS - Modbus'
-   - Download
-2. Restart Home Assistant
-3. Go to Settings > Devices and Services > Add Integration
-4. Search for and select 'FoxESS - Modbus' (If the integration is not found, empty your browser cache and reload the page)
-5. Proceed with the configuration
+> **Note:** If you have the original `foxess_modbus` integration installed, this fork uses a different domain (`foxess_modbus_evo`) so they will not conflict. However, running both simultaneously against the same inverter is not recommended.
 
 ## Usage
 
-1. Navigate to Settings -> Devices & Services to find:
+1. Navigate to **Settings > Devices & Services** to find:
 
 ![Usage](images/usage.png)
 
-2. Select '1 device' to find all Modbus readings:
+1. Select "1 device" to find all Modbus readings:
 
 ![Example](images/example.png)
 
 ## Charge Periods
 
-If your inverter supports setting charge periods, you can use install the [Charge Periods lovelace card](https://github.com/nathanmarlor/foxess_modbus_charge_period_card):
+If your inverter supports setting charge periods, you can install the [Charge Periods lovelace card](https://github.com/nathanmarlor/foxess_modbus_charge_period_card).
 
 ![Charge Periods](images/charge-periods.png)
 
@@ -73,7 +69,7 @@ If your inverter supports setting charge periods, you can use install the [Charg
 
 ### Write Service
 
-A service to write any modbus address is available, similar to the native Home Assistant service. To use a service, navigate to Developer Tools -> Services and select it from the drop-down.
+A service to write any modbus address is available. Navigate to **Developer Tools > Services** and select it from the drop-down.
 
 ![Service](images/svc-write.png)
 
@@ -85,17 +81,19 @@ Updates one of the two charge periods (if supported by your inverter).
 
 ### Update All Charge Periods
 
-Sets all charge periods in one service call. The service "Update Charge Period" is easier for end-users to use.
+Sets all charge periods in one service call.
 
 ![Service](images/svc-charge-2.png)
 
+## Documentation
+
+For adapter setup guides, wiring instructions, and FAQs, see the [upstream wiki](https://github.com/nathanmarlor/foxess_modbus/wiki). Most of the documentation there applies to this fork as well.
+
+For EVO-specific issues, please [open an issue](https://github.com/AdamNewberry/foxess_modbus_EVO/issues) on this repository.
+
 ---
 
-[buymecoffee]: https://www.buymeacoffee.com/nathanmarlor
-[buymecoffeebadge]: https://img.shields.io/badge/buy%20me%20a%20coffee-donate-yellow.svg?style=for-the-badge
 [hacs]: https://hacs.xyz
-[my-hacs]: https://my.home-assistant.io/redirect/hacs_repository/?owner=nathanmarlor&repository=foxess_modbus&category=integration
-[forum-shield]: https://img.shields.io/badge/community-forum-brightgreen.svg?style=for-the-badge
-[forum]: https://community.home-assistant.io/
-[releases-shield]: https://img.shields.io/github/release/nathanmarlor/foxess_modbus.svg?style=for-the-badge
-[releases]: https://github.com/nathanmarlor/foxess_modbus/releases
+[hacs-shield]: https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge
+[releases-shield]: https://img.shields.io/github/release/AdamNewberry/foxess_modbus_EVO.svg?style=for-the-badge
+[releases]: https://github.com/AdamNewberry/foxess_modbus_EVO/releases

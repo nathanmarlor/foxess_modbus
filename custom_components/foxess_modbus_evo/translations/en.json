@@ -8,7 +8,7 @@
         }
       },
       "select_adapter_model": {
-        "description": "Choose your adapter model. This lets us use settings tailored to your adapter. If you don't see your model, choose \"Other\" and let us know: https://github.com/nathanmarlor/foxess_modbus/discussions/new.",
+        "description": "Choose your adapter model. This lets us use settings tailored to your adapter. If you don't see your model, choose \"Other\" and let us know: https://github.com/AdamNewberry/foxess_modbus_EVO/discussions/new.",
         "data": {
           "adapter_model": "Adapter Model"
         }
@@ -106,7 +106,7 @@
         }
       },
       "select_adapter_model": {
-        "description": "Choose your adapter model. This lets us use settings tailored to your adapter. If you don't see your model, choose \"Other\" and let us know: https://github.com/nathanmarlor/foxess_modbus/discussions/new.",
+        "description": "Choose your adapter model. This lets us use settings tailored to your adapter. If you don't see your model, choose \"Other\" and let us know: https://github.com/AdamNewberry/foxess_modbus_EVO/discussions/new.",
         "data": {
           "adapter_id": ""
         }
@@ -208,7 +208,7 @@
     },
     "invalid_ranges": {
       "title": "Invalid registers detected",
-      "description": "Inverter (friendly name: \"{friendly_name}\") has some registers which we expect to read, but can't. Details: {ranges}. Please visit https://github.com/nathanmarlor/foxess_modbus/wiki/Invalid-Registers."
+      "description": "Inverter (friendly name: \"{friendly_name}\") has some registers which we expect to read, but can't. Details: {ranges}. Please visit https://github.com/AdamNewberry/foxess_modbus_EVO/wiki/Invalid-Registers."
     }
   }
 }

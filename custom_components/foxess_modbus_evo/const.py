@@ -1,11 +1,11 @@
-"""Constants for foxess_modbus."""
+"""Constants for foxess_modbus_evo."""
 
 # Base component constants
-NAME = "foxess_modbus"
-DOMAIN = "foxess_modbus"
+NAME = "foxess_modbus_evo"
+DOMAIN = "foxess_modbus_evo"
 DOMAIN_DATA = f"{DOMAIN}_data"
 
-ISSUE_URL = "https://github.com/nathanmarlor/foxess_modbus/issues"
+ISSUE_URL = "https://github.com/AdamNewberry/foxess_modbus_EVO/issues"
 
 # Icons
 ICON = "mdi:format-quote-close"
@@ -66,7 +66,7 @@ INVERTER = "inverter"
 CONNECTION = "connection"
 MODBUS = "modbus"
 
-CONFIG_ENTRY_TITLE = "FoxESS - Modbus"
+CONFIG_ENTRY_TITLE = "FoxESS - Modbus (EVO)"
 
 # Defaults
 DEFAULT_NAME = DOMAIN

@@ -12,17 +12,17 @@ from homeassistant.core import HomeAssistant
 from syrupy.assertion import SnapshotAssertion
 from syrupy.extensions.json import JSONSnapshotExtension
 
-from custom_components.foxess_modbus.common.entity_controller import ModbusControllerEntity
-from custom_components.foxess_modbus.common.types import ConnectionType
-from custom_components.foxess_modbus.common.types import InverterModel
-from custom_components.foxess_modbus.const import ENTITY_ID_PREFIX
-from custom_components.foxess_modbus.const import INVERTER_BASE
-from custom_components.foxess_modbus.const import INVERTER_CONN
-from custom_components.foxess_modbus.const import UNIQUE_ID_PREFIX
-from custom_components.foxess_modbus.entities.entity_descriptions import ENTITIES
-from custom_components.foxess_modbus.inverter_profiles import INVERTER_PROFILES
-from custom_components.foxess_modbus.inverter_profiles import Version
-from custom_components.foxess_modbus.inverter_profiles import create_entities
+from custom_components.foxess_modbus_evo.common.entity_controller import ModbusControllerEntity
+from custom_components.foxess_modbus_evo.common.types import ConnectionType
+from custom_components.foxess_modbus_evo.common.types import InverterModel
+from custom_components.foxess_modbus_evo.const import ENTITY_ID_PREFIX
+from custom_components.foxess_modbus_evo.const import INVERTER_BASE
+from custom_components.foxess_modbus_evo.const import INVERTER_CONN
+from custom_components.foxess_modbus_evo.const import UNIQUE_ID_PREFIX
+from custom_components.foxess_modbus_evo.entities.entity_descriptions import ENTITIES
+from custom_components.foxess_modbus_evo.inverter_profiles import INVERTER_PROFILES
+from custom_components.foxess_modbus_evo.inverter_profiles import Version
+from custom_components.foxess_modbus_evo.inverter_profiles import create_entities
 
 
 @pytest.fixture

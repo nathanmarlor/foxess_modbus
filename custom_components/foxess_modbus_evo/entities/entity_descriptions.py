@@ -9,7 +9,7 @@ from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorStateClass
 from homeassistant.const import UnitOfTime
 
-from custom_components.foxess_modbus.entities.base_validator import BaseValidator
+from custom_components.foxess_modbus_evo.entities.base_validator import BaseValidator
 
 from ..common.types import Inv
 from ..common.types import RegisterType
@@ -517,7 +517,7 @@ def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
             ModbusAddressesSpec(input=[11023], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31016], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2_SET | Inv.KH_133),
             ModbusAddressesSpec(holding=[31054, 31053], models=Inv.KH_PRE133),
-            ModbusAddressesSpec(holding=[39226, 39225], models=Inv.EVO_10_H)
+            ModbusAddressesSpec(holding=[39226, 39225], models=Inv.EVO_10_H),
         ],
         name="Load Power",
         device_class=SensorDeviceClass.POWER,
@@ -767,7 +767,6 @@ def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[11021], models=Inv.H1_G1),
             ModbusAddressesSpec(holding=[31014], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2_SET),
-            ModbusAddressesSpec(holding=[39169, 39168], models=Inv.KH_133),
             ModbusAddressesSpec(holding=[39169, 39168], models=Inv.KH_133 | Inv.EVO_10_H),
         ],
         scale=0.001,
@@ -1577,8 +1576,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
                 holding=[31019], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2_SET | Inv.KH_PRE133 | Inv.KH_133
             ),
             ModbusAddressesSpec(holding=[31033], models=Inv.H3_SET),
-            # EVO
-            #ModbusAddressesSpec(holding=[39142], models=Inv.EVO_10_H),
+            ModbusAddressesSpec(holding=[39142], models=Inv.EVO_10_H),
         ],
         name="Ambient Temp",
         device_class=SensorDeviceClass.TEMPERATURE,

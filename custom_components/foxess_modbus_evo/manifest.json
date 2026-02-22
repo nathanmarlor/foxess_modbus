@@ -1,0 +1,12 @@
+{
+  "domain": "foxess_modbus_evo",
+  "name": "FoxESS - Modbus (EVO)",
+  "codeowners": ["@AdamNewberry"],
+  "config_flow": true,
+  "dependencies": ["energy", "integration", "logbook"],
+  "documentation": "https://github.com/AdamNewberry/foxess_modbus_EVO",
+  "integration_type": "service",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/AdamNewberry/foxess_modbus_EVO/issues",
+  "version": "0.0.0"
+}

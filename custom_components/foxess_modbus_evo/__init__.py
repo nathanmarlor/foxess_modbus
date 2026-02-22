@@ -1,8 +1,8 @@
 """
-Custom integration to integrate FoxESS Modbus with Home Assistant.
+Custom integration to integrate FoxESS Modbus (EVO) with Home Assistant.
 
-For more details about this integration, please refer to
-https://github.com/nathanmarlor/foxess_modbus
+Fork of nathanmarlor/foxess_modbus with FoxESS EVO inverter support.
+https://github.com/AdamNewberry/foxess_modbus_EVO
 """
 
 import asyncio
