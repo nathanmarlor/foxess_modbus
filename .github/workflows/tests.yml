@@ -8,7 +8,7 @@ on:
       - develop
   pull_request:
   schedule:
-    - cron: "0 0 * * *"
+  workflow_dispatch:
 
 env:
   DEFAULT_PYTHON: "3.13"
