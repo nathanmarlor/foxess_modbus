@@ -7,7 +7,6 @@ on:
       - master
       - develop
   pull_request:
-  schedule:
   workflow_dispatch:
 
 env:
