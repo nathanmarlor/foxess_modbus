@@ -1,4 +1,4 @@
-name: Linting
+name: Linting & Testing
 
 on:
   push:
@@ -13,49 +13,51 @@ env:
   DEFAULT_PYTHON: "3.14"
 
 jobs:
-  pre-commit:
-    runs-on: "ubuntu-latest"
-    name: Pre-commit and pytest
+  # 1. Job: Statische Code-Analyse
+  linting:
+    runs-on: ubuntu-latest
     steps:
-      - name: Check out the repository
-        uses: actions/checkout@v3.5.3
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+      - name: Install pre-commit
+        run: pip install pre-commit
+      - name: Run pre-commit
+        run: pre-commit run --all-files --show-diff-on-failure --color=always
 
-      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
-        uses: actions/setup-python@v4.6.1
+  # 2. Job: Funktionale Tests (läuft parallel zu Linting)
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON }}
           cache: pip
-
-      - name: Install Python modules
+      - name: Install dependencies
         run: |
           pip install -r requirements.txt
-
-      - name: Run pre-commit on all files
-        run: |
-          pre-commit run --all-files --show-diff-on-failure --color=always
-
+          pip install pytest
       - name: Run pytest
-        run: |
-          python -m pytest
+        run: python -m pytest
 
+  # 3. Job: HACS Validierung
   hacs:
-    runs-on: "ubuntu-latest"
-    name: HACS
+    runs-on: ubuntu-latest
     steps:
-      - name: Check out the repository
-        uses: "actions/checkout@v3.5.3"
-
+      - uses: actions/checkout@v4
       - name: HACS validation
         uses: "hacs/action@22.5.0"
         with:
           category: "integration"
 
+  # 4. Job: Home Assistant Hassfest
   hassfest:
-    runs-on: "ubuntu-latest"
-    name: Hassfest
+    runs-on: ubuntu-latest
     steps:
-      - name: Check out the repository
-        uses: "actions/checkout@v3.5.3"
-
+      - uses: actions/checkout@v4
       - name: Hassfest validation
         uses: "home-assistant/actions/hassfest@master"
