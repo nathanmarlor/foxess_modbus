@@ -7,6 +7,7 @@ from typing import Protocol
 from typing import cast
 
 from homeassistant.const import Platform
+from homeassistant.util import slugify
 from homeassistant.helpers import entity_registry
 from homeassistant.helpers.entity import ABCCachedProperties
 from homeassistant.helpers.entity import DeviceInfo
@@ -51,7 +52,7 @@ def _add_entity_id_prefix(key: str, inv_details: dict[str, Any]) -> str:
     if entity_id_prefix:
         key = f"{entity_id_prefix}_{key}"
 
-    return key
+    return slugify(key, separator="_")
 
 
 def _create_unique_id(key: str, inv_details: dict[str, Any]) -> str:
