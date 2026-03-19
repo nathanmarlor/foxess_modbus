@@ -376,6 +376,15 @@ _INVERTER_PROFILES_LIST = [
         special_registers=H3_REGISTERS,
     ),
     # Sonnenkraft:
+    # SK-HWR-8 Smart: H3-8.0-Smart
+    # (presumably there are other sizes also)
+    InverterModelProfile(InverterModel.SK_HWR_SMART, r"^SK-HWR-([\d\.]+) SMART").add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={None: Inv.H3_SMART},
+        special_registers=H3_SMART_REGISTERS,
+    ),
+    # Sonnenkraft:
     # SK-HWR-8: H3-8.0-E
     # (presumably there are other sizes also)
     InverterModelProfile(InverterModel.SK_HWR, r"^SK-HWR-([\d\.]+)").add_connection_type(
