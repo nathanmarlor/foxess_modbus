@@ -7,11 +7,11 @@ from typing import Protocol
 from typing import cast
 
 from homeassistant.const import Platform
-from homeassistant.util import slugify
 from homeassistant.helpers import entity_registry
 from homeassistant.helpers.entity import ABCCachedProperties
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity import Entity
+from homeassistant.util import slugify
 from propcache import cached_property
 
 from ..common.entity_controller import EntityController

@@ -8,7 +8,7 @@
         }
       },
       "select_adapter_model": {
-        "description": "Choose your adapter model. This lets us use settings tailored to your adapter. If you don't see your model, choose \"Other\" and let us know: https://github.com/nathanmarlor/foxess_modbus/discussions/new.",
+        "description": "Choose your adapter model. This lets us use settings tailored to your adapter. If you don't see your model, choose \"Other\" and let us know: {discussions_link}.",
         "data": {
           "adapter_model": "Adapter Model"
         }
@@ -58,7 +58,7 @@
         }
       },
       "energy": {
-        "description": "Warning: this will overwrite any existing settings.\nWe recommend checking the configuration at https://my.home-assistant.io/redirect/config_energy.",
+        "description": "Warning: this will overwrite any existing settings.\nWe recommend checking the configuration at {energy_link}.",
         "data": {
           "energy_dashboard": "Automatically configure the Energy Dashboard"
         }
@@ -106,7 +106,7 @@
         }
       },
       "select_adapter_model": {
-        "description": "Choose your adapter model. This lets us use settings tailored to your adapter. If you don't see your model, choose \"Other\" and let us know: https://github.com/nathanmarlor/foxess_modbus/discussions/new.",
+        "description": "Choose your adapter model. This lets us use settings tailored to your adapter. If you don't see your model, choose \"Other\" and let us know: {discussions_link}.",
         "data": {
           "adapter_id": ""
         }
@@ -208,7 +208,7 @@
     },
     "invalid_ranges": {
       "title": "Invalid registers detected",
-      "description": "Inverter (friendly name: \"{friendly_name}\") has some registers which we expect to read, but can't. Details: {ranges}. Please visit https://github.com/nathanmarlor/foxess_modbus/wiki/Invalid-Registers."
+      "description": "Inverter (friendly name: \"{friendly_name}\") has some registers which we expect to read, but can't. Details: {ranges}. Please visit the link below for more information."
     }
   }
 }
