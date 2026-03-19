@@ -21,7 +21,7 @@ jobs:
           version: ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
       - name: Patch manifest and zip
         run: |
           TAG=${{ github.ref_NAME }}
