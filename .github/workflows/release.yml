@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Create release
         id: create_release
-        uses: release-drafter/release-drafter@v6.1.0
+        uses: release-drafter/release-drafter@v7.1.1
         with:
           name: ${{ github.ref_name }}
           tag: ${{ github.ref_name }}
