@@ -265,9 +265,9 @@ class InverterModelProfile:
 
 # NOTE: If the inverter support LAN and AUX identically, just specify AUX
 _INVERTER_PROFILES_LIST = [
-    # E.g. H1-5.0-E-G2. Has to appear before H1_G1.
+    # E.g. H1-5.0-E-G2 or H1-5.0-E1-G2. Has to appear before H1_G1.
     InverterModelProfile(
-        InverterModel.H1_G2, r"^H1-([\d\.]+)-E-G2", capacity_parser=CapacityParser.H1
+        InverterModel.H1_G2, r"^H1-([\d\.]+)-E\d?-G2", capacity_parser=CapacityParser.H1
     ).add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
