@@ -55,8 +55,8 @@ class InverterModel(StrEnum):
     ATRONIX_AX = "ATRONIX_AX"
     ENPAL_IX = "ENPAL_IX"
     ONE_KOMMA_FIVE = "1KOMMA5"
-    SOLARWATT_IVO = "VSN_ONE"
-    SOLARWATT_IVT = "VSN_THREE"
+    SOLARWATT_IVO = "VSN-ONE"
+    SOLARWATT_IVT = "VSN-THREE"
 
     H3_PRO = "H3_PRO"
     H3_SMART = "H3_SMART"
@@ -75,7 +75,7 @@ class Inv(Flag):
     H1_G2_144 = auto()
     H1_G2_SET = H1_G2_PRE144 | H1_G2_144
 
-    SWTT_IVO = auto()
+    SOLARWATT_IVO = auto()
 
     KH_PRE119 = auto()
     KH_PRE133 = auto()
@@ -95,7 +95,7 @@ class Inv(Flag):
 
     H3_SMART = auto()
 
-    ALL = H1_LAN | H1_G1 | H1_G2_SET | KH_SET | H3_SET | H3_PRO_SET | H3_SMART | SWTT_IVO
+    ALL = H1_LAN | H1_G1 | H1_G2_SET | KH_SET | H3_SET | H3_PRO_SET | H3_SMART | SOLARWATT_IVO
 
 
 class RegisterPollType(IntEnum):
