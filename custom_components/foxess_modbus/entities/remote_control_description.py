@@ -146,7 +146,7 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 pwr_limit_bat_up=[46021, 46020],
                 pv_voltages=[39070, 39072, 39074, 39076],  # only two MPPTs so 39078, 39080 are unused
             ),
-            models=Inv.SOLARWATT_IVO,
+            models=Inv.VSN_ONE,
         ),
     ]
 )

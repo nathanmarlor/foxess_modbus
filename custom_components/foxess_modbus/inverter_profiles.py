@@ -472,7 +472,7 @@ _INVERTER_PROFILES_LIST = [
     InverterModelProfile(InverterModel.VSN_ONE, r"^VSN ONE ([\d\.]+)KW(?:-[A-Z]{2})?$").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
-        versions={None: Inv.SOLARWATT_IVO},
+        versions={None: Inv.VSN_ONE},
         special_registers=H3_SMART_REGISTERS,
     ),
     # SOLARWATT Inverter vision three 1.0 series
