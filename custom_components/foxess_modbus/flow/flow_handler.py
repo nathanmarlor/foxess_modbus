@@ -183,7 +183,15 @@ class FlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMAIN):
             }
         )
 
-        return await self.with_default_form(body, user_input, "energy", schema)
+        return await self.with_default_form(
+            body,
+            user_input,
+            "energy",
+            schema,
+            description_placeholders={
+                "energy_link": "https://my.home-assistant.io/redirect/config_energy",
+            },
+        )
 
     def _create_entry_data(self) -> dict[str, Any]:
         """Create the config entry for all inverters in self._all_inverters"""

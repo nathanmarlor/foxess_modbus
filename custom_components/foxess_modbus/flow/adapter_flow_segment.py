@@ -120,6 +120,9 @@ class AdapterFlowSegment:
             "select_adapter_model",
             schema,
             suggested_values=suggested_values,
+            description_placeholders={
+                "discussions_link": "https://github.com/nathanmarlor/foxess_modbus/discussions/new",
+            },
         )
 
     async def async_step_tcp_adapter(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
