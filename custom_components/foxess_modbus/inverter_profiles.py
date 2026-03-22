@@ -453,7 +453,7 @@ _INVERTER_PROFILES_LIST = [
     # Models: VSN ONE 3KW, VSN ONE 3.7KW, VSN ONE 4.6KW, VSN ONE 5KW, VSN ONE 5KW-NL, VSN ONE 6KW, VSN ONE 6KW-FR
     # (The FR and NL ones are SKUs for France and Netherlands grid compliance)
     # see https://github.com/nathanmarlor/foxess_modbus/discussions/873
-    InverterModelProfile(InverterModel.SOLARWATT_IVO, r"^VSN ONE ([\d\.]+)KW(?:-[A-Z]{2})?$").add_connection_type(
+    InverterModelProfile(InverterModel.VSN_ONE, r"^VSN ONE ([\d\.]+)KW(?:-[A-Z]{2})?$").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={None: Inv.SOLARWATT_IVO},
@@ -463,7 +463,7 @@ _INVERTER_PROFILES_LIST = [
     # Based on H3-SMART with some custom power electronics, firmware presets, & chassis
     # Models: VSN THREE 5KW, VSN THREE 6KW, VSN THREE 8KW, VSN THREE 9.9KW, VSN THREE 10KW, VSN THREE 12KW,
     # VSN THREE 15KW
-    InverterModelProfile(InverterModel.SOLARWATT_IVT, r"^VSN THREE ([\d\.]+)KW$").add_connection_type(
+    InverterModelProfile(InverterModel.VSN_THREE, r"^VSN THREE ([\d\.]+)KW$").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={None: Inv.H3_SMART},
