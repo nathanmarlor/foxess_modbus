@@ -123,7 +123,7 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 max_soc=46610,
                 invbatpower=[39238, 39237],
                 battery_soc=[37612, 38310],
-                pwr_limit_bat_up=[46019, 46018],
+                pwr_limit_bat_up=[46021, 46020],
                 pv_voltages=[39070, 39072, 39074, 39076, 39078, 39080],
             ),
             models=Inv.H3_PRO_SET | Inv.H3_SMART,
@@ -143,7 +143,7 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 max_soc=46610,
                 invbatpower=[39238, 39237],
                 battery_soc=[37612, 38310],
-                pwr_limit_bat_up=[46019, 46018],
+                pwr_limit_bat_up=[46021, 46020],
                 pv_voltages=[39070, 39072, 39074, 39076],  # only two MPPTs so 39078, 39080 are unused
             ),
             models=Inv.SWTT_IVO,
