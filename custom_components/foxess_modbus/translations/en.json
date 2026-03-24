@@ -96,7 +96,8 @@
         "menu_options": {
           "select_adapter_type": "Network settings",
           "version_settings": "Version settings",
-          "inverter_advanced_options": "Advanced settings"
+          "inverter_advanced_options": "Advanced settings",
+          "add_another_inverter": "Add Inverter"
         }
       },
       "select_adapter_type": {

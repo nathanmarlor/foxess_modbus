@@ -1,4 +1,5 @@
 import copy
+import uuid
 from typing import Any
 
 import voluptuous as vol
@@ -19,6 +20,7 @@ from ..inverter_profiles import Version
 from ..inverter_profiles import inverter_connection_type_profile_from_config
 from .adapter_flow_segment import AdapterFlowSegment
 from .flow_handler_mixin import FlowHandlerMixin
+from .inverter_data import InverterData
 
 
 class OptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
@@ -78,8 +80,35 @@ class OptionsHandler(FlowHandlerMixin, config_entries.OptionsFlow):
         if len(versions) > 1:
             options.append("version_settings")
         options.append("inverter_advanced_options")
+        options.append("add_another_inverter")
 
         return self.async_show_menu(step_id="inverter_options_category", menu_options=options)
+
+    async def async_step_add_another_inverter(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """Allow the user to add an additional inverter to an existing entry."""
+
+        async def add_inverter_complete() -> ConfigFlowResult:
+            assert self._adapter_segment is not None
+
+            # Add inverter to the config entry itself (inverted data), not options
+            new_inverter_id = str(uuid.uuid4())
+            new_entry_data = copy.deepcopy(dict(self._config.data))
+            new_entry_data.setdefault(INVERTERS, {})[new_inverter_id] = self._inverter_data_to_dict(
+                self._adapter_segment.inverter_data
+            )
+            self.hass.config_entries.async_update_entry(self._config, data=new_entry_data)
+
+            self._adapter_segment = None
+            return self.async_create_entry(title=CONFIG_ENTRY_TITLE, data=copy.deepcopy(dict(self._config.options)))
+
+        if self._adapter_segment is None:
+            existing_inverters = [
+                self._dict_to_inverter_data(inverter)
+                for inverter in self._combined_config_for_all_inverters().values()
+            ]
+            self._adapter_segment = AdapterFlowSegment(self, InverterData(), existing_inverters, add_inverter_complete)
+
+        return await self._adapter_segment.async_step_select_adapter_type(user_input)
 
     async def async_step_select_adapter_type(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         async def adapter_segment_complete() -> ConfigFlowResult:

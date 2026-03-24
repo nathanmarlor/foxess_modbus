@@ -50,9 +50,8 @@ class FlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(self, _user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle a flow initialized by the user."""
 
-        await self.async_set_unique_id(DOMAIN)
-        self._abort_if_unique_id_configured()
-
+        # Allow multiple config entries for this integration, each potentially managing one or more
+        # inverters. We don't force a single UID to avoid blocking additional instances.
         return await self.async_step_select_adapter_type()
 
     async def async_step_select_adapter_type(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
