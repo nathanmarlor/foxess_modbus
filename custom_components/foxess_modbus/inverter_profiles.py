@@ -296,6 +296,14 @@ _INVERTER_PROFILES_LIST = [
         versions={Version(1, 44): Inv.H1_G2_PRE144, None: Inv.H1_G2_144},
         special_registers=H1_G2_REGISTERS,
     ),
+     InverterModelProfile(
+        InverterModel.P1, r"^P1-([\d\.]+)-E", capacity_parser=CapacityParser.H1
+    ).add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={Version(1, 44): Inv.H1_G2_PRE144, None: Inv.H1_G2_144},
+        special_registers=H1_G2_REGISTERS,
+    ),
     InverterModelProfile(InverterModel.AC1, r"^AC1-([\d\.]+)", capacity_parser=CapacityParser.H1)
     .add_connection_type(
         ConnectionType.AUX,

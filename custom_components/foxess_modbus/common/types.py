@@ -38,6 +38,8 @@ class InverterModel(StrEnum):
     H1_G1 = "H1"  # Can't change the value, as it's set in people's configs
     H1_G2 = "H1_G2"
 
+    P1 = "P1"
+
     AC1 = "AC1"
     AC1_G2 = "AC1_G2"
     AIO_H1 = "AIO-H1"
