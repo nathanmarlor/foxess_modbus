@@ -463,6 +463,28 @@ _INVERTER_PROFILES_LIST = [
         RegisterType.HOLDING,
         versions={None: Inv.EVO},
     ),
+    # SOLARWATT Inverter vision one 1.0 series
+    # Based on H1-G2 with some custom power electronics, different networking hardware, firmware presets, & chassis
+    # Uses H3 SMART's registers adapted for single phase use (i.e. only Phase 1 /R registers are used)
+    # Models: VSN ONE 3KW, VSN ONE 3.7KW, VSN ONE 4.6KW, VSN ONE 5KW, VSN ONE 5KW-NL, VSN ONE 6KW, VSN ONE 6KW-FR
+    # (The FR and NL ones are SKUs for France and Netherlands grid compliance)
+    # see https://github.com/nathanmarlor/foxess_modbus/discussions/873
+    InverterModelProfile(InverterModel.VSN_ONE, r"^VSN ONE ([\d\.]+)KW(?:-[A-Z]{2})?$").add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={None: Inv.VSN_ONE},
+        special_registers=H3_SMART_REGISTERS,
+    ),
+    # SOLARWATT Inverter vision three 1.0 series
+    # Based on H3-SMART with some custom power electronics, firmware presets, & chassis
+    # Models: VSN THREE 5KW, VSN THREE 6KW, VSN THREE 8KW, VSN THREE 9.9KW, VSN THREE 10KW, VSN THREE 12KW,
+    # VSN THREE 15KW
+    InverterModelProfile(InverterModel.VSN_THREE, r"^VSN THREE ([\d\.]+)KW$").add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={None: Inv.H3_SMART},
+        special_registers=H3_SMART_REGISTERS,
+    ),
 ]
 
 INVERTER_PROFILES = {x.model: x for x in _INVERTER_PROFILES_LIST}

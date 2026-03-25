@@ -56,6 +56,8 @@ class InverterModel(StrEnum):
     ATRONIX_AX = "ATRONIX_AX"
     ENPAL_IX = "ENPAL_IX"
     ONE_KOMMA_FIVE = "1KOMMA5"
+    VSN_ONE = "VSN-ONE"
+    VSN_THREE = "VSN-THREE"
 
     H3_PRO = "H3_PRO"
     H3_SMART = "H3_SMART"
@@ -75,6 +77,8 @@ class Inv(Flag):
     H1_G2_PRE144 = auto()
     H1_G2_144 = auto()
     H1_G2_SET = H1_G2_PRE144 | H1_G2_144
+
+    VSN_ONE = auto()
 
     KH_PRE119 = auto()
     KH_PRE133 = auto()
@@ -96,7 +100,7 @@ class Inv(Flag):
 
     EVO = auto()
 
-    ALL = H1_LAN | H1_G1 | H1_G2_SET | KH_SET | H3_SET | H3_PRO_SET | H3_SMART | EVO
+    ALL = H1_LAN | H1_G1 | H1_G2_SET | KH_SET | H3_SET | H3_PRO_SET | H3_SMART | EVO | VSN_ONE
 
 
 class RegisterPollType(IntEnum):
