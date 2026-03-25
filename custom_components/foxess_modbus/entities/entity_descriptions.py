@@ -2533,7 +2533,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     )
     yield ModbusNumberDescription(
         key="max_charge_current",
-        address=[
+        addresses=[
             ModbusAddressSpec(input=41007, models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressSpec(
                 holding=41007,
@@ -2571,7 +2571,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     )
     yield ModbusNumberDescription(
         key="max_discharge_current",
-        address=[
+        addresses=[
             ModbusAddressSpec(input=41008, models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressSpec(
                 holding=41008,
@@ -2610,7 +2610,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     )
     yield ModbusNumberDescription(
         key="min_soc",
-        address=[
+        addresses=[
             ModbusAddressSpec(input=41009, models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressSpec(
                 holding=41009,
@@ -2649,7 +2649,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     )
     yield ModbusNumberDescription(
         key="max_soc",
-        address=[
+        addresses=[
             ModbusAddressSpec(input=41010, models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressSpec(
                 holding=41010,
@@ -2688,7 +2688,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     )
     yield ModbusNumberDescription(
         key="min_soc_on_grid",
-        address=[
+        addresses=[
             ModbusAddressSpec(input=41011, models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressSpec(
                 holding=41011,
@@ -2723,7 +2723,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     )
     yield ModbusNumberDescription(
         key="export_power_limit",
-        address=[
+        addresses=[
             ModbusAddressesSpec(holding=[46617, 46616], models=Inv.KH_133),
         ],
         name="Export Power Limit",
@@ -2753,7 +2753,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     )
     yield ModbusNumberDescription(
         key="import_power_limit",
-        address=[
+        addresses=[
             ModbusAddressesSpec(holding=[46502, 46501], models=Inv.KH_133),
         ],
         name="Import Power Limit",
