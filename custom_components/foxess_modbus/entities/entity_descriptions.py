@@ -196,7 +196,8 @@ def _pv_entities() -> Iterable[EntityFactory]:
             ModbusAddressesSpec(input=[11000], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31000], models=Inv.H1_G1 | Inv.H1_LAN | Inv.KH_PRE133 | Inv.H3_SET),
             ModbusAddressesSpec(
-                holding=[39070], models=Inv.H1_G2_SET | Inv.KH_133 | Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE
+                holding=[39070],
+                models=Inv.H1_G2_SET | Inv.KH_133 | Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE,
             ),
         ],
         name="PV1 Voltage",
@@ -214,7 +215,8 @@ def _pv_entities() -> Iterable[EntityFactory]:
         key="pv1_current",
         addresses=[
             ModbusAddressesSpec(
-                holding=[39071], models=Inv.H1_G2_SET | Inv.KH_133 | Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE
+                holding=[39071],
+                models=Inv.H1_G2_SET | Inv.KH_133 | Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE,
             ),
         ],
         name="PV1 Current",
@@ -251,7 +253,8 @@ def _pv_entities() -> Iterable[EntityFactory]:
             ModbusAddressesSpec(input=[11003], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[31003], models=Inv.H1_G1 | Inv.H1_LAN | Inv.KH_PRE133 | Inv.H3_SET),
             ModbusAddressesSpec(
-                holding=[39072], models=Inv.H1_G2_SET | Inv.KH_133 | Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE
+                holding=[39072],
+                models=Inv.H1_G2_SET | Inv.KH_133 | Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE,
             ),
         ],
         name="PV2 Voltage",
@@ -269,7 +272,8 @@ def _pv_entities() -> Iterable[EntityFactory]:
         key="pv2_current",
         addresses=[
             ModbusAddressesSpec(
-                holding=[39073], models=Inv.H1_G2_SET | Inv.KH_133 | Inv.H3_PRO_SET | Inv.H3_SMART | Inv.VSN_ONE | Inv.EVO
+                holding=[39073],
+                models=Inv.H1_G2_SET | Inv.KH_133 | Inv.H3_PRO_SET | Inv.H3_SMART | Inv.VSN_ONE | Inv.EVO,
             ),
         ],
         name="PV2 Current",
@@ -1744,7 +1748,8 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _solar_energy_total(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39602, 39601], models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
+                holding=[39602, 39601],
+                models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122,
             ),
         ],
         scale=0.01,
@@ -1792,7 +1797,8 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _solar_energy_today(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39604, 39603], models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
+                holding=[39604, 39603],
+                models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122,
             ),
         ],
         scale=0.01,
@@ -1825,8 +1831,8 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _battery_charge_total(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39606, 39605], models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
-                holding=[39606, 39605], models=Inv.H3_SMART | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
+                holding=[39606, 39605],
+                models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122,
             ),
         ],
         scale=0.01,
@@ -1871,7 +1877,8 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _battery_charge_today(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39608, 39607], models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
+                holding=[39608, 39607],
+                models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122,
             ),
         ],
         scale=0.01,
@@ -1904,7 +1911,8 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _battery_discharge_total(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39610, 39609], models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
+                holding=[39610, 39609],
+                models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122,
             ),
         ],
         scale=0.01,
@@ -1951,7 +1959,8 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _battery_discharge_today(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39612, 39611], models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
+                holding=[39612, 39611],
+                models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122,
             ),
         ],
         scale=0.01,
@@ -1985,7 +1994,8 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _feed_in_energy_total(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39614, 39613], models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
+                holding=[39614, 39613],
+                models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122,
             ),
         ],
         scale=0.01,
@@ -2032,7 +2042,8 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _feed_in_energy_today(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39616, 39615], models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
+                holding=[39616, 39615],
+                models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122,
             ),
         ],
         scale=0.01,
@@ -2066,7 +2077,8 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _grid_consumption_energy_total(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39618, 39617], models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
+                holding=[39618, 39617],
+                models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122,
             ),
         ],
         scale=0.01,
@@ -2113,7 +2125,8 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _grid_consumption_energy_today(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39620, 39619], models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
+                holding=[39620, 39619],
+                models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122,
             ),
         ],
         scale=0.01,
@@ -2147,7 +2160,8 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _total_yield_total(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39622, 39621], models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
+                holding=[39622, 39621],
+                models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122,
             ),
         ],
         scale=0.01,
@@ -2181,7 +2195,8 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _total_yield_today(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39624, 39623], models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
+                holding=[39624, 39623],
+                models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122,
             ),
         ],
         scale=0.01,
@@ -2215,7 +2230,8 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _input_energy_total(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39626, 39625], models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
+                holding=[39626, 39625],
+                models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122,
             ),
         ],
         scale=0.01,
@@ -2249,7 +2265,8 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _input_energy_today(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39628, 39627], models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
+                holding=[39628, 39627],
+                models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122,
             ),
         ],
         scale=0.01,
@@ -2285,7 +2302,8 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _load_power_total(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39630, 39629], models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
+                holding=[39630, 39629],
+                models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122,
             ),
         ],
         scale=0.01,
@@ -2336,7 +2354,8 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _load_energy_today(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39632, 39631], models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
+                holding=[39632, 39631],
+                models=Inv.H3_SMART | Inv.EVO | Inv.VSN_ONE | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122,
             ),
         ],
         scale=0.01,
