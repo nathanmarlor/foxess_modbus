@@ -60,6 +60,7 @@ class InverterModel(StrEnum):
     H3_PRO = "H3_PRO"
     H3_SMART = "H3_SMART"
 
+    P3_SMART = "P3_SMART"
     EVO = "EVO"
 
 
