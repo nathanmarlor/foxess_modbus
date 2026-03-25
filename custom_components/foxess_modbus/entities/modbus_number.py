@@ -19,7 +19,7 @@ from ..common.types import RegisterType
 from .base_validator import BaseValidator
 from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .entity_factory import EntityFactory
-from .inverter_model_spec import ModbusAddressSpec
+from .inverter_model_spec import InverterModelSpec
 from .modbus_entity_mixin import ModbusEntityMixin
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -29,7 +29,7 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 class ModbusNumberDescription(NumberEntityDescription, EntityFactory):  # type: ignore[misc]
     """Custom number entity description"""
 
-    address: list[ModbusAddressSpec]
+    addresses: list[InverterModelSpec]
     mode: NumberMode = NumberMode.AUTO
     scale: float | None = None
     post_process: Callable[[float], float] | None = None
@@ -45,11 +45,11 @@ class ModbusNumberDescription(NumberEntityDescription, EntityFactory):  # type: 
         inverter_model: Inv,
         register_type: RegisterType,
     ) -> Entity | None:
-        address = self._address_for_inverter_model(self.address, inverter_model, register_type)
-        return ModbusNumber(controller, self, address) if address is not None else None
+        addresses = self._addresses_for_inverter_model(self.addresses, inverter_model, register_type)
+        return ModbusNumber(controller, self, addresses) if addresses is not None else None
 
     def serialize(self, inverter_model: Inv, register_type: RegisterType) -> dict[str, Any] | None:
-        addresses = self._addresses_for_inverter_model(self.address, inverter_model, register_type)
+        addresses = self._addresses_for_inverter_model(self.addresses, inverter_model, register_type)
         if addresses is None:
             return None
 
@@ -69,20 +69,23 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
         self,
         controller: EntityController,
         entity_description: ModbusNumberDescription,
-        address: int,
+        addresses: list[int],
     ) -> None:
         """Initialize the sensor."""
 
         self._controller = controller
         self.entity_description = entity_description
-        self._address = address
+        self._addresses = addresses
+        self._pending_value: float | None = None
         self.entity_id = self._get_entity_id(Platform.NUMBER)
 
     @property
     def native_value(self) -> int | float | None:
         """Return the value reported by the sensor."""
+        if self._pending_value is not None:
+            return self._pending_value
         entity_description = cast(ModbusNumberDescription, self.entity_description)
-        value: float | int | None = self._controller.read(self._address, signed=False)
+        value: float | int | None = self._controller.read(self._addresses, signed=False)
         original = value
         if value is None:
             return None
@@ -110,13 +113,31 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
                 min(self.entity_description.native_max_value, value),
             )
 
-        if entity_description.scale is not None:
-            value = value / entity_description.scale
+        # Show the new value immediately in the UI. Without this, if a poll fires
+        # during a slow write (~10s for some KH_133 registers), native_value would
+        # return the stale read_value and the UI would jump back to the old value.
+        self._pending_value = value
+        self.async_write_ha_state()
 
-        int_value = int(round(value))
+        try:
+            if entity_description.scale is not None:
+                value = value / entity_description.scale
 
-        await self._controller.write_register(self._address, int_value)
+            int_value = int(round(value))
+
+            if len(self._addresses) == 1:
+                await self._controller.write_register(self._addresses[0], int_value)
+            else:
+                # I32: self._addresses follows read() convention: [low_word_reg, high_word_reg]
+                # write_registers(start, [v0, v1]) writes v0→start, v1→start+1
+                # so start from the high-word register (index 1) and write [hi, lo]
+                high_word_reg = self._addresses[1]
+                hi = (int_value >> 16) & 0xFFFF
+                lo = int_value & 0xFFFF
+                await self._controller.write_registers(high_word_reg, [hi, lo])
+        finally:
+            self._pending_value = None
 
     @property
     def addresses(self) -> list[int]:
-        return [self._address]
+        return self._addresses

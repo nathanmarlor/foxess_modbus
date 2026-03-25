@@ -195,8 +195,8 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             await self._write_active_power(-max_import_power)
             return
 
-        max_battery_charge_power = -max_battery_charge_power_negative
-        current_battery_charge_power = -current_battery_charge_power_negative
+        max_battery_charge_power = abs(max_battery_charge_power_negative)
+        current_battery_charge_power = abs(current_battery_charge_power_negative)
 
         # If the BMS has decided not to charge the battery (which it might do if it's almost full), then don't try and
         # be clever.

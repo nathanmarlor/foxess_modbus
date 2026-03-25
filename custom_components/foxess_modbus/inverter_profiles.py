@@ -265,9 +265,9 @@ class InverterModelProfile:
 
 # NOTE: If the inverter support LAN and AUX identically, just specify AUX
 _INVERTER_PROFILES_LIST = [
-    # E.g. H1-5.0-E-G2. Has to appear before H1_G1.
+    # E.g. H1-5.0-E-G2 or H1-5.0-E1-G2. Has to appear before H1_G1.
     InverterModelProfile(
-        InverterModel.H1_G2, r"^H1-([\d\.]+)-E-G2", capacity_parser=CapacityParser.H1
+        InverterModel.H1_G2, r"^H1-([\d\.]+)-E\d?-G2", capacity_parser=CapacityParser.H1
     ).add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
@@ -383,6 +383,15 @@ _INVERTER_PROFILES_LIST = [
         special_registers=H3_REGISTERS,
     ),
     # Sonnenkraft:
+    # SK-HWR-8 Smart: H3-8.0-Smart
+    # (presumably there are other sizes also)
+    InverterModelProfile(InverterModel.SK_HWR_SMART, r"^SK-HWR-([\d\.]+) SMART").add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={None: Inv.H3_SMART},
+        special_registers=H3_SMART_REGISTERS,
+    ),
+    # Sonnenkraft:
     # SK-HWR-8: H3-8.0-E
     # (presumably there are other sizes also)
     InverterModelProfile(InverterModel.SK_HWR, r"^SK-HWR-([\d\.]+)").add_connection_type(
@@ -453,6 +462,13 @@ _INVERTER_PROFILES_LIST = [
         RegisterType.HOLDING,
         versions={None: Inv.H3_SMART},
         special_registers=H3_SMART_REGISTERS,
+    ),
+    # FoxESS EVO series
+    # E.g. EVO 10-5.0-H
+    InverterModelProfile(InverterModel.EVO, r"^EVO \d+-([\d\.]+)-H$").add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={None: Inv.EVO},
     ),
 ]
 
