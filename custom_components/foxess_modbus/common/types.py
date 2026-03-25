@@ -92,9 +92,8 @@ class Inv(Flag):
     H3_PRO_SET = H3_PRO_PRE122 | H3_PRO_122
 
     H3_SMART = auto()
-    P3_SMART = auto()
 
-    ALL = H1_LAN | H1_G1 | H1_G2_SET | KH_SET | H3_SET | H3_PRO_SET | H3_SMART | P3_SMART
+    ALL = H1_LAN | H1_G1 | H1_G2_SET | KH_SET | H3_SET | H3_PRO_SET | H3_SMART
 
 
 class RegisterPollType(IntEnum):
