@@ -2707,6 +2707,66 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         validate=[Range(0, 100)],
     )
 
+    # Register 46616+46617: Export Power Limit (I32 in watts, KH_133 only)
+    # Address list order [46617, 46616]: low-word register first (controller.read() convention)
+    yield ModbusSensorDescription(
+        key="export_power_limit",
+        addresses=[
+            ModbusAddressesSpec(holding=[46617, 46616], models=Inv.KH_133),
+        ],
+        name="Export Power Limit",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="W",
+        icon="mdi:transmission-tower-export",
+        validate=[Range(0, 99999)],
+    )
+    yield ModbusNumberDescription(
+        key="export_power_limit",
+        address=[
+            ModbusAddressesSpec(holding=[46617, 46616], models=Inv.KH_133),
+        ],
+        name="Export Power Limit",
+        mode=NumberMode.BOX,
+        native_min_value=0,
+        native_max_value=99999,
+        native_step=1,
+        native_unit_of_measurement="W",
+        device_class=NumberDeviceClass.POWER,
+        icon="mdi:transmission-tower-export",
+        validate=[Range(0, 99999)],
+    )
+
+    # Register 46501+46502: Import Power Limit (I32 in watts, KH_133 only)
+    # Address list order [46502, 46501]: low-word register first (controller.read() convention)
+    yield ModbusSensorDescription(
+        key="import_power_limit",
+        addresses=[
+            ModbusAddressesSpec(holding=[46502, 46501], models=Inv.KH_133),
+        ],
+        name="Import Power Limit",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="W",
+        icon="mdi:transmission-tower-import",
+        validate=[Range(0, 99999)],
+    )
+    yield ModbusNumberDescription(
+        key="import_power_limit",
+        address=[
+            ModbusAddressesSpec(holding=[46502, 46501], models=Inv.KH_133),
+        ],
+        name="Import Power Limit",
+        mode=NumberMode.BOX,
+        native_min_value=0,
+        native_max_value=99999,
+        native_step=1,
+        native_unit_of_measurement="W",
+        device_class=NumberDeviceClass.POWER,
+        icon="mdi:transmission-tower-import",
+        validate=[Range(0, 99999)],
+    )
+
 
 ENTITIES: list[EntityFactory] = sorted(
     itertools.chain(

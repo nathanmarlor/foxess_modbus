@@ -19,7 +19,7 @@ from ..common.types import RegisterType
 from .base_validator import BaseValidator
 from .entity_factory import ENTITY_DESCRIPTION_KWARGS
 from .entity_factory import EntityFactory
-from .inverter_model_spec import ModbusAddressSpec
+from .inverter_model_spec import InverterModelSpec
 from .modbus_entity_mixin import ModbusEntityMixin
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -29,7 +29,7 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 class ModbusNumberDescription(NumberEntityDescription, EntityFactory):  # type: ignore[misc]
     """Custom number entity description"""
 
-    address: list[ModbusAddressSpec]
+    address: list[InverterModelSpec]
     mode: NumberMode = NumberMode.AUTO
     scale: float | None = None
     post_process: Callable[[float], float] | None = None
@@ -45,8 +45,8 @@ class ModbusNumberDescription(NumberEntityDescription, EntityFactory):  # type: 
         inverter_model: Inv,
         register_type: RegisterType,
     ) -> Entity | None:
-        address = self._address_for_inverter_model(self.address, inverter_model, register_type)
-        return ModbusNumber(controller, self, address) if address is not None else None
+        addresses = self._addresses_for_inverter_model(self.address, inverter_model, register_type)
+        return ModbusNumber(controller, self, addresses) if addresses is not None else None
 
     def serialize(self, inverter_model: Inv, register_type: RegisterType) -> dict[str, Any] | None:
         addresses = self._addresses_for_inverter_model(self.address, inverter_model, register_type)
@@ -69,7 +69,7 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
         self,
         controller: EntityController,
         entity_description: ModbusNumberDescription,
-        address: int,
+        address: list[int],
     ) -> None:
         """Initialize the sensor."""
 
@@ -115,8 +115,17 @@ class ModbusNumber(ModbusEntityMixin, NumberEntity):
 
         int_value = int(round(value))
 
-        await self._controller.write_register(self._address, int_value)
+        if len(self._address) == 1:
+            await self._controller.write_register(self._address[0], int_value)
+        else:
+            # I32: self._address follows read() convention: [low_word_reg, high_word_reg]
+            # write_registers(start, [v0, v1]) writes v0→start, v1→start+1
+            # so start from the high-word register (index 1) and write [hi, lo]
+            high_word_reg = self._address[1]
+            hi = (int_value >> 16) & 0xFFFF
+            lo = int_value & 0xFFFF
+            await self._controller.write_registers(high_word_reg, [hi, lo])
 
     @property
     def addresses(self) -> list[int]:
-        return [self._address]
+        return self._address
