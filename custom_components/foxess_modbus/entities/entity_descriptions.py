@@ -2602,7 +2602,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     )
     yield ModbusNumberDescription(
         key="max_charge_current",
-        address=[
+        addresses=[
             ModbusAddressSpec(input=41007, models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressSpec(
                 holding=41007,
@@ -2640,7 +2640,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     )
     yield ModbusNumberDescription(
         key="max_discharge_current",
-        address=[
+        addresses=[
             ModbusAddressSpec(input=41008, models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressSpec(
                 holding=41008,
@@ -2679,7 +2679,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     )
     yield ModbusNumberDescription(
         key="min_soc",
-        address=[
+        addresses=[
             ModbusAddressSpec(input=41009, models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressSpec(
                 holding=41009,
@@ -2718,7 +2718,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     )
     yield ModbusNumberDescription(
         key="max_soc",
-        address=[
+        addresses=[
             ModbusAddressSpec(input=41010, models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressSpec(
                 holding=41010,
@@ -2757,7 +2757,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     )
     yield ModbusNumberDescription(
         key="min_soc_on_grid",
-        address=[
+        addresses=[
             ModbusAddressSpec(input=41011, models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressSpec(
                 holding=41011,
@@ -2774,6 +2774,66 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         device_class=NumberDeviceClass.BATTERY,
         icon="mdi:battery-arrow-down",
         validate=[Range(0, 100)],
+    )
+
+    # Register 46616+46617: Export Power Limit (I32 in watts, KH_133 only)
+    # Address list order [46617, 46616]: low-word register first (controller.read() convention)
+    yield ModbusSensorDescription(
+        key="export_power_limit",
+        addresses=[
+            ModbusAddressesSpec(holding=[46617, 46616], models=Inv.KH_133),
+        ],
+        name="Export Power Limit",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="W",
+        icon="mdi:transmission-tower-export",
+        validate=[Range(0, 99999)],
+    )
+    yield ModbusNumberDescription(
+        key="export_power_limit",
+        addresses=[
+            ModbusAddressesSpec(holding=[46617, 46616], models=Inv.KH_133),
+        ],
+        name="Export Power Limit",
+        mode=NumberMode.BOX,
+        native_min_value=0,
+        native_max_value=99999,
+        native_step=1,
+        native_unit_of_measurement="W",
+        device_class=NumberDeviceClass.POWER,
+        icon="mdi:transmission-tower-export",
+        validate=[Range(0, 99999)],
+    )
+
+    # Register 46501+46502: Import Power Limit (I32 in watts, KH_133 only)
+    # Address list order [46502, 46501]: low-word register first (controller.read() convention)
+    yield ModbusSensorDescription(
+        key="import_power_limit",
+        addresses=[
+            ModbusAddressesSpec(holding=[46502, 46501], models=Inv.KH_133),
+        ],
+        name="Import Power Limit",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="W",
+        icon="mdi:transmission-tower-import",
+        validate=[Range(0, 99999)],
+    )
+    yield ModbusNumberDescription(
+        key="import_power_limit",
+        addresses=[
+            ModbusAddressesSpec(holding=[46502, 46501], models=Inv.KH_133),
+        ],
+        name="Import Power Limit",
+        mode=NumberMode.BOX,
+        native_min_value=0,
+        native_max_value=99999,
+        native_step=1,
+        native_unit_of_measurement="W",
+        device_class=NumberDeviceClass.POWER,
+        icon="mdi:transmission-tower-import",
+        validate=[Range(0, 99999)],
     )
 
 
