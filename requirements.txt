@@ -11,7 +11,7 @@ pycares<5  # pycares 5.0.1 removed ares_query_a_result, incompatible with aiodns
 pyserial==3.5
 
 # Tooling
-colorlog==6.7.0
+colorlog==6.10.1
 pre-commit==3.3.3
 ruff==0.9.4
 mypy==1.15.0
