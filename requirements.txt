@@ -18,5 +18,5 @@ mypy==1.15.0
 
 # Typing
 homeassistant-stubs==2025.8.0 # Matching HA version
-types-python-slugify==8.0.0.2
+types-python-slugify==8.0.2.20240310
 voluptuous-stubs==0.1.1
