@@ -12,7 +12,7 @@ pyserial==3.5
 
 # Tooling
 colorlog==6.7.0
-pre-commit==3.3.3
+pre-commit==4.5.1
 ruff==0.9.4
 mypy==1.15.0
 
