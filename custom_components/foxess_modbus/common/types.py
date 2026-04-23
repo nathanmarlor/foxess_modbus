@@ -62,6 +62,8 @@ class InverterModel(StrEnum):
 
     EVO = "EVO"
 
+    F_G3 = "F_G3"
+
 
 class Inv(Flag):
     """
@@ -95,8 +97,9 @@ class Inv(Flag):
     H3_SMART = auto()
 
     EVO = auto()
+    F_G3 = auto()
 
-    ALL = H1_LAN | H1_G1 | H1_G2_SET | KH_SET | H3_SET | H3_PRO_SET | H3_SMART | EVO
+    ALL = H1_LAN | H1_G1 | H1_G2_SET | KH_SET | H3_SET | H3_PRO_SET | H3_SMART | EVO | F_G3
 
 
 class RegisterPollType(IntEnum):
