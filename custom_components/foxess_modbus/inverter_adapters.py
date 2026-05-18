@@ -189,7 +189,7 @@ ADAPTERS = {
             config=_DefaultConfig(max_read=100),
         ),
         InverterAdapter.network(
-            "ebyte_na111_e",
+            "ebyte_na111_series",
             "https://www.cdebyte.com/products/NA111-E",
             network_protocols=[TCP, UDP],
             config=_DefaultConfig(max_read=100),
