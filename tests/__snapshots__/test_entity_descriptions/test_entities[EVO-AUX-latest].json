@@ -630,80 +630,6 @@
   },
   {
     "addresses": [
-      41001
-    ],
-    "key": "time_period_1_enable_charge_from_grid",
-    "name": "Period 1 - Enable Charge from Grid",
-    "type": "binary-sensor"
-  },
-  {
-    "end_addresses": [
-      41003
-    ],
-    "key": "time_period_1_enable_force_charge",
-    "name": "Period 1 - Enable Force Charge",
-    "start_addresses": [
-      41002
-    ],
-    "type": "charge-period-enabled"
-  },
-  {
-    "addresses": [
-      41003
-    ],
-    "key": "time_period_1_end",
-    "name": "Period 1 - End",
-    "other_addresses": 41002,
-    "type": "charge-period-time"
-  },
-  {
-    "addresses": [
-      41002
-    ],
-    "key": "time_period_1_start",
-    "name": "Period 1 - Start",
-    "other_addresses": 41003,
-    "type": "charge-period-time"
-  },
-  {
-    "addresses": [
-      41004
-    ],
-    "key": "time_period_2_enable_charge_from_grid",
-    "name": "Period 2 - Enable Charge from Grid",
-    "type": "binary-sensor"
-  },
-  {
-    "end_addresses": [
-      41006
-    ],
-    "key": "time_period_2_enable_force_charge",
-    "name": "Period 2 - Enable Force Charge",
-    "start_addresses": [
-      41005
-    ],
-    "type": "charge-period-enabled"
-  },
-  {
-    "addresses": [
-      41006
-    ],
-    "key": "time_period_2_end",
-    "name": "Period 2 - End",
-    "other_addresses": 41005,
-    "type": "charge-period-time"
-  },
-  {
-    "addresses": [
-      41005
-    ],
-    "key": "time_period_2_start",
-    "name": "Period 2 - Start",
-    "other_addresses": 41006,
-    "type": "charge-period-time"
-  },
-  {
-    "addresses": [
       39624,
       39623
     ],
@@ -734,6 +660,7 @@
     "values": {
       "1": "Self Use",
       "2": "Feed-in First",
+      "255": "Remote Control",
       "3": "Back-up",
       "4": "Peak Shaving"
     }
