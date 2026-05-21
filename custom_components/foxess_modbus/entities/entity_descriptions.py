@@ -2561,7 +2561,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     yield ModbusWorkModeSelectDescription(
         key="work_mode",
         address=[
-            ModbusAddressSpec(holding=49203, models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO),
+            ModbusAddressSpec(holding=49203, models=Inv.H3_PRO_SET | Inv.H3_SMART),
         ],
         name="Work Mode",
         options_map={
@@ -2569,6 +2569,29 @@ def _configuration_entities() -> Iterable[EntityFactory]:
             2: "Feed-in First",
             3: "Back-up",
             4: "Peak Shaving",
+        },
+    )
+
+    # EVO reads work mode as 1-based but writes 0-based (e.g. write 0 → reads back as 1 "Self Use").
+    # 255 indicates the inverter is under external remote control (read-only state).
+    yield ModbusWorkModeSelectDescription(
+        key="work_mode",
+        address=[
+            ModbusAddressSpec(holding=49203, models=Inv.EVO),
+        ],
+        name="Work Mode",
+        options_map={
+            1: "Self Use",
+            2: "Feed-in First",
+            3: "Back-up",
+            4: "Peak Shaving",
+            255: "Remote Control",
+        },
+        write_map={
+            "Self Use": 0,
+            "Feed-in First": 1,
+            "Back-up": 2,
+            "Peak Shaving": 4,
         },
     )
 
