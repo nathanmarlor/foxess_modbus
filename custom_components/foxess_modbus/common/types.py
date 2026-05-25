@@ -64,6 +64,7 @@ class InverterModel(StrEnum):
 
     P3_SMART = "P3_SMART"
     EVO = "EVO"
+    EVO_10_H = "EVO_10_H"
 
 
 class Inv(Flag):
