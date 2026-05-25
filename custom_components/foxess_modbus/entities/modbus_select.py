@@ -74,6 +74,7 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
         self.entity_description = entity_description
         self._address = address
         self.entity_id = self._get_entity_id(Platform.SELECT)
+        self._pending_option: str | None = None
         if self.entity_description.write_map is not None:
             self._attr_options = list(self.entity_description.write_map.keys())
         else:
@@ -96,12 +97,23 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
                 self._address,
                 entity_description.options_map,
             )
+
+        # For asymmetric encodings (write_map set), hold the last-written option label until
+        # the inverter reads back the confirmed value. Without this, the cached write value
+        # maps to the wrong options_map entry during the transient period after a write.
+        if self._pending_option is not None:
+            if selected == self._pending_option:
+                self._pending_option = None
+            else:
+                return self._pending_option
+
         return selected
 
     async def async_select_option(self, option: str) -> None:
         entity_description = cast(ModbusSelectDescription, self.entity_description)
         if entity_description.write_map is not None:
             value = entity_description.write_map.get(option)
+            self._pending_option = option
         else:
             value = next(
                 (k for k, v in entity_description.options_map.items() if v == option),
