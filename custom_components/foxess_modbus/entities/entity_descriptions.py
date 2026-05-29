@@ -2593,6 +2593,8 @@ def _configuration_entities() -> Iterable[EntityFactory]:
             "Back-up": 2,
             "Peak Shaving": 4,
         },
+        # Force charge/discharge is exposed as a standalone Remote Control select for the EVO, not a work mode
+        include_remote_control_modes=False,
     )
 
     yield ModbusWorkModeSelectDescription(

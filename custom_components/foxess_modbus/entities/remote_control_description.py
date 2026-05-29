@@ -149,6 +149,9 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 pv_voltages=[39070, 39072, 39074],
             ),
             models=Inv.EVO,
+            # Force charge/discharge is a command, so expose it as a standalone Remote Control select rather than
+            # folding it into the Work Mode select
+            dedicated_mode_select=True,
         ),
     ]
 )
