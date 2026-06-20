@@ -431,8 +431,10 @@ _INVERTER_PROFILES_LIST = [
         versions={None: Inv.H3_PRE180},
         special_registers=H3_REGISTERS,
     ),
-    # E.g. H3-Pro-20.0
-    InverterModelProfile(InverterModel.H3_PRO, r"^H3-Pro-([\d\.]+)").add_connection_type(
+    # E.g. H3-Pro-20.0, P3-Pro-15.0
+    # P3-Pro is an OEM/installer-channel variant of the H3-Pro (H = Home, P = Pro/installer channel);
+    # hardware and Modbus registers are identical.
+    InverterModelProfile(InverterModel.H3_PRO, r"^[HP]3-Pro-([\d\.]+)").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={Version(1, 22): Inv.H3_PRO_PRE122, None: Inv.H3_PRO_122},
