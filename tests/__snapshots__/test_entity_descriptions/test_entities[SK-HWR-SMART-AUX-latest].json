@@ -1306,6 +1306,16 @@
   },
   {
     "addresses": [
+      39139
+    ],
+    "key": "rfreq",
+    "name": "Grid Frequency",
+    "scale": 0.01,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
       39265,
       39264
     ],
