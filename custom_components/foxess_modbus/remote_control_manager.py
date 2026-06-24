@@ -34,7 +34,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
             self._addresses.work_mode,
             self._addresses.max_soc,
             *self._addresses.invbatpower,
-            *(self._addresses.pwr_limit_bat_up if self._addresses.pwr_limit_bat_up is not None else []),
+            *(self._addresses.pwr_limit_bat_down if self._addresses.pwr_limit_bat_down is not None else []),
             *self._addresses.pv_voltages,
         ]
         self._modbus_addresses = [x for x in modbus_addresses if x is not None]
@@ -160,7 +160,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         # we have enough PV to cover charge and part of house load, it'll cover the load in full then part of the
         # charge).
         #
-        # A better way seems to be to use the Pwr_limit_Bat_up register. This seems to hold the maximum input power
+        # A better way seems to be to use the Pwr_limit_Bat_down register. This seems to hold the maximum input power
         # that the battery can take, including things like BMS limits (which might not be exposed by the inverter,
         # depending on model). Therefore we can control the actual battery charge power so it's slightly below the
         # limit: this means that PV isn't being clipped (as it would fill the gap if it was).
@@ -184,7 +184,7 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
 
         # These are both negative
         # max_battery_charge_power_negative isn't available on the H1 over LAN
-        max_battery_charge_power_negative = self._read(self._addresses.pwr_limit_bat_up, signed=True)
+        max_battery_charge_power_negative = self._read(self._addresses.pwr_limit_bat_down, signed=True)
         current_battery_charge_power_negative = self._read(self._addresses.invbatpower, signed=True)
         if max_battery_charge_power_negative is None or current_battery_charge_power_negative is None:
             _LOGGER.debug(
