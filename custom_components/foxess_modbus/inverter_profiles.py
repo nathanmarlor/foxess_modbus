@@ -345,8 +345,15 @@ _INVERTER_PROFILES_LIST = [
         versions={None: Inv.H3_SMART},
         special_registers=H3_SMART_REGISTERS,
     ),
+    # P3-Smart series (e.g. P3-8.0-SH)
+    InverterModelProfile(InverterModel.P3_SMART, r"^P3-([\d\.]+)-SH\d*$").add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={None: Inv.H3_SMART},
+        special_registers=H3_SMART_REGISTERS,
+    ),
     # The H3 seems to use holding registers for everything
-    InverterModelProfile(InverterModel.H3, r"^H3-([\d\.]+)(?:-E)?").add_connection_type(
+    InverterModelProfile(InverterModel.H3, r"^H3-([\d\.]+)").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={Version(1, 80): Inv.H3_PRE180, None: Inv.H3_180},
