@@ -80,6 +80,17 @@ class EntityRemoteControlManager(ABC):
     def max_soc(self, value: int | None) -> None:
         """Set a value to override the max_soc register, if any"""
 
+    @property
+    @abstractmethod
+    def export_limit(self) -> int | None:
+        """Get the current export limit"""
+
+    @export_limit.setter
+    @abstractmethod
+    def export_limit(self, value: int | None) -> None:
+        """Set the export limit"""
+
+
 
 class EntityController(ABC):
     """Interface given to entities to access the ModbusController"""
