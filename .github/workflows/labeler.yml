@@ -17,10 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v3.5.3
+        uses: actions/checkout@v6.0.3
 
       - name: Run Labeler
-        uses: crazy-max/ghaction-github-labeler@v4.1.0
+        uses: crazy-max/ghaction-github-labeler@v6.0.0
         with:
           skip-delete: true
           dry-run: ${{ github.event_name == 'pull_request' }}

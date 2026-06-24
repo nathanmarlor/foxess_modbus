@@ -451,6 +451,27 @@
   },
   {
     "addresses": [
+      46617,
+      46616
+    ],
+    "key": "export_power_limit",
+    "name": "Export Power Limit",
+    "scale": null,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      46617,
+      46616
+    ],
+    "key": "export_power_limit",
+    "name": "Export Power Limit",
+    "scale": null,
+    "type": "number"
+  },
+  {
+    "addresses": [
       38815,
       38814
     ],
@@ -657,6 +678,27 @@
   },
   {
     "addresses": [
+      46502,
+      46501
+    ],
+    "key": "import_power_limit",
+    "name": "Import Power Limit",
+    "scale": null,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      46502,
+      46501
+    ],
+    "key": "import_power_limit",
+    "name": "Import Power Limit",
+    "scale": null,
+    "type": "number"
+  },
+  {
+    "addresses": [
       39628,
       39627
     ],
@@ -717,7 +759,7 @@
     ],
     "key": "inv_power",
     "name": "Inverter Power",
-    "scale": 1e-06,
+    "scale": 0.001,
     "signed": true,
     "type": "sensor"
   },
@@ -1303,6 +1345,16 @@
       "pv4_power"
     ],
     "type": "lambda"
+  },
+  {
+    "addresses": [
+      39139
+    ],
+    "key": "rfreq",
+    "name": "Grid Frequency",
+    "scale": 0.01,
+    "signed": false,
+    "type": "sensor"
   },
   {
     "addresses": [

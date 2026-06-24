@@ -189,6 +189,12 @@ ADAPTERS = {
             config=_DefaultConfig(max_read=100),
         ),
         InverterAdapter.network(
+            "ebyte_na111_series",
+            "https://www.cdebyte.com/products/NA111-E",
+            network_protocols=[TCP, UDP],
+            config=_DefaultConfig(max_read=100),
+        ),
+        InverterAdapter.network(
             "network_other",
             "https://github.com/nathanmarlor/foxess_modbus/wiki/Other-Ethernet-Adapter",
             network_protocols=[TCP, UDP, RTU_OVER_TCP],
