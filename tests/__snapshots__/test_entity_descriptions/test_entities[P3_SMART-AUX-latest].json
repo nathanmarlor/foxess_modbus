@@ -151,6 +151,26 @@
   },
   {
     "addresses": [
+      37624
+    ],
+    "key": "battery_soh_1",
+    "name": "Battery 1 SoH",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38322
+    ],
+    "key": "battery_soh_2",
+    "name": "Battery 2 SoH",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
       37611
     ],
     "key": "battery_temp_1",
@@ -601,138 +621,6 @@
     ],
     "key": "grid_ct_T",
     "name": "Grid CT T",
-    "scale": 0.0001,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      38831,
-      38830
-    ],
-    "key": "grid_ct_apparent",
-    "name": "Grid CT (Apparent)",
-    "scale": 0.0001,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      38833,
-      38832
-    ],
-    "key": "grid_ct_apparent_R",
-    "name": "Grid CT (Apparent) R",
-    "scale": 0.0001,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      38835,
-      38834
-    ],
-    "key": "grid_ct_apparent_S",
-    "name": "Grid CT (Apparent) S",
-    "scale": 0.0001,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      38837,
-      38836
-    ],
-    "key": "grid_ct_apparent_T",
-    "name": "Grid CT (Apparent) T",
-    "scale": 0.0001,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      38839,
-      38838
-    ],
-    "key": "grid_ct_pf",
-    "name": "Grid CT Power Factor",
-    "scale": 1e-05,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      38841,
-      38840
-    ],
-    "key": "grid_ct_pf_R",
-    "name": "Grid CT Power Factor R",
-    "scale": 1e-05,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      38843,
-      38842
-    ],
-    "key": "grid_ct_pf_S",
-    "name": "Grid CT Power Factor S",
-    "scale": 1e-05,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      38845,
-      38844
-    ],
-    "key": "grid_ct_pf_T",
-    "name": "Grid CT Power Factor T",
-    "scale": 1e-05,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      38823,
-      38822
-    ],
-    "key": "grid_ct_reactive",
-    "name": "Grid CT (Reactive)",
-    "scale": 0.0001,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      38825,
-      38824
-    ],
-    "key": "grid_ct_reactive_R",
-    "name": "Grid CT (Reactive) R",
-    "scale": 0.0001,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      38827,
-      38826
-    ],
-    "key": "grid_ct_reactive_S",
-    "name": "Grid CT (Reactive) S",
-    "scale": 0.0001,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      38829,
-      38828
-    ],
-    "key": "grid_ct_reactive_T",
-    "name": "Grid CT (Reactive) T",
     "scale": 0.0001,
     "signed": true,
     "type": "sensor"
@@ -1406,93 +1294,13 @@
     "type": "sensor"
   },
   {
-    "addresses": [
-      39079
-    ],
-    "key": "pv5_current",
-    "name": "PV5 Current",
-    "scale": 0.01,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "key": "pv5_energy_total",
-    "method": "left",
-    "name": "PV5 Power Total",
-    "source": "pv5_power",
-    "type": "integration-sensor",
-    "unit_time": "h"
-  },
-  {
-    "addresses": [
-      39288,
-      39287
-    ],
-    "key": "pv5_power",
-    "name": "PV5 Power",
-    "scale": 0.001,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      39078
-    ],
-    "key": "pv5_voltage",
-    "name": "PV5 Voltage",
-    "scale": 0.1,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      39081
-    ],
-    "key": "pv6_current",
-    "name": "PV6 Current",
-    "scale": 0.01,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "key": "pv6_energy_total",
-    "method": "left",
-    "name": "PV6 Power Total",
-    "source": "pv6_power",
-    "type": "integration-sensor",
-    "unit_time": "h"
-  },
-  {
-    "addresses": [
-      39290,
-      39289
-    ],
-    "key": "pv6_power",
-    "name": "PV6 Power",
-    "scale": 0.001,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      39080
-    ],
-    "key": "pv6_voltage",
-    "name": "PV6 Voltage",
-    "scale": 0.1,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
     "key": "pv_power_now",
     "name": "PV Power",
     "sources": [
       "pv1_power",
       "pv2_power",
       "pv3_power",
-      "pv4_power",
-      "pv5_power",
-      "pv6_power"
+      "pv4_power"
     ],
     "type": "lambda"
   },

@@ -11,12 +11,12 @@ pycares<5  # pycares 5.0.1 removed ares_query_a_result, incompatible with aiodns
 pyserial==3.5
 
 # Tooling
-colorlog==6.7.0
-pre-commit==3.3.3
+colorlog==6.10.1
+pre-commit==4.6.0
 ruff==0.9.4
 mypy==1.15.0
 
 # Typing
 homeassistant-stubs==2025.8.0 # Matching HA version
-types-python-slugify==8.0.0.2
+types-python-slugify==8.0.2.20240310
 voluptuous-stubs==0.1.1

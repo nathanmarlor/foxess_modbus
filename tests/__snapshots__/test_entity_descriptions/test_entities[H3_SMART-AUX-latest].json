@@ -759,7 +759,7 @@
     ],
     "key": "inv_power",
     "name": "Inverter Power",
-    "scale": 1e-06,
+    "scale": 0.001,
     "signed": true,
     "type": "sensor"
   },
@@ -1345,6 +1345,16 @@
       "pv4_power"
     ],
     "type": "lambda"
+  },
+  {
+    "addresses": [
+      39139
+    ],
+    "key": "rfreq",
+    "name": "Grid Frequency",
+    "scale": 0.01,
+    "signed": false,
+    "type": "sensor"
   },
   {
     "addresses": [
