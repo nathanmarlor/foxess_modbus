@@ -11,6 +11,7 @@ from homeassistant.helpers import entity_registry
 from homeassistant.helpers.entity import ABCCachedProperties
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity import Entity
+from homeassistant.util import slugify
 from propcache import cached_property
 
 from ..common.entity_controller import EntityController
@@ -51,7 +52,7 @@ def _add_entity_id_prefix(key: str, inv_details: dict[str, Any]) -> str:
     if entity_id_prefix:
         key = f"{entity_id_prefix}_{key}"
 
-    return key
+    return slugify(key, separator="_")
 
 
 def _create_unique_id(key: str, inv_details: dict[str, Any]) -> str:
