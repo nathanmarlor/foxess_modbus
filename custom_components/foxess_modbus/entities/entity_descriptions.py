@@ -1546,7 +1546,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         native_unit_of_measurement="°C",
         scale=0.1,
         round_to=0.5,
-        validate=[Range(0, 100)],
+        validate=[Range(-50, 100)],
     )
     yield ModbusSensorDescription(
         key="ambtemp",
@@ -1564,7 +1564,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         native_unit_of_measurement="°C",
         scale=0.1,
         round_to=0.5,
-        validate=[Range(0, 100)],
+        validate=[Range(-50, 100)],
     )
     yield ModbusBatterySensorDescription(
         key="bms_charge_rate",
@@ -2393,7 +2393,7 @@ def _bms_entities() -> Iterable[EntityFactory]:
             state_class=SensorStateClass.MEASUREMENT,
             native_unit_of_measurement="°C",
             scale=0.1,
-            validate=[Range(0, 100)],
+            validate=[Range(-50, 100)],
         )
         yield ModbusBatterySensorDescription(
             key=f"bms_cell_temp_high{key_suffix}",
@@ -2404,7 +2404,7 @@ def _bms_entities() -> Iterable[EntityFactory]:
             state_class=SensorStateClass.MEASUREMENT,
             native_unit_of_measurement="°C",
             scale=0.1,
-            validate=[Range(0, 100)],
+            validate=[Range(-50, 100)],
         )
         yield ModbusBatterySensorDescription(
             key=f"bms_cell_temp_low{key_suffix}",
@@ -2415,7 +2415,7 @@ def _bms_entities() -> Iterable[EntityFactory]:
             state_class=SensorStateClass.MEASUREMENT,
             native_unit_of_measurement="°C",
             scale=0.1,
-            validate=[Range(0, 100)],
+            validate=[Range(-50, 100)],
         )
         yield ModbusBatterySensorDescription(
             key=f"bms_cell_mv_high{key_suffix}",
