@@ -1,0 +1,135 @@
+[
+  {
+    "addresses": [
+      39141
+    ],
+    "key": "invtemp",
+    "name": "Inverter Temp",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39071
+    ],
+    "key": "pv1_current",
+    "name": "PV1 Current",
+    "scale": 0.01,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "key": "pv1_energy_total",
+    "method": "left",
+    "name": "PV1 Power Total",
+    "source": "pv1_power",
+    "type": "integration-sensor",
+    "unit_time": "h"
+  },
+  {
+    "key": "pv1_power",
+    "name": "PV1 Power",
+    "sources": [
+      "pv1_voltage",
+      "pv1_current"
+    ],
+    "type": "lambda"
+  },
+  {
+    "addresses": [
+      39070
+    ],
+    "key": "pv1_voltage",
+    "name": "PV1 Voltage",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39073
+    ],
+    "key": "pv2_current",
+    "name": "PV2 Current",
+    "scale": 0.01,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "key": "pv2_energy_total",
+    "method": "left",
+    "name": "PV2 Power Total",
+    "source": "pv2_power",
+    "type": "integration-sensor",
+    "unit_time": "h"
+  },
+  {
+    "key": "pv2_power",
+    "name": "PV2 Power",
+    "sources": [
+      "pv2_voltage",
+      "pv2_current"
+    ],
+    "type": "lambda"
+  },
+  {
+    "addresses": [
+      39072
+    ],
+    "key": "pv2_voltage",
+    "name": "PV2 Voltage",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "key": "pv_power_now",
+    "name": "PV Power",
+    "sources": [
+      "pv1_power",
+      "pv2_power"
+    ],
+    "type": "lambda"
+  },
+  {
+    "addresses": [
+      39139
+    ],
+    "key": "rfreq",
+    "name": "Grid Frequency",
+    "scale": 0.01,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39135
+    ],
+    "key": "rpower",
+    "name": "Inverter Power",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39123
+    ],
+    "key": "rvolt",
+    "name": "Grid Voltage",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39152
+    ],
+    "key": "solar_energy_today",
+    "name": "Solar Generation Today",
+    "scale": 0.01,
+    "signed": false,
+    "type": "sensor"
+  }
+]

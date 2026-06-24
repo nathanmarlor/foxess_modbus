@@ -22,6 +22,7 @@ Supported models:
 - FoxESS H3 (including AC3 and AOI-H3)
 - FoxESS H3 PRO
 - FoxESS KH
+- FoxESS F (G3)
 - Kuara H3
 - Sonnenkraft SK-HWR
 - STAR
