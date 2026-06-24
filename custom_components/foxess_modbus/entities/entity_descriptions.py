@@ -2143,7 +2143,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             icon="mdi:export",
             scale=scale,
             # unsure if this actually goes negative
-            validate=[Range(-100, 100)],
+            validate=[Range(-200, 200)],
         )
 
     yield _total_yield_today(
