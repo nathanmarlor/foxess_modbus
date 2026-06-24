@@ -29,6 +29,7 @@ Supported models:
 - a-TroniX AX
 - Enpal
 - 1KOMMA5°
+- SOLARWATT Inverter vision one 1.0 and Inverter vision three 1.0
 
 You will need a direct connection to your inverter.
 In most cases, this means buying a modbus to ethernet/USB adapter and wiring this to a port on your inverter.
