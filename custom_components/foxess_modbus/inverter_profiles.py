@@ -297,9 +297,7 @@ _INVERTER_PROFILES_LIST = [
         special_registers=H1_G2_REGISTERS,
     ),
     # P1 is an OEM variant of the H1-G2, see https://github.com/nathanmarlor/foxess_modbus/discussions/914
-    InverterModelProfile(
-        InverterModel.P1, r"^P1-([\d\.]+)-E", capacity_parser=CapacityParser.H1
-    ).add_connection_type(
+    InverterModelProfile(InverterModel.P1, r"^P1-([\d\.]+)-E", capacity_parser=CapacityParser.H1).add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={Version(1, 44): Inv.H1_G2_PRE144, None: Inv.H1_G2_144},
