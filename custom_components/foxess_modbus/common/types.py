@@ -57,6 +57,7 @@ class InverterModel(StrEnum):
     SOLAVITA_SP = "SOLAVITA-SP"
     ATRONIX_AX = "ATRONIX_AX"
     ENPAL_IX = "ENPAL_IX"
+    SOLARWATT_VISION = "VSN"
     ONE_KOMMA_FIVE = "1KOMMA5"
 
     H3_PRO = "H3_PRO"

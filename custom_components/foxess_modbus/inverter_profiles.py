@@ -482,6 +482,14 @@ _INVERTER_PROFILES_LIST = [
         RegisterType.HOLDING,
         versions={None: Inv.EVO},
     ),
+    # Solarwatt Vision (rebadged FoxESS H3 Smart)
+    # E.g. VSN THREE 12KW
+    InverterModelProfile(InverterModel.SOLARWATT_VISION, r"^VSN THREE ([\d\.]+)KW$").add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={None: Inv.H3_SMART},
+        special_registers=H3_SMART_REGISTERS,
+    ),
 ]
 
 INVERTER_PROFILES = {x.model: x for x in _INVERTER_PROFILES_LIST}
