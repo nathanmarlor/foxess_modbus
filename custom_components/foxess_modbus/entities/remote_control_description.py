@@ -128,5 +128,30 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
             ),
             models=Inv.H3_PRO_SET | Inv.H3_SMART,
         ),
+        RemoteControlAddressSpec(
+            # The EVO shares the H3-Pro / H3-Smart 46xxx remote-control register family and work mode at 49203.
+            # battery_soc, invbatpower and pv_voltages use the EVO-specific addresses from entity_descriptions.
+            holding=ModbusRemoteControlAddressConfig(
+                remote_enable=46001,
+                timeout_set=46002,
+                active_power=[46004, 46003],
+                work_mode=49203,
+                # The EVO writes work mode 0-based even though it reads back 1-based (and 255 under remote control)
+                work_mode_map={
+                    WorkMode.SELF_USE: 0,
+                    WorkMode.FEED_IN_FIRST: 1,
+                    WorkMode.BACK_UP: 2,
+                },
+                max_soc=46610,
+                invbatpower=[39238, 39237],
+                battery_soc=[39423],
+                pwr_limit_bat_up=[46019, 46018],
+                pv_voltages=[39070, 39072, 39074],
+            ),
+            models=Inv.EVO,
+            # Force charge/discharge is a command, so expose it as a standalone Remote Control select rather than
+            # folding it into the Work Mode select
+            dedicated_mode_select=True,
+        ),
     ]
 )

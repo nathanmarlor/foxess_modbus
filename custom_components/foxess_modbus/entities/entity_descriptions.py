@@ -9,7 +9,7 @@ from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorStateClass
 from homeassistant.const import UnitOfTime
 
-from custom_components.foxess_modbus.entities.base_validator import BaseValidator
+from .base_validator import BaseValidator
 
 from ..common.types import Inv
 from ..common.types import RegisterType
@@ -2472,13 +2472,13 @@ def _bms_entities() -> Iterable[EntityFactory]:
                 holding=[31024], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2_SET | Inv.KH_PRE133 | Inv.KH_133
             ),
             ModbusAddressesSpec(holding=[31038], models=Inv.H3_SET),
+            ModbusAddressesSpec(holding=[39423], models=Inv.EVO),
         ],
         battery_soh=[
             # Temporarily removed, see #756
             # ModbusAddressesSpec(input=[11104], models=Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[37624], models=Inv.H1_G2_144 | Inv.KH_133),
             ModbusAddressesSpec(holding=[31090], models=Inv.H3_180),
-            ModbusAddressesSpec(holding=[39423], models=Inv.EVO),
         ],
         battery_temp=[
             ModbusAddressesSpec(input=[11038], models=Inv.H1_G1 | Inv.KH_PRE119),
@@ -2561,7 +2561,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     yield ModbusWorkModeSelectDescription(
         key="work_mode",
         address=[
-            ModbusAddressSpec(holding=49203, models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO),
+            ModbusAddressSpec(holding=49203, models=Inv.H3_PRO_SET | Inv.H3_SMART),
         ],
         name="Work Mode",
         options_map={
@@ -2570,6 +2570,31 @@ def _configuration_entities() -> Iterable[EntityFactory]:
             3: "Back-up",
             4: "Peak Shaving",
         },
+    )
+
+    # EVO reads work mode as 1-based but writes 0-based (e.g. write 0 → reads back as 1 "Self Use").
+    # 255 indicates the inverter is under external remote control (read-only state).
+    yield ModbusWorkModeSelectDescription(
+        key="work_mode",
+        address=[
+            ModbusAddressSpec(holding=49203, models=Inv.EVO),
+        ],
+        name="Work Mode",
+        options_map={
+            1: "Self Use",
+            2: "Feed-in First",
+            3: "Back-up",
+            4: "Peak Shaving",
+            255: "Remote Control",
+        },
+        write_map={
+            "Self Use": 0,
+            "Feed-in First": 1,
+            "Back-up": 2,
+            "Peak Shaving": 4,
+        },
+        # Force charge/discharge is exposed as a standalone Remote Control select for the EVO, not a work mode
+        include_remote_control_modes=False,
     )
 
     yield ModbusWorkModeSelectDescription(

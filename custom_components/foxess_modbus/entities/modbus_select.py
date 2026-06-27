@@ -30,6 +30,7 @@ class ModbusSelectDescription(SelectEntityDescription, EntityFactory):  # type: 
     address: list[ModbusAddressSpec]
     options_map: dict[int, str]
     validate: list[BaseValidator] = field(default_factory=list)
+    write_map: dict[str, int] | None = None
 
     @property
     def entity_type(self) -> type[Entity]:
@@ -73,7 +74,11 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
         self.entity_description = entity_description
         self._address = address
         self.entity_id = self._get_entity_id(Platform.SELECT)
-        self._attr_options = list(self.entity_description.options_map.values())
+        self._pending_option: str | None = None
+        if self.entity_description.write_map is not None:
+            self._attr_options = list(self.entity_description.write_map.keys())
+        else:
+            self._attr_options = list(self.entity_description.options_map.values())
 
     @property
     def current_option(self) -> str | None:
@@ -92,14 +97,28 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
                 self._address,
                 entity_description.options_map,
             )
+
+        # For asymmetric encodings (write_map set), hold the last-written option label until
+        # the inverter reads back the confirmed value. Without this, the cached write value
+        # maps to the wrong options_map entry during the transient period after a write.
+        if self._pending_option is not None:
+            if selected == self._pending_option:
+                self._pending_option = None
+            else:
+                return self._pending_option
+
         return selected
 
     async def async_select_option(self, option: str) -> None:
         entity_description = cast(ModbusSelectDescription, self.entity_description)
-        value = next(
-            (k for k, v in entity_description.options_map.items() if v == option),
-            None,
-        )
+        if entity_description.write_map is not None:
+            value = entity_description.write_map.get(option)
+            self._pending_option = option
+        else:
+            value = next(
+                (k for k, v in entity_description.options_map.items() if v == option),
+                None,
+            )
         if value is None:
             _LOGGER.warning(
                 "Failed to write unknown value '%s' to register '%s' with address %s. Valid values: %s",
