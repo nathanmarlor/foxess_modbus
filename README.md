@@ -28,6 +28,7 @@ Supported models:
 - STAR
 - Solavita SP
 - a-TroniX AX
+- a-Tronix AX Plus
 - Enpal
 - 1KOMMA5°
 
