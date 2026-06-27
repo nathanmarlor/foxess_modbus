@@ -448,6 +448,14 @@ _INVERTER_PROFILES_LIST = [
         versions={None: Inv.H3_PRE180},
         special_registers=H3_REGISTERS,
     ),
+    # a-TroniX AX Plus 
+    # These have the form 'AX Plus 10kW-3ph'' (the 3ph standing for '3 phase'). There are other powers, too 
+    InverterModelProfile(InverterModel.ATRONIX_AX_PLUS, r"^AX Plus ([\d\.]+)kW-3ph").add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={None: Inv.H3_SMART},
+        special_registers=H3_SMART_REGISTERS,
+    ),
     # E.g. H3-Pro-20.0, P3-Pro-15.0
     # P3-Pro is an OEM/installer-channel variant of the H3-Pro (H = Home, P = Pro/installer channel);
     # hardware and Modbus registers are identical.
