@@ -349,7 +349,7 @@ _INVERTER_PROFILES_LIST = [
     # The "-M" suffix (e.g. H3-10.0-M) is an OEM/installer variant of the H3-Smart (Gen2), confirmed
     # by FoxESS - see https://github.com/nathanmarlor/foxess_modbus/issues/1023. Without this it falls
     # through to the plain H3 profile and reads the wrong (legacy) register map.
-    InverterModelProfile(InverterModel.H3_SMART, r"^H3-([\d\.]+)-(?:Smart|M)").add_connection_type(
+    InverterModelProfile(InverterModel.H3_SMART, r"^H3-([\d\.]+)-(?:(?i:Smart)|M)").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={None: Inv.H3_SMART},
