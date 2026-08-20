@@ -2780,7 +2780,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     yield ModbusSensorDescription(
         key="export_power_limit",
         addresses=[
-            ModbusAddressesSpec(holding=[46617, 46616], models=Inv.KH_133 | Inv.H3_SMART),
+            ModbusAddressesSpec(holding=[46617, 46616], models=Inv.KH_133 | Inv.H3_SMART | Inv.H3_PRO_SET),
         ],
         name="Export Power Limit",
         device_class=SensorDeviceClass.POWER,
@@ -2792,7 +2792,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     yield ModbusNumberDescription(
         key="export_power_limit",
         addresses=[
-            ModbusAddressesSpec(holding=[46617, 46616], models=Inv.KH_133 | Inv.H3_SMART),
+            ModbusAddressesSpec(holding=[46617, 46616], models=Inv.KH_133 | Inv.H3_SMART | Inv.H3_PRO_SET),
         ],
         name="Export Power Limit",
         mode=NumberMode.BOX,
