@@ -10,12 +10,12 @@ from .modbus_charge_period_config import ModbusChargePeriodFactory
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
-# The H3 Smart defines its charge periods via the time-group system (Table 3-11).
-# Each group is a contiguous block of 10 registers, starting at 48010 + 10*(N-1).
-# We use groups 1 and 2, which are the same groups the FoxESS app uses for its charge periods, so that
-# the card and the app stay in sync. Unlike the H1, force charge is controlled by a dedicated enable
-# register (the group's enable), rather than being inferred from the start/end times, so these factories
-# use enable_force_charge_from_enable_address=True.
+# The H3 Smart (and H3 Pro, which shares the same register map) defines its charge periods via the
+# time-group system (Table 3-11). Each group is a contiguous block of 10 registers, starting at
+# 48010 + 10*(N-1). We use groups 1 and 2, which are the same groups the FoxESS app uses for its charge
+# periods, so that the card and the app stay in sync. Unlike the H1, force charge is controlled by a
+# dedicated enable register (the group's enable), rather than being inferred from the start/end times, so
+# these factories use enable_force_charge_from_enable_address=True.
 def _h3_group_base(group: int) -> int:
     """Returns the base address of the given time group (1-based)."""
     return 48010 + 10 * (group - 1)
@@ -51,7 +51,7 @@ def _h3_charge_period_factory(
                     fdpwr_address=base + 6,
                     enable_flag_address=base + 9,
                 ),
-                models=Inv.H3_SMART,
+                models=Inv.H3_PRO_SET | Inv.H3_SMART,
             ),
         ],
         period_start_key=period_start_key,
