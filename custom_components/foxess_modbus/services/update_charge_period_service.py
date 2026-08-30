@@ -12,6 +12,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 
 from ..const import DOMAIN
+from ..entities.modbus_charge_period_config import ModbusChargePeriodAddressConfig
 from ..entities.modbus_charge_period_sensors import is_time_value_valid
 from ..entities.modbus_charge_period_sensors import parse_time_value
 from ..entities.modbus_charge_period_sensors import serialize_time_to_value
@@ -206,8 +207,20 @@ async def _update_charge_period(
                 f"{i + 1} is not valid"
             )
 
+        # Inverters which use the time-group charge period system (e.g. the H3 Smart) control force charge
+        # via a dedicated group-enable register, rather than inferring it from the start/end times.
+        if charge_period.addresses.enable_address is not None:
+            enable_value = controller.read(charge_period.addresses.enable_address, signed=False)
+            if enable_value is None:
+                raise HomeAssistantError(
+                    f"Data for charge period {i + 1} is not available. Please try again in a few seconds"
+                )
+            enable_force_charge = enable_value > 0
+        else:
+            enable_force_charge = period_start_time_value > 0 or period_end_time_value > 0
+
         charge_periods[i] = ChargePeriod(
-            enable_force_charge=period_start_time_value > 0 or period_end_time_value > 0,
+            enable_force_charge=enable_force_charge,
             enable_charge_from_grid=period_enable_charge_from_grid_value > 0,
             start=parse_time_value(period_start_time_value),
             end=parse_time_value(period_end_time_value),
@@ -231,42 +244,112 @@ async def _set_charge_periods(controller: ModbusController, charge_periods: list
     # (One charge period can contain another, or starts/ends can overlap).
     # Mirror this for consistancy, even though it is a little odd.
 
-    # List of (address, value)
-    writes: list[tuple[int, int]] = []
+    # Inverters which use the time-group charge period system (e.g. the H3 Smart) only run their time
+    # periods when the Time Period System is enabled (register 48000 = 1, the inverter's "Timer"/"Modus
+    # Terminierer" mode). Following the H1 semantics of an additive charge-period window, we tie this to
+    # whether any charge period is enabled: if any is enabled the time period system is switched on, and
+    # when all of them are disabled it is switched off again, so that the inverter returns to its normal
+    # (e.g. "Self Use") mode, just like the H1 does.
+    writes = []
+    is_time_group = False
     for charge_period, config in zip(charge_periods, controller.charge_periods, strict=True):
-        writes.append(
-            (
-                config.addresses.period_start_address,
-                serialize_time_to_value(charge_period.start) if charge_period.enable_force_charge else 0,
-            )
-        )
-        writes.append(
-            (
-                config.addresses.period_end_address,
-                serialize_time_to_value(charge_period.end) if charge_period.enable_force_charge else 0,
-            )
-        )
-        writes.append(
-            (
-                config.addresses.enable_charge_from_grid_address,
-                1 if charge_period.enable_charge_from_grid else 0,
-            )
-        )
+        if config.addresses.enable_address is not None:
+            is_time_group = True
+        writes.extend(_make_charge_period_writes(config.addresses, controller, charge_period))
 
-    # We expect all of the writes to have a contiguous set of addresses
-    write_values: list[int] = [None] * len(writes)  # type: ignore
-    write_start_address = min(write[0] for write in writes)
+    # Don't write the Time Period Mode flag (48000) from every enabled period: it's a single global register.
+    if is_time_group:
+        any_enabled = any(cp.enable_force_charge for cp in charge_periods)
+        writes.append((48000, 1 if any_enabled else 0))
 
-    for address, value in writes:
-        i = address - write_start_address
-        assert i < len(write_values)
-        assert write_values[i] is None
-        write_values[i] = value
+    write_blocks = _split_into_contiguous_runs(writes)
 
-    assert not any(x for x in write_values if x is None)
+    for write_start_address, write_values in write_blocks:
+        try:
+            await controller.write_registers(write_start_address, write_values)
+        except ModbusIOException as ex:
+            _LOGGER.warning(ex, exc_info=True)
+            raise HomeAssistantError() from ex
 
-    try:
-        await controller.write_registers(write_start_address, write_values)
-    except ModbusIOException as ex:
-        _LOGGER.warning(ex, exc_info=True)
-        raise HomeAssistantError() from ex
+
+def _make_charge_period_writes(
+    config: ModbusChargePeriodAddressConfig,
+    controller: ModbusController,
+    charge_period: ChargePeriod,
+) -> list[tuple[int, int]]:
+    """Builds the (address, value) register writes for a single charge period."""
+
+    if config.enable_address is not None:
+        return _make_time_group_writes(config, controller, charge_period)
+
+    return [
+        (
+            config.period_start_address,
+            serialize_time_to_value(charge_period.start) if charge_period.enable_force_charge else 0,
+        ),
+        (
+            config.period_end_address,
+            serialize_time_to_value(charge_period.end) if charge_period.enable_force_charge else 0,
+        ),
+        (
+            config.enable_charge_from_grid_address,
+            1 if charge_period.enable_charge_from_grid else 0,
+        ),
+    ]
+
+
+def _make_time_group_writes(
+    config: ModbusChargePeriodAddressConfig,
+    controller: ModbusController,
+    charge_period: ChargePeriod,
+) -> list[tuple[int, int]]:
+    """Builds the register writes for an inverter which uses the time-group charge period system (e.g. H3 Smart).
+
+    A time group is a contiguous block of 10 registers (see FoxESS Modbus protocol, Table 3-11). When a
+    charge period is enabled, the group is activated in Force Charge mode (Work Mode 6). "Charge from grid"
+    simply controls the force-charge power (FDPWR): enabled charges from the grid at the inverter's full
+    capacity, disabled charges from PV only (FDPWR = 0).
+
+    When a charge period is disabled, the group is turned off and the force-charge power is cleared, so that
+    the "charge from grid" state doesn't linger as on. The previously configured times are left intact.
+    """
+
+    base = config.enable_address
+    assert base is not None
+
+    if not charge_period.enable_force_charge:
+        return [(base, 0), (base + 6, 0)]
+
+    # The charge-period card doesn't expose a charge power or SoC target, so we use sensible defaults:
+    # charge up to 100% (from the grid if 'charge from grid' is enabled, otherwise PV only) at the inverter's
+    # full capacity.
+    max_soc = 100
+    min_soc = 10
+    fdpwr = controller.inverter_capacity if charge_period.enable_charge_from_grid else 0
+
+    return [
+        (base, 1),  # +0: Time group enable
+        (base + 1, serialize_time_to_value(charge_period.start)),  # +1: Start time (high byte=hour, low=min)
+        (base + 2, serialize_time_to_value(charge_period.end)),  # +2: End time (high byte=hour, low=min)
+        (base + 3, 6),  # +3: Work mode = Force Charge
+        (base + 4, (max_soc << 8) | min_soc),  # +4: MaxSoC (high byte) | MinSoC (low byte)
+        (base + 5, min_soc),  # +5: FDSOC
+        (base + 6, fdpwr),  # +6: FDPWR (force charge power, W)
+        (base + 7, 0),  # +7: reserve
+        (base + 8, 0),  # +8: reserve
+        (base + 9, 1),  # +9: enable flag (undocumented, but required for force charge)
+    ]
+
+
+def _split_into_contiguous_runs(writes: list[tuple[int, int]]) -> list[tuple[int, list[int]]]:
+    """Groups a list of (address, value) writes into contiguous register runs, each returned as (start, values)."""
+
+    runs: list[tuple[int, list[int]]] = []
+    for address, value in sorted(writes, key=lambda x: x[0]):
+        if runs and address == runs[-1][0] + len(runs[-1][1]):
+            start, values = runs[-1]
+            runs[-1] = (start, [*values, value])
+        else:
+            runs.append((address, [value]))
+
+    return runs

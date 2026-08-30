@@ -31,6 +31,16 @@ class ModbusChargePeriodAddressConfig:
     period_start_address: int
     period_end_address: int
     enable_charge_from_grid_address: int
+    # The following are used by inverters which define a charge period via the time-period/group system
+    # (e.g. the H3 Smart). On such inverters the charge period is a contiguous block of registers, rather
+    # than the 3 independent registers used by the H1. The enable_address doubles as the base address of
+    # the block.
+    enable_address: int | None = None
+    work_mode_address: int | None = None
+    soc_address: int | None = None
+    fdsoc_address: int | None = None
+    fdpwr_address: int | None = None
+    enable_flag_address: int | None = None
 
 
 @dataclass(frozen=True)
@@ -81,10 +91,41 @@ class ChargePeriodAddressSpec:
 
         return self._get_address(lambda x: x.enable_charge_from_grid_address)
 
-    def _get_address(self, accessor: Callable[[ModbusChargePeriodAddressConfig], int]) -> InverterModelSpec:
+    def get_enable_address(self) -> InverterModelSpec:
+        """Gets a InverterModelSpec instance to describe the time-group enable address"""
+
+        return self._get_address(lambda x: x.enable_address)
+
+    def get_work_mode_address(self) -> InverterModelSpec:
+        """Gets a InverterModelSpec instance to describe the time-group work mode address"""
+
+        return self._get_address(lambda x: x.work_mode_address)
+
+    def get_soc_address(self) -> InverterModelSpec:
+        """Gets a InverterModelSpec instance to describe the time-group SoC address"""
+
+        return self._get_address(lambda x: x.soc_address)
+
+    def get_fdsoc_address(self) -> InverterModelSpec:
+        """Gets a InverterModelSpec instance to describe the time-group FDSOC address"""
+
+        return self._get_address(lambda x: x.fdsoc_address)
+
+    def get_fdpwr_address(self) -> InverterModelSpec:
+        """Gets a InverterModelSpec instance to describe the time-group force-charge power address"""
+
+        return self._get_address(lambda x: x.fdpwr_address)
+
+    def get_enable_flag_address(self) -> InverterModelSpec:
+        """Gets a InverterModelSpec instance to describe the time-group enable flag address"""
+
+        return self._get_address(lambda x: x.enable_flag_address)
+
+    def _get_address(self, accessor: Callable[[ModbusChargePeriodAddressConfig], int | None]) -> InverterModelSpec:
         addresses: dict[RegisterType, list[int] | None] = {}
         for register_type, address_config in self.register_types.items():
-            addresses[register_type] = [accessor(address_config)]
+            address = accessor(address_config)
+            addresses[register_type] = [address] if address is not None else None
         return ModbusAddressSpecBase(addresses, self.models)
 
 
@@ -109,6 +150,7 @@ class ModbusChargePeriodFactory:
         enable_force_charge_name: str,
         enable_charge_from_grid_key: str,
         enable_charge_from_grid_name: str,
+        enable_force_charge_from_enable_address: bool = False,
     ) -> None:
         self.address_specs = addresses
 
@@ -120,6 +162,7 @@ class ModbusChargePeriodFactory:
         period_start_address = [x.get_start_address() for x in addresses]
         period_end_address = [x.get_end_address() for x in addresses]
         enable_charge_from_grid_address = [x.get_enable_charge_from_grid_address() for x in addresses]
+        enable_address = [x.get_enable_address() for x in addresses]
 
         self.period_start = ModbusChargePeriodStartEndSensorDescription(
             key=period_start_key,
@@ -137,13 +180,24 @@ class ModbusChargePeriodFactory:
             icon="mdi:timer-stop-outline",
             validate=[Time()],
         )
-        self.enable_force_charge = ModbusEnableForceChargeSensorDescription(
-            key=enable_force_charge_key,
-            name=enable_force_charge_name,
-            period_start_address=period_start_address,
-            period_end_address=period_end_address,
-            validate=[Time()],
-        )
+        if enable_force_charge_from_enable_address:
+            # Inverters which define charge periods via the time-group system (e.g. the H3 Smart) control
+            # force charge with a dedicated enable register (the time-group enable), rather than by
+            # inferring it from the start/end times.
+            self.enable_force_charge = ModbusBinarySensorDescription(
+                key=enable_force_charge_key,
+                name=enable_force_charge_name,
+                address=enable_address,
+                icon_func=lambda x: "mdi:battery-lock" if x else "mdi:battery-lock-open",
+            )
+        else:
+            self.enable_force_charge = ModbusEnableForceChargeSensorDescription(
+                key=enable_force_charge_key,
+                name=enable_force_charge_name,
+                period_start_address=period_start_address,
+                period_end_address=period_end_address,
+                validate=[Time()],
+            )
         self.enable_charge_from_grid = ModbusBinarySensorDescription(
             key=enable_charge_from_grid_key,
             name=enable_charge_from_grid_name,
