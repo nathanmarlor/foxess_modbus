@@ -10,6 +10,7 @@ from homeassistant.const import Platform
 from ..common.entity_controller import EntityController
 from ..common.types import Inv
 from ..common.types import RegisterType
+from .entity_factory import EntityFactory
 from .inverter_model_spec import InverterModelSpec
 from .inverter_model_spec import ModbusAddressSpecBase
 from .modbus_binary_sensor import ModbusBinarySensorDescription
@@ -184,7 +185,7 @@ class ModbusChargePeriodFactory:
             # Inverters which define charge periods via the time-group system (e.g. the H3 Smart) control
             # force charge with a dedicated enable register (the time-group enable), rather than by
             # inferring it from the start/end times.
-            self.enable_force_charge = ModbusBinarySensorDescription(
+            self.enable_force_charge: EntityFactory = ModbusBinarySensorDescription(
                 key=enable_force_charge_key,
                 name=enable_force_charge_name,
                 address=enable_address,
