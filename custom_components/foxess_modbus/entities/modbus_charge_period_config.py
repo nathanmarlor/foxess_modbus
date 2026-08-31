@@ -42,6 +42,10 @@ class ModbusChargePeriodAddressConfig:
     fdsoc_address: int | None = None
     fdpwr_address: int | None = None
     enable_flag_address: int | None = None
+    # The global Max SoC / Min SoC OnGrid registers which the time-period system mirrors into the group's
+    # SoC bounds (offset +4). These are the GUI-editable values (e.g. 46610 / 46611 on the H3 Smart/H3 Pro).
+    max_soc_global_address: int | None = None
+    min_soc_global_address: int | None = None
 
 
 @dataclass(frozen=True)
@@ -121,6 +125,16 @@ class ChargePeriodAddressSpec:
         """Gets a InverterModelSpec instance to describe the time-group enable flag address"""
 
         return self._get_address(lambda x: x.enable_flag_address)
+
+    def get_max_soc_global_address(self) -> InverterModelSpec:
+        """Gets a InverterModelSpec instance to describe the global Max SoC address"""
+
+        return self._get_address(lambda x: x.max_soc_global_address)
+
+    def get_min_soc_global_address(self) -> InverterModelSpec:
+        """Gets a InverterModelSpec instance to describe the global Min SoC OnGrid address"""
+
+        return self._get_address(lambda x: x.min_soc_global_address)
 
     def _get_address(self, accessor: Callable[[ModbusChargePeriodAddressConfig], int | None]) -> InverterModelSpec:
         addresses: dict[RegisterType, list[int] | None] = {}

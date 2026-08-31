@@ -320,11 +320,12 @@ def _make_time_group_writes(
     if not charge_period.enable_force_charge:
         return [(base, 0), (base + 6, 0)]
 
-    # The charge-period card doesn't expose a charge power or SoC target, so we use sensible defaults:
-    # charge up to 100% (from the grid if 'charge from grid' is enabled, otherwise PV only) at the inverter's
-    # full capacity.
-    max_soc = 100
-    min_soc = 10
+    # The charge-period card doesn't expose a charge power or SoC target, so we take the configured SoC
+    # bounds from the inverter's global Max SoC / Min SoC OnGrid registers (mirrored into the group's
+    # SoC bounds, matching how the FoxESS app does it), and charge from the grid at the inverter's full
+    # capacity if 'charge from grid' is enabled (otherwise PV only).
+    max_soc = _read_soc_value(controller, config.max_soc_global_address, 100)
+    min_soc = _read_soc_value(controller, config.min_soc_global_address, 10)
     fdpwr = controller.inverter_capacity if charge_period.enable_charge_from_grid else 0
 
     return [
@@ -333,12 +334,23 @@ def _make_time_group_writes(
         (base + 2, serialize_time_to_value(charge_period.end)),  # +2: End time (high byte=hour, low=min)
         (base + 3, 6),  # +3: Work mode = Force Charge
         (base + 4, (max_soc << 8) | min_soc),  # +4: MaxSoC (high byte) | MinSoC (low byte)
-        (base + 5, min_soc),  # +5: FDSOC
+        (base + 5, max_soc),  # +5: FCSOC/FDSOC (force charge SoC target = MaxSoC, like the app)
         (base + 6, fdpwr),  # +6: FDPWR (force charge power, W)
         (base + 7, 0),  # +7: reserve
         (base + 8, 0),  # +8: reserve
         (base + 9, 1),  # +9: enable flag (undocumented, but required for force charge)
     ]
+
+
+def _read_soc_value(controller: ModbusController, address: int | None, default: int) -> int:
+    """Reads a SoC (percentage) register, returning `default` if the register isn't configured or unreadable."""
+
+    if address is None:
+        return default
+    value = controller.read(address, signed=False)
+    if value is None or not 10 <= value <= 100:
+        return default
+    return value
 
 
 def _split_into_contiguous_runs(writes: list[tuple[int, int]]) -> list[tuple[int, list[int]]]:
