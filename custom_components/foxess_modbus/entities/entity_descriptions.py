@@ -801,7 +801,7 @@ def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
 
 
 def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
-    def _grid_voltage(phase: str, addresses: list[ModbusAddressesSpec]) -> EntityFactory:
+    def _grid_voltage(phase: str, addresses: list[ModbusAddressesSpec], signed: bool = False) -> EntityFactory:
         return ModbusSensorDescription(
             key=f"grid_voltage_{phase}",
             addresses=addresses,
@@ -812,7 +812,7 @@ def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
             native_unit_of_measurement="V",
             scale=0.1,
             round_to=1,
-            signed=False,
+            signed=signed,
             validate=[Range(0, 300)],
         )
 
@@ -820,8 +820,13 @@ def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
         "R",
         addresses=[
             ModbusAddressesSpec(holding=[31006], models=Inv.H3_SET),
-            ModbusAddressesSpec(holding=[39123], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO),
+            ModbusAddressesSpec(holding=[39123], models=Inv.H3_PRO_SET | Inv.H3_SMART),
         ],
+    )
+    yield _grid_voltage(
+        "R",
+        addresses=[ModbusAddressesSpec(holding=[39123], models=Inv.EVO)],
+        signed=True,
     )
     yield _grid_voltage(
         "S",
@@ -1497,7 +1502,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             ),
             ModbusAddressesSpec(holding=[31015], models=Inv.H3_SET),
             ModbusAddressesSpec(holding=[38847, 38846], models=Inv.H3_PRO_PRE122),
-            ModbusAddressesSpec(holding=[39139], models=Inv.H3_PRO_122 | Inv.H3_SMART | Inv.EVO),
+            ModbusAddressesSpec(holding=[39139], models=Inv.H3_PRO_122 | Inv.H3_SMART),
         ],
         entity_registry_enabled_default=False,
         name="Grid Frequency",
@@ -1510,6 +1515,19 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         validate=[Range(0, 60)],
     )
     yield ModbusSensorDescription(
+        key="rfreq",
+        addresses=[ModbusAddressesSpec(holding=[39139], models=Inv.EVO)],
+        entity_registry_enabled_default=False,
+        name="Grid Frequency",
+        device_class=SensorDeviceClass.FREQUENCY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="Hz",
+        scale=0.01,
+        round_to=0.1,
+        signed=True,
+        validate=[Range(0, 60)],
+    )
+    yield ModbusSensorDescription(
         key="eps_frequency",
         addresses=[
             ModbusAddressesSpec(input=[11020], models=Inv.H1_G1 | Inv.KH_PRE119),
@@ -1517,7 +1535,6 @@ def _inverter_entities() -> Iterable[EntityFactory]:
                 holding=[31013], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2_SET | Inv.KH_PRE133 | Inv.KH_133
             ),
             ModbusAddressesSpec(holding=[31025], models=Inv.H3_SET),
-            ModbusAddressesSpec(holding=[39218], models=Inv.EVO),
         ],
         entity_registry_enabled_default=False,
         name="EPS Frequency",
@@ -1527,6 +1544,19 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         scale=0.01,
         round_to=0.1,
         signed=False,
+        validate=[Range(0, 60)],
+    )
+    yield ModbusSensorDescription(
+        key="eps_frequency",
+        addresses=[ModbusAddressesSpec(holding=[39218], models=Inv.EVO)],
+        entity_registry_enabled_default=False,
+        name="EPS Frequency",
+        device_class=SensorDeviceClass.FREQUENCY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="Hz",
+        scale=0.01,
+        round_to=0.1,
+        signed=True,
         validate=[Range(0, 60)],
     )
     yield ModbusSensorDescription(
@@ -1555,7 +1585,6 @@ def _inverter_entities() -> Iterable[EntityFactory]:
                 holding=[31019], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2_SET | Inv.KH_PRE133 | Inv.KH_133
             ),
             ModbusAddressesSpec(holding=[31033], models=Inv.H3_SET),
-            ModbusAddressesSpec(holding=[39142], models=Inv.EVO),
         ],
         name="Ambient Temp",
         device_class=SensorDeviceClass.TEMPERATURE,
@@ -1824,7 +1853,9 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         unit_time=UnitOfTime.HOURS,
     )
 
-    def _battery_charge_today(addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
+    def _battery_charge_today(
+        addresses: list[ModbusAddressesSpec], scale: float, signed: bool = True
+    ) -> EntityFactory:
         return ModbusSensorDescription(
             key="battery_charge_today",
             addresses=addresses,
@@ -1834,6 +1865,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             native_unit_of_measurement="kWh",
             icon="mdi:battery-arrow-up-outline",
             scale=scale,
+            signed=signed,
             validate=[Range(0, 100)],
         )
 
@@ -1849,10 +1881,13 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _battery_charge_today(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39608, 39607], models=Inv.H3_SMART | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122 | Inv.EVO
+                holding=[39608, 39607], models=Inv.H3_SMART | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
             ),
         ],
         scale=0.01,
+    )
+    yield _battery_charge_today(
+        addresses=[ModbusAddressesSpec(holding=[39608, 39607], models=Inv.EVO)], scale=0.01, signed=False
     )
 
     def _battery_discharge_total(addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
@@ -1902,7 +1937,9 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         unit_time=UnitOfTime.HOURS,
     )
 
-    def _battery_discharge_today(addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
+    def _battery_discharge_today(
+        addresses: list[ModbusAddressesSpec], scale: float, signed: bool = True
+    ) -> EntityFactory:
         return ModbusSensorDescription(
             key="battery_discharge_today",
             addresses=addresses,
@@ -1912,6 +1949,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             native_unit_of_measurement="kWh",
             icon="mdi:battery-arrow-down-outline",
             scale=scale,
+            signed=signed,
             validate=[Range(0, 100)],
         )
 
@@ -1929,10 +1967,13 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _battery_discharge_today(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39612, 39611], models=Inv.H3_SMART | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122 | Inv.EVO
+                holding=[39612, 39611], models=Inv.H3_SMART | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
             ),
         ],
         scale=0.01,
+    )
+    yield _battery_discharge_today(
+        addresses=[ModbusAddressesSpec(holding=[39612, 39611], models=Inv.EVO)], scale=0.01, signed=False
     )
 
     def _feed_in_energy_total(addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
@@ -1983,7 +2024,9 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         icon="mdi:transmission-tower-import",
     )
 
-    def _feed_in_energy_today(addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
+    def _feed_in_energy_today(
+        addresses: list[ModbusAddressesSpec], scale: float, signed: bool = True
+    ) -> EntityFactory:
         return ModbusSensorDescription(
             key="feed_in_energy_today",
             addresses=addresses,
@@ -1993,6 +2036,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             native_unit_of_measurement="kWh",
             icon="mdi:transmission-tower-import",
             scale=scale,
+            signed=signed,
             validate=[Range(0, 1000)],
         )
 
@@ -2010,10 +2054,13 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _feed_in_energy_today(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39616, 39615], models=Inv.H3_SMART | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122 | Inv.EVO
+                holding=[39616, 39615], models=Inv.H3_SMART | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
             ),
         ],
         scale=0.01,
+    )
+    yield _feed_in_energy_today(
+        addresses=[ModbusAddressesSpec(holding=[39616, 39615], models=Inv.EVO)], scale=0.01, signed=False
     )
 
     def _grid_consumption_energy_total(addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
@@ -2064,7 +2111,9 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         icon="mdi:transmission-tower-export",
     )
 
-    def _grid_consumption_energy_today(addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
+    def _grid_consumption_energy_today(
+        addresses: list[ModbusAddressesSpec], scale: float, signed: bool = True
+    ) -> EntityFactory:
         return ModbusSensorDescription(
             key="grid_consumption_energy_today",
             addresses=addresses,
@@ -2074,6 +2123,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             native_unit_of_measurement="kWh",
             icon="mdi:transmission-tower-export",
             scale=scale,
+            signed=signed,
             validate=[Range(0, 1000)],
         )
 
@@ -2091,10 +2141,13 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _grid_consumption_energy_today(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39620, 39619], models=Inv.H3_SMART | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122 | Inv.EVO
+                holding=[39620, 39619], models=Inv.H3_SMART | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
             ),
         ],
         scale=0.01,
+    )
+    yield _grid_consumption_energy_today(
+        addresses=[ModbusAddressesSpec(holding=[39620, 39619], models=Inv.EVO)], scale=0.01, signed=False
     )
 
     def _total_yield_total(addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
@@ -2131,7 +2184,9 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         scale=0.01,
     )
 
-    def _total_yield_today(addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
+    def _total_yield_today(
+        addresses: list[ModbusAddressesSpec], scale: float, signed: bool = True
+    ) -> EntityFactory:
         return ModbusSensorDescription(
             key="total_yield_today",
             addresses=addresses,
@@ -2141,6 +2196,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             native_unit_of_measurement="kWh",
             icon="mdi:export",
             scale=scale,
+            signed=signed,
             # unsure if this actually goes negative
             validate=[Range(-200, 200)],
         )
@@ -2159,10 +2215,13 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _total_yield_today(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39624, 39623], models=Inv.H3_SMART | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122 | Inv.EVO
+                holding=[39624, 39623], models=Inv.H3_SMART | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
             ),
         ],
         scale=0.01,
+    )
+    yield _total_yield_today(
+        addresses=[ModbusAddressesSpec(holding=[39624, 39623], models=Inv.EVO)], scale=0.01, signed=False
     )
 
     def _input_energy_total(addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
@@ -2199,7 +2258,9 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         scale=0.01,
     )
 
-    def _input_energy_today(addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
+    def _input_energy_today(
+        addresses: list[ModbusAddressesSpec], scale: float, signed: bool = True
+    ) -> EntityFactory:
         return ModbusSensorDescription(
             key="input_energy_today",
             addresses=addresses,
@@ -2209,6 +2270,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             native_unit_of_measurement="kWh",
             icon="mdi:import",
             scale=scale,
+            signed=signed,
             # unsure if this actually goes negative
             validate=[Range(-1000, 1000)],
         )
@@ -2227,10 +2289,13 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _input_energy_today(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39628, 39627], models=Inv.H3_SMART | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122 | Inv.EVO
+                holding=[39628, 39627], models=Inv.H3_SMART | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
             ),
         ],
         scale=0.01,
+    )
+    yield _input_energy_today(
+        addresses=[ModbusAddressesSpec(holding=[39628, 39627], models=Inv.EVO)], scale=0.01, signed=False
     )
 
     def _load_power_total(addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
@@ -2286,7 +2351,9 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         unit_time=UnitOfTime.HOURS,
     )
 
-    def _load_energy_today(addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
+    def _load_energy_today(
+        addresses: list[ModbusAddressesSpec], scale: float, signed: bool = True
+    ) -> EntityFactory:
         return ModbusSensorDescription(
             key="load_energy_today",
             addresses=addresses,
@@ -2296,6 +2363,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             native_unit_of_measurement="kWh",
             icon="mdi:home-lightning-bolt-outline",
             scale=scale,
+            signed=signed,
             # unsure if this actually goes negative
             validate=[Range(-1000, 1000)],
         )
@@ -2314,10 +2382,13 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _load_energy_today(
         addresses=[
             ModbusAddressesSpec(
-                holding=[39632, 39631], models=Inv.H3_SMART | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122 | Inv.EVO
+                holding=[39632, 39631], models=Inv.H3_SMART | Inv.H3_PRO_SET & ~Inv.H3_PRO_PRE122
             ),
         ],
         scale=0.01,
+    )
+    yield _load_energy_today(
+        addresses=[ModbusAddressesSpec(holding=[39632, 39631], models=Inv.EVO)], scale=0.01, signed=False
     )
 
 
@@ -2478,7 +2549,6 @@ def _bms_entities() -> Iterable[EntityFactory]:
             # ModbusAddressesSpec(input=[11104], models=Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[37624], models=Inv.H1_G2_144 | Inv.KH_133),
             ModbusAddressesSpec(holding=[31090], models=Inv.H3_180),
-            ModbusAddressesSpec(holding=[39423], models=Inv.EVO),
         ],
         battery_temp=[
             ModbusAddressesSpec(input=[11038], models=Inv.H1_G1 | Inv.KH_PRE119),
@@ -2513,37 +2583,47 @@ def _bms_entities() -> Iterable[EntityFactory]:
             ModbusAddressesSpec(holding=[31123], models=Inv.H3_180),
         ],
     )
+    yield ModbusSensorDescription(
+        key="battery_soc",
+        addresses=[ModbusAddressesSpec(holding=[39423], models=Inv.EVO)],
+        name="System SoC",
+        device_class=SensorDeviceClass.BATTERY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="%",
+        signed=False,
+        validate=[Range(0, 100)],
+    )
     yield from _inner(
         index=1,
-        bms_connect_state_address=[ModbusAddressSpec(holding=37002, models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        batvolt=[ModbusAddressesSpec(holding=[37609], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        bat_current=[ModbusAddressesSpec(holding=[37610], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        battery_soc=[ModbusAddressesSpec(holding=[37612], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
+        bms_connect_state_address=[ModbusAddressSpec(holding=37002, models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO)],
+        batvolt=[ModbusAddressesSpec(holding=[37609], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO)],
+        bat_current=[ModbusAddressesSpec(holding=[37610], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO)],
+        battery_soc=[ModbusAddressesSpec(holding=[37612], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO)],
         # Added in H3_PRO v1.25, which hasn't been released yet.
         # See https://github.com/nathanmarlor/foxess_modbus/pull/775#issuecomment-2656447502
-        battery_soh=[ModbusAddressesSpec(holding=[37624], models=Inv.H3_SMART)],
-        battery_temp=[ModbusAddressesSpec(holding=[37611], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        bms_cell_temp_high=[ModbusAddressesSpec(holding=[37617], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        bms_cell_temp_low=[ModbusAddressesSpec(holding=[37618], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        bms_cell_mv_high=[ModbusAddressesSpec(holding=[37619], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        bms_cell_mv_low=[ModbusAddressesSpec(holding=[37620], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        bms_kwh_remaining=[ModbusAddressesSpec(holding=[37632], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
+        battery_soh=[ModbusAddressesSpec(holding=[37624], models=Inv.H3_SMART | Inv.EVO)],
+        battery_temp=[ModbusAddressesSpec(holding=[37611], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO)],
+        bms_cell_temp_high=[ModbusAddressesSpec(holding=[37617], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO)],
+        bms_cell_temp_low=[ModbusAddressesSpec(holding=[37618], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO)],
+        bms_cell_mv_high=[ModbusAddressesSpec(holding=[37619], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO)],
+        bms_cell_mv_low=[ModbusAddressesSpec(holding=[37620], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO)],
+        bms_kwh_remaining=[ModbusAddressesSpec(holding=[37632], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO)],
     )
     yield from _inner(
         index=2,
-        bms_connect_state_address=[ModbusAddressSpec(holding=37700, models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        batvolt=[ModbusAddressesSpec(holding=[38307], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        bat_current=[ModbusAddressesSpec(holding=[38308], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        battery_soc=[ModbusAddressesSpec(holding=[38310], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
+        bms_connect_state_address=[ModbusAddressSpec(holding=37700, models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO)],
+        batvolt=[ModbusAddressesSpec(holding=[38307], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO)],
+        bat_current=[ModbusAddressesSpec(holding=[38308], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO)],
+        battery_soc=[ModbusAddressesSpec(holding=[38310], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO)],
         # Added in H3_PRO v1.25, which hasn't been released yet.
         # See https://github.com/nathanmarlor/foxess_modbus/pull/775#issuecomment-2656447502
-        battery_soh=[ModbusAddressesSpec(holding=[38322], models=Inv.H3_SMART)],
-        battery_temp=[ModbusAddressesSpec(holding=[38309], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        bms_cell_temp_high=[ModbusAddressesSpec(holding=[38315], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        bms_cell_temp_low=[ModbusAddressesSpec(holding=[38316], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        bms_cell_mv_high=[ModbusAddressesSpec(holding=[38317], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        bms_cell_mv_low=[ModbusAddressesSpec(holding=[38318], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
-        bms_kwh_remaining=[ModbusAddressesSpec(holding=[38330], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
+        battery_soh=[ModbusAddressesSpec(holding=[38322], models=Inv.H3_SMART | Inv.EVO)],
+        battery_temp=[ModbusAddressesSpec(holding=[38309], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO)],
+        bms_cell_temp_high=[ModbusAddressesSpec(holding=[38315], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO)],
+        bms_cell_temp_low=[ModbusAddressesSpec(holding=[38316], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO)],
+        bms_cell_mv_high=[ModbusAddressesSpec(holding=[38317], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO)],
+        bms_cell_mv_low=[ModbusAddressesSpec(holding=[38318], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO)],
+        bms_kwh_remaining=[ModbusAddressesSpec(holding=[38330], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO)],
     )
 
 
@@ -2667,13 +2747,24 @@ def _configuration_entities() -> Iterable[EntityFactory]:
                 holding=[41009],
                 models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET & ~Inv.AIO_H3_PRE101 | Inv.KH_PRE133 | Inv.KH_133,
             ),
-            ModbusAddressesSpec(holding=[46609], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO),
+            ModbusAddressesSpec(holding=[46609], models=Inv.H3_PRO_SET | Inv.H3_SMART),
         ],
         name="Min SoC",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:battery-arrow-down",
         native_unit_of_measurement="%",
+        validate=[Range(0, 100)],
+    )
+    yield ModbusSensorDescription(
+        key="min_soc",
+        addresses=[ModbusAddressesSpec(holding=[46609], models=Inv.EVO)],
+        name="Min SoC",
+        device_class=SensorDeviceClass.BATTERY,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:battery-arrow-down",
+        native_unit_of_measurement="%",
+        signed=False,
         validate=[Range(0, 100)],
     )
     yield ModbusNumberDescription(
@@ -2706,13 +2797,24 @@ def _configuration_entities() -> Iterable[EntityFactory]:
                 holding=[41010],
                 models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET & ~Inv.AIO_H3_PRE101 | Inv.KH_PRE133 | Inv.KH_133,
             ),
-            ModbusAddressesSpec(holding=[46610], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO),
+            ModbusAddressesSpec(holding=[46610], models=Inv.H3_PRO_SET | Inv.H3_SMART),
         ],
         name="Max SoC",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
         icon="mdi:battery-arrow-up",
+        validate=[Range(0, 100)],
+    )
+    yield ModbusSensorDescription(
+        key="max_soc",
+        addresses=[ModbusAddressesSpec(holding=[46610], models=Inv.EVO)],
+        name="Max SoC",
+        device_class=SensorDeviceClass.BATTERY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="%",
+        icon="mdi:battery-arrow-up",
+        signed=False,
         validate=[Range(0, 100)],
     )
     yield ModbusNumberDescription(
@@ -2745,13 +2847,24 @@ def _configuration_entities() -> Iterable[EntityFactory]:
                 holding=[41011],
                 models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET & ~Inv.AIO_H3_PRE101 | Inv.KH_PRE133 | Inv.KH_133,
             ),
-            ModbusAddressesSpec(holding=[46611], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO),
+            ModbusAddressesSpec(holding=[46611], models=Inv.H3_PRO_SET | Inv.H3_SMART),
         ],
         name="Min SoC (On Grid)",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
         icon="mdi:battery-arrow-down",
+        validate=[Range(0, 100)],
+    )
+    yield ModbusSensorDescription(
+        key="min_soc_on_grid",
+        addresses=[ModbusAddressesSpec(holding=[46611], models=Inv.EVO)],
+        name="Min SoC (On Grid)",
+        device_class=SensorDeviceClass.BATTERY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="%",
+        icon="mdi:battery-arrow-down",
+        signed=False,
         validate=[Range(0, 100)],
     )
     yield ModbusNumberDescription(

@@ -94,6 +94,9 @@ H3_SMART_REGISTERS = SpecialRegisterConfig(
     invalid_register_ranges=[(41001, 41006), (41012, 41013), (41015, 41015)],
     individual_read_register_ranges=[(37609, 37620), (37632, 37636)],
 )
+# The EVO protocol's BMS1 block ends at 37636 and the BMS2 block starts
+# at 37700. The intervening addresses reject a combined Modbus read.
+EVO_REGISTERS = SpecialRegisterConfig(invalid_register_ranges=[(37637, 37699)])
 # See https://github.com/nathanmarlor/foxess_modbus/pull/512
 KH_REGISTERS = SpecialRegisterConfig(
     invalid_register_ranges=[(41001, 41006), (41012, 41012), (41019, 43999), (31055, 31999)],
@@ -481,6 +484,7 @@ _INVERTER_PROFILES_LIST = [
         ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={None: Inv.EVO},
+        special_registers=EVO_REGISTERS,
     ),
 ]
 
@@ -503,6 +507,13 @@ def inverter_connection_type_profile_from_config(inverter_config: dict[str, Any]
     """Fetches a InverterConnectionTypeProfile for a given configuration object"""
     inverter_model = inverter_config[INVERTER_BASE]
     connection_type = inverter_config[INVERTER_CONN]
+
+    # AdamNewberry's EVO integration stored this legacy model identifier in
+    # existing Home Assistant config entries. Nathan's integration calls the
+    # same inverter family EVO. Translate it here so users can retain their
+    # connection settings while migrating integrations.
+    if inverter_model == "EVO_10_H":
+        inverter_model = InverterModel.EVO
 
     model_profile = INVERTER_PROFILES[inverter_model]
 

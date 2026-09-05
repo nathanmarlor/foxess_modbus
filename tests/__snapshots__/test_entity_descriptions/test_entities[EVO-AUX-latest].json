@@ -1,10 +1,20 @@
 [
   {
     "addresses": [
-      39142
+      37610
     ],
-    "key": "ambtemp",
-    "name": "Ambient Temp",
+    "key": "bat_current_1",
+    "name": "Battery 1 Current",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38308
+    ],
+    "key": "bat_current_2",
+    "name": "Battery 2 Current",
     "scale": 0.1,
     "signed": true,
     "type": "sensor"
@@ -39,7 +49,7 @@
     "key": "battery_charge_today",
     "name": "Battery Charge Today",
     "scale": 0.01,
-    "signed": true,
+    "signed": false,
     "type": "sensor"
   },
   {
@@ -83,7 +93,7 @@
     "key": "battery_discharge_today",
     "name": "Battery Discharge Today",
     "scale": 0.01,
-    "signed": true,
+    "signed": false,
     "type": "sensor"
   },
   {
@@ -101,9 +111,189 @@
     "addresses": [
       39423
     ],
-    "key": "battery_soh",
-    "name": "Battery SoH",
+    "key": "battery_soc",
+    "name": "System SoC",
     "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      37612
+    ],
+    "key": "battery_soc_1",
+    "name": "Battery 1 SoC",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38310
+    ],
+    "key": "battery_soc_2",
+    "name": "Battery 2 SoC",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      37624
+    ],
+    "key": "battery_soh_1",
+    "name": "Battery 1 SoH",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38322
+    ],
+    "key": "battery_soh_2",
+    "name": "Battery 2 SoH",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      37611
+    ],
+    "key": "battery_temp_1",
+    "name": "Battery 1 Temp",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38309
+    ],
+    "key": "battery_temp_2",
+    "name": "Battery 2 Temp",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      37609
+    ],
+    "key": "batvolt_1",
+    "name": "Battery 1 Voltage",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38307
+    ],
+    "key": "batvolt_2",
+    "name": "Battery 2 Voltage",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      37619
+    ],
+    "key": "bms_cell_mv_high_1",
+    "name": "BMS 1 Cell mV High",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38317
+    ],
+    "key": "bms_cell_mv_high_2",
+    "name": "BMS 2 Cell mV High",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      37620
+    ],
+    "key": "bms_cell_mv_low_1",
+    "name": "BMS 1 Cell mV Low",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38318
+    ],
+    "key": "bms_cell_mv_low_2",
+    "name": "BMS 2 Cell mV Low",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      37617
+    ],
+    "key": "bms_cell_temp_high_1",
+    "name": "BMS 1 Cell Temp High",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38315
+    ],
+    "key": "bms_cell_temp_high_2",
+    "name": "BMS 2 Cell Temp High",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      37618
+    ],
+    "key": "bms_cell_temp_low_1",
+    "name": "BMS 1 Cell Temp Low",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38316
+    ],
+    "key": "bms_cell_temp_low_2",
+    "name": "BMS 2 Cell Temp Low",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      37632
+    ],
+    "key": "bms_kwh_remaining_1",
+    "name": "BMS 1 kWh Remaining",
+    "scale": 0.01,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      38330
+    ],
+    "key": "bms_kwh_remaining_2",
+    "name": "BMS 2 kWh Remaining",
+    "scale": 0.01,
     "signed": false,
     "type": "sensor"
   },
@@ -114,7 +304,7 @@
     "key": "eps_frequency",
     "name": "EPS Frequency",
     "scale": 0.01,
-    "signed": false,
+    "signed": true,
     "type": "sensor"
   },
   {
@@ -157,7 +347,7 @@
     "key": "feed_in_energy_today",
     "name": "Feed-in Today",
     "scale": 0.01,
-    "signed": true,
+    "signed": false,
     "type": "sensor"
   },
   {
@@ -190,7 +380,7 @@
     "key": "grid_consumption_energy_today",
     "name": "Grid Consumption Today",
     "scale": 0.01,
-    "signed": true,
+    "signed": false,
     "type": "sensor"
   },
   {
@@ -222,7 +412,7 @@
     "key": "grid_voltage_R",
     "name": "Grid Voltage R",
     "scale": 0.1,
-    "signed": false,
+    "signed": true,
     "type": "sensor"
   },
   {
@@ -233,7 +423,7 @@
     "key": "input_energy_today",
     "name": "Input Energy Today",
     "scale": 0.01,
-    "signed": true,
+    "signed": false,
     "type": "sensor"
   },
   {
@@ -330,7 +520,7 @@
     "key": "load_energy_today",
     "name": "Load Energy Today",
     "scale": 0.01,
-    "signed": true,
+    "signed": false,
     "type": "sensor"
   },
   {
@@ -380,8 +570,7 @@
     "key": "max_charge_current",
     "name": "Max Charge Current",
     "scale": 0.1,
-    "signed": true,
-    "type": "sensor"
+    "type": "number"
   },
   {
     "addresses": [
@@ -390,15 +579,6 @@
     "key": "max_charge_current",
     "name": "Max Charge Current",
     "scale": 0.1,
-    "type": "number"
-  },
-  {
-    "addresses": [
-      46608
-    ],
-    "key": "max_discharge_current",
-    "name": "Max Discharge Current",
-    "scale": 0.1,
     "signed": true,
     "type": "sensor"
   },
@@ -413,11 +593,11 @@
   },
   {
     "addresses": [
-      46610
+      46608
     ],
-    "key": "max_soc",
-    "name": "Max SoC",
-    "scale": null,
+    "key": "max_discharge_current",
+    "name": "Max Discharge Current",
+    "scale": 0.1,
     "signed": true,
     "type": "sensor"
   },
@@ -432,12 +612,12 @@
   },
   {
     "addresses": [
-      46609
+      46610
     ],
-    "key": "min_soc",
-    "name": "Min SoC",
+    "key": "max_soc",
+    "name": "Max SoC",
     "scale": null,
-    "signed": true,
+    "signed": false,
     "type": "sensor"
   },
   {
@@ -451,12 +631,12 @@
   },
   {
     "addresses": [
-      46611
+      46609
     ],
-    "key": "min_soc_on_grid",
-    "name": "Min SoC (On Grid)",
+    "key": "min_soc",
+    "name": "Min SoC",
     "scale": null,
-    "signed": true,
+    "signed": false,
     "type": "sensor"
   },
   {
@@ -467,6 +647,16 @@
     "name": "Min SoC (On Grid)",
     "scale": null,
     "type": "number"
+  },
+  {
+    "addresses": [
+      46611
+    ],
+    "key": "min_soc_on_grid",
+    "name": "Min SoC (On Grid)",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
   },
   {
     "addresses": [
@@ -484,7 +674,7 @@
     "name": "PV1 Power Total",
     "source": "pv1_power",
     "type": "integration-sensor",
-    "unit_time": "h"
+    "unit_time": "HOURS"
   },
   {
     "addresses": [
@@ -523,7 +713,7 @@
     "name": "PV2 Power Total",
     "source": "pv2_power",
     "type": "integration-sensor",
-    "unit_time": "h"
+    "unit_time": "HOURS"
   },
   {
     "addresses": [
@@ -594,7 +784,7 @@
     "key": "rfreq",
     "name": "Grid Frequency",
     "scale": 0.01,
-    "signed": false,
+    "signed": true,
     "type": "sensor"
   },
   {
@@ -710,7 +900,7 @@
     "key": "total_yield_today",
     "name": "Yield Today",
     "scale": 0.01,
-    "signed": true,
+    "signed": false,
     "type": "sensor"
   },
   {
