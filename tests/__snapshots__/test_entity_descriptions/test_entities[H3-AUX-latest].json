@@ -31,16 +31,6 @@
   },
   {
     "addresses": [
-      32005
-    ],
-    "key": "battery_charge_today",
-    "name": "Battery Charge Today",
-    "scale": 0.1,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
       32004,
       32003
     ],
@@ -57,16 +47,6 @@
     "key": "battery_discharge",
     "name": "Battery Discharge",
     "scale": 0.001,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      32008
-    ],
-    "key": "battery_discharge_today",
-    "name": "Battery Discharge Today",
-    "scale": 0.1,
     "signed": true,
     "type": "sensor"
   },
