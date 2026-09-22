@@ -1325,27 +1325,28 @@ def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
     yield _load_power(
         "R",
         addresses=[
-            ModbusAddressesSpec(holding=[31029], models=Inv.H3_SET),
+            ModbusAddressesSpec(holding=[31129], models=Inv.H3_SET),
             ModbusAddressesSpec(holding=[39220, 39219], models=Inv.H3_PRO_SET | Inv.H3_SMART),
         ],
     )
     yield _load_power(
         "S",
         addresses=[
-            ModbusAddressesSpec(holding=[31030], models=Inv.H3_SET),
+            ModbusAddressesSpec(holding=[31131], models=Inv.H3_SET),
             ModbusAddressesSpec(holding=[39222, 39221], models=Inv.H3_PRO_SET | Inv.H3_SMART),
         ],
     )
     yield _load_power(
         "T",
         addresses=[
-            ModbusAddressesSpec(holding=[31031], models=Inv.H3_SET),
+            ModbusAddressesSpec(holding=[31133], models=Inv.H3_SET),
             ModbusAddressesSpec(holding=[39224, 39223], models=Inv.H3_PRO_SET | Inv.H3_SMART),
         ],
     )
     yield _load_power(
         phase=None,
         addresses=[
+            ModbusAddressesSpec(holding=[31127], models=Inv.H3_SET),
             ModbusAddressesSpec(holding=[39226, 39225], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO),
         ],
     )
