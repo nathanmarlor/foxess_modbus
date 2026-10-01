@@ -15,6 +15,7 @@ from typing import Iterator
 
 from homeassistant.components.logbook import async_log_entry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import issue_registry
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.issue_registry import IssueSeverity
@@ -276,7 +277,10 @@ class ModbusController(EntityController, UnloadController):
         except Exception as ex:
             # Failed writes are always bad
             _LOGGER.exception("Failed to write registers")
-            raise ex
+            if isinstance(ex, HomeAssistantError):
+                raise
+            # Shown to the user by the entity or service which asked for the write
+            raise HomeAssistantError(f"Failed to write registers at {start_address}: {ex}") from ex
 
     async def _refresh(self, _time: datetime) -> None:
         """Refresh modbus data"""
