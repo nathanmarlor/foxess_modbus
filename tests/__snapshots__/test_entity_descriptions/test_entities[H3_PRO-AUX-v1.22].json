@@ -335,8 +335,8 @@
   },
   {
     "addresses": [
-      39213,
-      39212
+      39211,
+      39210
     ],
     "key": "eps_power_R",
     "name": "EPS Power R",
@@ -346,8 +346,8 @@
   },
   {
     "addresses": [
-      39215,
-      39214
+      39213,
+      39212
     ],
     "key": "eps_power_S",
     "name": "EPS Power S",
@@ -357,8 +357,8 @@
   },
   {
     "addresses": [
-      39217,
-      39216
+      39215,
+      39214
     ],
     "key": "eps_power_T",
     "name": "EPS Power T",
