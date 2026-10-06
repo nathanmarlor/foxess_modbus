@@ -482,6 +482,14 @@ _INVERTER_PROFILES_LIST = [
         RegisterType.HOLDING,
         versions={None: Inv.EVO},
     ),
+    # Solarwatt Vision Inverters
+    # These have the form 'VSN THREE ..KW', with powers 5, 6, 8, 9.9, 10, 12, 15 KW
+    InverterModelProfile(InverterModel.SOLARWATT_H3, r"^VSN THREE (\d+)KW").add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={None: Inv.H3_SMART},
+        special_registers=H3_SMART_REGISTERS,
+    ),
 ]
 
 INVERTER_PROFILES = {x.model: x for x in _INVERTER_PROFILES_LIST}
