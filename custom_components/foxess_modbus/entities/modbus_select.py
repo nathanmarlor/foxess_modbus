@@ -30,6 +30,7 @@ class ModbusSelectDescription(SelectEntityDescription, EntityFactory):  # type: 
     address: list[ModbusAddressSpec]
     options_map: dict[int, str]
     validate: list[BaseValidator] = field(default_factory=list)
+    bitmask: int | None = None
 
     @property
     def entity_type(self) -> type[Entity]:
@@ -49,13 +50,16 @@ class ModbusSelectDescription(SelectEntityDescription, EntityFactory):  # type: 
         if addresses is None:
             return None
 
-        return {
+        result: dict[str, Any] = {
             "type": "select",
             "key": self.key,
             "name": self.name,
             "addresses": addresses,
-            "values": self.options_map,
+            "values": self.options_map.copy(),
         }
+        if self.bitmask is not None:
+            result["bitmask"] = self.bitmask
+        return result
 
 
 class ModbusSelect(ModbusEntityMixin, SelectEntity):
@@ -81,6 +85,8 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
         value = self._controller.read(self._address, signed=False)
         if value is None:
             return None
+        if entity_description.bitmask is not None:
+            value &= entity_description.bitmask
         if not self._validate(entity_description.validate, value):
             return None
 
@@ -110,6 +116,16 @@ class ModbusSelect(ModbusEntityMixin, SelectEntity):
             )
             return
 
+        mask = entity_description.bitmask
+        if mask is not None:
+            # Read directly: cached bits may predate a remote enable/app change.
+            # This is not atomic with other writers to the same register.
+            words = await self._controller.read_registers(self._address, 1, RegisterType.HOLDING)
+            if len(words) != 1 or not 0 <= words[0] <= 0xFFFF:
+                raise ValueError("Select register is unavailable or invalid")
+            if value & mask != value:
+                raise ValueError("Select option contains bits outside its mask")
+            value = (words[0] & (0xFFFF ^ mask)) | value
         await self._controller.write_register(self._address, value)
 
     @property

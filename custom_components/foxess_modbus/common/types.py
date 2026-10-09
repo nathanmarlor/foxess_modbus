@@ -39,6 +39,7 @@ class InverterModel(StrEnum):
     H1_G2 = "H1_G2"
 
     P1 = "P1"
+    PQ1 = "PQ1"
 
     AC1 = "AC1"
     AC1_G2 = "AC1_G2"
@@ -99,7 +100,9 @@ class Inv(Flag):
 
     EVO = auto()
 
-    ALL = H1_LAN | H1_G1 | H1_G2_SET | KH_SET | H3_SET | H3_PRO_SET | H3_SMART | EVO
+    PQ1 = auto()
+
+    ALL = H1_LAN | H1_G1 | H1_G2_SET | KH_SET | H3_SET | H3_PRO_SET | H3_SMART | EVO | PQ1
 
 
 class RegisterPollType(IntEnum):

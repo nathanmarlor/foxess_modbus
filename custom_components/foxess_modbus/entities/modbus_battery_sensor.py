@@ -41,6 +41,7 @@ class ModbusBatterySensorDescription(ModbusSensorDescription):  # type: ignore[m
                 self,
                 addresses,
                 bms_connect_address,
+                inverter_model in self.experimental_models,
             )
             if addresses is not None
             else None
@@ -57,12 +58,14 @@ class ModbusBatterySensor(ModbusSensor):
         # Array of registers which this value is split over, from lower-order bits to higher-order bits
         addresses: list[int],
         bms_connect_state_address: int | None,
+        experimental: bool = False,
     ) -> None:
         super().__init__(
             controller=controller,
             entity_description=entity_description,
             addresses=addresses,
             round_to=None,
+            experimental=experimental,
         )
 
         self._interested_addresses = addresses.copy()

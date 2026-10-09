@@ -1,0 +1,706 @@
+[
+  {
+    "addresses": [
+      39238,
+      39237
+    ],
+    "key": "battery_charge",
+    "name": "Battery Charge",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      32005
+    ],
+    "key": "battery_charge_today",
+    "name": "Battery Charge Today",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      32004,
+      32003
+    ],
+    "key": "battery_charge_total",
+    "name": "Battery Charge Total",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39238,
+      39237
+    ],
+    "key": "battery_discharge",
+    "name": "Battery Discharge",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      32008
+    ],
+    "key": "battery_discharge_today",
+    "name": "Battery Discharge Today",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      32007,
+      32006
+    ],
+    "key": "battery_discharge_total",
+    "name": "Battery Discharge Total",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "key": "battery_energy_remaining",
+    "name": "Battery Energy Remaining (Estimated)",
+    "sources": [
+      "battery_nominal_capacity",
+      "battery_soh",
+      "battery_soc"
+    ],
+    "type": "lambda"
+  },
+  {
+    "addresses": [
+      37635
+    ],
+    "key": "battery_nominal_capacity",
+    "name": "Battery Nominal Capacity",
+    "scale": 0.01,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      31024
+    ],
+    "key": "battery_soc",
+    "name": "Battery SoC",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      37624
+    ],
+    "key": "battery_soh",
+    "name": "Battery SoH",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      37609
+    ],
+    "key": "batvolt",
+    "name": "Battery Voltage",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      37619
+    ],
+    "key": "bms_cell_mv_high",
+    "name": "BMS Cell mV High",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      37620
+    ],
+    "key": "bms_cell_mv_low",
+    "name": "BMS Cell mV Low",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      37617
+    ],
+    "key": "bms_cell_temp_high",
+    "name": "BMS Cell Temp High",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      37618
+    ],
+    "key": "bms_cell_temp_low",
+    "name": "BMS Cell Temp Low",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      49203,
+      48000,
+      31024,
+      46001
+    ],
+    "key": "current_work_mode",
+    "name": "Current Work Mode",
+    "type": "current-work-mode"
+  },
+  {
+    "addresses": [
+      31010
+    ],
+    "key": "eps_rvolt",
+    "name": "EPS Voltage",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      46617,
+      46616
+    ],
+    "key": "export_power_limit",
+    "name": "Export Power Limit",
+    "scale": null,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      31050,
+      31049
+    ],
+    "key": "feed_in",
+    "name": "Feed-in",
+    "scale": -0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      32011
+    ],
+    "key": "feed_in_energy_today",
+    "name": "Feed-in Today",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      32010,
+      32009
+    ],
+    "key": "feed_in_energy_total",
+    "name": "Feed-in Total",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      31050,
+      31049
+    ],
+    "key": "grid_consumption",
+    "name": "Grid Consumption",
+    "scale": -0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      32014
+    ],
+    "key": "grid_consumption_energy_today",
+    "name": "Grid Consumption Today",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      32013,
+      32012
+    ],
+    "key": "grid_consumption_energy_total",
+    "name": "Grid Consumption Total",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      31050,
+      31049
+    ],
+    "key": "grid_ct",
+    "name": "Grid CT",
+    "scale": -0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39135,
+      39134
+    ],
+    "key": "inv_power",
+    "name": "Inverter Power",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      31021
+    ],
+    "key": "invbatcurrent",
+    "name": "Inverter Battery Current",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39238,
+      39237
+    ],
+    "key": "invbatpower",
+    "name": "Inverter Battery Power",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      31020
+    ],
+    "key": "invbatvolt",
+    "name": "Inverter Battery Voltage",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39141
+    ],
+    "key": "invtemp",
+    "name": "Inverter Temp",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      32023
+    ],
+    "key": "load_energy_today",
+    "name": "Load Energy Today",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39226,
+      39225
+    ],
+    "key": "load_power",
+    "name": "Load Power",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      32022,
+      32021
+    ],
+    "key": "load_power_total",
+    "name": "Load Energy Total",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      36003
+    ],
+    "is_hex": true,
+    "key": "manager_version",
+    "name": "Version: Manager",
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      49203
+    ],
+    "key": "manual_work_mode",
+    "name": "Basic Work Mode",
+    "options_map": {
+      "1": "Self Use",
+      "2": "Feed-in Priority",
+      "3": "Backup",
+      "4": "Peak Shaving"
+    },
+    "type": "enum-sensor"
+  },
+  {
+    "addresses": [
+      41000
+    ],
+    "key": "manual_work_mode_41000",
+    "name": "Basic Work Mode (Register 41000)",
+    "options_map": {
+      "0": "Self Use",
+      "1": "Feed-in Priority",
+      "2": "Backup",
+      "3": "Peak Shaving"
+    },
+    "type": "enum-sensor"
+  },
+  {
+    "addresses": [
+      36001
+    ],
+    "is_hex": true,
+    "key": "master_version",
+    "name": "Version: Master",
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      41007
+    ],
+    "key": "max_charge_current",
+    "name": "Max Charge Current",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      41008
+    ],
+    "key": "max_discharge_current",
+    "name": "Max Discharge Current",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      41010
+    ],
+    "key": "max_soc",
+    "name": "Max SoC",
+    "scale": null,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      41009
+    ],
+    "key": "min_soc",
+    "name": "Min SoC",
+    "scale": null,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      41011
+    ],
+    "key": "min_soc_on_grid",
+    "name": "Min SoC (On Grid)",
+    "scale": null,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39071
+    ],
+    "key": "pv1_current",
+    "name": "PV1 Current",
+    "scale": 0.01,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39280
+    ],
+    "key": "pv1_power",
+    "name": "PV1 Power",
+    "scale": 0.001,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39070
+    ],
+    "key": "pv1_voltage",
+    "name": "PV1 Voltage",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39073
+    ],
+    "key": "pv2_current",
+    "name": "PV2 Current",
+    "scale": 0.01,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39282
+    ],
+    "key": "pv2_power",
+    "name": "PV2 Power",
+    "scale": 0.001,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39072
+    ],
+    "key": "pv2_voltage",
+    "name": "PV2 Voltage",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39075
+    ],
+    "key": "pv3_current",
+    "name": "PV3 Current",
+    "scale": 0.01,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39284
+    ],
+    "key": "pv3_power",
+    "name": "PV3 Power",
+    "scale": 0.001,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39074
+    ],
+    "key": "pv3_voltage",
+    "name": "PV3 Voltage",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39077
+    ],
+    "key": "pv4_current",
+    "name": "PV4 Current",
+    "scale": 0.01,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39286
+    ],
+    "key": "pv4_power",
+    "name": "PV4 Power",
+    "scale": 0.001,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39076
+    ],
+    "key": "pv4_voltage",
+    "name": "PV4 Voltage",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "key": "pv_power_now",
+    "name": "PV Power",
+    "sources": [
+      "pv1_power",
+      "pv2_power",
+      "pv3_power",
+      "pv4_power"
+    ],
+    "type": "lambda"
+  },
+  {
+    "addresses": [
+      31007
+    ],
+    "key": "rcurrent",
+    "name": "Inverter Current",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "first_record_address": 48010,
+    "key": "remaining_time",
+    "max_records": 96,
+    "name": "Remaining Time",
+    "record_size": 10,
+    "type": "schedule"
+  },
+  {
+    "addresses": [
+      46001
+    ],
+    "bitmask": 12,
+    "key": "remote_control_target",
+    "name": "Target Power Measure",
+    "type": "select",
+    "values": {
+      "0": "AC",
+      "12": "AC (Grid First)",
+      "4": "Battery",
+      "8": "Grid CT-Meter"
+    }
+  },
+  {
+    "addresses": [
+      39139
+    ],
+    "key": "rfreq",
+    "name": "Grid Frequency",
+    "scale": 0.01,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39249,
+      39248
+    ],
+    "key": "rpower",
+    "name": "Inverter Rpower",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      31006
+    ],
+    "key": "rvolt",
+    "name": "Grid Voltage",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "first_record_address": 48010,
+    "key": "schedule_entries",
+    "max_records": 96,
+    "name": "Schedule Entries",
+    "record_size": 10,
+    "type": "schedule"
+  },
+  {
+    "addresses": [
+      48000
+    ],
+    "key": "scheduler_enabled",
+    "name": "Scheduler Enabled",
+    "type": "binary-sensor"
+  },
+  {
+    "addresses": [
+      36002
+    ],
+    "is_hex": true,
+    "key": "slave_version",
+    "name": "Version: Slave",
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39604,
+      39603
+    ],
+    "key": "solar_energy_today",
+    "name": "Solar Generation Today",
+    "scale": 0.01,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      39602,
+      39601
+    ],
+    "key": "solar_energy_total",
+    "name": "Solar Generation Total",
+    "scale": 0.01,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      32017
+    ],
+    "key": "total_yield_today",
+    "name": "Inverter AC Output Energy Today",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      32016,
+      32015
+    ],
+    "key": "total_yield_total",
+    "name": "Inverter AC Output Energy Total",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  }
+]

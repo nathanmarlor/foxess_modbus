@@ -40,7 +40,7 @@ def get_entity_id(controller: EntityController, platform: Platform, key: str) ->
     if entity_id is None:
         # This can happen when first setting up, as the target entity hasn't been created yet.
         # In this case, assume that it's going to be correctly named
-        entity_id = _add_entity_id_prefix(key, controller.inverter_details)
+        entity_id = f"{platform}.{_add_entity_id_prefix(key, controller.inverter_details)}"
 
     return entity_id
 

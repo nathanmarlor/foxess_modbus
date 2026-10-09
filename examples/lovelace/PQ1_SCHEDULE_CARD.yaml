@@ -1,0 +1,97 @@
+# Dashboard card, not an automation/script or configuration.yaml entry.
+# Dashboard > Edit > Add card > Manual: paste this entire file, then save.
+# If your entity prefix differs, change ONLY the four entity IDs below.
+# Keep their order: Schedule Entries, Remaining Time, Scheduler Enabled,
+# Current Work Mode.
+# Uses the built-in Markdown card; no custom frontend installation is needed.
+# Reference: https://www.home-assistant.io/dashboards/markdown/
+type: markdown
+title: Inverter schedules
+entity_id:
+  - sensor.solar_inverter_schedule_entries
+  - sensor.solar_inverter_remaining_time
+  - binary_sensor.solar_inverter_scheduler_enabled
+  - sensor.solar_inverter_current_work_mode
+content: |
+  {% set schedules = config.entity_id[0] %}
+  {% set remaining = config.entity_id[1] %}
+  {% set scheduler = config.entity_id[2] %}
+  {% set current = config.entity_id[3] %}
+  {% set entries = state_attr(schedules, 'entries') %}
+  {% set updated = state_attr(schedules, 'last_updated') %}
+  {% set remaining_updated = state_attr(remaining, 'last_updated') %}
+  {% set error = state_attr(schedules, 'read_error') or state_attr(remaining, 'read_error') %}
+  {% set unavailable = states(schedules) in ['unknown', 'unavailable'] or states(remaining) in ['unknown', 'unavailable'] %}
+
+  **Read only — change schedules in the FOX Cloud App.**
+
+  **Scheduler:** {{ 'Enabled' if is_state(scheduler, 'on') else 'Disabled' if is_state(scheduler, 'off') else 'Unknown' }}
+
+  **Current Work Mode:** {{ states(current) | e }} · {{ (state_attr(current, 'source') or 'unknown') | replace('_', ' ') | e }}
+
+  {% if state_attr(current, 'fallback_in_operation') == true %}
+  **SOC cut-off met — fallback mode in operation.** {{ (state_attr(current, 'after_soc_behavior') or 'Unknown') | e }}{% if state_attr(current, 'fallback_work_mode') %}: {{ state_attr(current, 'fallback_work_mode') | e }}{% endif %}
+
+  {% endif %}
+  {% if state_attr(current, 'reason') %}
+  _{{ state_attr(current, 'reason') | e }}_
+
+  {% endif %}
+
+  _Current Work Mode is inferred from remote-control status, schedule time and SOC, or manual mode. Schedule entries below show stored settings._
+
+  {% if error %}
+  **Schedule read failed:** {{ error | e }}
+
+  {% elif unavailable %}
+  **Schedule data unavailable.** Enable both schedule sensors and wait for the first completed scan. The integration must include schedule-reader support.
+
+  {% endif %}
+  {% if updated %}
+  **{{ 'Last successful read' if unavailable or error else 'Last read' }}:** {{ as_local(as_datetime(updated)).strftime('%d %b %Y %H:%M:%S') }}
+
+  {% endif %}
+  {% if unavailable or error %}
+  {% if entries is not none or remaining_updated %}
+  _Any records below are the last saved snapshot and may be out of date._
+
+  {% endif %}
+  {% endif %}
+  {% if entries is not none %}
+  ### Schedule entries · {{ entries | length }}
+
+  {% if entries | length == 0 %}
+  No explicit periods are saved. Remaining Time covers the day.
+
+  {% endif %}
+  {% for entry in entries %}
+  **{{ loop.index }} · {{ entry.start }}–{{ entry.end }}** · {{ 'Enabled' if entry.enabled else 'Disabled' }}
+
+  - **Mode:** {{ entry.work_mode | e }}
+  - **SOC limits:** {{ entry.min_soc }}–{{ entry.max_soc }}%
+  - **Mode SOC setting:** {{ entry.mode_soc }}%
+  - **Power setting:** {{ '%.2f' | format(entry.power_w / 1000) }} kW
+  {% if entry.after_soc_applicable == true %}
+  - **After SOC cut-off:** {{ entry.after_soc_behavior | e }}
+  {% endif %}
+
+  {% endfor %}
+  {% endif %}
+  {% if remaining_updated %}
+  ### Remaining Time
+
+  Applies outside enabled periods when the scheduler is enabled.
+
+  - **Mode:** {{ state_attr(remaining, 'work_mode') | e }}
+  - **SOC limits:** {{ state_attr(remaining, 'min_soc') }}–{{ state_attr(remaining, 'max_soc') }}%
+  - **Mode SOC setting:** {{ state_attr(remaining, 'mode_soc') }}%
+  - **Power setting:** {{ '%.2f' | format(state_attr(remaining, 'power_w') / 1000) }} kW
+
+  {% if remaining_updated != updated %}
+  **Remaining Time last read:** {{ as_local(as_datetime(remaining_updated)).strftime('%d %b %Y %H:%M:%S') }}
+
+  _The two entities currently show different snapshot times. Wait for both to update._
+
+  {% endif %}
+  {% endif %}
+  _Mode SOC and power settings depend on the selected mode; they may be unused in some modes. Unresolved scheduler fields are available in the sensors' raw attributes._

@@ -4,11 +4,16 @@ import logging
 from abc import ABC
 from abc import abstractmethod
 from enum import Enum
+from typing import TYPE_CHECKING
 from typing import Any
 
 from homeassistant.core import HomeAssistant
 
 from .types import RegisterPollType
+from .types import RegisterType
+
+if TYPE_CHECKING:
+    from ..schedule_reader_manager import ScheduleReaderManager
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -49,6 +54,11 @@ class EntityRemoteControlManager(ABC):
     @abstractmethod
     async def set_mode(self, value: RemoteControlMode) -> None:
         """Set the current mode"""
+
+    @property
+    def active_mode(self) -> RemoteControlMode:
+        """An applied remote mode, distinct from the requested selection."""
+        return RemoteControlMode.DISABLE
 
     @property
     @abstractmethod
@@ -105,6 +115,11 @@ class EntityController(ABC):
         """Fetch the remote control manager, if any"""
 
     @property
+    def schedule_reader_manager(self) -> "ScheduleReaderManager | None":
+        """Optional record-based scheduler capability; legacy controllers have none."""
+        return None
+
+    @property
     @abstractmethod
     def inverter_capacity(self) -> int:
         """Fetches the inverter capacity as parsed from the inverter name, if possible"""
@@ -121,6 +136,10 @@ class EntityController(ABC):
     @abstractmethod
     def remove_modbus_entity(self, listener: ModbusControllerEntity) -> None:
         """Removes a modbus entity from the ModbusController"""
+
+    @abstractmethod
+    async def read_registers(self, start_address: int, num_registers: int, register_type: RegisterType) -> list[int]:
+        """Read registers directly from the inverter, bypassing the entity cache."""
 
     @abstractmethod
     async def write_register(self, address: int, value: int) -> None:

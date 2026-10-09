@@ -22,6 +22,7 @@ Supported models:
 - FoxESS H3 (including AC3 and AOI-H3)
 - FoxESS H3 PRO
 - FoxESS P1
+- FoxESS PQ1 (monitoring, remote power control and read-only schedules)
 - FoxESS KH
 - Kuara H3
 - Sonnenkraft SK-HWR
@@ -30,6 +31,27 @@ Supported models:
 - a-TroniX AX
 - Enpal
 - 1KOMMA5°
+
+PQ1 support is based on a PQ1-8.0 tested over native LAN Modbus TCP
+(port 502, device ID 247). It reuses existing mappings for four PV inputs,
+grid, load, battery, BMS and energy readings. Battery power and derived
+charge/discharge use the modern `39237–39238` pair. Basic Work Mode reads
+`49203`; the alternative `41000` reading and Export Power Limit are disabled
+by default as diagnostics. Battery remaining energy is explicitly estimated
+from nominal capacity, SOH and SOC.
+
+PQ1 exposes remote Force Charge/Force Discharge, requested power controls and
+Target Power Measure through the existing remote-control manager. Basic mode
+and saved schedules are not changed by these controls. Schedule Entries and
+Remaining Time provide read-only schedule viewing; Current Work Mode is
+inferred from remote control, schedules and Basic mode. The
+[example schedule card](examples/lovelace/PQ1_SCHEDULE_CARD.yaml) uses the
+built-in Markdown card. Change schedules in the FOX Cloud App.
+
+The production PQ1 profile includes no raw research entities or Experimental
+labels. The optional experimental-mapping mechanism remains available for
+contributors testing new register interpretations. Legacy charge-period
+registers `41001–41006` are not polled on PQ1.
 
 You will need a direct connection to your inverter.
 In most cases, this means buying a modbus to ethernet/USB adapter and wiring this to a port on your inverter.
