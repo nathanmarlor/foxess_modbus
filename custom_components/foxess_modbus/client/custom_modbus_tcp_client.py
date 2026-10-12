@@ -7,6 +7,7 @@ from typing import cast
 
 from ..vendor.pymodbus import ConnectionException
 from ..vendor.pymodbus import ModbusTcpClient
+from .frame_repair import MissingUnitIdRepairer
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -17,6 +18,36 @@ class CustomModbusTcpClient(ModbusTcpClient):
     def __init__(self, delay_on_connect: int | None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._delay_on_connect = delay_on_connect
+        # FoxESS H3 fw 2.23/1.95 drops the unit-id byte of most responses, see frame_repair.py.
+        # pymodbus asks recv() for the frame in two pieces (8-byte header + rest), so we keep
+        # our own receive buffer and repair the frame as soon as its 7th byte is known.
+        self._repairer = MissingUnitIdRepairer()
+        self._rx_buffer = b""
+
+    def execute(self, request: Any = None) -> Any:
+        if request is not None:
+            self._repairer.expect(request.slave_id, request.function_code)
+        self._rx_buffer = b""
+        return super().execute(request)
+
+    def send(self, request: Any) -> Any:
+        # Called for every (re)transmission: whatever was left unread belongs to an older frame,
+        # and the retry's answer must be inspected again.
+        self._rx_buffer = b""
+        self._repairer.rearm()
+        return super().send(request)
+
+    def recv(self, size: int) -> Any:
+        """Read `size` bytes, transparently re-inserting a missing unit id."""
+        need = (size - len(self._rx_buffer)) if size else None
+        if need is None or need > 0:
+            self._rx_buffer += self._recv_raw(need)
+            self._rx_buffer = self._repairer.repair(self._rx_buffer)
+        if size is None:
+            data, self._rx_buffer = self._rx_buffer, b""
+        else:
+            data, self._rx_buffer = self._rx_buffer[:size], self._rx_buffer[size:]
+        return data
 
     def connect(self) -> bool:
         was_connected = self.socket is not None
@@ -34,7 +65,7 @@ class CustomModbusTcpClient(ModbusTcpClient):
 
     # Replacement of ModbusTcpClient to use poll rather than select, see
     # https://github.com/nathanmarlor/foxess_modbus/issues/275
-    def recv(self, size: int) -> Any:
+    def _recv_raw(self, size: int | None) -> Any:
         """Read data from the underlying descriptor."""
         super(ModbusTcpClient, self).recv(size)
         if not self.socket:
