@@ -153,6 +153,99 @@
   },
   {
     "addresses": [
+      46506
+    ],
+    "key": "charge_in_low_import",
+    "name": "Charge In Low Import",
+    "type": "select",
+    "values": {
+      "0": "No Mode",
+      "1": "NC Mode",
+      "2": "Timing Mode"
+    }
+  },
+  {
+    "addresses": [
+      46509
+    ],
+    "key": "charge_in_low_time_1_end_hour",
+    "name": "Charge In Low Time 1 End Hour",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      46510
+    ],
+    "key": "charge_in_low_time_1_end_minute",
+    "name": "Charge In Low Time 1 End Minute",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      46507
+    ],
+    "key": "charge_in_low_time_1_start_hour",
+    "name": "Charge In Low Time 1 Start Hour",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      46508
+    ],
+    "key": "charge_in_low_time_1_start_minute",
+    "name": "Charge In Low Time 1 Start Minute",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      46513
+    ],
+    "key": "charge_in_low_time_2_end_hour",
+    "name": "Charge In Low Time 2 End Hour",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      46514
+    ],
+    "key": "charge_in_low_time_2_end_minute",
+    "name": "Charge In Low Time 2 End Minute",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      46511
+    ],
+    "key": "charge_in_low_time_2_start_hour",
+    "name": "Charge In Low Time 2 Start Hour",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      46512
+    ],
+    "key": "charge_in_low_time_2_start_minute",
+    "name": "Charge In Low Time 2 Start Minute",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
       31025
     ],
     "key": "eps_frequency",
@@ -190,6 +283,48 @@
     "scale": 0.001,
     "signed": true,
     "type": "sensor"
+  },
+  {
+    "addresses": [
+      46505,
+      46504
+    ],
+    "key": "export_peak_limit",
+    "name": "Export Peak Limit",
+    "scale": null,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      46505,
+      46504
+    ],
+    "key": "export_peak_limit",
+    "name": "Export Peak Limit",
+    "scale": null,
+    "type": "number"
+  },
+  {
+    "addresses": [
+      46617,
+      46616
+    ],
+    "key": "export_power_limit",
+    "name": "Export Power Limit",
+    "scale": null,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      46617,
+      46616
+    ],
+    "key": "export_power_limit",
+    "name": "Export Power Limit",
+    "scale": null,
+    "type": "number"
   },
   {
     "addresses": [
@@ -352,6 +487,27 @@
     "scale": 0.1,
     "signed": false,
     "type": "sensor"
+  },
+  {
+    "addresses": [
+      46502,
+      46501
+    ],
+    "key": "import_power_limit",
+    "name": "Import Power Limit",
+    "scale": null,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      46502,
+      46501
+    ],
+    "key": "import_power_limit",
+    "name": "Import Power Limit",
+    "scale": null,
+    "type": "number"
   },
   {
     "addresses": [
@@ -757,6 +913,25 @@
     ],
     "key": "min_soc_on_grid",
     "name": "Min SoC (On Grid)",
+    "scale": null,
+    "type": "number"
+  },
+  {
+    "addresses": [
+      46503
+    ],
+    "key": "peak_shaving_threshold_soc",
+    "name": "Peak Shaving Threshold SoC",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      46503
+    ],
+    "key": "peak_shaving_threshold_soc",
+    "name": "Peak Shaving Threshold SoC",
     "scale": null,
     "type": "number"
   },

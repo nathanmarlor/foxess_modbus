@@ -30,6 +30,7 @@ from .modbus_inverter_state_sensor import ModbusG2InverterStateSensorDescription
 from .modbus_inverter_state_sensor import ModbusInverterStateSensorDescription
 from .modbus_lambda_sensor import ModbusLambdaSensorDescription
 from .modbus_number import ModbusNumberDescription
+from .modbus_select import ModbusSelectDescription
 from .modbus_sensor import ModbusSensorDescription
 from .modbus_version_sensor import ModbusVersionSensorDescription
 from .modbus_work_mode_select import ModbusWorkModeSelectDescription
@@ -2778,12 +2779,12 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         validate=[Range(0, 100)],
     )
 
-    # Register 46616+46617: Export Power Limit (I32 in watts, KH_133 only)
+    # Register 46616+46617: Export Power Limit (I32 in watts)
     # Address list order [46617, 46616]: low-word register first (controller.read() convention)
     yield ModbusSensorDescription(
         key="export_power_limit",
         addresses=[
-            ModbusAddressesSpec(holding=[46617, 46616], models=Inv.KH_133 | Inv.H3_SMART),
+            ModbusAddressesSpec(holding=[46617, 46616], models=Inv.KH_133 | Inv.H3_SMART | Inv.H3_193),
         ],
         name="Export Power Limit",
         device_class=SensorDeviceClass.POWER,
@@ -2795,7 +2796,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     yield ModbusNumberDescription(
         key="export_power_limit",
         addresses=[
-            ModbusAddressesSpec(holding=[46617, 46616], models=Inv.KH_133 | Inv.H3_SMART),
+            ModbusAddressesSpec(holding=[46617, 46616], models=Inv.KH_133 | Inv.H3_SMART | Inv.H3_193),
         ],
         name="Export Power Limit",
         mode=NumberMode.BOX,
@@ -2808,12 +2809,12 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         validate=[Range(0, 99999)],
     )
 
-    # Register 46501+46502: Import Power Limit (I32 in watts, KH_133 only)
+    # Register 46501+46502: Import Power Limit (I32 in watts)
     # Address list order [46502, 46501]: low-word register first (controller.read() convention)
     yield ModbusSensorDescription(
         key="import_power_limit",
         addresses=[
-            ModbusAddressesSpec(holding=[46502, 46501], models=Inv.KH_133 | Inv.H3_SMART),
+            ModbusAddressesSpec(holding=[46502, 46501], models=Inv.KH_133 | Inv.H3_SMART | Inv.H3_193),
         ],
         name="Import Power Limit",
         device_class=SensorDeviceClass.POWER,
@@ -2825,7 +2826,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     yield ModbusNumberDescription(
         key="import_power_limit",
         addresses=[
-            ModbusAddressesSpec(holding=[46502, 46501], models=Inv.KH_133 | Inv.H3_SMART),
+            ModbusAddressesSpec(holding=[46502, 46501], models=Inv.KH_133 | Inv.H3_SMART | Inv.H3_193),
         ],
         name="Import Power Limit",
         mode=NumberMode.BOX,
@@ -2837,6 +2838,94 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         icon="mdi:transmission-tower-import",
         validate=[Range(0, 99999)],
     )
+
+    # The Peak Shaving work mode's other settings, next to the import power limit (46503-46514)
+    yield ModbusSensorDescription(
+        key="peak_shaving_threshold_soc",
+        addresses=[
+            ModbusAddressesSpec(holding=[46503], models=Inv.H3_193),
+        ],
+        name="Peak Shaving Threshold SoC",
+        native_unit_of_measurement="%",
+        icon="mdi:battery-charging-low",
+        signed=False,
+        validate=[Range(10, 100)],
+    )
+    yield ModbusNumberDescription(
+        key="peak_shaving_threshold_soc",
+        addresses=[
+            ModbusAddressesSpec(holding=[46503], models=Inv.H3_193),
+        ],
+        name="Peak Shaving Threshold SoC",
+        mode=NumberMode.BOX,
+        native_min_value=10,
+        native_max_value=100,
+        native_step=1,
+        native_unit_of_measurement="%",
+        icon="mdi:battery-charging-low",
+        validate=[Range(10, 100)],
+    )
+
+    # Register 46504+46505: Export Peak Limit (I32 in watts)
+    yield ModbusSensorDescription(
+        key="export_peak_limit",
+        addresses=[
+            ModbusAddressesSpec(holding=[46505, 46504], models=Inv.H3_193),
+        ],
+        name="Export Peak Limit",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="W",
+        icon="mdi:transmission-tower-export",
+        validate=[Range(0, 99999)],
+    )
+    yield ModbusNumberDescription(
+        key="export_peak_limit",
+        addresses=[
+            ModbusAddressesSpec(holding=[46505, 46504], models=Inv.H3_193),
+        ],
+        name="Export Peak Limit",
+        mode=NumberMode.BOX,
+        native_min_value=0,
+        native_max_value=99999,
+        native_step=1,
+        native_unit_of_measurement="W",
+        device_class=NumberDeviceClass.POWER,
+        icon="mdi:transmission-tower-export",
+        validate=[Range(0, 99999)],
+    )
+
+    yield ModbusSelectDescription(
+        key="charge_in_low_import",
+        address=[
+            ModbusAddressSpec(holding=46506, models=Inv.H3_193),
+        ],
+        name="Charge In Low Import",
+        options_map={0: "No Mode", 1: "NC Mode", 2: "Timing Mode"},
+    )
+
+    def _charge_in_low_time(window: int, edge: str, unit: str, address: int) -> EntityFactory:
+        # Read-only: these registers refuse single-register writes (FC06)
+        return ModbusSensorDescription(
+            key=f"charge_in_low_time_{window}_{edge}_{unit}",
+            addresses=[
+                ModbusAddressesSpec(holding=[address], models=Inv.H3_193),
+            ],
+            entity_registry_enabled_default=False,
+            name=f"Charge In Low Time {window} {edge.title()} {unit.title()}",
+            icon="mdi:timer-outline",
+            signed=False,
+            validate=[Range(0, 23 if unit == "hour" else 59)],
+        )
+
+    yield _charge_in_low_time(1, "start", "hour", 46507)
+    yield _charge_in_low_time(1, "start", "minute", 46508)
+    yield _charge_in_low_time(1, "end", "hour", 46509)
+    yield _charge_in_low_time(1, "end", "minute", 46510)
+    yield _charge_in_low_time(2, "start", "hour", 46511)
+    yield _charge_in_low_time(2, "start", "minute", 46512)
+    yield _charge_in_low_time(2, "end", "hour", 46513)
+    yield _charge_in_low_time(2, "end", "minute", 46514)
 
 
 ENTITIES: list[EntityFactory] = sorted(
