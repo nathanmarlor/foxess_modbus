@@ -475,6 +475,19 @@ _INVERTER_PROFILES_LIST = [
         versions={None: Inv.H3_SMART},
         special_registers=H3_SMART_REGISTERS,
     ),
+    # WEG SIW200H "S" (split-phase, 120/240V) series, an OEM FoxESS H1-US. E.g. "SIW200H S114 W20" = 11.4kW.
+    # These don't populate the model at holding 30000; the model is read from the SunSpec common block instead
+    # (see ModbusController.autodetect). Only RS485 (AUX) has been tested, and only read-only sensors are mapped.
+    # The capacity is encoded as kW * 10. Only the 11.4kW unit has been seen so far.
+    InverterModelProfile(
+        InverterModel.WEG_SIW200H_US,
+        r"^SIW200H S(\d+)",
+        capacity_parser=CapacityParser(capacity_map={"114": 11400}, fallback_to_kw=False),
+    ).add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.INPUT,
+        versions={None: Inv.H1_US},
+    ),
     # FoxESS EVO series
     # E.g. EVO 10-5.0-H
     InverterModelProfile(InverterModel.EVO, r"^EVO \d+-([\d\.]+)-H$").add_connection_type(
