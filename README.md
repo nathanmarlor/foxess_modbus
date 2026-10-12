@@ -30,6 +30,7 @@ Supported models:
 - a-TroniX AX
 - Enpal
 - 1KOMMA5°
+- WEG SIW200H US (FoxESS H1-US, split-phase; read-only sensors)
 
 You will need a direct connection to your inverter.
 In most cases, this means buying a modbus to ethernet/USB adapter and wiring this to a port on your inverter.

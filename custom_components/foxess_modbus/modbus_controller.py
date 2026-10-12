@@ -48,6 +48,12 @@ _NUM_FAILED_POLLS_FOR_DISCONNECTION = 5
 
 _MODEL_START_ADDRESS = 30000
 _MODEL_LENGTH = 15
+# SunSpec common model (model 1): "SunS" marker at 40000-40001, model string (32 chars) at 40020-40035.
+# Used as a fallback for inverters which don't populate 30000 (e.g. the WEG SIW200H US / FoxESS H1-US).
+_SUNSPEC_MARKER_ADDRESS = 40000
+_SUNSPEC_MARKER = [0x5375, 0x6E53]
+_SUNSPEC_MODEL_ADDRESS = 40020
+_SUNSPEC_MODEL_LENGTH = 16
 
 _INT16_MIN = -32768
 _UINT16_MAX = 65535
@@ -611,38 +617,21 @@ class ModbusController(EntityController, UnloadController):
             # are for the serial number (and there doesn't seem to be enough space to hold all models!)
             # The H3 starts the model number with a space, annoyingly.
             # Some models (H1-5.0-E-G2 and H3-PRO) pack two ASCII chars into each register.
-            register_values: list[int] = []
-            start_address = _MODEL_START_ADDRESS
-            while len(register_values) < _MODEL_LENGTH:
-                register_values.extend(
-                    await client.read_registers(
-                        start_address,
-                        min(adapter_config[MAX_READ], _MODEL_LENGTH - len(register_values)),
-                        RegisterType.HOLDING,
-                        slave,
+            register_values = await _read_holding_block(
+                client, slave, adapter_config, _MODEL_START_ADDRESS, _MODEL_LENGTH
+            )
+            full_model = _decode_model(register_values)
+
+            # Some OEM models (e.g. the WEG SIW200H US, a FoxESS H1-US) leave 30000 onwards unpopulated (0xFFFF), but
+            # do expose the SunSpec common block, which contains the model string
+            if not full_model:
+                marker = await _read_holding_block(client, slave, adapter_config, _SUNSPEC_MARKER_ADDRESS, 2)
+                if marker == _SUNSPEC_MARKER:
+                    register_values = await _read_holding_block(
+                        client, slave, adapter_config, _SUNSPEC_MODEL_ADDRESS, _SUNSPEC_MODEL_LENGTH
                     )
-                )
-                start_address += adapter_config[MAX_READ]
-
-            # If they've packed 2 ASCII chars into each register, unpack them
-            if (register_values[0] & 0xFF00) != 0:
-                model_chars = []
-                # High byte, then low byte
-                for register in register_values:
-                    model_chars.append((register >> 8) & 0xFF)
-                    model_chars.append(register & 0xFF)
-            else:
-                model_chars = register_values
-
-            # Stop as soon as we find something non-printable-ASCII
-            full_model = ""
-            for char in model_chars:
-                if 0x20 <= char < 0x7F:
-                    full_model += chr(char)
-                else:
-                    break
-            # Take off tailing spaces and H3's leading space
-            full_model = full_model.strip()
+                    full_model = _decode_model(register_values)
+                    _LOGGER.debug("Autodetect: read model '%s' from the SunSpec common block", full_model)
             for model in INVERTER_PROFILES.values():
                 if re.match(model.model_pattern, full_model):
                     # Make sure that we can parse the capacity out
@@ -659,6 +648,47 @@ class ModbusController(EntityController, UnloadController):
         finally:
             pymodbus_logger.removeHandler(spy_handler)
             await client.close()
+
+
+async def _read_holding_block(
+    client: ModbusClient, slave: int, adapter_config: dict[str, Any], start_address: int, length: int
+) -> list[int]:
+    """Reads `length` holding registers from `start_address`, splitting the read to respect the adapter's MAX_READ"""
+    register_values: list[int] = []
+    while len(register_values) < length:
+        register_values.extend(
+            await client.read_registers(
+                start_address,
+                min(adapter_config[MAX_READ], length - len(register_values)),
+                RegisterType.HOLDING,
+                slave,
+            )
+        )
+        start_address += adapter_config[MAX_READ]
+    return register_values
+
+
+def _decode_model(register_values: list[int]) -> str:
+    """Decodes a model string, which is either one ASCII char per register or two (high byte first)"""
+    # If they've packed 2 ASCII chars into each register, unpack them
+    if (register_values[0] & 0xFF00) != 0:
+        model_chars = []
+        # High byte, then low byte
+        for register in register_values:
+            model_chars.append((register >> 8) & 0xFF)
+            model_chars.append(register & 0xFF)
+    else:
+        model_chars = register_values
+
+    # Stop as soon as we find something non-printable-ASCII
+    full_model = ""
+    for char in model_chars:
+        if 0x20 <= char < 0x7F:
+            full_model += chr(char)
+        else:
+            break
+    # Take off tailing spaces and H3's leading space
+    return full_model.strip()
 
 
 class _SpyHandler(logging.Handler):

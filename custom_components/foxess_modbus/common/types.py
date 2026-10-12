@@ -65,6 +65,9 @@ class InverterModel(StrEnum):
     P3_SMART = "P3_SMART"
     EVO = "EVO"
 
+    # WEG-branded FoxESS H1-US (split-phase, 120/240V), e.g. "SIW200H S114 W20"
+    WEG_SIW200H_US = "WEG_SIW200H_US"
+
 
 class Inv(Flag):
     """
@@ -98,6 +101,10 @@ class Inv(Flag):
     H3_SMART = auto()
 
     EVO = auto()
+
+    # FoxESS H1-US split-phase family (sold e.g. as WEG SIW200H S114 W20). Uses its own input-register map
+    # (5200-6010 range), unrelated to the H1 G1/G2 maps.
+    H1_US = auto()
 
     ALL = H1_LAN | H1_G1 | H1_G2_SET | KH_SET | H3_SET | H3_PRO_SET | H3_SMART | EVO
 
