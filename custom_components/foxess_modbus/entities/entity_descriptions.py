@@ -25,6 +25,8 @@ from .modbus_fault_sensor import FaultSet
 from .modbus_fault_sensor import ModbusFaultSensorDescription
 from .modbus_integration_sensor import ModbusIntegrationSensorDescription
 from .modbus_inverter_state_sensor import H1_INVERTER_STATES
+from .modbus_inverter_state_sensor import H1_US_GRID_STATES
+from .modbus_inverter_state_sensor import H1_US_INVERTER_STATES
 from .modbus_inverter_state_sensor import KH_INVERTER_STATES
 from .modbus_inverter_state_sensor import ModbusG2InverterStateSensorDescription
 from .modbus_inverter_state_sensor import ModbusInverterStateSensorDescription
@@ -546,6 +548,8 @@ def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
         key="load_power",
         addresses=[
             ModbusAddressesSpec(input=[11023], models=Inv.H1_G1 | Inv.KH_PRE119),
+            # H1-US: = grid meter power + inverter power, validated on- and off-grid
+            ModbusAddressesSpec(input=[5217], models=Inv.H1_US),
             ModbusAddressesSpec(holding=[31016], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2_SET | Inv.KH_133),
             ModbusAddressesSpec(holding=[31054, 31053], models=Inv.KH_PRE133),
         ],
@@ -562,7 +566,8 @@ def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
         key="rvolt",  # Ideally rename to grid_voltage?
         addresses=[
             ModbusAddressesSpec(input=[11009], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(input=[5246], models=Inv.H1_US),
+            # H1-US: grid-side voltage (L1-N). Drops to ~30V in a grid outage, unlike 5246 (inverter output)
+            ModbusAddressesSpec(input=[5983], models=Inv.H1_US),
             ModbusAddressesSpec(
                 holding=[31006], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2_SET | Inv.KH_PRE133 | Inv.KH_133
             ),
@@ -650,6 +655,8 @@ def _h1_current_voltage_power_entities() -> Iterable[EntityFactory]:
         key="eps_rvolt",
         addresses=[
             ModbusAddressesSpec(input=[11015], models=Inv.H1_G1 | Inv.KH_PRE119),
+            # H1-US: inverter AC output voltage (L1-N); stays up when off-grid
+            ModbusAddressesSpec(input=[5246], models=Inv.H1_US),
             ModbusAddressesSpec(
                 holding=[31010], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2_SET | Inv.KH_PRE133 | Inv.KH_133
             ),
@@ -1445,7 +1452,9 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         addresses=[ModbusAddressesSpec(holding=[39234, 39233], models=Inv.H3_PRO_SET | Inv.H3_SMART)],
     )
 
-    def _invbatpower(index: int | None, addresses: list[ModbusAddressesSpec]) -> Iterable[ModbusSensorDescription]:
+    def _invbatpower(
+        index: int | None, addresses: list[ModbusAddressesSpec], scale: float = 0.001
+    ) -> Iterable[ModbusSensorDescription]:
         key_suffix = f"_{index}" if index is not None else ""
         name_infix = f" {index}" if index is not None else ""
         yield ModbusSensorDescription(
@@ -1455,7 +1464,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
             native_unit_of_measurement="kW",
-            scale=0.001,
+            scale=scale,
             round_to=0.01,
             validate=[Range(-100, 100)],
         )
@@ -1467,7 +1476,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             state_class=SensorStateClass.MEASUREMENT,
             native_unit_of_measurement="kW",
             icon="mdi:battery-arrow-down-outline",
-            scale=0.001,
+            scale=scale,
             round_to=0.01,
             post_process=lambda v: v if v > 0 else 0,
             validate=[Range(0, 100)],
@@ -1480,7 +1489,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             state_class=SensorStateClass.MEASUREMENT,
             native_unit_of_measurement="kW",
             icon="mdi:battery-arrow-up-outline",
-            scale=0.001,
+            scale=scale,
             round_to=0.01,
             post_process=lambda v: abs(v) if v < 0 else 0,
             validate=[Range(0, 100)],
@@ -1496,6 +1505,12 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             ModbusAddressesSpec(holding=[31036], models=Inv.H3_SET),
             ModbusAddressesSpec(holding=[39238, 39237], models=Inv.H3_PRO_SET | Inv.H3_SMART | Inv.EVO),
         ],
+    )
+    yield from _invbatpower(
+        index=None,
+        # H1-US: 32-bit, low word first, negative = discharging (the opposite of the other models)
+        addresses=[ModbusAddressesSpec(input=[5214, 5213], models=Inv.H1_US)],
+        scale=-0.001,
     )
     yield from _invbatpower(
         index=1,
@@ -1722,6 +1737,27 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         ],
         name="Inverter State",
         states=KH_INVERTER_STATES,
+    )
+    yield ModbusInverterStateSensorDescription(
+        key="inverter_state",
+        address=[ModbusAddressSpec(input=5220, models=Inv.H1_US)],
+        name="Inverter State",
+        states=list(H1_US_INVERTER_STATES.values()),
+        state_map=H1_US_INVERTER_STATES,
+    )
+    yield ModbusSensorDescription(
+        key="state_code",
+        addresses=[ModbusAddressesSpec(input=[5220], models=Inv.H1_US)],
+        name="Inverter State Code",
+        signed=False,
+        state_class=SensorStateClass.MEASUREMENT,
+    )
+    yield ModbusInverterStateSensorDescription(
+        key="grid_status",
+        address=[ModbusAddressSpec(input=6000, models=Inv.H1_US)],
+        name="Grid Status",
+        icon="mdi:transmission-tower",
+        states=H1_US_GRID_STATES,
     )
     yield ModbusG2InverterStateSensorDescription(
         key="inverter_state",

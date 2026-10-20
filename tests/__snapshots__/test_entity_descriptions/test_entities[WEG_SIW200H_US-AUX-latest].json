@@ -11,6 +11,17 @@
   },
   {
     "addresses": [
+      5214,
+      5213
+    ],
+    "key": "battery_charge",
+    "name": "Battery Charge",
+    "scale": -0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
       5671
     ],
     "key": "battery_charge_today",
@@ -27,6 +38,17 @@
     "name": "Battery Charge Total",
     "scale": 0.1,
     "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5214,
+      5213
+    ],
+    "key": "battery_discharge",
+    "name": "Battery Discharge",
+    "scale": -0.001,
+    "signed": true,
     "type": "sensor"
   },
   {
@@ -55,6 +77,16 @@
     ],
     "key": "battery_soc",
     "name": "Battery SoC",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5246
+    ],
+    "key": "eps_rvolt",
+    "name": "EPS Voltage",
     "scale": 0.1,
     "signed": false,
     "type": "sensor"
@@ -138,6 +170,19 @@
   },
   {
     "addresses": [
+      6000
+    ],
+    "key": "grid_status",
+    "name": "Grid Status",
+    "states": [
+      "Grid Present",
+      "Unknown",
+      "Grid Lost"
+    ],
+    "type": "inverter-state-sensor"
+  },
+  {
+    "addresses": [
       5678
     ],
     "key": "input_energy_today",
@@ -168,6 +213,17 @@
   },
   {
     "addresses": [
+      5214,
+      5213
+    ],
+    "key": "invbatpower",
+    "name": "Inverter Battery Power",
+    "scale": -0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
       6001
     ],
     "key": "invbatvolt",
@@ -175,6 +231,22 @@
     "scale": 0.1,
     "signed": true,
     "type": "sensor"
+  },
+  {
+    "addresses": [
+      5220
+    ],
+    "key": "inverter_state",
+    "name": "Inverter State",
+    "state_map": {
+      "2048": "On Grid",
+      "37120": "Off Grid / EPS"
+    },
+    "states": [
+      "On Grid",
+      "Off Grid / EPS"
+    ],
+    "type": "inverter-state-sensor"
   },
   {
     "addresses": [
@@ -193,6 +265,16 @@
     "key": "load_energy_today",
     "name": "Load Energy Today",
     "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5217
+    ],
+    "key": "load_power",
+    "name": "Load Power",
+    "scale": 0.001,
     "signed": true,
     "type": "sensor"
   },
@@ -308,7 +390,7 @@
   },
   {
     "addresses": [
-      5246
+      5983
     ],
     "key": "rvolt",
     "name": "Grid Voltage",
@@ -333,6 +415,16 @@
     "key": "solar_energy_total",
     "name": "Solar Generation Total",
     "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5220
+    ],
+    "key": "state_code",
+    "name": "Inverter State Code",
+    "scale": null,
     "signed": false,
     "type": "sensor"
   },
