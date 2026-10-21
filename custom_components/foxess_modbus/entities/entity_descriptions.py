@@ -2348,7 +2348,6 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             #     models=H1_SET, input=[11091, 11090]
             # ),
             ModbusAddressesSpec(input=[11091, 11090], models=Inv.KH_PRE119),
-            ModbusAddressesSpec(input=[5676], models=Inv.H1_US),
             ModbusAddressesSpec(holding=[32022, 32021], models=Inv.KH_PRE133 | Inv.KH_133 | Inv.H1_G2_SET | Inv.H3_SET),
             ModbusAddressesSpec(holding=[39630, 39629], models=Inv.H3_PRO_PRE122),
         ],
@@ -2370,7 +2369,10 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             EntitySpec(
                 register_types=[RegisterType.INPUT, RegisterType.HOLDING],
                 models=Inv.H1_G1 | Inv.H1_LAN,
-            )
+            ),
+            # H1-US: 5675/5676 track the inverter's AC output rather than the house load (they ignore grid import),
+            # so integrate Load Power instead
+            EntitySpec(register_types=[RegisterType.INPUT], models=Inv.H1_US),
         ],
         device_class=SensorDeviceClass.ENERGY,
         native_unit_of_measurement="kWh",
@@ -2398,7 +2400,6 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _load_energy_today(
         addresses=[
             ModbusAddressesSpec(input=[11092], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(input=[5675], models=Inv.H1_US),
             ModbusAddressesSpec(
                 holding=[32023], models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
             ),

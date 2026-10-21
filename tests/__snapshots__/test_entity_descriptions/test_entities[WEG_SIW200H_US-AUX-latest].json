@@ -260,16 +260,6 @@
   },
   {
     "addresses": [
-      5675
-    ],
-    "key": "load_energy_today",
-    "name": "Load Energy Today",
-    "scale": 0.1,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
       5217
     ],
     "key": "load_power",
@@ -279,14 +269,12 @@
     "type": "sensor"
   },
   {
-    "addresses": [
-      5676
-    ],
     "key": "load_power_total",
+    "method": "left",
     "name": "Load Energy Total",
-    "scale": 0.1,
-    "signed": false,
-    "type": "sensor"
+    "source": "load_power",
+    "type": "integration-sensor",
+    "unit_time": "h"
   },
   {
     "addresses": [
