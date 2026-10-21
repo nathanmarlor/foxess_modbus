@@ -11,8 +11,8 @@
   },
   {
     "addresses": [
-      5214,
-      5213
+      5213,
+      5214
     ],
     "key": "battery_charge",
     "name": "Battery Charge",
@@ -42,8 +42,8 @@
   },
   {
     "addresses": [
-      5214,
-      5213
+      5213,
+      5214
     ],
     "key": "battery_discharge",
     "name": "Battery Discharge",
@@ -93,8 +93,8 @@
   },
   {
     "addresses": [
-      5601,
-      5600
+      5600,
+      5601
     ],
     "key": "feed_in",
     "name": "Feed-in",
@@ -104,8 +104,8 @@
   },
   {
     "addresses": [
-      5609,
-      5608
+      5608,
+      5609
     ],
     "key": "feed_in_energy_today",
     "name": "Feed-in Today",
@@ -115,8 +115,8 @@
   },
   {
     "addresses": [
-      5611,
-      5610
+      5610,
+      5611
     ],
     "key": "feed_in_energy_total",
     "name": "Feed-in Total",
@@ -126,8 +126,8 @@
   },
   {
     "addresses": [
-      5601,
-      5600
+      5600,
+      5601
     ],
     "key": "grid_consumption",
     "name": "Grid Consumption",
@@ -137,8 +137,8 @@
   },
   {
     "addresses": [
-      5613,
-      5612
+      5612,
+      5613
     ],
     "key": "grid_consumption_energy_today",
     "name": "Grid Consumption Today",
@@ -148,8 +148,8 @@
   },
   {
     "addresses": [
-      5615,
-      5614
+      5614,
+      5615
     ],
     "key": "grid_consumption_energy_total",
     "name": "Grid Consumption Total",
@@ -159,8 +159,8 @@
   },
   {
     "addresses": [
-      5601,
-      5600
+      5600,
+      5601
     ],
     "key": "grid_ct",
     "name": "Grid CT",
@@ -213,8 +213,8 @@
   },
   {
     "addresses": [
-      5214,
-      5213
+      5213,
+      5214
     ],
     "key": "invbatpower",
     "name": "Inverter Battery Power",
