@@ -83,10 +83,30 @@
   },
   {
     "addresses": [
+      5633
+    ],
+    "key": "battery_soh",
+    "name": "Battery SoH",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
       5246
     ],
     "key": "eps_rvolt",
     "name": "EPS Voltage",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5247
+    ],
+    "key": "eps_rvolt_L2",
+    "name": "EPS Voltage L2",
     "scale": 0.1,
     "signed": false,
     "type": "sensor"
@@ -170,6 +190,28 @@
   },
   {
     "addresses": [
+      5602,
+      5603
+    ],
+    "key": "grid_ct_L1",
+    "name": "Grid CT L1",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5604,
+      5605
+    ],
+    "key": "grid_ct_L2",
+    "name": "Grid CT L2",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
       6000
     ],
     "key": "grid_status",
@@ -180,6 +222,16 @@
       "Grid Lost"
     ],
     "type": "inverter-state-sensor"
+  },
+  {
+    "addresses": [
+      5984
+    ],
+    "key": "grid_voltage_L2",
+    "name": "Grid Voltage L2",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
   },
   {
     "addresses": [
@@ -352,6 +404,16 @@
     ],
     "key": "rcurrent",
     "name": "Inverter Current",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5250
+    ],
+    "key": "rcurrent_L2",
+    "name": "Grid Current L2",
     "scale": 0.1,
     "signed": true,
     "type": "sensor"

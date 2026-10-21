@@ -2658,6 +2658,73 @@ def _bms_entities() -> Iterable[EntityFactory]:
     )
 
 
+def _h1_us_split_phase_entities() -> Iterable[EntityFactory]:
+    """Per-leg (L1/L2) readings of the H1-US split-phase (120/240V) inverter. The main entities (rvolt, rcurrent,
+    grid_ct, ...) report L1 or the total; these expose L2 and the per-leg CT values, disabled by default."""
+
+    def _volt(key: str, name: str, address: int) -> EntityFactory:
+        return ModbusSensorDescription(
+            key=key,
+            addresses=[ModbusAddressesSpec(input=[address], models=Inv.H1_US)],
+            entity_registry_enabled_default=False,
+            name=name,
+            device_class=SensorDeviceClass.VOLTAGE,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement="V",
+            scale=0.1,
+            round_to=1,
+            signed=False,
+            validate=[Range(0, 300)],
+        )
+
+    # Grid side (drops when the grid is lost) and inverter output side, L2-N
+    yield _volt("grid_voltage_L2", "Grid Voltage L2", 5984)
+    yield _volt("eps_rvolt_L2", "EPS Voltage L2", 5247)
+
+    yield ModbusSensorDescription(
+        key="rcurrent_L2",
+        addresses=[ModbusAddressesSpec(input=[5250], models=Inv.H1_US)],
+        entity_registry_enabled_default=False,
+        name="Grid Current L2",
+        device_class=SensorDeviceClass.CURRENT,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="A",
+        scale=0.1,
+        round_to=1,
+        validate=[Range(-100, 100)],
+    )
+
+    # Per-leg grid CT (5600/5601 is the total); same sign convention: negative = import
+    for leg, low in (("L1", 5602), ("L2", 5604)):
+        yield ModbusSensorDescription(
+            key=f"grid_ct_{leg}",
+            addresses=[ModbusAddressesSpec(input=[low, low + 1], models=Inv.H1_US)],
+            entity_registry_enabled_default=False,
+            name=f"Grid CT {leg}",
+            device_class=SensorDeviceClass.POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement="kW",
+            icon="mdi:meter-electric-outline",
+            scale=0.001,
+            round_to=0.01,
+            validate=[Range(-100, 100)],
+        )
+
+    # 5633 sits next to the SoC (5632) and matches the SoH reported by the cloud/BMS
+    yield ModbusBatterySensorDescription(
+        key="battery_soh",
+        addresses=[ModbusAddressesSpec(input=[5633], models=Inv.H1_US)],
+        bms_connect_state_address=[],
+        entity_registry_enabled_default=False,
+        name="Battery SoH",
+        device_class=SensorDeviceClass.BATTERY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="%",
+        signed=False,
+        validate=[Range(0, 100)],
+    )
+
+
 def _configuration_entities() -> Iterable[EntityFactory]:
     yield ModbusWorkModeSelectDescription(
         key="work_mode",
@@ -2955,6 +3022,7 @@ ENTITIES: list[EntityFactory] = sorted(
         _h3_current_voltage_power_entities(),
         _inverter_entities(),
         _bms_entities(),
+        _h1_us_split_phase_entities(),
         _configuration_entities(),
         (description for x in CHARGE_PERIODS for description in x.entity_descriptions),
         REMOTE_CONTROL_DESCRIPTION.entity_descriptions,
