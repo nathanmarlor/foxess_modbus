@@ -450,7 +450,7 @@
   },
   {
     "addresses": [
-      5616
+      5659
     ],
     "key": "solar_energy_today",
     "name": "Solar Generation Today",
@@ -460,7 +460,7 @@
   },
   {
     "addresses": [
-      5618
+      5660
     ],
     "key": "solar_energy_total",
     "name": "Solar Generation Total",
@@ -475,26 +475,6 @@
     "key": "state_code",
     "name": "Inverter State Code",
     "scale": null,
-    "signed": false,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      5659
-    ],
-    "key": "total_yield_today",
-    "name": "Yield Today",
-    "scale": 0.1,
-    "signed": true,
-    "type": "sensor"
-  },
-  {
-    "addresses": [
-      5660
-    ],
-    "key": "total_yield_total",
-    "name": "Yield Total",
-    "scale": 0.1,
     "signed": false,
     "type": "sensor"
   }

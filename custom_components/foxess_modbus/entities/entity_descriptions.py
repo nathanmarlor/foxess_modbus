@@ -1793,7 +1793,9 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _solar_energy_total(
         addresses=[
             ModbusAddressesSpec(input=[11070, 11069], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(input=[5618], models=Inv.H1_US),
+            # H1-US: 5659/5660 match the cloud's "PV Produced" day for day; 5616/5618 track only the PV that was
+            # consumed locally (roughly PV minus export), so they aren't used
+            ModbusAddressesSpec(input=[5660], models=Inv.H1_US),
             ModbusAddressesSpec(
                 holding=[32001, 32000], models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
             ),
@@ -1842,7 +1844,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _solar_energy_today(
         addresses=[
             ModbusAddressesSpec(input=[11071], models=Inv.KH_PRE119),
-            ModbusAddressesSpec(input=[5616], models=Inv.H1_US),
+            ModbusAddressesSpec(input=[5659], models=Inv.H1_US),
             ModbusAddressesSpec(
                 holding=[32002], models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
             ),
@@ -2204,7 +2206,6 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _total_yield_total(
         addresses=[
             ModbusAddressesSpec(input=[11085, 11084], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(input=[5660], models=Inv.H1_US),
             ModbusAddressesSpec(
                 holding=[32016, 32015], models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
             ),
@@ -2239,7 +2240,6 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _total_yield_today(
         addresses=[
             ModbusAddressesSpec(input=[11086], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(input=[5659], models=Inv.H1_US),
             ModbusAddressesSpec(
                 holding=[32017], models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
             ),
