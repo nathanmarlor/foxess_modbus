@@ -2023,7 +2023,11 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         scale=0.01,
     )
 
-    def _feed_in_energy_total(addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
+    def _feed_in_energy_total(
+        addresses: list[ModbusAddressesSpec], scale: float, validate: list[BaseValidator] | None = None
+    ) -> EntityFactory:
+        if validate is None:
+            validate = [Min(0)]
         return ModbusSensorDescription(
             key="feed_in_energy_total",
             addresses=addresses,
@@ -2034,13 +2038,20 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             icon="mdi:transmission-tower-import",
             scale=scale,
             signed=False,
-            validate=[Min(0)],
+            validate=validate,
         )
+
+    # H1-US: reads occasionally come back as 0xFFFFFFFF for this 32-bit counter (429496729.5 kWh after
+    # scaling), which shows up as a huge one-off spike in the Energy dashboard. Reject anything implausible.
+    yield _feed_in_energy_total(
+        addresses=[ModbusAddressesSpec(input=[5610, 5611], models=Inv.H1_US)],
+        scale=0.1,
+        validate=[Range(0, 1_000_000)],
+    )
 
     yield _feed_in_energy_total(
         addresses=[
             ModbusAddressesSpec(input=[11079, 11078], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(input=[5610, 5611], models=Inv.H1_US),
             ModbusAddressesSpec(
                 holding=[32010, 32009], models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
             ),
@@ -2106,7 +2117,11 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         scale=0.01,
     )
 
-    def _grid_consumption_energy_total(addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
+    def _grid_consumption_energy_total(
+        addresses: list[ModbusAddressesSpec], scale: float, validate: list[BaseValidator] | None = None
+    ) -> EntityFactory:
+        if validate is None:
+            validate = [Min(0)]
         return ModbusSensorDescription(
             key="grid_consumption_energy_total",
             addresses=addresses,
@@ -2117,13 +2132,20 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             icon="mdi:transmission-tower-export",
             scale=scale,
             signed=False,
-            validate=[Min(0)],
+            validate=validate,
         )
+
+    # H1-US: reads occasionally come back as 0xFFFFFFFF for this 32-bit counter (429496729.5 kWh after
+    # scaling), which shows up as a huge one-off spike in the Energy dashboard. Reject anything implausible.
+    yield _grid_consumption_energy_total(
+        addresses=[ModbusAddressesSpec(input=[5614, 5615], models=Inv.H1_US)],
+        scale=0.1,
+        validate=[Range(0, 1_000_000)],
+    )
 
     yield _grid_consumption_energy_total(
         addresses=[
             ModbusAddressesSpec(input=[11082, 11081], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(input=[5614, 5615], models=Inv.H1_US),
             ModbusAddressesSpec(
                 holding=[32013, 32012], models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
             ),
