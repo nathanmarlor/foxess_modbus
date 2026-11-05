@@ -3,3 +3,6 @@ __pycache__
 
 config/*
 !config/configuration.yaml
+AGENTS.md
+custom_components/foxess_modbus.zip
+PQ1 PR docs/*.*

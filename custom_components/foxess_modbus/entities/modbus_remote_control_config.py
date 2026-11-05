@@ -49,6 +49,10 @@ class ModbusRemoteControlAddressConfig:
     """Prw_limit Bat_up, maximum power that the battery can accept"""
     pv_voltages: list[int]
     """Array of pvx_voltage addresses for PV strings"""
+    remote_enable_mask: int | None = None
+    """Optional holding-register enable bit mask; preserve all other bits when toggling remote control."""
+    restore_timeout: bool = False
+    """Save the holding-register watchdog timeout and restore it after disabling control."""
 
 
 class RemoteControlAddressSpec:
@@ -185,6 +189,33 @@ class ModbusRemoteControlFactory:
             remote_control_select,
             force_charge_max_soc,
         ]
+
+        def _set_watchdog(manager: EntityRemoteControlManager, value: int) -> None:
+            manager.watchdog_timeout = value
+
+        # Opt in only on profiles with established timeout save/restore support.
+        # Other products retain their existing entities and watchdog behaviour.
+        self.entity_descriptions.append(
+            ModbusRemoteControlNumberDescription(
+                key="remote_control_watchdog_timeout",
+                name="Remote Control Watchdog Timeout",
+                models=[
+                    EntitySpec(
+                        register_types=[k for k, v in spec.register_types.items() if v.restore_timeout],
+                        models=spec.models,
+                    )
+                    for spec in self.address_specs
+                ],
+                native_min_value=0,
+                native_max_value_callback=lambda _x: 65535,
+                native_default_value=0,
+                native_step=1,
+                native_unit_of_measurement="s",
+                mode=NumberMode.BOX,
+                icon="mdi:timer-alert-outline",
+                value_setter=_set_watchdog,
+            )
+        )
 
     def create_if_supported(
         self,

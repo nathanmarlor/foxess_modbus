@@ -1,0 +1,122 @@
+# Requires examples/automations/PQ1_REMOTE_OVERRIDES.yaml.
+# Built-in cards only. Change solar_inverter below AND the package prefix helper
+# if your existing entities use a different prefix or have been renamed.
+type: vertical-stack
+cards:
+  - type: markdown
+    title: Battery automation overrides
+    content: |
+      {% set p = states('input_text.foxess_example_prefix') %}
+      {% set current = 'sensor.' ~ p ~ '_current_work_mode' %}
+      {% set owner = states('input_select.foxess_example_owner') %}
+      {% set remote = state_attr(current, 'source') == 'remote_control' %}
+      **Automation:** {{ states('input_text.foxess_example_status') | e }}
+
+      **Applied-mode feedback (inferred):** {{ states(current) | e }}
+      {% if remote and owner in ['Charge', 'Discharge'] %}
+      **Remote override active — {{ owner }}.**
+      {% elif owner in ['Charge', 'Discharge'] %}
+      **{{ owner }} requested — remote operation not yet confirmed by telemetry.**
+      {% elif remote %}
+      **Remote control in use outside this example.**
+      {% endif %}
+
+      **Battery SOC:** {{ states('sensor.' ~ p ~ '_battery_soc') }}%
+
+      Watchdog {{ states('number.' ~ p ~ '_remote_control_watchdog_timeout') }} s
+      (0 = automatic; effective minimum is twice the polling interval).
+      During a connection loss the last command may continue until expiry;
+      HA cannot enforce these SOC or time cut-offs while disconnected.
+
+      **Stored inverter schedules are read-only.** Edit them in the Fox Cloud app.
+      Ending an override releases control to the current schedule or Basic mode;
+      it does not hold the battery at the target SOC.
+  - type: entities
+    title: Automatic charge
+    show_header_toggle: false
+    entities:
+      - input_boolean.foxess_example_charge_enabled
+      - binary_sensor.foxess_example_charge_opportunity
+      - input_boolean.foxess_example_cheap_enabled
+      - input_boolean.foxess_example_charge_window_enabled
+      - input_datetime.foxess_example_charge_start
+      - input_datetime.foxess_example_charge_end
+      - input_number.foxess_example_charge_soc
+      - input_number.foxess_example_charge_power
+  - type: entities
+    title: Automatic discharge
+    show_header_toggle: false
+    entities:
+      - input_boolean.foxess_example_discharge_enabled
+      - binary_sensor.foxess_example_discharge_opportunity
+      - input_boolean.foxess_example_price_enabled
+      - input_number.foxess_example_export_threshold
+      - input_boolean.foxess_example_discharge_window_enabled
+      - input_datetime.foxess_example_discharge_start
+      - input_datetime.foxess_example_discharge_end
+      - input_number.foxess_example_reserve_soc
+      - input_number.foxess_example_start_margin
+      - input_number.foxess_example_discharge_power
+      - input_text.foxess_example_export_price_entity
+      - input_text.foxess_example_reserve_entity
+  - type: entities
+    title: Remote control
+    show_header_toggle: false
+    entities:
+      - entity: select.solar_inverter_remote_control_target
+        name: Target power measure
+      - entity: number.solar_inverter_remote_control_watchdog_timeout
+        name: Connection-loss tolerance (seconds; 0 automatic)
+      - entity: script.foxess_example_stop
+        name: Stop example overrides
+  - type: markdown
+    title: Underlying inverter operation
+    content: |
+      {% set p = states('input_text.foxess_example_prefix') %}
+      {% set scheduler = 'binary_sensor.' ~ p ~ '_scheduler_enabled' %}
+      {% set schedules = 'sensor.' ~ p ~ '_schedule_entries' %}
+      {% set remaining = 'sensor.' ~ p ~ '_remaining_time' %}
+      {% set current = 'sensor.' ~ p ~ '_current_work_mode' %}
+      {% set remote = state_attr(current, 'source') == 'remote_control' %}
+      {% set entries = state_attr(schedules, 'entries') or [] %}
+      {% set minute = now().hour * 60 + now().minute %}
+      {% set ns = namespace(matches=[]) %}
+      {% for entry in entries %}
+        {% set s = entry.start.split(':') %}
+        {% set e = entry.end.split(':') %}
+        {% set start = s[0] | int * 60 + s[1] | int %}
+        {% set end = e[0] | int * 60 + e[1] | int %}
+        {% set active = (start <= minute <= end) if start <= end else (minute >= start or minute <= end) %}
+        {% if entry.enabled and active %}
+          {% set ns.matches = ns.matches + [entry.register_address] %}
+        {% endif %}
+      {% endfor %}
+      {% if is_state(scheduler, 'off') %}
+      **{{ 'Overriding' if remote else 'Following' }} Basic mode:**
+      {{ states('sensor.' ~ p ~ '_manual_work_mode') | e }}
+      {% elif is_state(scheduler, 'on') %}
+      **{{ 'Overriding' if remote else 'Following' }} inverter scheduler.**
+      {% if not has_value(schedules) or not has_value(remaining) %}
+      **Schedule data unavailable; the applicable mode cannot be identified.**
+      {% else %}
+      {% if ns.matches | length > 1 %}
+      **Overlapping enabled periods — underlying mode is ambiguous.**
+      {% endif %}
+
+      | Period | Mode | Status |
+      |:--|:--|:--|
+      {% for entry in entries %}
+      | {{ entry.start }}–{{ entry.end }} | {{ entry.work_mode | e }} | {{ 'Disabled' if not entry.enabled else ('Overridden now' if remote else 'Current period') if entry.register_address in ns.matches else 'Scheduled' }} |
+      {% endfor %}
+      | Remaining Time | {{ state_attr(remaining, 'work_mode') | e }} | {{ ('Overridden now' if remote else 'Current period') if ns.matches | length == 0 else 'Outside explicit periods' }} |
+
+      Last read: {{ state_attr(schedules, 'last_updated') | e }}
+      {% endif %}
+      {% else %}
+      **Scheduler state unavailable.**
+      {% endif %}
+
+      Applicable period is inferred using HA local time, not a measured effective
+      work-mode register. A forced period may already be using its SOC fallback;
+      the exact resumed mode is not always identifiable. Only the current period
+      is highlighted because these examples do not predict future tariff events.

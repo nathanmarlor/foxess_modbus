@@ -1,4 +1,5 @@
-"""This is only used for H1 on LAN, as it doesn't have a work mode"""
+"""Separate remote-control selector for profiles without a writable work-mode mapping.
+These include the H1 and PQ1 on LAN"""
 
 import logging
 from dataclasses import dataclass

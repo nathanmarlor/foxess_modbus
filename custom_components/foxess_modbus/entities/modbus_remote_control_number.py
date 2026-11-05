@@ -35,6 +35,7 @@ class ModbusRemoteControlNumberDescription(NumberEntityDescription, EntityFactor
     mode: NumberMode = NumberMode.AUTO
     scale: float = 1.0
     signed: bool = False
+    native_default_value: float | None = None
     value_setter: Callable[[EntityRemoteControlManager, int], None]
 
     @property
@@ -105,7 +106,8 @@ class ModbusRemoteControlNumber(ModbusEntityMixin, RestoreNumber, NumberEntity):
             native_max_value = max_value * entity_description.scale
             self._attr_native_max_value = native_max_value
             if self._attr_native_value is None or self._attr_native_value > native_max_value:
-                self._update_native_value(native_max_value)
+                default = entity_description.native_default_value
+                self._update_native_value(native_max_value if default is None else default)
 
     def _update_native_value(self, native_value: float) -> None:
         entity_description = cast(ModbusRemoteControlNumberDescription, self.entity_description)

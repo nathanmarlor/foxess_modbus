@@ -13,6 +13,27 @@ _NORMAL_WORK_MODE_MAP = {
 REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
     addresses=[
         RemoteControlAddressSpec(
+            holding=ModbusRemoteControlAddressConfig(
+                remote_enable=46001,
+                timeout_set=46002,
+                active_power=[46004, 46003],
+                # Basic mode is not the effective mode with the scheduler enabled.
+                # Use the existing separate remote-control selector without changing Basic mode.
+                work_mode=None,
+                work_mode_map=None,
+                max_soc=41010,
+                invbatpower=[39238, 39237],
+                battery_soc=[31024],
+                # Available import power and the configured power ceiling need further testing.
+                # Reuse the existing fixed-power path until a suitable charging limit is confirmed.
+                pwr_limit_bat_up=None,
+                pv_voltages=[39070, 39072, 39074, 39076],
+                remote_enable_mask=0x0001,
+                restore_timeout=True,
+            ),
+            models=Inv.PQ1,
+        ),
+        RemoteControlAddressSpec(
             input=ModbusRemoteControlAddressConfig(
                 remote_enable=44000,
                 timeout_set=44001,

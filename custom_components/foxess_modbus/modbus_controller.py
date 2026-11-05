@@ -37,6 +37,7 @@ from .const import MAX_READ
 from .inverter_profiles import INVERTER_PROFILES
 from .inverter_profiles import InverterModelConnectionTypeProfile
 from .remote_control_manager import RemoteControlManager
+from .schedule_reader_manager import ScheduleReaderManager
 from .vendor.pymodbus import ConnectionException
 from .vendor.pymodbus import ExceptionResponse
 from .vendor.pymodbus import ModbusExceptions
@@ -156,6 +157,14 @@ class ModbusController(EntityController, UnloadController):
             RemoteControlManager(self, remote_control_config, poll_rate) if remote_control_config is not None else None
         )
 
+        schedule_config = connection_type_profile.create_schedule_config(self)
+        self._schedule_reader_manager = (
+            ScheduleReaderManager(self, schedule_config, max_read) if schedule_config is not None else None
+        )
+
+        if self._schedule_reader_manager is not None:
+            self._unload_listeners.append(self._schedule_reader_manager.unload)
+
         issue_registry.async_delete_issue(
             self._hass,
             domain=DOMAIN,
@@ -169,6 +178,10 @@ class ModbusController(EntityController, UnloadController):
                 timedelta(seconds=self._poll_rate),
             )
         )
+
+    @property
+    def schedule_reader_manager(self) -> ScheduleReaderManager | None:
+        return self._schedule_reader_manager
 
     @property
     def hass(self) -> HomeAssistant:
@@ -279,7 +292,20 @@ class ModbusController(EntityController, UnloadController):
             raise ex
 
     async def _refresh(self, _time: datetime) -> None:
-        """Refresh modbus data"""
+        """Give telemetry and remote watchdog writes priority over schedule scans."""
+        manager = self._schedule_reader_manager
+        if manager is not None:
+            manager.pause()
+        try:
+            await self._refresh_registers(_time)
+        finally:
+            if manager is not None:
+                manager.resume()
+        if manager is not None:
+            await manager.poll_complete_callback()
+
+    async def _refresh_registers(self, _time: datetime) -> None:
+        """Refresh telemetry and remote control using the existing poll lifecycle."""
         # Make sure that we don't do two refreshes at the same time, if one is too slow
         with _acquire_nonblocking(self._refresh_lock) as acquired:
             if not acquired:

@@ -22,7 +22,9 @@ from .entities.charge_period_descriptions import CHARGE_PERIODS
 from .entities.entity_descriptions import ENTITIES
 from .entities.modbus_charge_period_config import ModbusChargePeriodInfo
 from .entities.modbus_remote_control_config import ModbusRemoteControlAddressConfig
+from .entities.modbus_schedule_config import ModbusScheduleAddressConfig
 from .entities.remote_control_description import REMOTE_CONTROL_DESCRIPTION
+from .entities.schedule_descriptions import SCHEDULE_DESCRIPTION
 
 _LOGGER = logging.getLogger(__package__)
 
@@ -219,6 +221,10 @@ class InverterModelConnectionTypeProfile:
 
         return result
 
+    def create_schedule_config(self, controller: EntityController) -> ModbusScheduleAddressConfig | None:
+        """Resolve scheduler support through the existing model/firmware profile."""
+        return SCHEDULE_DESCRIPTION.create_if_supported(self._get_inv(controller), self.register_type)
+
     def create_remote_control_config(self, controller: EntityController) -> ModbusRemoteControlAddressConfig | None:
         return REMOTE_CONTROL_DESCRIPTION.create_if_supported(controller, self._get_inv(controller), self.register_type)
 
@@ -265,6 +271,17 @@ class InverterModelProfile:
 
 # NOTE: If the inverter support LAN and AUX identically, just specify AUX
 _INVERTER_PROFILES_LIST = [
+    # Register evidence from PQ1-8.0 native LAN. AUX is the canonical profile for a common
+    # holding-register map; LAN resolves to it through the existing fallback.
+    InverterModelProfile(InverterModel.PQ1, r"^PQ1-(\d+(?:\.\d+)?)$").add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={None: Inv.PQ1},
+        special_registers=SpecialRegisterConfig(
+            invalid_register_ranges=[(41001, 41006)],
+            individual_read_register_ranges=[(41000, 41011)],
+        ),
+    ),
     # E.g. H1-5.0-E-G2 or H1-5.0-E1-G2. Has to appear before H1_G1.
     InverterModelProfile(
         InverterModel.H1_G2, r"^H1-([\d\.]+)-E\d?-G2", capacity_parser=CapacityParser.H1

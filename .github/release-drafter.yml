@@ -1,16 +1,22 @@
 categories:
   - title: "💥 Breaking Changes"
-    label: "breaking"
+    when:
+      label: "breaking"
   - title: "🚀 Features"
-    label: "enhancement"
+    when:
+      label: "enhancement"
   - title: "🔥 Removals and Deprecations"
-    label: "removal"
+    when:
+      label: "removal"
   - title: "🐞 Fixes"
-    label: "bug"
+    when:
+      label: "bug"
   - title: "📚 Documentation"
-    label: "documentation"
+    when:
+      label: "documentation"
   - title: "📦 Dependencies"
-    label: "dependencies"
+    when:
+      label: "dependencies"
 header: |
   If your inverter is not running the latest manager version, you may need to select your manager version in the integration settings. See [the wiki](https://github.com/nathanmarlor/foxess_modbus/wiki/Supported-Versions) for details.
 

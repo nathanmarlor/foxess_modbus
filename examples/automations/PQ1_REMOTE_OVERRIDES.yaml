@@ -1,0 +1,393 @@
+# Home Assistant package: see README.md before enabling. No scheduler-register writes.
+# Both automations use one serialized executor to prevent conflicting commands.
+input_text:
+  foxess_example_prefix:
+    name: FoxESS inverter entity prefix
+    initial: solar_inverter
+    max: 100
+  foxess_example_off_peak_entity:
+    name: Cheap electricity signal
+    initial: binary_sensor.octopus_energy_electricity_<<replace with your account>>_off_peak
+    max: 255
+  foxess_example_export_price_entity:
+    name: Export price sensor (p/kWh)
+    initial: ""
+    max: 255
+  foxess_example_reserve_entity:
+    name: Required SOC forecast sensor (optional %)
+    initial: ""
+    max: 255
+  foxess_example_status:
+    name: FoxESS example status
+    max: 255
+input_boolean:
+  foxess_example_charge_enabled:
+    name: Enable automatic charging
+    initial: false
+  foxess_example_discharge_enabled:
+    name: Enable automatic discharging
+    initial: false
+  foxess_example_charge_window_enabled:
+    name: Use charge time window
+    initial: false
+  foxess_example_discharge_window_enabled:
+    name: Use discharge time window
+    initial: false
+  foxess_example_cheap_enabled:
+    name: Use Octopus off-peak signal
+    initial: false
+  foxess_example_price_enabled:
+    name: Use export price signal
+    initial: false
+  foxess_example_charge_done:
+    name: Charge target reached this opportunity
+  foxess_example_discharge_done:
+    name: Discharge reserve reached this opportunity
+input_datetime:
+  foxess_example_charge_start:
+    name: Charge Start
+    has_date: false
+    has_time: true
+    initial: 00:30:00
+  foxess_example_charge_end:
+    name: Charge End
+    has_date: false
+    has_time: true
+    initial: 05:30:00
+  foxess_example_discharge_start:
+    name: Discharge Start
+    has_date: false
+    has_time: true
+    initial: "16:00:00"
+  foxess_example_discharge_end:
+    name: Discharge End
+    has_date: false
+    has_time: true
+    initial: "19:00:00"
+input_number:
+  foxess_example_charge_soc:
+    name: Charge target SOC
+    min: 0
+    max: 100
+    step: 1
+    initial: 100
+    mode: box
+    unit_of_measurement: "%"
+  foxess_example_reserve_soc:
+    name: Required SOC for rest of day
+    min: 0
+    max: 100
+    step: 1
+    initial: 50
+    mode: box
+    unit_of_measurement: "%"
+  foxess_example_start_margin:
+    name: Discharge start margin
+    min: 1
+    max: 20
+    step: 1
+    initial: 5
+    mode: box
+    unit_of_measurement: "%"
+  foxess_example_charge_power:
+    name: Charge power
+    min: 0.1
+    max: 8
+    step: 0.1
+    initial: 1
+    mode: box
+    unit_of_measurement: kW
+  foxess_example_discharge_power:
+    name: Discharge power
+    min: 0.1
+    max: 8
+    step: 0.1
+    initial: 1
+    mode: box
+    unit_of_measurement: kW
+  foxess_example_export_threshold:
+    name: Minimum export price
+    min: -100
+    max: 500
+    step: 0.1
+    initial: 15
+    mode: box
+    unit_of_measurement: p/kWh
+input_select:
+  foxess_example_owner:
+    name: FoxESS example owner
+    options:
+      - Idle
+      - Charge
+      - Discharge
+template:
+  - binary_sensor:
+      - name: FoxESS Example Charge Opportunity
+        unique_id: foxess_example_charge_opportunity
+        state: |
+          {% set t = now().strftime('%H:%M:%S') %}
+          {% set start = states('input_datetime.foxess_example_charge_start') %}
+          {% set end = states('input_datetime.foxess_example_charge_end') %}
+          {% set window = start | length == 8 and end | length == 8 and start != end and
+            ((start <= t < end) if start < end else (t >= start or t < end)) %}
+          {% set price = states(states('input_text.foxess_example_export_price_entity')) %}
+          {{ is_state('input_boolean.foxess_example_charge_enabled', 'on') and (
+            (is_state('input_boolean.foxess_example_charge_window_enabled', 'on') and window) or
+            (is_state('input_boolean.foxess_example_cheap_enabled', 'on') and is_state(states('input_text.foxess_example_off_peak_entity'), 'on'))) }}
+      - name: FoxESS Example Discharge Opportunity
+        unique_id: foxess_example_discharge_opportunity
+        state: |
+          {% set t = now().strftime('%H:%M:%S') %}
+          {% set start = states('input_datetime.foxess_example_discharge_start') %}
+          {% set end = states('input_datetime.foxess_example_discharge_end') %}
+          {% set window = start | length == 8 and end | length == 8 and start != end and
+            ((start <= t < end) if start < end else (t >= start or t < end)) %}
+          {% set price = states(states('input_text.foxess_example_export_price_entity')) %}
+          {{ is_state('input_boolean.foxess_example_discharge_enabled', 'on') and (
+            (is_state('input_boolean.foxess_example_discharge_window_enabled', 'on') and window) or
+            (is_state('input_boolean.foxess_example_price_enabled', 'on') and is_number(price) and price | float > states('input_number.foxess_example_export_threshold') | float(9999))) }}
+# Internal ownership/latches coordinate these examples only; not a lock against other writers.
+script:
+  foxess_example_reconcile:
+    alias: FoxESS example - reconcile remote override
+    mode: queued
+    max: 3
+    max_exceeded: silent
+    sequence:
+      - variables:
+          prefix: "{{ states('input_text.foxess_example_prefix') }}"
+          mode_entity: "{{ 'select.' ~ prefix ~ '_force_charge_mode' }}"
+          target_entity: "{{ 'select.' ~ prefix ~ '_remote_control_target' }}"
+          watchdog_entity: "{{ 'number.' ~ prefix ~ '_remote_control_watchdog_timeout' }}"
+          owner: "{{ states('input_select.foxess_example_owner') }}"
+          selected: "{{ states(mode_entity) }}"
+          expected:
+            "{{ 'Force Charge' if owner == 'Charge' else 'Force Discharge' if owner == 'Discharge'
+            else 'Disable' }}"
+          soc: "{{ states('sensor.' ~ prefix ~ '_battery_soc') }}"
+          max_soc: "{{ states('sensor.' ~ prefix ~ '_max_soc') }}"
+          min_soc: "{{ states('sensor.' ~ prefix ~ '_min_soc') }}"
+          min_grid_soc: "{{ states('sensor.' ~ prefix ~ '_min_soc_on_grid') }}"
+          reserve_source: "{{ states('input_text.foxess_example_reserve_entity') }}"
+          reserve:
+            "{{ states(reserve_source) if reserve_source else states('input_number.foxess_example_reserve_soc')
+            }}"
+          charge_limit:
+            "{{ [states('input_number.foxess_example_charge_soc') | float(0), max_soc | float(0)] |
+            min }}"
+          discharge_limit: "{{ [reserve | float(100), min_soc | float(100), min_grid_soc | float(100)] | max }}"
+          charge_opportunity: "{{ is_state('binary_sensor.foxess_example_charge_opportunity', 'on') }}"
+          discharge_opportunity: "{{ is_state('binary_sensor.foxess_example_discharge_opportunity', 'on') }}"
+          ready: |-
+            {{ is_number(soc) and 0 <= soc | float <= 100 and
+             is_number(max_soc) and 0 <= max_soc | float <= 100 and
+             is_number(min_soc) and 0 <= min_soc | float <= 100 and
+             is_number(min_grid_soc) and 0 <= min_grid_soc | float <= 100 and
+             selected in ['Disable', 'Force Charge', 'Force Discharge'] and
+             has_value(target_entity) and has_value(watchdog_entity) and
+             has_value('sensor.' ~ prefix ~ '_current_work_mode') }}
+          desired: |-
+            {% if not ready %}Idle
+            {% elif charge_opportunity %}
+              {{ 'Charge' if not is_state('input_boolean.foxess_example_charge_done', 'on') and soc | float < charge_limit | float else 'Idle' }}
+            {% elif discharge_opportunity and is_number(reserve) and 0 <= reserve | float <= 100 %}
+              {% set margin = 0 if owner == 'Discharge' else states('input_number.foxess_example_start_margin') | float(5) %}
+              {{ 'Discharge' if not is_state('input_boolean.foxess_example_discharge_done', 'on') and soc | float > discharge_limit | float + margin else 'Idle' }}
+            {% else %}Idle{% endif %}
+      - if:
+          - condition: template
+            value_template: "{{ not charge_opportunity }}"
+        then:
+          - action: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.foxess_example_charge_done
+      - if:
+          - condition: template
+            value_template: "{{ not discharge_opportunity }}"
+        then:
+          - action: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.foxess_example_discharge_done
+      - if:
+          - condition: template
+            value_template: "{{ ready and charge_opportunity and soc | float >= charge_limit | float }}"
+        then:
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.foxess_example_charge_done
+      - if:
+          - condition: template
+            value_template:
+              "{{ ready and discharge_opportunity and is_number(reserve) and soc | float <= discharge_limit
+              | float }}"
+        then:
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.foxess_example_discharge_done
+      - if:
+          - condition: template
+            value_template:
+              "{{ owner in ['Charge', 'Discharge'] and selected in ['Disable', 'Force Charge',
+              'Force Discharge'] and selected != expected }}"
+        then:
+          - action: input_boolean.turn_on
+            target:
+              entity_id:
+                - input_boolean.foxess_example_charge_done
+                - input_boolean.foxess_example_discharge_done
+          - action: input_select.select_option
+            target:
+              entity_id: input_select.foxess_example_owner
+            data:
+              option: Idle
+          - action: input_text.set_value
+            target:
+              entity_id: input_text.foxess_example_status
+            data:
+              value: "Released: remote selection changed externally"
+          - stop: Manual selection takes priority
+      - if:
+          - condition: template
+            value_template:
+              "{{ owner == 'Idle' and (selected in ['Force Charge', 'Force Discharge'] or state_attr('sensor.' ~ prefix ~
+              '_current_work_mode', 'source') == 'remote_control') }}"
+        then:
+          - action: input_text.set_value
+            target:
+              entity_id: input_text.foxess_example_status
+            data:
+              value: "Waiting: remote control is already in use"
+          - stop: Do not take over an existing remote session
+      - if:
+          - condition: template
+            value_template: "{{ owner in ['Charge', 'Discharge'] and desired != owner }}"
+        then:
+          - action: input_text.set_value
+            target:
+              entity_id: input_text.foxess_example_status
+            data:
+              value: Releasing remote override
+          - action: select.select_option
+            target:
+              entity_id: "{{ mode_entity }}"
+            data:
+              option: Disable
+          - action: input_select.select_option
+            target:
+              entity_id: input_select.foxess_example_owner
+            data:
+              option: Idle
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ desired in ['Charge', 'Discharge'] }}"
+            sequence:
+              - variables:
+                  power_entity:
+                    "{{ 'number.' ~ prefix ~ ('_force_charge_power' if desired == 'Charge' else '_force_discharge_power')
+                    }}"
+                  power: "{{ states('input_number.foxess_example_' ~ desired | lower ~ '_power') }}"
+              - if:
+                  - condition: template
+                    value_template:
+                      "{{ not is_number(power) or not is_number(state_attr(power_entity, 'max')) or not
+                      (0 < power | float <= state_attr(power_entity, 'max') | float) }}"
+                then:
+                  - action: input_text.set_value
+                    target:
+                      entity_id: input_text.foxess_example_status
+                    data:
+                      value: "Blocked: power exceeds the available control range"
+                  - if:
+                      - condition: template
+                        value_template: "{{ owner in ['Charge', 'Discharge'] }}"
+                    then:
+                      - action: select.select_option
+                        target:
+                          entity_id: "{{ mode_entity }}"
+                        data:
+                          option: Disable
+                      - action: input_select.select_option
+                        target:
+                          entity_id: input_select.foxess_example_owner
+                        data:
+                          option: Idle
+                  - stop: Invalid requested power
+              - action: input_text.set_value
+                target:
+                  entity_id: input_text.foxess_example_status
+                data:
+                  value: "{{ desired }} requested; awaiting applied-mode feedback"
+              - action: number.set_value
+                target:
+                  entity_id: "{{ power_entity }}"
+                data:
+                  value: "{{ power | float }}"
+              - action: input_select.select_option
+                target:
+                  entity_id: input_select.foxess_example_owner
+                data:
+                  option: "{{ desired }}"
+              - action: select.select_option
+                target:
+                  entity_id: "{{ mode_entity }}"
+                data:
+                  option: "{{ 'Force Charge' if desired == 'Charge' else 'Force Discharge' }}"
+        default:
+          - action: input_text.set_value
+            target:
+              entity_id: input_text.foxess_example_status
+            data:
+              value: |-
+                {% if not ready %}Blocked: inverter/SOC data unavailable
+                {% elif charge_opportunity %}Charge target reached; normal operation released
+                {% elif discharge_opportunity and not is_number(reserve) %}Blocked: required SOC forecast unavailable
+                {% elif discharge_opportunity %}Reserve reached, session completed, or insufficient surplus
+                {% else %}Waiting: outside enabled charging/discharging opportunities{% endif %}
+  foxess_example_stop:
+    alias: Stop FoxESS example overrides
+    mode: single
+    sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id:
+            - input_boolean.foxess_example_charge_enabled
+            - input_boolean.foxess_example_discharge_enabled
+      - action: script.foxess_example_reconcile
+automation:
+  - id: foxess_example_charge
+    alias: FoxESS example - automatic charge
+    mode: single
+    max_exceeded: silent
+    triggers:
+      - trigger: homeassistant
+        event: start
+      - trigger: time_pattern
+        seconds: /15
+      - trigger: state
+        entity_id:
+          - input_boolean.foxess_example_charge_enabled
+          - binary_sensor.foxess_example_charge_opportunity
+          - input_number.foxess_example_charge_soc
+          - input_number.foxess_example_charge_power
+    actions:
+      - action: script.foxess_example_reconcile
+  - id: foxess_example_discharge
+    alias: FoxESS example - automatic discharge
+    mode: single
+    max_exceeded: silent
+    triggers:
+      - trigger: homeassistant
+        event: start
+      - trigger: time_pattern
+        seconds: /15
+      - trigger: state
+        entity_id:
+          - input_boolean.foxess_example_discharge_enabled
+          - binary_sensor.foxess_example_discharge_opportunity
+          - input_number.foxess_example_reserve_soc
+          - input_number.foxess_example_discharge_power
+          - input_number.foxess_example_start_margin
+          - input_text.foxess_example_reserve_entity
+    actions:
+      - action: script.foxess_example_reconcile

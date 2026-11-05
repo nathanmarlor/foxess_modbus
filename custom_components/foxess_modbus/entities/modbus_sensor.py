@@ -4,6 +4,7 @@ import logging
 from collections import deque
 from dataclasses import dataclass
 from dataclasses import field
+from dataclasses import replace
 from datetime import date
 from datetime import datetime
 from decimal import Decimal
@@ -15,6 +16,7 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.const import Platform
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.typing import StateType
 
 from ..common.entity_controller import EntityController
@@ -40,6 +42,7 @@ class ModbusSensorDescription(SensorEntityDescription, EntityFactory):  # type: 
     post_process: Callable[[float], float] | None = None
     validate: list[BaseValidator] = field(default_factory=list)
     signed: bool = True
+    experimental_models: Inv = field(default_factory=lambda: Inv(0))
 
     @property
     def entity_type(self) -> type[Entity]:
@@ -53,14 +56,18 @@ class ModbusSensorDescription(SensorEntityDescription, EntityFactory):  # type: 
     ) -> Entity | None:
         addresses = self._addresses_for_inverter_model(self.addresses, inverter_model, register_type)
         round_to = self.round_to if controller.inverter_details.get(ROUND_SENSOR_VALUES, False) else None
-        return ModbusSensor(controller, self, addresses, round_to) if addresses is not None else None
+        return (
+            ModbusSensor(controller, self, addresses, round_to, inverter_model in self.experimental_models)
+            if addresses is not None
+            else None
+        )
 
     def serialize(self, inverter_model: Inv, register_type: RegisterType) -> dict[str, Any] | None:
         addresses = self._addresses_for_inverter_model(self.addresses, inverter_model, register_type)
         if addresses is None:
             return None
 
-        return {
+        result = {
             "type": "sensor",
             "key": self.key,
             "name": self.name,
@@ -68,6 +75,9 @@ class ModbusSensorDescription(SensorEntityDescription, EntityFactory):  # type: 
             "scale": self.scale,
             "signed": self.signed,
         }
+        if inverter_model in self.experimental_models:
+            result["experimental"] = True
+        return result
 
 
 class ModbusSensor(ModbusEntityMixin, SensorEntity):
@@ -81,11 +91,25 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
         # (usually high address, low address)
         addresses: list[int],
         round_to: float | None,
+        experimental: bool = False,
     ) -> None:
         """Initialize the sensor."""
 
         self._controller = controller
-        self.entity_description = entity_description
+        self._experimental = experimental
+        # Reuse the same mapping while making provisional interpretations explicit.
+        # No statistics or Energy dashboard eligibility until the mapping is verified.
+        self.entity_description = (
+            replace(
+                entity_description,
+                name=f"{entity_description.name} (Experimental)",
+                entity_category=EntityCategory.DIAGNOSTIC,
+                entity_registry_enabled_default=False,
+                state_class=None,
+            )
+            if experimental
+            else entity_description
+        )
         self._addresses = addresses
         self._round_to = round_to
         self._moving_average_filter: deque[float] | None = deque(maxlen=6) if round_to is not None else None
@@ -168,6 +192,17 @@ class ModbusSensor(ModbusEntityMixin, SensorEntity):
         if new_value != self._attr_native_value:
             self._attr_native_value = new_value
             super()._address_updated()
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        if not self._experimental:
+            return None
+        return {
+            "mapping_status": "provisional",
+            "raw_registers": {
+                str(address): self._controller.read(address, signed=False) for address in self._addresses
+            },
+        }
 
     @property
     def addresses(self) -> list[int]:
