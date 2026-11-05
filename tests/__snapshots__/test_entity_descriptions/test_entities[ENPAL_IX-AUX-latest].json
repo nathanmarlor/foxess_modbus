@@ -994,7 +994,7 @@
   {
     "addresses": [
       39063,
-      39065
+      39066
     ],
     "key": "inverter_state",
     "name": "Inverter State",
