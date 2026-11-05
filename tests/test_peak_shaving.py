@@ -39,16 +39,14 @@ def test_h3_193() -> None:
     assert not any(("number", key) in entities for key in windows)
 
 
-@pytest.mark.parametrize("description_type", [ModbusSensorDescription, ModbusNumberDescription])
-def test_threshold_soc_is_a_battery_soc_like_min_soc(description_type: type) -> None:
-    descriptions = {
-        factory.key: factory
-        for factory in ENTITIES
-        if isinstance(factory, description_type) and factory.key in ("min_soc", "peak_shaving_threshold_soc")
-    }
-    threshold, min_soc = descriptions["peak_shaving_threshold_soc"], descriptions["min_soc"]
-    assert threshold.device_class == min_soc.device_class
-    assert getattr(threshold, "state_class", None) == getattr(min_soc, "state_class", None)
+def test_threshold_soc_is_a_battery_soc_like_min_soc() -> None:
+    keys = ("min_soc", "peak_shaving_threshold_soc")
+    sensors = {f.key: f for f in ENTITIES if isinstance(f, ModbusSensorDescription) and f.key in keys}
+    numbers = {f.key: f for f in ENTITIES if isinstance(f, ModbusNumberDescription) and f.key in keys}
+
+    assert sensors["peak_shaving_threshold_soc"].device_class == sensors["min_soc"].device_class
+    assert sensors["peak_shaving_threshold_soc"].state_class == sensors["min_soc"].state_class
+    assert numbers["peak_shaving_threshold_soc"].device_class == numbers["min_soc"].device_class
 
 
 @pytest.mark.parametrize("inv", [Inv.H3_180, Inv.H3_PRE180, Inv.AIO_H3_101, Inv.KUARA_H3])
