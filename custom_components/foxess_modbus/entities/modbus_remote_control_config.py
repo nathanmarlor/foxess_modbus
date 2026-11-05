@@ -67,8 +67,12 @@ class RemoteControlAddressSpec:
         models: Inv,
         input: ModbusRemoteControlAddressConfig | None = None,  # noqa: A002
         holding: ModbusRemoteControlAddressConfig | None = None,
+        dedicated_mode_select: bool = False,
     ) -> None:
         self.models = models
+        # If set, force charge/discharge are exposed as a standalone "Remote Control" command select rather than
+        # being folded into the Work Mode select (see ModbusWorkModeSelectDescription.include_remote_control_modes)
+        self.dedicated_mode_select = dedicated_mode_select
         self.register_types: dict[RegisterType, ModbusRemoteControlAddressConfig] = {}
         if input is not None:
             self.register_types[RegisterType.INPUT] = input
@@ -77,6 +81,13 @@ class RemoteControlAddressSpec:
 
     def get_all_models(self) -> EntitySpec:
         return EntitySpec(register_types=list(self.register_types.keys()), models=self.models)
+
+    def get_dedicated_mode_select_models(self) -> EntitySpec:
+        """Gets the models which want a standalone Remote Control mode select"""
+        return EntitySpec(
+            register_types=list(self.register_types.keys()) if self.dedicated_mode_select else [],
+            models=self.models,
+        )
 
     def get_models_without_work_mode(self) -> EntitySpec:
         """Gets a InverterModelSpec instance to describe the Work Mode address"""
@@ -160,6 +171,13 @@ class ModbusRemoteControlFactory:
             models=[x.get_models_without_work_mode() for x in self.address_specs],
         )
 
+        # Models which opt into a standalone command select (force charge/discharge is a command, not a work mode)
+        remote_control_mode_select = ModbusRemoteControlSelectDescription(
+            key="remote_control",
+            name="Remote Control",
+            models=[x.get_dedicated_mode_select_models() for x in self.address_specs],
+        )
+
         def _set_max_soc(manager: EntityRemoteControlManager, value: int) -> None:
             manager.max_soc = value
 
@@ -183,6 +201,7 @@ class ModbusRemoteControlFactory:
             charge_power,
             discharge_power,
             remote_control_select,
+            remote_control_mode_select,
             force_charge_max_soc,
         ]
 

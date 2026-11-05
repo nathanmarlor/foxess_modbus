@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import cast
 
 from homeassistant.helpers.entity import Entity
 
@@ -16,6 +17,10 @@ _FORCE_DISCHARGE = "Force Discharge"
 
 @dataclass(kw_only=True, **ENTITY_DESCRIPTION_KWARGS)
 class ModbusWorkModeSelectDescription(ModbusSelectDescription):  # type: ignore[misc]
+    # If False, Force Charge/Force Discharge are not added to this select (the inverter exposes them via a
+    # standalone Remote Control select instead - see RemoteControlAddressSpec.dedicated_mode_select)
+    include_remote_control_modes: bool = True
+
     def create_entity_if_supported(
         self,
         controller: EntityController,
@@ -37,7 +42,10 @@ class ModbusWorkModeSelect(ModbusSelect):
 
         self._prev_remote_control_mode: RemoteControlMode | None = None
 
-        if controller.remote_control_manager is not None:
+        include_remote_control_modes = cast(
+            ModbusWorkModeSelectDescription, entity_description
+        ).include_remote_control_modes
+        if controller.remote_control_manager is not None and include_remote_control_modes:
             self._attr_options.extend([_FORCE_CHARGE, _FORCE_DISCHARGE])
 
     @property

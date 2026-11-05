@@ -482,6 +482,12 @@ _INVERTER_PROFILES_LIST = [
         RegisterType.HOLDING,
         versions={None: Inv.EVO},
     ),
+    # EVO_10_H is used by the config entry for 10kW EVO hardware
+    InverterModelProfile(InverterModel.EVO_10_H, r"^EVO \d+-([\d\.]+)-H$").add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={None: Inv.EVO},
+    ),
 ]
 
 INVERTER_PROFILES = {x.model: x for x in _INVERTER_PROFILES_LIST}
