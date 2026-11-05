@@ -1751,6 +1751,8 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         name="Inverter State Code",
         signed=False,
         state_class=SensorStateClass.MEASUREMENT,
+        # A raw bitfield, only useful for diagnostics (the Inverter State sensor decodes it)
+        entity_registry_enabled_default=False,
     )
     yield ModbusInverterStateSensorDescription(
         key="grid_status",
@@ -1775,7 +1777,11 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         state_class=SensorStateClass.MEASUREMENT,
     )
 
-    def _solar_energy_total(addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
+    def _solar_energy_total(
+        addresses: list[ModbusAddressesSpec], scale: float, validate: list[BaseValidator] | None = None
+    ) -> EntityFactory:
+        if validate is None:
+            validate = [Min(0)]
         # There are 32xxx holding registers on the H1, but they're only accessible over RS485
         return ModbusSensorDescription(
             key="solar_energy_total",
@@ -1787,15 +1793,22 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             icon="mdi:solar-power",
             scale=scale,
             signed=False,
-            validate=[Min(0)],
+            validate=validate,
         )
+
+    # H1-US: 5659/5660 match the cloud's "PV Produced" day for day; 5616/5618 track only the PV that was consumed
+    # locally (roughly PV minus export), so they aren't used. The lifetime total is a 32-bit value, low word first
+    # (5660 low, 5661 high), like the grid totals. A single 16-bit register would wrap at 6553.5kWh. Reads
+    # occasionally come back as 0xFFFFFFFF, so reject anything implausible.
+    yield _solar_energy_total(
+        addresses=[ModbusAddressesSpec(input=[5660, 5661], models=Inv.H1_US)],
+        scale=0.1,
+        validate=[Range(0, 1_000_000)],
+    )
 
     yield _solar_energy_total(
         addresses=[
             ModbusAddressesSpec(input=[11070, 11069], models=Inv.H1_G1 | Inv.KH_PRE119),
-            # H1-US: 5659/5660 match the cloud's "PV Produced" day for day; 5616/5618 track only the PV that was
-            # consumed locally (roughly PV minus export), so they aren't used
-            ModbusAddressesSpec(input=[5660], models=Inv.H1_US),
             ModbusAddressesSpec(
                 holding=[32001, 32000], models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
             ),
@@ -1861,7 +1874,11 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         scale=0.01,
     )
 
-    def _battery_charge_total(addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
+    def _battery_charge_total(
+        addresses: list[ModbusAddressesSpec], scale: float, validate: list[BaseValidator] | None = None
+    ) -> EntityFactory:
+        if validate is None:
+            validate = [Min(0)]
         return ModbusSensorDescription(
             key="battery_charge_total",
             addresses=addresses,
@@ -1872,13 +1889,19 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             icon="mdi:battery-arrow-up-outline",
             scale=scale,
             signed=False,
-            validate=[Min(0)],
+            validate=validate,
         )
+
+    # H1-US: 32-bit, low word first (5672 low, 5673 high). See the note on solar_energy_total.
+    yield _battery_charge_total(
+        addresses=[ModbusAddressesSpec(input=[5672, 5673], models=Inv.H1_US)],
+        scale=0.1,
+        validate=[Range(0, 1_000_000)],
+    )
 
     yield _battery_charge_total(
         addresses=[
             ModbusAddressesSpec(input=[11073, 11072], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(input=[5672], models=Inv.H1_US),
             ModbusAddressesSpec(
                 holding=[32004, 32003], models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
             ),
@@ -1941,7 +1964,11 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         scale=0.01,
     )
 
-    def _battery_discharge_total(addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
+    def _battery_discharge_total(
+        addresses: list[ModbusAddressesSpec], scale: float, validate: list[BaseValidator] | None = None
+    ) -> EntityFactory:
+        if validate is None:
+            validate = [Min(0)]
         return ModbusSensorDescription(
             key="battery_discharge_total",
             addresses=addresses,
@@ -1952,13 +1979,19 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             icon="mdi:battery-arrow-down-outline",
             scale=scale,
             signed=False,
-            validate=[Min(0)],
+            validate=validate,
         )
+
+    # H1-US: 32-bit, low word first (5666 low, 5667 high). See the note on solar_energy_total.
+    yield _battery_discharge_total(
+        addresses=[ModbusAddressesSpec(input=[5666, 5667], models=Inv.H1_US)],
+        scale=0.1,
+        validate=[Range(0, 1_000_000)],
+    )
 
     yield _battery_discharge_total(
         addresses=[
             ModbusAddressesSpec(input=[11076, 11075], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(input=[5666], models=Inv.H1_US),
             ModbusAddressesSpec(
                 holding=[32007, 32006], models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
             ),
@@ -2279,7 +2312,11 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         scale=0.01,
     )
 
-    def _input_energy_total(addresses: list[ModbusAddressesSpec], scale: float) -> EntityFactory:
+    def _input_energy_total(
+        addresses: list[ModbusAddressesSpec], scale: float, validate: list[BaseValidator] | None = None
+    ) -> EntityFactory:
+        if validate is None:
+            validate = [Min(0)]
         return ModbusSensorDescription(
             key="input_energy_total",
             addresses=addresses,
@@ -2290,13 +2327,19 @@ def _inverter_entities() -> Iterable[EntityFactory]:
             icon="mdi:import",
             scale=scale,
             signed=False,
-            validate=[Min(0)],
+            validate=validate,
         )
+
+    # H1-US: 32-bit, low word first (5679 low, 5680 high). See the note on solar_energy_total.
+    yield _input_energy_total(
+        addresses=[ModbusAddressesSpec(input=[5679, 5680], models=Inv.H1_US)],
+        scale=0.1,
+        validate=[Range(0, 1_000_000)],
+    )
 
     yield _input_energy_total(
         addresses=[
             ModbusAddressesSpec(input=[11088, 11087], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(input=[5679], models=Inv.H1_US),
             ModbusAddressesSpec(
                 holding=[32019, 32018], models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
             ),

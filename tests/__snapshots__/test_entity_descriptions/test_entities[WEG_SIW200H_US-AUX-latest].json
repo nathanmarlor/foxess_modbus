@@ -32,7 +32,8 @@
   },
   {
     "addresses": [
-      5672
+      5672,
+      5673
     ],
     "key": "battery_charge_total",
     "name": "Battery Charge Total",
@@ -63,7 +64,8 @@
   },
   {
     "addresses": [
-      5666
+      5666,
+      5667
     ],
     "key": "battery_discharge_total",
     "name": "Battery Discharge Total",
@@ -245,7 +247,8 @@
   },
   {
     "addresses": [
-      5679
+      5679,
+      5680
     ],
     "key": "input_energy_total",
     "name": "Input Energy Total",
@@ -460,7 +463,8 @@
   },
   {
     "addresses": [
-      5660
+      5660,
+      5661
     ],
     "key": "solar_energy_total",
     "name": "Solar Generation Total",
