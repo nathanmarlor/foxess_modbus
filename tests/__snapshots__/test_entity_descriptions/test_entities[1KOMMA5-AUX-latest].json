@@ -355,6 +355,16 @@
   },
   {
     "addresses": [
+      39218
+    ],
+    "key": "eps_frequency",
+    "name": "EPS Frequency",
+    "scale": 0.01,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
       39211,
       39210
     ],
