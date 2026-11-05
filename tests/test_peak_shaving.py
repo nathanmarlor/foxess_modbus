@@ -7,6 +7,8 @@ import pytest
 from custom_components.foxess_modbus.common.types import Inv
 from custom_components.foxess_modbus.common.types import RegisterType
 from custom_components.foxess_modbus.entities.entity_descriptions import ENTITIES
+from custom_components.foxess_modbus.entities.modbus_number import ModbusNumberDescription
+from custom_components.foxess_modbus.entities.modbus_sensor import ModbusSensorDescription
 
 _NEW_KEYS = {"peak_shaving_threshold_soc", "export_peak_limit", "charge_in_low_import"}
 
@@ -35,6 +37,18 @@ def test_h3_193() -> None:
     ]
     assert [entities[("sensor", key)]["addresses"] for key in windows] == [[a] for a in range(46507, 46515)]
     assert not any(("number", key) in entities for key in windows)
+
+
+@pytest.mark.parametrize("description_type", [ModbusSensorDescription, ModbusNumberDescription])
+def test_threshold_soc_is_a_battery_soc_like_min_soc(description_type: type) -> None:
+    descriptions = {
+        factory.key: factory
+        for factory in ENTITIES
+        if isinstance(factory, description_type) and factory.key in ("min_soc", "peak_shaving_threshold_soc")
+    }
+    threshold, min_soc = descriptions["peak_shaving_threshold_soc"], descriptions["min_soc"]
+    assert threshold.device_class == min_soc.device_class
+    assert getattr(threshold, "state_class", None) == getattr(min_soc, "state_class", None)
 
 
 @pytest.mark.parametrize("inv", [Inv.H3_180, Inv.H3_PRE180, Inv.AIO_H3_101, Inv.KUARA_H3])

@@ -3095,6 +3095,8 @@ def _configuration_entities() -> Iterable[EntityFactory]:
             ModbusAddressesSpec(holding=[46503], models=Inv.H3_193),
         ],
         name="Peak Shaving Threshold SoC",
+        device_class=SensorDeviceClass.BATTERY,
+        state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
         icon="mdi:battery-charging-low",
         signed=False,
@@ -3111,6 +3113,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         native_max_value=100,
         native_step=1,
         native_unit_of_measurement="%",
+        device_class=NumberDeviceClass.BATTERY,
         icon="mdi:battery-charging-low",
         validate=[Range(10, 100)],
     )
