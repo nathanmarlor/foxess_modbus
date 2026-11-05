@@ -86,10 +86,11 @@ class Inv(Flag):
 
     H3_PRE180 = auto()
     H3_180 = auto()
+    H3_193 = auto()  # Manager >= 1.93 (Master 2.23): battery today registers 32005/32008 hold total mod 65536
     AIO_H3_PRE101 = auto()
     AIO_H3_101 = auto()
     KUARA_H3 = auto()
-    H3_SET = H3_180 | H3_PRE180 | AIO_H3_101 | AIO_H3_PRE101 | KUARA_H3
+    H3_SET = H3_193 | H3_180 | H3_PRE180 | AIO_H3_101 | AIO_H3_PRE101 | KUARA_H3
 
     H3_PRO_PRE122 = auto()
     H3_PRO_122 = auto()

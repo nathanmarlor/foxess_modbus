@@ -366,7 +366,8 @@ _INVERTER_PROFILES_LIST = [
     InverterModelProfile(InverterModel.H3, r"^H3-([\d\.]+)").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
-        versions={Version(1, 80): Inv.H3_PRE180, None: Inv.H3_180},
+        # Manager 1.93+ (shipped with Master 2.23, 2026) changed the Modbus interface, see #1124
+        versions={Version(1, 80): Inv.H3_PRE180, Version(1, 92): Inv.H3_180, None: Inv.H3_193},
         special_registers=H3_REGISTERS,
     ),
     InverterModelProfile(InverterModel.AC3, r"^AC3-([\d\.]+)").add_connection_type(

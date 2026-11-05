@@ -1422,6 +1422,74 @@
   },
   {
     "addresses": [
+      48016
+    ],
+    "key": "time_period_1_enable_charge_from_grid",
+    "name": "Period 1 - Enable Charge from Grid",
+    "type": "binary-sensor"
+  },
+  {
+    "addresses": [
+      48010
+    ],
+    "key": "time_period_1_enable_force_charge",
+    "name": "Period 1 - Enable Force Charge",
+    "type": "binary-sensor"
+  },
+  {
+    "addresses": [
+      48012
+    ],
+    "key": "time_period_1_end",
+    "name": "Period 1 - End",
+    "other_addresses": 48011,
+    "type": "charge-period-time"
+  },
+  {
+    "addresses": [
+      48011
+    ],
+    "key": "time_period_1_start",
+    "name": "Period 1 - Start",
+    "other_addresses": 48012,
+    "type": "charge-period-time"
+  },
+  {
+    "addresses": [
+      48026
+    ],
+    "key": "time_period_2_enable_charge_from_grid",
+    "name": "Period 2 - Enable Charge from Grid",
+    "type": "binary-sensor"
+  },
+  {
+    "addresses": [
+      48020
+    ],
+    "key": "time_period_2_enable_force_charge",
+    "name": "Period 2 - Enable Force Charge",
+    "type": "binary-sensor"
+  },
+  {
+    "addresses": [
+      48022
+    ],
+    "key": "time_period_2_end",
+    "name": "Period 2 - End",
+    "other_addresses": 48021,
+    "type": "charge-period-time"
+  },
+  {
+    "addresses": [
+      48021
+    ],
+    "key": "time_period_2_start",
+    "name": "Period 2 - Start",
+    "other_addresses": 48022,
+    "type": "charge-period-time"
+  },
+  {
+    "addresses": [
       39624,
       39623
     ],

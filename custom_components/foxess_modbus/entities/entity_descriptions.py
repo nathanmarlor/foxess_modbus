@@ -1840,7 +1840,8 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield _battery_charge_today(
         addresses=[
             ModbusAddressesSpec(input=[11074], models=Inv.H1_G1 | Inv.KH_PRE119),
-            ModbusAddressesSpec(holding=[32005], models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET),
+            # H3 Manager >= 1.93 fills 32005 with (battery_charge_total mod 65536): no usable today value
+            ModbusAddressesSpec(holding=[32005], models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET & ~Inv.H3_193),
             ModbusAddressesSpec(holding=[32005], models=Inv.KH_PRE133 | Inv.KH_133),
             ModbusAddressesSpec(holding=[39608, 39607], models=Inv.H3_PRO_PRE122),
         ],
@@ -1919,7 +1920,9 @@ def _inverter_entities() -> Iterable[EntityFactory]:
         addresses=[
             ModbusAddressesSpec(input=[11077], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(
-                holding=[32008], models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET | Inv.KH_PRE133 | Inv.KH_133
+                # H3 Manager >= 1.93 fills 32008 with (battery_discharge_total mod 65536): no usable today value
+                holding=[32008],
+                models=Inv.H1_G1 | Inv.H1_G2_SET | Inv.H3_SET & ~Inv.H3_193 | Inv.KH_PRE133 | Inv.KH_133,
             ),
             ModbusAddressesSpec(holding=[39612, 39611], models=Inv.H3_PRO_PRE122),
         ],
@@ -2477,7 +2480,7 @@ def _bms_entities() -> Iterable[EntityFactory]:
             # Temporarily removed, see #756
             # ModbusAddressesSpec(input=[11104], models=Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[37624], models=Inv.H1_G2_144 | Inv.KH_133),
-            ModbusAddressesSpec(holding=[31090], models=Inv.H3_180),
+            ModbusAddressesSpec(holding=[31090], models=Inv.H3_180 | Inv.H3_193),
             ModbusAddressesSpec(holding=[39423], models=Inv.EVO),
         ],
         battery_temp=[
@@ -2490,27 +2493,27 @@ def _bms_entities() -> Iterable[EntityFactory]:
         bms_cell_temp_high=[
             ModbusAddressesSpec(input=[11043], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[37617], models=Inv.H1_G2_144 | Inv.KH_133),
-            ModbusAddressesSpec(holding=[31102], models=Inv.H3_180),
+            ModbusAddressesSpec(holding=[31102], models=Inv.H3_180 | Inv.H3_193),
         ],
         bms_cell_temp_low=[
             ModbusAddressesSpec(input=[11044], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[37618], models=Inv.H1_G2_144 | Inv.KH_133),
-            ModbusAddressesSpec(holding=[31103], models=Inv.H3_180),
+            ModbusAddressesSpec(holding=[31103], models=Inv.H3_180 | Inv.H3_193),
         ],
         bms_cell_mv_high=[
             ModbusAddressesSpec(input=[11045], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[37619], models=Inv.H1_G2_144 | Inv.KH_133),
-            ModbusAddressesSpec(holding=[31134], models=Inv.H3_180),
+            ModbusAddressesSpec(holding=[31134], models=Inv.H3_180 | Inv.H3_193),
         ],
         bms_cell_mv_low=[
             ModbusAddressesSpec(input=[11046], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[37620], models=Inv.H1_G2_144 | Inv.KH_133),
-            ModbusAddressesSpec(holding=[31135], models=Inv.H3_180),
+            ModbusAddressesSpec(holding=[31135], models=Inv.H3_180 | Inv.H3_193),
         ],
         bms_kwh_remaining=[
             ModbusAddressesSpec(input=[11037], models=Inv.H1_G1 | Inv.KH_PRE119),
             ModbusAddressesSpec(holding=[37632], models=Inv.H1_G2_SET | Inv.KH_133),
-            ModbusAddressesSpec(holding=[31123], models=Inv.H3_180),
+            ModbusAddressesSpec(holding=[31123], models=Inv.H3_180 | Inv.H3_193),
         ],
     )
     yield from _inner(
