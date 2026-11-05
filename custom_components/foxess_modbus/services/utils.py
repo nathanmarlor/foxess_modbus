@@ -25,7 +25,7 @@ def get_controller_from_friendly_name_or_device_id(
 
     # See if there's a device with this ID first
     registry = device_registry.async_get(hass)
-    device = registry.devices.get(device_id)
+    device = registry.async_get(device_id)
     if device is not None:
         identifiers = device.identifiers
         assert len(identifiers) > 0
