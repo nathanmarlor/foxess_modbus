@@ -7,8 +7,9 @@ from typing import Iterator
 @contextmanager
 def _load(path: Path, name: str) -> Iterator[None]:
     def _remove_modules(name: str) -> None:
-        old_modules = {n: m for n, m in sys.modules.items(
-        ) if n == name or n.startswith(name + ".")}
+        # Import hooks can add modules while this snapshot is taken. Iterate over
+        # a stable copy so loading the integration is safe on newer Python versions.
+        old_modules = {n: m for n, m in list(sys.modules.items()) if n == name or n.startswith(name + ".")}
         for n in old_modules:
             del sys.modules[n]
         return old_modules
