@@ -629,13 +629,20 @@ class ModbusController(EntityController, UnloadController):
             # Some OEM models (e.g. the WEG SIW200H US, a FoxESS H1-US) leave 30000 onwards unpopulated (0xFFFF), but
             # do expose the SunSpec common block, which contains the model string
             if not full_model:
-                marker = await _read_holding_block(client, slave, adapter_config, _SUNSPEC_MARKER_ADDRESS, 2)
-                if marker == _SUNSPEC_MARKER:
-                    register_values = await _read_holding_block(
-                        client, slave, adapter_config, _SUNSPEC_MODEL_ADDRESS, _SUNSPEC_MODEL_LENGTH
-                    )
-                    full_model = _decode_model(register_values)
-                    _LOGGER.debug("Autodetect: read model '%s' from the SunSpec common block", full_model)
+                # This is only a best-effort probe: an inverter which leaves 30000 empty and also rejects reads of
+                # 40000 should still get the "Did not recognise inverter model" error below, rather than a bare read
+                # error, so any failure here is logged and otherwise ignored
+                try:
+                    marker = await _read_holding_block(client, slave, adapter_config, _SUNSPEC_MARKER_ADDRESS, 2)
+                    if marker == _SUNSPEC_MARKER:
+                        sunspec_values = await _read_holding_block(
+                            client, slave, adapter_config, _SUNSPEC_MODEL_ADDRESS, _SUNSPEC_MODEL_LENGTH
+                        )
+                        register_values = sunspec_values
+                        full_model = _decode_model(sunspec_values)
+                        _LOGGER.debug("Autodetect: read model '%s' from the SunSpec common block", full_model)
+                except Exception as ex:
+                    _LOGGER.debug("Autodetect: SunSpec probe failed, ignoring: %s", ex)
             for model in INVERTER_PROFILES.values():
                 if re.match(model.model_pattern, full_model):
                     # Make sure that we can parse the capacity out

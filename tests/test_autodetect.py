@@ -1,7 +1,12 @@
+import logging
 from typing import Any
 from unittest.mock import AsyncMock
 from unittest.mock import MagicMock
 
+import pytest
+
+from custom_components.foxess_modbus.common.exceptions import AutoconnectFailedError
+from custom_components.foxess_modbus.common.exceptions import UnsupportedInverterError
 from custom_components.foxess_modbus.common.types import InverterModel
 from custom_components.foxess_modbus.const import MAX_READ
 from custom_components.foxess_modbus.modbus_controller import ModbusController
@@ -43,3 +48,23 @@ async def test_autodetect_falls_back_to_sunspec() -> None:
 
     assert model == InverterModel.WEG_SIW200H_US
     assert full_model == "SIW200H S114 W20"
+
+
+async def test_autodetect_sunspec_probe_failure_is_not_fatal(caplog: pytest.LogCaptureFixture) -> None:
+    # 30000 onwards is unpopulated and the inverter also rejects reads of the SunSpec block. This must still be
+    # reported as an unrecognised model (with the usual log line), not as a bare read error from the probe.
+    async def read_registers(start: int, count: int, *_args: Any) -> list[int]:
+        if start >= 40000:
+            raise TimeoutError("Modbus read failed")
+        return [0xFFFF] * count
+
+    client = MagicMock()
+    client.read_registers = AsyncMock(side_effect=read_registers)
+    client.close = AsyncMock()
+
+    with caplog.at_level(logging.DEBUG), pytest.raises(AutoconnectFailedError) as exc_info:
+        await ModbusController.autodetect(client, 1, {MAX_READ: 8})
+
+    assert isinstance(exc_info.value.__cause__, UnsupportedInverterError)
+    assert "Did not recognise inverter model" in caplog.text
+    assert "SunSpec probe failed" in caplog.text
