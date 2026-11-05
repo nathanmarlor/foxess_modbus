@@ -112,7 +112,7 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
         positional: list[Any] = [self]
         if "hass" in signature.parameters:
             positional.append(hass)
-        kwargs = {
+        kwargs: dict[str, Any] = {
             "integration_method": integration_method,
             "name": cast(str, entity_description.name),
             "round_digits": round_digits,
@@ -122,6 +122,9 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
             "unit_time": unit_time,
             "max_sub_interval": MAX_SUB_INTERVAL,
         }
+        # HA 2026.11 made 'device_class' a required keyword-only argument
+        if "device_class" in signature.parameters:
+            kwargs["device_class"] = entity_description.device_class
 
         IntegrationSensor.__init__(*positional, **kwargs)  # type: ignore[arg-type]
 
