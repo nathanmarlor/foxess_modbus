@@ -350,7 +350,9 @@ _INVERTER_PROFILES_LIST = [
     # The "-M" suffix (e.g. H3-10.0-M) is an OEM/installer variant of the H3-Smart (Gen2), confirmed
     # by FoxESS - see https://github.com/nathanmarlor/foxess_modbus/issues/1023. Without this it falls
     # through to the plain H3 profile and reads the wrong (legacy) register map.
-    InverterModelProfile(InverterModel.H3_SMART, r"^H3-([\d\.]+)-(?:Smart|M)").add_connection_type(
+    # The suffix match is case-insensitive: some firmwares report "SMART" in uppercase
+    # (e.g. H3-12.0-SMART), which would otherwise fall through to the legacy H3 profile.
+    InverterModelProfile(InverterModel.H3_SMART, r"^H3-([\d\.]+)-(?:(?i:Smart)|M)").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={None: Inv.H3_SMART},
@@ -449,6 +451,14 @@ _INVERTER_PROFILES_LIST = [
         versions={None: Inv.H3_PRE180},
         special_registers=H3_REGISTERS,
     ),
+    # a-TroniX AX Plus
+    # These have the form 'AX Plus 10kW-3ph'' (the 3ph standing for '3 phase'). There are other powers, too
+    InverterModelProfile(InverterModel.ATRONIX_AX_PLUS, r"^AX Plus ([\d\.]+)kW-3ph").add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={None: Inv.H3_SMART},
+        special_registers=H3_SMART_REGISTERS,
+    ),
     # E.g. H3-Pro-20.0, P3-Pro-15.0
     # P3-Pro is an OEM/installer-channel variant of the H3-Pro (H = Home, P = Pro/installer channel);
     # hardware and Modbus registers are identical.
@@ -490,6 +500,14 @@ _INVERTER_PROFILES_LIST = [
         ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={None: Inv.EVO},
+    ),
+    # Solarwatt Vision (rebadged FoxESS H3 Smart)
+    # E.g. VSN THREE 12KW
+    InverterModelProfile(InverterModel.SOLARWATT_VISION, r"^VSN THREE ([\d\.]+)KW$").add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={None: Inv.H3_SMART},
+        special_registers=H3_SMART_REGISTERS,
     ),
 ]
 

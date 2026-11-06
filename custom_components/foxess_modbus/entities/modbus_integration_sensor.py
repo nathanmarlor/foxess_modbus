@@ -122,6 +122,9 @@ class ModbusIntegrationSensor(ModbusEntityMixin, IntegrationSensor):
             "unit_time": unit_time,
             "max_sub_interval": MAX_SUB_INTERVAL,
         }
+        # HA 2026.11 added 'device_class' as a required parameter
+        if "device_class" in signature.parameters:
+            kwargs["device_class"] = entity_description.device_class
 
         IntegrationSensor.__init__(*positional, **kwargs)  # type: ignore[arg-type]
 

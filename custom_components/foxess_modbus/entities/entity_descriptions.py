@@ -1043,25 +1043,26 @@ def _h3_current_voltage_power_entities() -> Iterable[EntityFactory]:
             validate=[Range(-100, 100)],
         )
 
+    # FoxESS Modbus definition (V1.05.00.00 to V1.05.04.00): 39210 R, 39212 S, 39214 T, 39216 combined (see #669)
     yield _eps_power(
         "R",
         addresses=[
             ModbusAddressesSpec(holding=[31022], models=Inv.H3_SET),
-            ModbusAddressesSpec(holding=[39213, 39212], models=Inv.H3_PRO_SET | Inv.H3_SMART),
+            ModbusAddressesSpec(holding=[39211, 39210], models=Inv.H3_PRO_SET | Inv.H3_SMART),
         ],
     )
     yield _eps_power(
         "S",
         addresses=[
             ModbusAddressesSpec(holding=[31023], models=Inv.H3_SET),
-            ModbusAddressesSpec(holding=[39215, 39214], models=Inv.H3_PRO_SET | Inv.H3_SMART),
+            ModbusAddressesSpec(holding=[39213, 39212], models=Inv.H3_PRO_SET | Inv.H3_SMART),
         ],
     )
     yield _eps_power(
         "T",
         addresses=[
             ModbusAddressesSpec(holding=[31024], models=Inv.H3_SET),
-            ModbusAddressesSpec(holding=[39217, 39216], models=Inv.H3_PRO_SET | Inv.H3_SMART),
+            ModbusAddressesSpec(holding=[39215, 39214], models=Inv.H3_PRO_SET | Inv.H3_SMART),
         ],
     )
 
@@ -1517,7 +1518,7 @@ def _inverter_entities() -> Iterable[EntityFactory]:
                 holding=[31013], models=Inv.H1_G1 | Inv.H1_LAN | Inv.H1_G2_SET | Inv.KH_PRE133 | Inv.KH_133
             ),
             ModbusAddressesSpec(holding=[31025], models=Inv.H3_SET),
-            ModbusAddressesSpec(holding=[39218], models=Inv.EVO),
+            ModbusAddressesSpec(holding=[39218], models=Inv.H3_SMART | Inv.EVO),
         ],
         entity_registry_enabled_default=False,
         name="EPS Frequency",
@@ -2780,7 +2781,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     yield ModbusSensorDescription(
         key="export_power_limit",
         addresses=[
-            ModbusAddressesSpec(holding=[46617, 46616], models=Inv.KH_133 | Inv.H3_SMART),
+            ModbusAddressesSpec(holding=[46617, 46616], models=Inv.KH_133 | Inv.H3_SMART | Inv.H3_PRO_SET),
         ],
         name="Export Power Limit",
         device_class=SensorDeviceClass.POWER,
@@ -2792,7 +2793,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
     yield ModbusNumberDescription(
         key="export_power_limit",
         addresses=[
-            ModbusAddressesSpec(holding=[46617, 46616], models=Inv.KH_133 | Inv.H3_SMART),
+            ModbusAddressesSpec(holding=[46617, 46616], models=Inv.KH_133 | Inv.H3_SMART | Inv.H3_PRO_SET),
         ],
         name="Export Power Limit",
         mode=NumberMode.BOX,

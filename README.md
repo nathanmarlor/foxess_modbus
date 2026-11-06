@@ -28,9 +28,11 @@ Supported models:
 - STAR
 - Solavita SP
 - a-TroniX AX
+- a-Tronix AX Plus
 - Enpal
 - 1KOMMA5°
 - EKD Ampere.StoragePro E3
+- Solarwatt Vision
 
 You will need a direct connection to your inverter.
 In most cases, this means buying a modbus to ethernet/USB adapter and wiring this to a port on your inverter.
