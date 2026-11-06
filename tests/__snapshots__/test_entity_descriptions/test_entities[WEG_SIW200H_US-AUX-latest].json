@@ -1,0 +1,485 @@
+[
+  {
+    "addresses": [
+      5244
+    ],
+    "key": "ambtemp",
+    "name": "Ambient Temp",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5213,
+      5214
+    ],
+    "key": "battery_charge",
+    "name": "Battery Charge",
+    "scale": -0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5671
+    ],
+    "key": "battery_charge_today",
+    "name": "Battery Charge Today",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5672,
+      5673
+    ],
+    "key": "battery_charge_total",
+    "name": "Battery Charge Total",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5213,
+      5214
+    ],
+    "key": "battery_discharge",
+    "name": "Battery Discharge",
+    "scale": -0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5665
+    ],
+    "key": "battery_discharge_today",
+    "name": "Battery Discharge Today",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5666,
+      5667
+    ],
+    "key": "battery_discharge_total",
+    "name": "Battery Discharge Total",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5632
+    ],
+    "key": "battery_soc",
+    "name": "Battery SoC",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5633
+    ],
+    "key": "battery_soh",
+    "name": "Battery SoH",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5246
+    ],
+    "key": "eps_rvolt",
+    "name": "EPS Voltage",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5247
+    ],
+    "key": "eps_rvolt_L2",
+    "name": "EPS Voltage L2",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5600,
+      5601
+    ],
+    "key": "feed_in",
+    "name": "Feed-in",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5608,
+      5609
+    ],
+    "key": "feed_in_energy_today",
+    "name": "Feed-in Today",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5610,
+      5611
+    ],
+    "key": "feed_in_energy_total",
+    "name": "Feed-in Total",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5600,
+      5601
+    ],
+    "key": "grid_consumption",
+    "name": "Grid Consumption",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5612,
+      5613
+    ],
+    "key": "grid_consumption_energy_today",
+    "name": "Grid Consumption Today",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5614,
+      5615
+    ],
+    "key": "grid_consumption_energy_total",
+    "name": "Grid Consumption Total",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5600,
+      5601
+    ],
+    "key": "grid_ct",
+    "name": "Grid CT",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5602,
+      5603
+    ],
+    "key": "grid_ct_L1",
+    "name": "Grid CT L1",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5604,
+      5605
+    ],
+    "key": "grid_ct_L2",
+    "name": "Grid CT L2",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      6000
+    ],
+    "key": "grid_status",
+    "name": "Grid Status",
+    "states": [
+      "Grid Present",
+      "Unknown",
+      "Grid Lost"
+    ],
+    "type": "inverter-state-sensor"
+  },
+  {
+    "addresses": [
+      5984
+    ],
+    "key": "grid_voltage_L2",
+    "name": "Grid Voltage L2",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5678
+    ],
+    "key": "input_energy_today",
+    "name": "Input Energy Today",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5679,
+      5680
+    ],
+    "key": "input_energy_total",
+    "name": "Input Energy Total",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      6002
+    ],
+    "key": "invbatcurrent",
+    "name": "Inverter Battery Current",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5213,
+      5214
+    ],
+    "key": "invbatpower",
+    "name": "Inverter Battery Power",
+    "scale": -0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      6001
+    ],
+    "key": "invbatvolt",
+    "name": "Inverter Battery Voltage",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5220
+    ],
+    "key": "inverter_state",
+    "name": "Inverter State",
+    "state_map": {
+      "2048": "On Grid",
+      "37120": "Off Grid / EPS"
+    },
+    "states": [
+      "On Grid",
+      "Off Grid / EPS"
+    ],
+    "type": "inverter-state-sensor"
+  },
+  {
+    "addresses": [
+      5989
+    ],
+    "key": "invtemp",
+    "name": "Inverter Temp",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5217
+    ],
+    "key": "load_power",
+    "name": "Load Power",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "key": "load_power_total",
+    "method": "left",
+    "name": "Load Energy Total",
+    "source": "load_power",
+    "type": "integration-sensor",
+    "unit_time": "h"
+  },
+  {
+    "addresses": [
+      5253
+    ],
+    "key": "pv1_current",
+    "name": "PV1 Current",
+    "scale": 0.01,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5252
+    ],
+    "key": "pv1_voltage",
+    "name": "PV1 Voltage",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5255
+    ],
+    "key": "pv2_current",
+    "name": "PV2 Current",
+    "scale": 0.01,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5254
+    ],
+    "key": "pv2_voltage",
+    "name": "PV2 Voltage",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5257
+    ],
+    "key": "pv3_current",
+    "name": "PV3 Current",
+    "scale": 0.01,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5256
+    ],
+    "key": "pv3_voltage",
+    "name": "PV3 Voltage",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5235
+    ],
+    "key": "pv_power_now",
+    "name": "PV Power",
+    "scale": 0.001,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5249
+    ],
+    "key": "rcurrent",
+    "name": "Inverter Current",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5250
+    ],
+    "key": "rcurrent_L2",
+    "name": "Grid Current L2",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5241
+    ],
+    "key": "rfreq",
+    "name": "Grid Frequency",
+    "scale": 0.01,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5231
+    ],
+    "key": "rpower",
+    "name": "Inverter Power",
+    "scale": 0.001,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5983
+    ],
+    "key": "rvolt",
+    "name": "Grid Voltage",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5659
+    ],
+    "key": "solar_energy_today",
+    "name": "Solar Generation Today",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5660,
+      5661
+    ],
+    "key": "solar_energy_total",
+    "name": "Solar Generation Total",
+    "scale": 0.1,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5220
+    ],
+    "key": "state_code",
+    "name": "Inverter State Code",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  }
+]

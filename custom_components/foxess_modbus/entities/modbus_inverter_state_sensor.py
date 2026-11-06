@@ -28,6 +28,21 @@ H1_INVERTER_STATES = [
     "Unrecoverable Fault",
 ]
 
+# H1-US (e.g. WEG SIW200H S114 W20). Input register 5220 is a bitfield rather than an index; only the two values
+# below have been observed so far (normal operation, and a grid outage until the inverter re-synchronises).
+H1_US_INVERTER_STATES = {
+    0x0800: "On Grid",
+    0x9100: "Off Grid / EPS",
+}
+
+# H1-US input register 6000: follows the presence of grid voltage, changing as soon as the grid drops or returns
+# (whereas the inverter state above only goes back to On Grid after the reconnection delay).
+H1_US_GRID_STATES = [
+    "Grid Present",
+    "Unknown",
+    "Grid Lost",
+]
+
 KH_INVERTER_STATES = [
     "Self Test",
     "Waiting",
@@ -45,6 +60,8 @@ class ModbusInverterStateSensorDescription(SensorEntityDescription, EntityFactor
 
     address: list[ModbusAddressSpec]
     states: list[str]
+    # Optional: map raw register values to states, for inverters where the register isn't an index into `states`
+    state_map: dict[int, str] | None = None
 
     @property
     def entity_type(self) -> type[Entity]:
@@ -70,6 +87,7 @@ class ModbusInverterStateSensorDescription(SensorEntityDescription, EntityFactor
             "name": self.name,
             "addresses": addresses,
             "states": self.states,
+            **({"state_map": {str(k): v for k, v in self.state_map.items()}} if self.state_map is not None else {}),
         }
 
 
@@ -94,7 +112,11 @@ class ModbusInverterStateSensor(ModbusEntityMixin, SensorEntity):
     def native_value(self) -> str | None:
         entity_description = cast(ModbusInverterStateSensorDescription, self.entity_description)
         value = self._controller.read(self._address, signed=False)
-        if value is None or value >= len(entity_description.states):
+        if value is None:
+            return None
+        if entity_description.state_map is not None:
+            return entity_description.state_map.get(value)
+        if value >= len(entity_description.states):
             return None
         return entity_description.states[value]
 

@@ -352,7 +352,9 @@ _INVERTER_PROFILES_LIST = [
     # The "-M" suffix (e.g. H3-10.0-M) is an OEM/installer variant of the H3-Smart (Gen2), confirmed
     # by FoxESS - see https://github.com/nathanmarlor/foxess_modbus/issues/1023. Without this it falls
     # through to the plain H3 profile and reads the wrong (legacy) register map.
-    InverterModelProfile(InverterModel.H3_SMART, r"^H3-([\d\.]+)-(?:Smart|M)").add_connection_type(
+    # The suffix match is case-insensitive: some firmwares report "SMART" in uppercase
+    # (e.g. H3-12.0-SMART), which would otherwise fall through to the legacy H3 profile.
+    InverterModelProfile(InverterModel.H3_SMART, r"^H3-([\d\.]+)-(?:(?i:Smart)|M)").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={None: Inv.H3_SMART},
@@ -451,10 +453,25 @@ _INVERTER_PROFILES_LIST = [
         versions={None: Inv.H3_PRE180},
         special_registers=H3_REGISTERS,
     ),
+    # a-TroniX AX Plus
+    # These have the form 'AX Plus 10kW-3ph'' (the 3ph standing for '3 phase'). There are other powers, too
+    InverterModelProfile(InverterModel.ATRONIX_AX_PLUS, r"^AX Plus ([\d\.]+)kW-3ph").add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={None: Inv.H3_SMART},
+        special_registers=H3_SMART_REGISTERS,
+    ),
     # E.g. H3-Pro-20.0, P3-Pro-15.0
     # P3-Pro is an OEM/installer-channel variant of the H3-Pro (H = Home, P = Pro/installer channel);
     # hardware and Modbus registers are identical.
     InverterModelProfile(InverterModel.H3_PRO, r"^[HP]3-Pro-([\d\.]+)").add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={Version(1, 22): Inv.H3_PRO_PRE122, None: Inv.H3_PRO_122},
+        special_registers=H3_PRO_REGISTERS,
+    ),
+    # EKD Ampere.StoragePro E3 (rebadged H3-Pro), e.g. ASP-12KW-3P-A-E3
+    InverterModelProfile(InverterModel.AMPERE_STORAGE_PRO, r"^ASP-([\d\.]+)KW-3P").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={Version(1, 22): Inv.H3_PRO_PRE122, None: Inv.H3_PRO_122},
@@ -478,6 +495,19 @@ _INVERTER_PROFILES_LIST = [
         versions={None: Inv.H3_SMART},
         special_registers=H3_SMART_REGISTERS,
     ),
+    # WEG SIW200H "S" (split-phase, 120/240V) series, an OEM FoxESS H1-US. E.g. "SIW200H S114 W20" = 11.4kW.
+    # These don't populate the model at holding 30000; the model is read from the SunSpec common block instead
+    # (see ModbusController.autodetect). Only RS485 (AUX) has been tested, and only read-only sensors are mapped.
+    # The capacity is encoded as kW * 10. Only the 11.4kW unit has been seen so far.
+    InverterModelProfile(
+        InverterModel.WEG_SIW200H_US,
+        r"^SIW200H S(\d+)",
+        capacity_parser=CapacityParser(capacity_map={"114": 11400}, fallback_to_kw=False),
+    ).add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.INPUT,
+        versions={None: Inv.H1_US},
+    ),
     # FoxESS EVO series
     # E.g. EVO 10-5.0-H
     InverterModelProfile(InverterModel.EVO, r"^EVO \d+-([\d\.]+)-H$").add_connection_type(
@@ -485,6 +515,14 @@ _INVERTER_PROFILES_LIST = [
         RegisterType.HOLDING,
         versions={None: Inv.EVO},
         special_registers=EVO_REGISTERS,
+    ),
+    # Solarwatt Vision (rebadged FoxESS H3 Smart)
+    # E.g. VSN THREE 12KW
+    InverterModelProfile(InverterModel.SOLARWATT_VISION, r"^VSN THREE ([\d\.]+)KW$").add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={None: Inv.H3_SMART},
+        special_registers=H3_SMART_REGISTERS,
     ),
 ]
 

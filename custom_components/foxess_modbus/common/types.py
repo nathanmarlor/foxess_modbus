@@ -56,14 +56,20 @@ class InverterModel(StrEnum):
     STAR_H3 = "STAR-H3"
     SOLAVITA_SP = "SOLAVITA-SP"
     ATRONIX_AX = "ATRONIX_AX"
+    ATRONIX_AX_PLUS = "ATRONIX_AX_PLUS"
     ENPAL_IX = "ENPAL_IX"
+    SOLARWATT_VISION = "VSN"
     ONE_KOMMA_FIVE = "1KOMMA5"
 
     H3_PRO = "H3_PRO"
+    AMPERE_STORAGE_PRO = "AMPERE_STORAGE_PRO"
     H3_SMART = "H3_SMART"
 
     P3_SMART = "P3_SMART"
     EVO = "EVO"
+
+    # WEG-branded FoxESS H1-US (split-phase, 120/240V), e.g. "SIW200H S114 W20"
+    WEG_SIW200H_US = "WEG_SIW200H_US"
 
 
 class Inv(Flag):
@@ -99,6 +105,14 @@ class Inv(Flag):
 
     EVO = auto()
 
+    # FoxESS H1-US split-phase family (sold e.g. as WEG SIW200H S114 W20). Uses its own input-register map
+    # (5200-6010 range), unrelated to the H1 G1/G2 maps.
+    H1_US = auto()
+
+    # Deliberately does not include H1_US, so ALL no longer means "every model". The entities which use ALL are derived
+    # sensors (the PV1/PV2 energy integrations, and the PV Power sum of pv1_power + pv2_power). H1_US has three strings
+    # and reads PV power directly from its own register, so it must not pick these up. H1_US entities opt in
+    # explicitly with Inv.H1_US.
     ALL = H1_LAN | H1_G1 | H1_G2_SET | KH_SET | H3_SET | H3_PRO_SET | H3_SMART | EVO
 
 
