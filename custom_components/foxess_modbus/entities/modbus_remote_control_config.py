@@ -45,8 +45,8 @@ class ModbusRemoteControlAddressConfig:
     """Configured Max SoC"""
     invbatpower: list[int]
     """Current battery charge (negative) / discharge (positive) power"""
-    pwr_limit_bat_up: list[int] | None
-    """Prw_limit Bat_up, maximum power that the battery can accept"""
+    pwr_limit_bat_down: list[int] | None
+    """Prw_limit Bat_down, maximum power that the battery can accept"""
     pv_voltages: list[int]
     """Array of pvx_voltage addresses for PV strings"""
 

@@ -73,15 +73,15 @@ class ModbusBatterySensor(ModbusSensor):
 
     @property
     def native_value(self) -> Any:
-        if self._bms_connect_state_address is not None:
-            bms_connect_state = self._controller.read(self._bms_connect_state_address, signed=False)
-            # 0: Initial state, 1: OK, 2: NG
-            #
-            # On the H3, looks like this can be 247?
-            # https://github.com/nathanmarlor/foxess_modbus/issues/832#issuecomment-3183924877
-            # I'm going to assume that any values other than 0 / 2 mean "connected"...
-            if bms_connect_state == 0 or bms_connect_state == 2:
-                return None
+        value = (
+            self._controller.read(self._bms_connect_state_address, signed=False)
+            if self._bms_connect_state_address is not None
+            else None
+        )
+
+        # If the value is missing or BMS is disconnected, return None
+        if not value or (value & 0xFF) != 1:
+            return None
 
         return super().native_value
 
