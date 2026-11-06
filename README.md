@@ -31,6 +31,7 @@ Supported models:
 - a-Tronix AX Plus
 - Enpal
 - 1KOMMA5°
+- EKD Ampere.StoragePro E3
 - Solarwatt Vision
 
 You will need a direct connection to your inverter.

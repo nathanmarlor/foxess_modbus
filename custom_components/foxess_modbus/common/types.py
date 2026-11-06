@@ -62,6 +62,7 @@ class InverterModel(StrEnum):
     ONE_KOMMA_FIVE = "1KOMMA5"
 
     H3_PRO = "H3_PRO"
+    AMPERE_STORAGE_PRO = "AMPERE_STORAGE_PRO"
     H3_SMART = "H3_SMART"
 
     P3_SMART = "P3_SMART"
