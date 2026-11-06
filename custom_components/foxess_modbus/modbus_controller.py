@@ -55,9 +55,6 @@ _SUNSPEC_MARKER_ADDRESS = 40000
 _SUNSPEC_MARKER = [0x5375, 0x6E53]
 _SUNSPEC_MODEL_ADDRESS = 40020
 _SUNSPEC_MODEL_LENGTH = 16
-_F_G3_SERIAL_ADDRESS = 39018
-_F_G3_SERIAL_LENGTH = 8
-_F_G3_DEFAULT_MODEL = "F-G3"
 
 _INT16_MIN = -32768
 _UINT16_MAX = 65535
@@ -624,10 +621,18 @@ class ModbusController(EntityController, UnloadController):
             # are for the serial number (and there doesn't seem to be enough space to hold all models!)
             # The H3 starts the model number with a space, annoyingly.
             # Some models (H1-5.0-E-G2 and H3-PRO) pack two ASCII chars into each register.
-            register_values = await _read_holding_block(
-                client, slave, adapter_config, _MODEL_START_ADDRESS, _MODEL_LENGTH
-            )
-            full_model = _decode_model(register_values)
+            model_read_error: Exception | None = None
+            try:
+                register_values = await _read_holding_block(
+                    client, slave, adapter_config, _MODEL_START_ADDRESS, _MODEL_LENGTH
+                )
+                full_model = _decode_model(register_values)
+            except Exception as ex:
+                # Some inverters (e.g. the F G3 via its Smart GW-M1 dongle) don't respond at all at 30000. Treat this as
+                # an empty model so the fallbacks below run, and re-raise if none of them identify the inverter.
+                model_read_error = ex
+                register_values = []
+                full_model = ""
 
             # Some OEM models (e.g. the WEG SIW200H US, a FoxESS H1-US) leave 30000 onwards unpopulated (0xFFFF), but
             # do expose the SunSpec common block, which contains the model string
@@ -646,30 +651,18 @@ class ModbusController(EntityController, UnloadController):
                         _LOGGER.debug("Autodetect: read model '%s' from the SunSpec common block", full_model)
                 except Exception as ex:
                     _LOGGER.debug("Autodetect: SunSpec probe failed, ignoring: %s", ex)
-            # Fallback: Smart GW-M1 does not expose register 30000 model string.
-            if len(full_model) == 0:
-                try:
-                    serial_regs = await client.read_registers(
-                        _F_G3_SERIAL_ADDRESS,
-                        _F_G3_SERIAL_LENGTH,
-                        RegisterType.HOLDING,
-                        slave,
-                    )
-                    serial_chars: list[int] = []
-                    for reg in serial_regs:
-                        serial_chars.append((reg >> 8) & 0xFF)
-                        serial_chars.append(reg & 0xFF)
-                    serial = "".join(chr(c) for c in serial_chars if 0x20 <= c < 0x7F).strip()
-                    if len(serial) >= 6:
-                        full_model = _F_G3_DEFAULT_MODEL
-                        _LOGGER.info(
-                            "Autodetect: identified FoxESS Smart GW-M1 WiFi dongle (dongle serial: %s); "
-                            "using synthesised model string '%s'",
-                            serial,
-                            full_model,
-                        )
-                except Exception as fallback_ex:
-                    _LOGGER.debug("Autodetect: Smart GW-M1 fallback failed for %s: %s", client, fallback_ex)
+
+            # Give any profile with a model_detector a chance to identify the inverter from other registers
+            if not full_model:
+                for profile in INVERTER_PROFILES.values():
+                    if profile.model_detector is not None:
+                        detected_model = await profile.model_detector(client, slave, adapter_config[MAX_READ])
+                        if detected_model is not None:
+                            full_model = detected_model
+                            break
+                else:
+                    if model_read_error is not None:
+                        raise model_read_error
 
             for model in INVERTER_PROFILES.values():
                 if re.match(model.model_pattern, full_model):

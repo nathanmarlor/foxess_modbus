@@ -23,6 +23,8 @@ from .entities.entity_descriptions import ENTITIES
 from .entities.modbus_charge_period_config import ModbusChargePeriodInfo
 from .entities.modbus_remote_control_config import ModbusRemoteControlAddressConfig
 from .entities.remote_control_description import REMOTE_CONTROL_DESCRIPTION
+from .model_detectors import ModelDetector
+from .model_detectors import detect_f_g3
 
 _LOGGER = logging.getLogger(__package__)
 
@@ -79,7 +81,7 @@ class SpecialRegisterConfig:
 
 H1_AC1_REGISTERS = SpecialRegisterConfig(invalid_register_ranges=[(11096, 39999)])
 # FoxESS Smart GW-M1 WiFi dongle: only the 39xxx block is exposed over Modbus TCP.
-# Registers 30000–38999 (including model string, grid, and many battery sensors from
+# Registers 30000-38999 (including model string, grid, and many battery sensors from
 # the native inverter spec) do not respond and must be excluded to prevent poll timeouts.
 F_G3_REGISTERS = SpecialRegisterConfig(invalid_register_ranges=[(30000, 38999)])
 # See https://github.com/nathanmarlor/foxess_modbus/discussions/503
@@ -230,11 +232,18 @@ class InverterModelConnectionTypeProfile:
 class InverterModelProfile:
     """Describes the capabilities of an inverter model"""
 
-    def __init__(self, model: InverterModel, model_pattern: str, capacity_parser: CapacityParser | None = None, default_capacity_watts: int | None = None) -> None:
+    def __init__(
+        self,
+        model: InverterModel,
+        model_pattern: str,
+        capacity_parser: CapacityParser | None = None,
+        model_detector: ModelDetector | None = None,
+    ) -> None:
         self.model = model
         self.model_pattern = model_pattern
         self._capacity_parser = capacity_parser if capacity_parser is not None else CapacityParser.DEFAULT
-        self._default_capacity_watts = default_capacity_watts
+        # Used by autodetect if 30000 doesn't give a model string. See model_detectors.py
+        self.model_detector = model_detector
         self.connection_types: dict[ConnectionType, InverterModelConnectionTypeProfile] = {}
 
     def add_connection_type(
@@ -262,12 +271,6 @@ class InverterModelProfile:
     def inverter_capacity(self, inverter_model: str) -> int:
         match = re.match(self.model_pattern, inverter_model)
         if match is None:
-            raise Exception(f"Unable to determine capacity of inverter '{inverter_model}'")
-
-        if self._default_capacity_watts is not None:
-            return self._default_capacity_watts
-
-        if match.lastindex is None:
             raise Exception(f"Unable to determine capacity of inverter '{inverter_model}'")
 
         capacity = self._capacity_parser.parse(match.group(1), inverter_model)
@@ -531,14 +534,13 @@ _INVERTER_PROFILES_LIST = [
         versions={None: Inv.H3_SMART},
         special_registers=H3_SMART_REGISTERS,
     ),
-    # FoxESS Smart GW-M1 WiFi dongle direct Modbus TCP connection.
-    # The dongle exposes a subset of the inverter's data in holding registers 39000–39160.
-    # Registers 30000–38999 (where the normal model string and most sensors live) do not
-    # respond, so autodetect uses register 39018 (dongle serial) as a fingerprint instead.
-    # Model string is synthesised as plain "F-G3" during autodetect.
-    # Capacity is intentionally unknown for this profile and defaults to 0W.
-    InverterModelProfile(InverterModel.F_G3, r"^F-G3(-[\.\d]+)?$", default_capacity_watts=0).add_connection_type(
-        ConnectionType.LAN,
+    # FoxESS F G3 series (F3000-F6000) via a Smart GW-M1 WiFi dongle, over Modbus TCP.
+    # The dongle doesn't respond at 30000-38999 (where the model string normally lives), so autodetect identifies
+    # it from the 39000 "Basic information" block and synthesises the model from the rated power (39053), e.g.
+    # F-G3-3.6 for an F3600. See detect_f_g3 in model_detectors.py.
+    # Listed as AUX so that a direct (LAN) connection falls back to it, per the note at the top of this list.
+    InverterModelProfile(InverterModel.F_G3, r"^F-G3-([\d\.]+)$", model_detector=detect_f_g3).add_connection_type(
+        ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={None: Inv.F_G3},
         special_registers=F_G3_REGISTERS,
@@ -547,11 +549,7 @@ _INVERTER_PROFILES_LIST = [
 
 INVERTER_PROFILES = {x.model: x for x in _INVERTER_PROFILES_LIST}
 assert len(INVERTER_PROFILES) == len(_INVERTER_PROFILES_LIST)
-# All profiles must support AUX (RS485) *or* LAN (direct Ethernet/WiFi dongle).
-assert all(
-    ConnectionType.AUX in x.connection_types or ConnectionType.LAN in x.connection_types
-    for x in _INVERTER_PROFILES_LIST
-)
+assert all(ConnectionType.AUX in x.connection_types for x in _INVERTER_PROFILES_LIST)
 
 
 def create_entities(

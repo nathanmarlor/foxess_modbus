@@ -35,3 +35,17 @@ def _detect(model: str) -> InverterModel:
 )
 def test_h3_model_detection(model: str, expected: InverterModel) -> None:
     assert _detect(model) == expected
+
+
+@pytest.mark.parametrize(
+    ("model", "capacity"),
+    [
+        # Synthesised by autodetect from the rated power at 39053 (Smart GW-M1 dongle)
+        ("F-G3-3.0", 3000),
+        ("F-G3-3.6", 3600),
+        ("F-G3-6.0", 6000),
+    ],
+)
+def test_f_g3_model_detection(model: str, capacity: int) -> None:
+    assert _detect(model) == InverterModel.F_G3
+    assert INVERTER_PROFILES[InverterModel.F_G3].inverter_capacity(model) == capacity
