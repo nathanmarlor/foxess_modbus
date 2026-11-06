@@ -33,6 +33,7 @@ Supported models:
 - 1KOMMA5°
 - EKD Ampere.StoragePro E3
 - Solarwatt Vision
+- WEG SIW200H US (FoxESS H1-US, split-phase; read-only sensors)
 
 You will need a direct connection to your inverter.
 In most cases, this means buying a modbus to ethernet/USB adapter and wiring this to a port on your inverter.
