@@ -38,7 +38,6 @@ class FlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for foxess_modbus."""
 
     VERSION = 7
-    CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     def __init__(self) -> None:
         """Initialize."""
