@@ -38,7 +38,6 @@ class FlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for foxess_modbus."""
 
     VERSION = 7
-    CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     def __init__(self) -> None:
         """Initialize."""
@@ -177,11 +176,9 @@ class FlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMAIN):
                 await self._setup_energy_dashboard()
             return self.async_create_entry(title=CONFIG_ENTRY_TITLE, data=self._create_entry_data())
 
-        schema = vol.Schema(
-            {
-                vol.Required("energy_dashboard", default=False): bool,
-            }
-        )
+        schema = vol.Schema({
+            vol.Required("energy_dashboard", default=False): bool,
+        })
 
         return await self.with_default_form(
             body,
@@ -218,18 +215,14 @@ class FlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMAIN):
 
         adapters = [x for x in ADAPTERS.values() if x.adapter_type == adapter_type]
 
-        schema = vol.Schema(
-            {
-                vol.Required("adapter_id"): selector(
-                    {
-                        "select": {
-                            "options": [x.adapter_id for x in adapters],
-                            "translation_key": "inverter_adapter_models",
-                        }
-                    }
-                )
-            }
-        )
+        schema = vol.Schema({
+            vol.Required("adapter_id"): selector({
+                "select": {
+                    "options": [x.adapter_id for x in adapters],
+                    "translation_key": "inverter_adapter_models",
+                }
+            })
+        })
 
         return await self.with_default_form(
             body,
@@ -252,25 +245,23 @@ class FlowHandler(FlowHandlerMixin, config_entries.ConfigFlow, domain=DOMAIN):
         energy_prefs = EnergyPreferencesUpdate(energy_sources=[])  # type: ignore
         for entity_id_prefix in entity_id_prefixes:
             name_prefix = _prefix_name(entity_id_prefix)
-            energy_prefs["energy_sources"].extend(
-                [
-                    SolarSourceType(
-                        type="solar",
-                        stat_energy_from=f"{name_prefix}pv1_energy_total",
-                        config_entry_solar_forecast=None,
-                    ),
-                    SolarSourceType(
-                        type="solar",
-                        stat_energy_from=f"{name_prefix}pv2_energy_total",
-                        config_entry_solar_forecast=None,
-                    ),
-                    BatterySourceType(
-                        type="battery",
-                        stat_energy_to=f"{name_prefix}battery_charge_total",
-                        stat_energy_from=f"{name_prefix}battery_discharge_total",
-                    ),
-                ]
-            )
+            energy_prefs["energy_sources"].extend([
+                SolarSourceType(
+                    type="solar",
+                    stat_energy_from=f"{name_prefix}pv1_energy_total",
+                    config_entry_solar_forecast=None,
+                ),
+                SolarSourceType(
+                    type="solar",
+                    stat_energy_from=f"{name_prefix}pv2_energy_total",
+                    config_entry_solar_forecast=None,
+                ),
+                BatterySourceType(
+                    type="battery",
+                    stat_energy_to=f"{name_prefix}battery_charge_total",
+                    stat_energy_from=f"{name_prefix}battery_discharge_total",
+                ),
+            ])
 
         grid_source = GridSourceType(type="grid", flow_from=[], flow_to=[], cost_adjustment_day=0.0)
         for entity_id_prefix in entity_id_prefixes:
