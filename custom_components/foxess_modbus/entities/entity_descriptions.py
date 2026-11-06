@@ -1683,7 +1683,13 @@ def _inverter_entities() -> Iterable[EntityFactory]:
     yield ModbusG2InverterStateSensorDescription(
         key="inverter_state",
         addresses=[
-            ModbusAddressesSpec(holding=[39063, 39065], models=Inv.H1_G2_SET | Inv.H3_PRO_SET | Inv.H3_SMART),
+            ModbusAddressesSpec(holding=[39063, 39065], models=Inv.H1_G2_SET | Inv.H3_PRO_SET),
+            # On the H3 Smart the on-grid/off-grid flag is not in the status word at 39065, which
+            # reads 0 both on grid and while islanded. Differential read on a P3-5.0-SH across a
+            # deliberate grid cut: islanded 39063=0x0004, 39065=0x0000, 39066=0x0001, 39067=0x0980;
+            # back on grid 39066=0x0000, 39067=0x0000. With 39065 the "Off Grid" branch is
+            # unreachable and the sensor reports "On Grid" throughout an outage.
+            ModbusAddressesSpec(holding=[39063, 39066], models=Inv.H3_SMART),
         ],
         name="Inverter State",
     )
