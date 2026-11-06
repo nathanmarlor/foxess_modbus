@@ -114,11 +114,7 @@ class CapacityParser:
     H1: ClassVar["CapacityParser"]
 
     def parse(self, capacity_str: str, inverter_model: str) -> int:
-        
-        # EKD Ampere.StoragePro E3 deviates in naming convention, this should do the job
-        if "ASP-12KW-3P-A-E3" in inverter_model:
-            return 12000
-        
+
         if self.capacity_map is not None:
             capacity = self.capacity_map.get(capacity_str)
             if capacity is not None:
@@ -455,9 +451,16 @@ _INVERTER_PROFILES_LIST = [
     ),
     # E.g. H3-Pro-20.0, P3-Pro-15.0
     # P3-Pro is an OEM/installer-channel variant of the H3-Pro (H = Home, P = Pro/installer channel);
-    # ASP-12KW-3P-A-E3 is an OEM/installer variant of the H3-Pro (EKD Ampere.StoragePro E3)
     # hardware and Modbus registers are identical.
-    InverterModelProfile(InverterModel.H3_PRO, r"^([HP]3-Pro-|ASP-12KW-3P-A-E3)").add_connection_type(
+    InverterModelProfile(InverterModel.H3_PRO, r"^[HP]3-Pro-([\d\.]+)").add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={Version(1, 22): Inv.H3_PRO_PRE122, None: Inv.H3_PRO_122},
+        special_registers=H3_PRO_REGISTERS,
+    ),
+    # EKD Ampere.StoragePro E3 (rebadged H3-Pro), e.g. ASP-12KW-3P-A-E3
+    InverterModelProfile(
+        InverterModel.AMPERE_STORAGE_PRO, r"^ASP-([\d\.]+)KW-3P").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={Version(1, 22): Inv.H3_PRO_PRE122, None: Inv.H3_PRO_122},

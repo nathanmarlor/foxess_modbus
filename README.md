@@ -30,6 +30,7 @@ Supported models:
 - a-TroniX AX
 - Enpal
 - 1KOMMA5°
+- EKD Ampere.StoragePro E3
 
 You will need a direct connection to your inverter.
 In most cases, this means buying a modbus to ethernet/USB adapter and wiring this to a port on your inverter.
