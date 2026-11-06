@@ -2723,7 +2723,11 @@ def _bms_entities() -> Iterable[EntityFactory]:
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
+        # The register is in 0.1% steps. Scaling it as a float gives values like 87.30000000000001, so round the value
+        # itself, and also tell HA to display a single decimal place (so that e.g. 87.0 isn't shown as 87)
+        suggested_display_precision=1,
         scale=0.1,
+        post_process=lambda x: round(x, 1),
         signed=False,
         validate=[Range(0, 100)],
     )
