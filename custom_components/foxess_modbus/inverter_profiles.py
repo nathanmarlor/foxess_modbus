@@ -467,6 +467,13 @@ _INVERTER_PROFILES_LIST = [
         versions={Version(1, 22): Inv.H3_PRO_PRE122, None: Inv.H3_PRO_122},
         special_registers=H3_PRO_REGISTERS,
     ),
+    # EKD Ampere.StoragePro E3 (rebadged H3-Pro), e.g. ASP-12KW-3P-A-E3
+    InverterModelProfile(InverterModel.AMPERE_STORAGE_PRO, r"^ASP-([\d\.]+)KW-3P").add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={Version(1, 22): Inv.H3_PRO_PRE122, None: Inv.H3_PRO_122},
+        special_registers=H3_PRO_REGISTERS,
+    ),
     # Enpal I-X range
     # These have the form 'I-X5', with powers 5, 6, 8, 9.9, 10, 12, 15kW
     # See https://github.com/nathanmarlor/foxess_modbus/issues/785
