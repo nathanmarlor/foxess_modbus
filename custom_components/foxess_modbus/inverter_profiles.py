@@ -80,7 +80,7 @@ class SpecialRegisterConfig:
 
 
 H1_AC1_REGISTERS = SpecialRegisterConfig(invalid_register_ranges=[(11096, 39999)])
-# FoxESS Smart GW-M1 WiFi dongle: only the 39xxx block is exposed over Modbus TCP.
+# F G3 built-in WiFi Modbus TCP interface (identifies as a Smart GW-M1): only the 39xxx block is exposed.
 # Registers 30000-38999 (including model string, grid, and many battery sensors from
 # the native inverter spec) do not respond and must be excluded to prevent poll timeouts.
 F_G3_REGISTERS = SpecialRegisterConfig(invalid_register_ranges=[(30000, 38999)])
@@ -534,8 +534,8 @@ _INVERTER_PROFILES_LIST = [
         versions={None: Inv.H3_SMART},
         special_registers=H3_SMART_REGISTERS,
     ),
-    # FoxESS F G3 series (F3000-F6000) via a Smart GW-M1 WiFi dongle, over Modbus TCP.
-    # The dongle doesn't respond at 30000-38999 (where the model string normally lives), so autodetect identifies
+    # FoxESS F G3 series (F3000-F6000) via its built-in WiFi Modbus TCP interface (identifies as a Smart GW-M1).
+    # It doesn't respond at 30000-38999 (where the model string normally lives), so autodetect identifies
     # it from the 39000 "Basic information" block and synthesises the model from the rated power (39053), e.g.
     # F-G3-3.6 for an F3600. See detect_f_g3 in model_detectors.py.
     # Listed as AUX so that a direct (LAN) connection falls back to it, per the note at the top of this list.

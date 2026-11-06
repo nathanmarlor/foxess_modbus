@@ -628,8 +628,8 @@ class ModbusController(EntityController, UnloadController):
                 )
                 full_model = _decode_model(register_values)
             except Exception as ex:
-                # Some inverters (e.g. the F G3 via its Smart GW-M1 dongle) don't respond at all at 30000. Treat this as
-                # an empty model so the fallbacks below run, and re-raise if none of them identify the inverter.
+                # Some inverters (e.g. the F G3 over its built-in WiFi interface) don't respond at all at 30000. Treat
+                # this as an empty model so the fallbacks below run, and re-raise if none of them identify the inverter.
                 model_read_error = ex
                 register_values = []
                 full_model = ""

@@ -40,7 +40,7 @@ def test_h3_model_detection(model: str, expected: InverterModel) -> None:
 @pytest.mark.parametrize(
     ("model", "capacity"),
     [
-        # Synthesised by autodetect from the rated power at 39053 (Smart GW-M1 dongle)
+        # Synthesised by autodetect from the rated power at 39053 (F G3 WiFi interface)
         ("F-G3-3.0", 3000),
         ("F-G3-3.6", 3600),
         ("F-G3-6.0", 6000),

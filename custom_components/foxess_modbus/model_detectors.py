@@ -49,7 +49,7 @@ def _decode_packed_string(registers: list[int]) -> str:
 
 async def detect_f_g3(client: "ModbusClient", slave: int, max_read: int) -> str | None:
     """
-    Identify an F G3 behind a Smart GW-M1 dongle, which only answers in 39000+ (no model string at 30000).
+    Identify an F G3 over its built-in WiFi interface, which only answers in 39000+ (no model string at 30000).
 
     Uses the "Basic information" table (FoxESS Modbus definition V1.05.04.00, table 3-5). On the firmware tested,
     the model name (39002) and model ID (39050) are blank, so there's no field which names the model. Instead we
@@ -105,7 +105,7 @@ async def detect_f_g3(client: "ModbusClient", slave: int, max_read: int) -> str 
 
     full_model = f"F-G3-{rated_power_w / 1000:g}"
     _LOGGER.info(
-        "Autodetect: identified F G3 via Smart GW-M1 (serial %s, protocol 0x%08X, rated power %sW); using '%s'",
+        "Autodetect: identified F G3 via its WiFi interface (serial %s, protocol 0x%08X, rated power %sW); using '%s'",
         serial,
         protocol_version,
         rated_power_w,
