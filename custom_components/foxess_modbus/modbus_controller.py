@@ -621,10 +621,18 @@ class ModbusController(EntityController, UnloadController):
             # are for the serial number (and there doesn't seem to be enough space to hold all models!)
             # The H3 starts the model number with a space, annoyingly.
             # Some models (H1-5.0-E-G2 and H3-PRO) pack two ASCII chars into each register.
-            register_values = await _read_holding_block(
-                client, slave, adapter_config, _MODEL_START_ADDRESS, _MODEL_LENGTH
-            )
-            full_model = _decode_model(register_values)
+            model_read_error: Exception | None = None
+            try:
+                register_values = await _read_holding_block(
+                    client, slave, adapter_config, _MODEL_START_ADDRESS, _MODEL_LENGTH
+                )
+                full_model = _decode_model(register_values)
+            except Exception as ex:
+                # Some inverters (e.g. the F G3 over its built-in WiFi interface) don't respond at all at 30000. Treat
+                # this as an empty model so the fallbacks below run, and re-raise if none of them identify the inverter.
+                model_read_error = ex
+                register_values = []
+                full_model = ""
 
             # Some OEM models (e.g. the WEG SIW200H US, a FoxESS H1-US) leave 30000 onwards unpopulated (0xFFFF), but
             # do expose the SunSpec common block, which contains the model string
@@ -643,6 +651,19 @@ class ModbusController(EntityController, UnloadController):
                         _LOGGER.debug("Autodetect: read model '%s' from the SunSpec common block", full_model)
                 except Exception as ex:
                     _LOGGER.debug("Autodetect: SunSpec probe failed, ignoring: %s", ex)
+
+            # Give any profile with a model_detector a chance to identify the inverter from other registers
+            if not full_model:
+                for profile in INVERTER_PROFILES.values():
+                    if profile.model_detector is not None:
+                        detected_model = await profile.model_detector(client, slave, adapter_config[MAX_READ])
+                        if detected_model is not None:
+                            full_model = detected_model
+                            break
+                else:
+                    if model_read_error is not None:
+                        raise model_read_error
+
             for model in INVERTER_PROFILES.values():
                 if re.match(model.model_pattern, full_model):
                     # Make sure that we can parse the capacity out
