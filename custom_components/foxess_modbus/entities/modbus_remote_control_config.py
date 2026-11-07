@@ -49,6 +49,16 @@ class ModbusRemoteControlAddressConfig:
     """Prw_limit Bat_up, maximum power that the battery can accept"""
     pv_voltages: list[int]
     """Array of pvx_voltage addresses for PV strings"""
+    pwr_limit_bat_up_zero_in_back_up: bool = False
+    """
+    True if pwr_limit_bat_up reports the charge headroom of the *current native work mode* rather than a
+    BMS limit, so it reads 0 while the inverter is in Back-up - which is the fallback mode force charge
+    sets itself. A 0 reading then means "not available", not "the BMS refuses to charge".
+
+    Seen on the H3 Pro / H3 Smart family (Manager 1.44). The register does carry a real value once
+    remote control has been active with a power setpoint for a while, so it must not be disabled
+    outright (see issue #1244).
+    """
 
 
 class RemoteControlAddressSpec:

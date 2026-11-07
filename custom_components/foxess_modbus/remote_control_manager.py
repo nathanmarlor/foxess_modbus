@@ -204,6 +204,35 @@ class RemoteControlManager(EntityRemoteControlManager, ModbusControllerEntity):
         # Similarly, if the max battery power is very small, we won't be able to set the setpoint such that there's a
         # margin for PV, which means we run the risk of completely clipping PV.
         if max_battery_charge_power < 50:
+            # Only on models where the register reflects the current native work mode (see the flag's docstring):
+            # it reads 0 while in Back-up, which is the fallback work mode we set ourselves. That is not a "the BMS
+            # won't charge" signal, so fall back to a plain full-power force charge (the same as when the register
+            # isn't available) instead of disabling remote control, which would leave the inverter stuck in Back-up
+            # (see issue #1244). On models without the flag a real 0 W reading is still trusted.
+            current_work_mode = (
+                self._read(self._addresses.work_mode, signed=False)
+                if self._addresses.pwr_limit_bat_up_zero_in_back_up
+                else None
+            )
+            back_up_work_mode = (
+                self._addresses.work_mode_map.get(WorkMode.BACK_UP)
+                if self._addresses.work_mode_map is not None
+                else None
+            )
+            if (
+                current_work_mode is not None
+                and back_up_work_mode is not None
+                and current_work_mode == back_up_work_mode
+            ):
+                _LOGGER.debug(
+                    "Remote control: max battery charge power is %sW while in Back-up, charging at %sW",
+                    max_battery_charge_power,
+                    max_import_power,
+                )
+                await self._enable_remote_control(WorkMode.BACK_UP)
+                await self._write_active_power(-max_import_power)
+                return
+
             _LOGGER.debug("Remote control: max battery charge power is %sW, using Back-up", max_battery_charge_power)
             await self._disable_remote_control(WorkMode.BACK_UP)
             return
