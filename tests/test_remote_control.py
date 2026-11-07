@@ -39,7 +39,7 @@ class _FakeController:
         pass
 
 
-def _addresses() -> ModbusRemoteControlAddressConfig:
+def _addresses(*, headroom_zero_in_back_up: bool = True) -> ModbusRemoteControlAddressConfig:
     return ModbusRemoteControlAddressConfig(
         remote_enable=46001,
         timeout_set=46002,
@@ -51,6 +51,7 @@ def _addresses() -> ModbusRemoteControlAddressConfig:
         battery_soc=[37612],
         pwr_limit_bat_up=[46019, 46018],
         pv_voltages=[39070],
+        pwr_limit_bat_up_zero_in_back_up=headroom_zero_in_back_up,
     )
 
 
@@ -67,8 +68,12 @@ def _registers(*, work_mode: int) -> dict[int, int]:
     }
 
 
-def _manager(controller: _FakeController) -> RemoteControlManager:
-    return RemoteControlManager(controller=cast(Any, controller), addresses=_addresses(), poll_rate=15)
+def _manager(controller: _FakeController, *, headroom_zero_in_back_up: bool = True) -> RemoteControlManager:
+    return RemoteControlManager(
+        controller=cast(Any, controller),
+        addresses=_addresses(headroom_zero_in_back_up=headroom_zero_in_back_up),
+        poll_rate=15,
+    )
 
 
 async def test_force_charge_keeps_remote_control_enabled_in_back_up() -> None:
@@ -93,3 +98,27 @@ async def test_force_charge_still_disables_remote_control_when_zero_in_self_use(
     # The reading is trusted in other work modes, so remote control is not enabled (unchanged behaviour)
     assert (46001, 1) not in controller.writes
     assert (49203, 3) in controller.writes
+
+
+async def test_zero_headroom_in_back_up_disables_remote_control_without_the_flag() -> None:
+    # Models without the flag (e.g. the H1) report a real BMS limit in this register, so a 0 W reading is
+    # still trusted there even while in Back-up - remote control is switched off, as before.
+    controller = _FakeController(_registers(work_mode=3))  # Back-up
+    manager = _manager(controller, headroom_zero_in_back_up=False)
+
+    await manager.set_mode(RemoteControlMode.FORCE_CHARGE)
+
+    assert (46001, 1) not in controller.writes
+    assert not any(address == 46003 for address, _ in controller.writes)
+
+
+async def test_zero_headroom_in_back_up_is_ignored_with_the_flag() -> None:
+    # With the flag the 0 W reading is treated as unavailable, not as "the BMS won't charge", so a
+    # full-power force charge is commanded instead (this is the #1244 deadlock).
+    controller = _FakeController(_registers(work_mode=3))  # Back-up
+    manager = _manager(controller, headroom_zero_in_back_up=True)
+
+    await manager.set_mode(RemoteControlMode.FORCE_CHARGE)
+
+    assert (46001, 1) in controller.writes
+    assert any(address == 46003 for address, _ in controller.writes)

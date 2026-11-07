@@ -124,6 +124,10 @@ REMOTE_CONTROL_DESCRIPTION = ModbusRemoteControlFactory(
                 invbatpower=[39238, 39237],
                 battery_soc=[37612, 38310],
                 pwr_limit_bat_up=[46019, 46018],
+                # This register reports the headroom of the current native work mode here, so it reads 0 in Back-up
+                # (see issue #1244). Confirmed on an H3 Pro family device: with remote control active and a power
+                # setpoint it reports real headroom (46019 = 9999 = ~10 kW), so it must not be disabled outright.
+                pwr_limit_bat_up_zero_in_back_up=True,
                 pv_voltages=[39070, 39072, 39074, 39076, 39078, 39080],
             ),
             models=Inv.H3_PRO_SET | Inv.H3_SMART,
