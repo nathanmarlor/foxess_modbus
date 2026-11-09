@@ -35,3 +35,19 @@ def _detect(model: str) -> InverterModel:
 )
 def test_h3_model_detection(model: str, expected: InverterModel) -> None:
     assert _detect(model) == expected
+
+
+@pytest.mark.parametrize(
+    ("model", "expected", "capacity"),
+    [
+        # Original 1KOMMA5 three-phase naming (issue #807) must keep working
+        ("1K5-HI-5-V1", InverterModel.ONE_KOMMA_FIVE, 5000),
+        ("1K5-HI-15-V1", InverterModel.ONE_KOMMA_FIVE, 15000),
+        # Single-phase rebrand of the KH (discussion #1003) uses the KH register map, but is its own model
+        ("1K5-1P-HI-10", InverterModel.ONE_KOMMA_FIVE_1P, 10000),
+        ("KH10.5", InverterModel.KH, 10500),
+    ],
+)
+def test_one_komma_five_model_detection(model: str, expected: InverterModel, capacity: int) -> None:
+    assert _detect(model) == expected
+    assert INVERTER_PROFILES[expected].inverter_capacity(model) == capacity

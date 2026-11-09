@@ -492,6 +492,18 @@ _INVERTER_PROFILES_LIST = [
         versions={None: Inv.H3_SMART},
         special_registers=H3_SMART_REGISTERS,
     ),
+    # 1KOMMA5 single-phase range
+    # These have the form '1K5-1P-HI-10'. It appears to be a rebrand of the KH, and uses the KH register map. This
+    # has been tested by one user on a 1K5-1P-HI-10 (master 1.60, manager 1.14, slave 1.02) over direct Modbus TCP
+    # on the LAN port (the KH has no LAN port): the sensor values were correct and a Min SoC (On Grid) write took
+    # effect. It hasn't been confirmed with the vendor.
+    # See https://github.com/nathanmarlor/foxess_modbus/discussions/1003
+    InverterModelProfile(InverterModel.ONE_KOMMA_FIVE_1P, r"^1K5-1P-HI-([\d\.]+)").add_connection_type(
+        ConnectionType.AUX,
+        RegisterType.HOLDING,
+        versions={Version(1, 33): Inv.KH_PRE133, None: Inv.KH_133},
+        special_registers=KH_REGISTERS,
+    ),
     # WEG SIW200H "S" (split-phase, 120/240V) series, an OEM FoxESS H1-US. E.g. "SIW200H S114 W20" = 11.4kW.
     # These don't populate the model at holding 30000; the model is read from the SunSpec common block instead
     # (see ModbusController.autodetect). Only RS485 (AUX) has been tested, and only read-only sensors are mapped.
