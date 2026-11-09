@@ -339,7 +339,9 @@ _INVERTER_PROFILES_LIST = [
     # Some models start with KH-, but some are just e.g. KH10.5
     # TODO: Inv.KH_PRE119 requires RegisterType.INPUT, but we don't currently support using different register types
     # for different versions (it's determined solely by the connection type, which is just based on the old H1)
-    InverterModelProfile(InverterModel.KH, r"^KH([\d\.]+)").add_connection_type(
+    # 1KOMMA5 also sell a single-phase rebrand of the KH, e.g. '1K5-1P-HI-10', which uses the KH register map
+    # See https://github.com/nathanmarlor/foxess_modbus/discussions/1003
+    InverterModelProfile(InverterModel.KH, r"^(?:KH|1K5-1P-HI-)([\d\.]+)").add_connection_type(
         ConnectionType.AUX,
         RegisterType.HOLDING,
         versions={Version(1, 33): Inv.KH_PRE133, None: Inv.KH_133},
