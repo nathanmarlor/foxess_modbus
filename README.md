@@ -31,6 +31,7 @@ Supported models:
 - a-Tronix AX Plus
 - Enpal
 - 1KOMMA5°
+- 1KOMMA5° single-phase (1K5-1P-HI, KH-based)
 - EKD Ampere.StoragePro E3
 - Solarwatt Vision
 - WEG SIW200H US (FoxESS H1-US, split-phase; read-only sensors)
