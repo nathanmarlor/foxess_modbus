@@ -80,7 +80,13 @@ class ModbusBatterySensor(ModbusSensor):
             # On the H3, looks like this can be 247?
             # https://github.com/nathanmarlor/foxess_modbus/issues/832#issuecomment-3183924877
             # I'm going to assume that any values other than 0 / 2 mean "connected"...
-            if bms_connect_state == 0 or bms_connect_state == 2:
+            #
+            # LOCAL PATCH (foxessCT-to-others): On the H1 G1 AUX (dongle-port)
+            # connection, this register stays at 0 ("Initial state") permanently,
+            # even while the BMS is clearly connected and reporting live telemetry
+            # (SOC, voltage, current, cell voltages/temps all update between polls).
+            # Only gate on 2 (NG) so a connected-but-"initial-state" BMS still shows.
+            if bms_connect_state == 2:
                 return None
 
         return super().native_value
