@@ -95,6 +95,16 @@
   },
   {
     "addresses": [
+      5631
+    ],
+    "key": "battery_temp",
+    "name": "Battery Temp",
+    "scale": 0.1,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
       5246
     ],
     "key": "eps_rvolt",
@@ -333,6 +343,16 @@
   },
   {
     "addresses": [
+      5635
+    ],
+    "key": "max_discharge_current",
+    "name": "Max Discharge Current",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
       5253
     ],
     "key": "pv1_current",
@@ -478,6 +498,416 @@
     ],
     "key": "state_code",
     "name": "Inverter State Code",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5215
+    ],
+    "key": "unknown_input_5215",
+    "name": "Unknown Input 5215",
+    "scale": null,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5216
+    ],
+    "key": "unknown_input_5216",
+    "name": "Unknown Input 5216",
+    "scale": null,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5218
+    ],
+    "key": "unknown_input_5218",
+    "name": "Unknown Input 5218",
+    "scale": null,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5222
+    ],
+    "key": "unknown_input_5222",
+    "name": "Unknown Input 5222",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5223
+    ],
+    "key": "unknown_input_5223",
+    "name": "Unknown Input 5223",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5225
+    ],
+    "key": "unknown_input_5225",
+    "name": "Unknown Input 5225",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5227
+    ],
+    "key": "unknown_input_5227",
+    "name": "Unknown Input 5227",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5232
+    ],
+    "key": "unknown_input_5232",
+    "name": "Unknown Input 5232",
+    "scale": null,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5233
+    ],
+    "key": "unknown_input_5233",
+    "name": "Unknown Input 5233",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5237
+    ],
+    "key": "unknown_input_5237",
+    "name": "Unknown Input 5237",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5242
+    ],
+    "key": "unknown_input_5242",
+    "name": "Unknown Input 5242",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5243
+    ],
+    "key": "unknown_input_5243",
+    "name": "Unknown Input 5243",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5332
+    ],
+    "key": "unknown_input_5332",
+    "name": "Unknown Input 5332",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5333
+    ],
+    "key": "unknown_input_5333",
+    "name": "Unknown Input 5333",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5336
+    ],
+    "key": "unknown_input_5336",
+    "name": "Unknown Input 5336",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5504
+    ],
+    "key": "unknown_input_5504",
+    "name": "Unknown Input 5504",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5616
+    ],
+    "key": "unknown_input_5616",
+    "name": "Unknown Input 5616",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5618
+    ],
+    "key": "unknown_input_5618",
+    "name": "Unknown Input 5618",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5629
+    ],
+    "key": "unknown_input_5629",
+    "name": "Unknown Input 5629",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5630
+    ],
+    "key": "unknown_input_5630",
+    "name": "Unknown Input 5630",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5634
+    ],
+    "key": "unknown_input_5634",
+    "name": "Unknown Input 5634",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5638
+    ],
+    "key": "unknown_input_5638",
+    "name": "Unknown Input 5638",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5639
+    ],
+    "key": "unknown_input_5639",
+    "name": "Unknown Input 5639",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5662
+    ],
+    "key": "unknown_input_5662",
+    "name": "Unknown Input 5662",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5663
+    ],
+    "key": "unknown_input_5663",
+    "name": "Unknown Input 5663",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5674
+    ],
+    "key": "unknown_input_5674",
+    "name": "Unknown Input 5674",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5675
+    ],
+    "key": "unknown_input_5675",
+    "name": "Unknown Input 5675",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5676
+    ],
+    "key": "unknown_input_5676",
+    "name": "Unknown Input 5676",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5982
+    ],
+    "key": "unknown_input_5982",
+    "name": "Unknown Input 5982",
+    "scale": null,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5986
+    ],
+    "key": "unknown_input_5986",
+    "name": "Unknown Input 5986",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5987
+    ],
+    "key": "unknown_input_5987",
+    "name": "Unknown Input 5987",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5990
+    ],
+    "key": "unknown_input_5990",
+    "name": "Unknown Input 5990",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5992
+    ],
+    "key": "unknown_input_5992",
+    "name": "Unknown Input 5992",
+    "scale": null,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5994
+    ],
+    "key": "unknown_input_5994",
+    "name": "Unknown Input 5994",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5995
+    ],
+    "key": "unknown_input_5995",
+    "name": "Unknown Input 5995",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5996
+    ],
+    "key": "unknown_input_5996",
+    "name": "Unknown Input 5996",
+    "scale": null,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5997
+    ],
+    "key": "unknown_input_5997",
+    "name": "Unknown Input 5997",
+    "scale": null,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      5999
+    ],
+    "key": "unknown_input_5999",
+    "name": "Unknown Input 5999",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      6004
+    ],
+    "key": "unknown_input_6004",
+    "name": "Unknown Input 6004",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      6006
+    ],
+    "key": "unknown_input_6006",
+    "name": "Unknown Input 6006",
+    "scale": null,
+    "signed": false,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
+      6008
+    ],
+    "key": "unknown_input_6008",
+    "name": "Unknown Input 6008",
     "scale": null,
     "signed": false,
     "type": "sensor"

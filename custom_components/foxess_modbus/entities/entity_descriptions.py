@@ -2729,6 +2729,56 @@ def _bms_entities() -> Iterable[EntityFactory]:
     )
 
 
+# H1-US input registers that change but whose meaning is not known, as (address, signed). They are exposed raw (no unit
+# or scale) and disabled by default, in case they help someone reverse-engineer the map. The comments give what was seen
+# on a WEG SIW200H S114 W20 over about two days: the raw minimum-maximum, and the first -> last values. `signed` is set
+# where the raw value reaches 65xxx, i.e. small negative numbers. Registers that never changed are not listed.
+# "Same as" notes mean the two registers carried identical values throughout.
+_H1_US_UNKNOWN_INPUTS: list[tuple[int, bool]] = [
+    (5215, True),  # raw 0-65516 (64961 -> 65118). 5216 looks like its sign extension, i.e. a signed 32-bit pair
+    (5216, True),  # raw 0 or 65535
+    (5218, True),  # raw 0-65535, mostly 0
+    (5222, False),  # 0-201 (109 -> 123). Same as 5675
+    (5223, False),  # 1231-1716 (1231 -> 1716)
+    (5225, False),  # 5660-6145 (5660 -> 6145). Same as 5227
+    (5227, False),  # 5660-6145 (5660 -> 6145). Same as 5225
+    (5232, True),  # raw 0 or 65535
+    (5233, False),  # 0-116 (1 -> 1)
+    (5237, False),  # 33-4694 (66 -> 48)
+    (5242, False),  # 1847-1985 (1890 -> 1879)
+    (5243, False),  # 3677-3955 (3713 -> 3718)
+    (5332, False),  # 0-3799 (0 -> 0)
+    (5333, False),  # 0-154 (0 -> 0)
+    (5336, False),  # 0-28 (0 -> 0)
+    (5504, False),  # 0-9850 (9850 -> 9850)
+    (5616, False),  # 0-53 (46 -> 28)
+    (5618, False),  # 3226-3355 (3226 -> 3355)
+    (5629, False),  # 1993-2123 (2000 -> 1996). Looks like the battery voltage in 0.1 V. Same as 5638
+    (5630, False),  # 0 except while the battery is topped up from the grid (149 at 2.98 kW, battery current -14.7 A)
+    (5634, False),  # 0 except while the battery is topped up from the grid (14 at 2.98 kW)
+    (5638, False),  # 1993-2124 (2001 -> 1996). Looks like the battery voltage in 0.1 V. Same as 5629
+    (5639, False),  # 0 except while the battery is topped up from the grid (146 at 2.98 kW)
+    (5662, False),  # 0-152 (63 -> 95)
+    (5663, False),  # 2402-2756 (2402 -> 2756)
+    (5674, False),  # 0-1000 (541 -> 333)
+    (5675, False),  # 0-201 (109 -> 123). Same as 5222
+    (5676, False),  # 5647-6132 (5647 -> 6132)
+    (5982, True),  # raw 0-65533 (470 -> 389)
+    (5986, False),  # 1072-1188 (1140 -> 1165). Looks like 0.1 V on a 120 V leg
+    (5987, False),  # 1090-1203 (1142 -> 1156). Looks like 0.1 V on a 120 V leg
+    (5990, False),  # 254-429 (287 -> 339). Looks like a temperature in 0.1 degC
+    (5992, True),  # raw 1-65534 (128 -> 65501)
+    (5994, False),  # 1841-1980 (1875 -> 1871)
+    (5995, False),  # 1830-1973 (1846 -> 1843)
+    (5996, True),  # raw 0-65531 (65493 -> 65514)
+    (5997, True),  # raw 0-65531 (65506 -> 65489)
+    (5999, False),  # 0-5 (1 -> 2)
+    (6004, False),  # 0-2 (0 -> 0)
+    (6006, False),  # 0-17 (0 -> 0)
+    (6008, False),  # 0-17 (0 -> 0)
+]
+
+
 def _h1_us_split_phase_entities() -> Iterable[EntityFactory]:
     """Per-leg (L1/L2) readings of the H1-US split-phase (120/240V) inverter. The main entities (rvolt, rcurrent,
     grid_ct, ...) report L1 or the total; these expose L2 and the per-leg CT values, disabled by default."""
@@ -2786,7 +2836,6 @@ def _h1_us_split_phase_entities() -> Iterable[EntityFactory]:
         key="battery_soh",
         addresses=[ModbusAddressesSpec(input=[5633], models=Inv.H1_US)],
         bms_connect_state_address=[],
-        entity_registry_enabled_default=False,
         name="Battery SoH",
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
@@ -2794,6 +2843,54 @@ def _h1_us_split_phase_entities() -> Iterable[EntityFactory]:
         signed=False,
         validate=[Range(0, 100)],
     )
+
+    # Maximum battery discharge current, in whole amps (the other models report it in 0.1 A steps). Matches the cloud's
+    # "Max Bat Discharge Current" (27 A), and 41933 in the holding registers holds the same value in 0.1 A (270).
+    # Read-only: the setting itself is not exposed.
+    yield ModbusSensorDescription(
+        key="max_discharge_current",
+        addresses=[ModbusAddressesSpec(input=[5635], models=Inv.H1_US)],
+        entity_registry_enabled_default=False,
+        name="Max Discharge Current",
+        device_class=SensorDeviceClass.CURRENT,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="A",
+        signed=False,
+        validate=[Range(0, 100)],
+    )
+
+    # Battery temperature. 5631 sits next to the SoC (5632) and SoH (5633), and the inverter copies it from the BMS
+    # block of the holding registers: it is identical to 41905 (as 5633 is to 41930), whereas the BMS's cell
+    # temperatures high/low are 41901/41902. That is the same split as the H3 (a battery temp plus separate BMS cell
+    # temp high/low), so this is most likely the battery temperature the inverter itself reports. It is not verified
+    # against a reference: the cloud's "Bat Temperature" is frozen at 25.6 degC (it shows holding 41890, a status code).
+    # Over 24h it moved like a thermal mass (lagging the room temperature by 1-1.5h with about half the swing), but it
+    # reads about 10 degC above the cell temperatures. If you have a real reading and it disagrees, please open an
+    # issue.
+    yield ModbusBatterySensorDescription(
+        key="battery_temp",
+        addresses=[ModbusAddressesSpec(input=[5631], models=Inv.H1_US)],
+        bms_connect_state_address=[],
+        name="Battery Temp",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="°C",
+        scale=0.1,
+        validate=[Range(-50, 100)],
+    )
+
+    # Raw sensors for the registers whose meaning is not known, see _H1_US_UNKNOWN_INPUTS. 5630, 5634 and 5639 only read
+    # a value during the periodic maintenance cycle, when the SoC has dropped to ~97% and the inverter tops the battery
+    # up from the grid for 8-10 minutes. They are not the "max charge current" shown by the cloud (2-6 A while idle).
+    for address, signed in _H1_US_UNKNOWN_INPUTS:
+        yield ModbusSensorDescription(
+            key=f"unknown_input_{address}",
+            addresses=[ModbusAddressesSpec(input=[address], models=Inv.H1_US)],
+            entity_registry_enabled_default=False,
+            name=f"Unknown Input {address}",
+            state_class=SensorStateClass.MEASUREMENT,
+            signed=signed,
+        )
 
 
 def _configuration_entities() -> Iterable[EntityFactory]:
