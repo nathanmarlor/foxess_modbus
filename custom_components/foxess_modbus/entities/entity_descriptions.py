@@ -3036,7 +3036,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="W",
         icon="mdi:transmission-tower-export",
-        validate=[Range(0, 99999)],
+        validate=[Range(0, 100000)],
     )
     yield ModbusNumberDescription(
         key="export_power_limit",
@@ -3046,12 +3046,12 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         name="Export Power Limit",
         mode=NumberMode.BOX,
         native_min_value=0,
-        native_max_value=99999,
+        native_max_value=100000,
         native_step=1,
         native_unit_of_measurement="W",
         device_class=NumberDeviceClass.POWER,
         icon="mdi:transmission-tower-export",
-        validate=[Range(0, 99999)],
+        validate=[Range(0, 100000)],
     )
 
     # Register 46501+46502: Import Power Limit (I32 in watts, KH_133 only)
@@ -3066,7 +3066,7 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="W",
         icon="mdi:transmission-tower-import",
-        validate=[Range(0, 99999)],
+        validate=[Range(0, 100000)],
     )
     yield ModbusNumberDescription(
         key="import_power_limit",
@@ -3076,12 +3076,12 @@ def _configuration_entities() -> Iterable[EntityFactory]:
         name="Import Power Limit",
         mode=NumberMode.BOX,
         native_min_value=0,
-        native_max_value=99999,
+        native_max_value=100000,
         native_step=1,
         native_unit_of_measurement="W",
         device_class=NumberDeviceClass.POWER,
         icon="mdi:transmission-tower-import",
-        validate=[Range(0, 99999)],
+        validate=[Range(0, 100000)],
     )
 
 
