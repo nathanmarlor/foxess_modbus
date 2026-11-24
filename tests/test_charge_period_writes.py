@@ -100,6 +100,28 @@ def test_disabled_time_group_is_written_as_a_complete_block_and_preserves_config
     assert blocks[2] == (48000, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
 
+def test_reserved_plus_7_and_plus_8_registers_are_preserved_not_cleared() -> None:
+    # Confirmed live on an H3 Smart unit (24.11.2026): the FoxESS app sets +8 to a non-zero value
+    # (seen as 1) on groups it manages itself; neither register is actually unused despite the
+    # protocol doc calling them reserved, so a write must not clobber them with a hardcoded 0.
+    controller = _controller(
+        [_time_group_info(48010), _time_group_info(48020)],
+        capacity=12_000,
+        registers={48017: 5, 48018: 1, 46620: 90, 46611: 20},
+    )
+    periods = [
+        ChargePeriod(enable_force_charge=True, enable_charge_from_grid=True, start=time(2, 0), end=time(5, 30)),
+        ChargePeriod(enable_force_charge=False, enable_charge_from_grid=False, start=time(0, 0), end=time(0, 0)),
+    ]
+
+    blocks = _build_write_blocks(controller, periods)
+
+    assert blocks[0] == (48010, [1, 2 << 8, 5 << 8 | 30, 6, 90 << 8 | 20, 90, 12_000, 5, 1, 1])
+    # The second group has no +7/+8 in the registers dict (defaults to 0, as before), both for the
+    # enabled and the disabled path.
+    assert blocks[1][1][7:9] == [0, 0]
+
+
 def test_time_mode_flag_is_enabled_if_any_period_is_enabled() -> None:
     controller = _controller([_time_group_info(48010), _time_group_info(48020)])
     periods = [

@@ -348,6 +348,13 @@ def _make_time_group_block(
     max_soc = _read_soc_value(controller, config.max_soc_global_address, 100)
     min_soc = _read_soc_value(controller, config.min_soc_global_address, 10)
 
+    # +7 and +8 are documented as reserved, but at least one FoxESS app fallback-mode setting is known to
+    # live in +8 (confirmed live on an H3 Smart unit: a non-zero +8 is set by the app and is not touched by
+    # writes to other groups, but a write to this group that doesn't preserve it would silently clear it).
+    # Preserve whatever is already there instead of assuming 0.
+    reserved_7 = _read_register_value(controller, base + 7, 0)
+    reserved_8 = _read_register_value(controller, base + 8, 0)
+
     if charge_period.enable_force_charge:
         start = serialize_time_to_value(charge_period.start)
         end = serialize_time_to_value(charge_period.end)
@@ -379,8 +386,9 @@ def _make_time_group_block(
             (max_soc << 8) | min_soc,  # +4: MaxSoC (high byte) | MinSoC (low byte)
             max_soc,  # +5: FCSOC/FDSOC (force charge SoC target = MaxSoC, like the app)
             fdpwr,  # +6: FDPWR (force charge power, W)
-            0,  # +7: reserve
-            0,  # +8: reserve
+            reserved_7,  # +7: documented as reserved; preserved as-is (not known to carry a value yet)
+            reserved_8,  # +8: documented as reserved; the FoxESS app uses this for something (seen set to 1
+            # on an H3 Smart unit) - preserve it rather than clobbering it
             group_index,  # +9: group number (1 for group 1, 2 for group 2, ...)
         ],
     )
