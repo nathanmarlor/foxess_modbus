@@ -39,8 +39,10 @@ def get_entity_id(controller: EntityController, platform: Platform, key: str) ->
 
     if entity_id is None:
         # This can happen when first setting up, as the target entity hasn't been created yet.
-        # In this case, assume that it's going to be correctly named
-        entity_id = _add_entity_id_prefix(key, controller.inverter_details)
+        # In this case, assume that it's going to be correctly named. Make sure to include the
+        # platform domain, otherwise the entity ID won't match the state key that consumers
+        # (e.g. the charge period card) will use to look up the entity.
+        entity_id = f"{platform}.{_add_entity_id_prefix(key, controller.inverter_details)}"
 
     return entity_id
 

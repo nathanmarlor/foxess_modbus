@@ -1153,6 +1153,16 @@
   },
   {
     "addresses": [
+      46620
+    ],
+    "key": "max_soc_from_grid",
+    "name": "Max SoC From Grid",
+    "scale": null,
+    "signed": true,
+    "type": "sensor"
+  },
+  {
+    "addresses": [
       46609
     ],
     "key": "min_soc",
@@ -1429,6 +1439,74 @@
     "scale": 0.01,
     "signed": false,
     "type": "sensor"
+  },
+  {
+    "addresses": [
+      48016
+    ],
+    "key": "time_period_1_enable_charge_from_grid",
+    "name": "Period 1 - Enable Charge from Grid",
+    "type": "binary-sensor"
+  },
+  {
+    "addresses": [
+      48010
+    ],
+    "key": "time_period_1_enable_force_charge",
+    "name": "Period 1 - Enable Force Charge",
+    "type": "binary-sensor"
+  },
+  {
+    "addresses": [
+      48012
+    ],
+    "key": "time_period_1_end",
+    "name": "Period 1 - End",
+    "other_addresses": 48011,
+    "type": "charge-period-time"
+  },
+  {
+    "addresses": [
+      48011
+    ],
+    "key": "time_period_1_start",
+    "name": "Period 1 - Start",
+    "other_addresses": 48012,
+    "type": "charge-period-time"
+  },
+  {
+    "addresses": [
+      48026
+    ],
+    "key": "time_period_2_enable_charge_from_grid",
+    "name": "Period 2 - Enable Charge from Grid",
+    "type": "binary-sensor"
+  },
+  {
+    "addresses": [
+      48020
+    ],
+    "key": "time_period_2_enable_force_charge",
+    "name": "Period 2 - Enable Force Charge",
+    "type": "binary-sensor"
+  },
+  {
+    "addresses": [
+      48022
+    ],
+    "key": "time_period_2_end",
+    "name": "Period 2 - End",
+    "other_addresses": 48021,
+    "type": "charge-period-time"
+  },
+  {
+    "addresses": [
+      48021
+    ],
+    "key": "time_period_2_start",
+    "name": "Period 2 - Start",
+    "other_addresses": 48022,
+    "type": "charge-period-time"
   },
   {
     "addresses": [
